@@ -18,6 +18,12 @@ class ConfiguracaoPrecificacaoForm(forms.ModelForm):
             "margem_seguranca_percent",
             "reserva_percent",
         ]
+        labels = {
+            "horas_uteis_mes": "Horas úteis por mês",
+            "hora_tecnica_manual": "Hora técnica manual",
+            "margem_seguranca_percent": "Margem de segurança (%)",
+            "reserva_percent": "Reserva (%)",
+        }
 
 
 class FatorPrecificacaoForm(forms.ModelForm):

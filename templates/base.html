@@ -46,7 +46,7 @@
                 </a>
             </div>
 
-            <div class="nav-group">
+            <div class="nav-group nav-group--comercial">
                 <span class="nav-label">Comercial</span>
                 <a href="{% url 'crm_lista' %}" class="nav-link{% if '/clientes/' in request.path %} is-active{% endif %}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -62,7 +62,7 @@
                 </a>
             </div>
 
-            <div class="nav-group">
+            <div class="nav-group nav-group--producao">
                 <span class="nav-label">Produção</span>
                 <a href="{% url 'projetos_painel' %}" class="nav-link{% if '/projetos/' in request.path %} is-active{% endif %}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
@@ -82,7 +82,7 @@
                 </a>
             </div>
 
-            <div class="nav-group">
+            <div class="nav-group nav-group--gestao">
                 <span class="nav-label">Gestão</span>
                 <a href="{% url 'financeiro_painel' %}" class="nav-link{% if '/financeiro/' in request.path %} is-active{% endif %}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>

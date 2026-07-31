@@ -4,17 +4,18 @@
 
 {% block content %}
 <section class="page">
-    <header class="page-head dash-head">
-        <div>
+    <header class="dash-hero">
+        <div class="ds-glow" aria-hidden="true"></div>
+        <div class="dash-hero-in">
             <span class="ds-kicker">Painel · {{ user.nome_empresa }}</span>
             <h1 class="ds-h2 ds-display">Bem-vindo{% if user.nome_exibicao %}, {{ user.nome_exibicao }}{% endif %}</h1>
-            <p class="page-sub">Do briefing à obra num só lugar. Comece pelo que precisa de atenção hoje.</p>
+            <p>Do briefing à obra num só lugar. Comece pelo que precisa de atenção hoje.</p>
         </div>
     </header>
 
     <div class="kpi-row">
         {% for k in kpis %}
-        <a class="kpi{% if k.alerta %} kpi--alert{% endif %}" href="{% url k.url %}">
+        <a class="kpi kpi--{{ k.cor }}" href="{% url k.url %}">
             <span class="kpi-label">{{ k.label }}</span>
             <strong class="kpi-value num">{{ k.valor }}</strong>
             <span class="kpi-foot">{{ k.rodape }}</span>
@@ -33,8 +34,8 @@
     </a>
     {% endif %}
 
-    {% for titulo, itens in grupos %}
-    <div class="dash-section">
+    {% for titulo, cor, itens in grupos %}
+    <div class="dash-section dash-section--{{ cor }}">
         <h2 class="dash-section-head ds-display">{{ titulo }}</h2>
         <div class="modulo-grid">
             {% for nome, descricao, url_name in itens %}

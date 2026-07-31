@@ -51,27 +51,27 @@ def dashboard(request):
     obrig_alerta = sum(1 for o in obrigacoes if o.vencida or o.vencendo or o.pendente_registro)
 
     kpis = [
-        {"label": "Projetos ativos", "valor": projetos_ativos, "rodape": "em andamento", "url": "projetos_painel"},
-        {"label": "Obras em desvio", "valor": obras_desvio, "rodape": "atrás do previsto", "url": "obras_lista", "alerta": obras_desvio > 0},
-        {"label": "A receber (previsto)", "valor": f"R$ {a_receber}", "rodape": "lançamentos previstos", "url": "financeiro_painel"},
-        {"label": "Tarefas abertas", "valor": tarefas_abertas, "rodape": "a fazer", "url": "tarefas_lista"},
+        {"label": "Projetos ativos", "valor": projetos_ativos, "rodape": "em andamento", "url": "projetos_painel", "cor": "blue"},
+        {"label": "Obras em desvio", "valor": obras_desvio, "rodape": "atrás do previsto", "url": "obras_lista", "cor": "alert" if obras_desvio else "green"},
+        {"label": "A receber (previsto)", "valor": f"R$ {a_receber}", "rodape": "lançamentos previstos", "url": "financeiro_painel", "cor": "green"},
+        {"label": "Tarefas abertas", "valor": tarefas_abertas, "rodape": "a fazer", "url": "tarefas_lista", "cor": "violet"},
     ]
 
     onboarding = montar_checklist(u)
 
     grupos = [
-        ("Comercial", [
+        ("Comercial", "comercial", [
             ("Clientes", "Contatos, funil e histórico.", "crm_lista"),
             ("Propostas", "Proposta que vira projeto ao aprovar.", "propostas_lista"),
             ("Contratos", "Parcelas no financeiro, aditivos e documentos.", "contratos_lista"),
         ]),
-        ("Produção", [
+        ("Produção", "producao", [
             ("Projetos", "Painel com etapa, pendências e margem.", "projetos_painel"),
             ("Obras", "Cronograma real × previsto e medições.", "obras_lista"),
             ("Tarefas", "Delegação com dono, prazo e timer.", "tarefas_lista"),
             ("Agenda", "Reuniões, visitas e prazos.", "agenda"),
         ]),
-        ("Gestão", [
+        ("Gestão", "gestao", [
             ("Financeiro", "Entradas, saídas, saldos e margem.", "financeiro_painel"),
             ("Precificação", "Hora técnica a partir dos custos.", "precificacao"),
             ("Regulatório", "ART, RRT e CAU com alerta de vencimento.", "regulatorio_lista"),

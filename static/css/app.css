@@ -522,3 +522,103 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .modulo-card--ativo .modulo-head { align-items: center; }
 .modulo-seta { color: var(--ds-text-400); font-size: 1.1rem; transition: transform 180ms ease, color 180ms ease; }
 .modulo-card--ativo:hover .modulo-seta { color: var(--ds-blue); transform: translateX(3px); }
+
+/* =================================================================
+   REVISÃO — mais cor e personalidade, menos "caixa dentro de caixa",
+   espaçamentos calibrados. (Bloco final: vence os anteriores.)
+   ================================================================= */
+
+:root {
+    /* Paleta por área — dá cor e ajuda a orientação */
+    --arq-blue: #2f6cae;   --arq-blue-soft: #eaf1f9;
+    --arq-green: #1c6a53;  --arq-green-soft: #e6f1ec;
+    --arq-amber: #b0721a;  --arq-amber-soft: #f8efdf;
+    --arq-violet: #7a52c8; --arq-violet-soft: #efeafa;
+    --arq-clay: #c05f3c;   --arq-clay-soft: #f8ebe4;
+}
+
+/* ---- Densidade: cartões e páginas mais respirados, sem excesso ---- */
+.ds-card { padding: var(--ds-space-6); }
+.page { gap: var(--ds-space-6); }
+.detalhe-grid, .ht-grid { gap: var(--ds-space-6); }
+
+/* ---- Menos caixas: inputs "preenchidos", sem contorno de caixa ---- */
+.form-card input, .form-card select, .form-card textarea,
+.inline-add input, .inline-add select, .inline-add textarea,
+.avanco-form input {
+    background: var(--ds-panel);
+    border: 1px solid transparent;
+    border-radius: 0.6rem;
+}
+.form-card input:focus, .form-card select:focus, .form-card textarea:focus,
+.inline-add input:focus, .inline-add select:focus, .inline-add textarea:focus,
+.avanco-form input:focus {
+    background: var(--ds-surface);
+    border-color: var(--ds-blue-light);
+    box-shadow: var(--ds-focus-ring);
+    outline: none;
+}
+/* a "linha de adicionar" vira uma faixa, não uma fileira de caixinhas */
+.inline-add { background: var(--ds-panel); border-radius: var(--ds-radius-md); padding: 0.5rem; gap: 0.4rem; }
+.inline-add input, .inline-add select { background: var(--ds-surface); }
+
+/* ---- Etapas viram linhas com marca lateral, não caixas ---- */
+.etapa {
+    border: 0; border-left: 3px solid var(--ds-line-dash);
+    border-radius: 0 0.5rem 0.5rem 0; background: var(--ds-panel);
+    padding: 0.55rem 0.8rem;
+}
+.etapa--andamento { border-left-color: var(--arq-blue); background: var(--arq-blue-soft); }
+.etapa--concluida { border-left-color: var(--arq-green); background: var(--arq-green-soft); }
+
+/* ---- Opções do diagnóstico: sem contorno, realce por preenchimento ---- */
+.diag-opcao { border: 1px solid transparent; background: var(--ds-panel); }
+.diag-opcao:hover { border-color: transparent; background: var(--arq-green-soft); }
+.diag-opcao:has(input:checked) { border-color: var(--ds-blue); background: var(--arq-green-soft); }
+
+/* ---- Alertas dentro de cartão: viram avisos com marca lateral ---- */
+.desvio-alerta, .visita-pendencia {
+    border: 0; border-left: 3px solid var(--ds-danger);
+    border-radius: 0 0.5rem 0.5rem 0;
+}
+.visita-pendencia { background: var(--ds-danger-soft); padding: 0.5rem 0.7rem; }
+
+/* =================================================================
+   COR POR ÁREA — barra lateral, painel e seções
+   ================================================================= */
+/* Rótulos de grupo na lateral, com ponto colorido */
+.nav-label { display: flex; align-items: center; gap: 0.45rem; }
+.nav-label::before { content: ""; width: 0.45rem; height: 0.45rem; border-radius: 2px; background: var(--ds-text-400); }
+.nav-group--comercial .nav-label { color: var(--arq-blue); }
+.nav-group--comercial .nav-label::before { background: var(--arq-blue); }
+.nav-group--producao .nav-label { color: var(--arq-green); }
+.nav-group--producao .nav-label::before { background: var(--arq-green); }
+.nav-group--gestao .nav-label { color: var(--arq-amber); }
+.nav-group--gestao .nav-label::before { background: var(--arq-amber); }
+
+/* Hero do painel — bloco escuro com brilho, quebra a monotonia branca */
+.dash-hero { position: relative; overflow: hidden; padding: var(--ds-space-8); border-radius: var(--ds-radius-xl); background: var(--ds-ink); color: var(--ds-on-dark); margin-bottom: var(--ds-space-2); }
+.dash-hero .ds-glow { top: -8rem; right: -6rem; left: auto; background: rgba(28,106,83,0.55); }
+.dash-hero-in { position: relative; z-index: 2; }
+.dash-hero .ds-kicker { color: var(--arq-green); }
+.dash-hero h1 { color: #fff; margin: 0.2rem 0 0.4rem; }
+.dash-hero p { color: var(--ds-on-dark-mute); max-width: 40rem; margin: 0; }
+
+/* KPIs coloridos por tipo — faixa superior + rótulo na cor */
+.kpi { border-top: 3px solid var(--ds-line); }
+.kpi-label::before { content: ""; display: inline-block; width: 0.5rem; height: 0.5rem; border-radius: 2px; margin-right: 0.45rem; vertical-align: middle; background: currentColor; }
+.kpi--blue { border-top-color: var(--arq-blue); } .kpi--blue .kpi-label { color: var(--arq-blue); }
+.kpi--green { border-top-color: var(--arq-green); } .kpi--green .kpi-label { color: var(--arq-green); }
+.kpi--violet { border-top-color: var(--arq-violet); } .kpi--violet .kpi-label { color: var(--arq-violet); }
+.kpi--amber { border-top-color: var(--arq-amber); } .kpi--amber .kpi-label { color: var(--arq-amber); }
+.kpi--alert { border-top-color: var(--ds-danger); } .kpi--alert .kpi-label { color: var(--ds-danger); }
+
+/* Seções do painel + cartões coloridos por área */
+.dash-section--comercial { --sec: var(--arq-blue); }
+.dash-section--producao { --sec: var(--arq-green); }
+.dash-section--gestao { --sec: var(--arq-amber); }
+.dash-section-head { color: var(--sec, var(--ds-text-700)); }
+.dash-section-head::after { background: linear-gradient(var(--sec), var(--sec)) center / 100% 1px no-repeat, linear-gradient(var(--sec), var(--sec)) right center / 1px 7px no-repeat; opacity: 0.35; }
+.dash-section .modulo-card--ativo { border-left: 3px solid var(--sec); }
+.dash-section .modulo-seta { color: var(--sec); }
+.dash-section .modulo-card--ativo:hover { border-color: var(--sec); box-shadow: 0 12px 30px color-mix(in srgb, var(--sec) 16%, transparent); }
