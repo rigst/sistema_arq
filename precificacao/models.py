@@ -19,6 +19,11 @@ class ConfiguracaoPrecificacao(EmpresaModel):
         max_digits=5, decimal_places=2, default=Decimal("20.00"),
         help_text="Reserva do escritório (impostos, reinvestimento, imprevistos).",
     )
+    hora_tecnica_manual = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="Se preenchida, é a hora técnica-base cobrada (sobrepõe o cálculo por custos). "
+        "O valor por custos continua sendo o piso usado no cálculo de margem.",
+    )
 
     class Meta:
         verbose_name = "configuração de precificação"
@@ -26,6 +31,27 @@ class ConfiguracaoPrecificacao(EmpresaModel):
 
     def __str__(self):
         return f"Precificação ({self.horas_uteis_mes} h/mês)"
+
+
+class FatorPrecificacao(EmpresaModel):
+    """Variável de projeto que ajusta a hora técnica cobrada (ex.: urgência +30%,
+    alta complexidade +25%, cliente recorrente -10%). Percentual pode ser negativo."""
+
+    nome = models.CharField(max_length=80)
+    percentual = models.DecimalField(
+        max_digits=6, decimal_places=2,
+        help_text="Ajuste sobre a hora técnica-base, em %. Aceita valores negativos.",
+    )
+    ativo = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["-percentual", "nome"]
+        verbose_name = "fator de precificação"
+        verbose_name_plural = "fatores de precificação"
+
+    def __str__(self):
+        sinal = "+" if self.percentual >= 0 else ""
+        return f"{self.nome} ({sinal}{self.percentual}%)"
 
 
 class CustoFixo(EmpresaModel, Rastreavel):

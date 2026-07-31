@@ -21,6 +21,10 @@ class Proposta(EmpresaModel, Rastreavel):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="rascunho")
     validade = models.DateField(null=True, blank=True)
     observacoes = models.TextField(blank=True)
+    # Fatores de projeto aplicados para chegar à hora técnica desta proposta.
+    fatores = models.ManyToManyField(
+        "precificacao.FatorPrecificacao", blank=True, related_name="propostas"
+    )
     # Projeto gerado ao aprovar (elo da jornada Proposta → Projeto).
     projeto_gerado = models.OneToOneField(
         "projetos.Projeto", on_delete=models.SET_NULL, null=True, blank=True, related_name="proposta_origem"

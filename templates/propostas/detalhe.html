@@ -19,8 +19,36 @@
         {% endif %}
     </header>
 
+    {% if not proposta.projeto_gerado %}
+    <div class="ds-card">
+        <h3 class="ds-display">Hora técnica desta proposta</h3>
+        <p class="page-sub">Hora-base do escritório: <strong>R$ {{ base }}</strong>. Escolha um valor manual ou aplique os fatores do projeto.</p>
+        <form method="post" action="{% url 'proposta_hora_tecnica' proposta.pk %}" class="ht-proposta-form">
+            {% csrf_token %}
+            {% if fatores %}
+            <div class="fatores-lista">
+                {% for f in fatores %}
+                <label class="fator-check">
+                    <input type="checkbox" name="fatores" value="{{ f.pk }}" {% if f.pk in fatores_selecionados %}checked{% endif %}>
+                    <span>{{ f.nome }} <em>{% if f.percentual >= 0 %}+{% endif %}{{ f.percentual }}%</em></span>
+                </label>
+                {% endfor %}
+            </div>
+            <p class="ht-hint">Deixe o valor manual em branco para calcular a hora técnica a partir da base × fatores marcados.</p>
+            {% else %}
+            <p class="ht-hint">Cadastre fatores em <a href="{% url 'precificacao' %}">Precificação</a> para ajustar por variáveis do projeto, ou informe um valor manual.</p>
+            {% endif %}
+            <div class="inline-add">
+                <input type="text" name="valor_manual" placeholder="valor manual (opcional), ex.: 150,00">
+                <button class="ds-btn ds-btn--solid" type="submit">Aplicar hora técnica</button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
     <div class="ds-card">
         <h3 class="ds-display">Ambientes / etapas</h3>
+        <p class="page-sub">Precificados com a hora técnica desta proposta: <strong>R$ {{ proposta.hora_tecnica_aplicada }}</strong>.</p>
         <form method="post" action="{% url 'proposta_add_item' proposta.pk %}" class="inline-add">
             {% csrf_token %}
             {{ form_item.descricao }}

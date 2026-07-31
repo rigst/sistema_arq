@@ -272,3 +272,12 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .modulo-card--ativo { text-decoration: none; color: inherit; display: block; transition: box-shadow 300ms ease, transform 200ms ease; }
 .modulo-card--ativo:hover { box-shadow: var(--ds-shadow-card); transform: translateY(-2px); }
 .modulo-card--breve { opacity: 0.7; }
+
+/* Precificação — base/fatores */
+.ht-base { margin: 0.4rem 0 0; font-size: 0.9rem; color: var(--ds-text-500); }
+.ht-hint { font-size: 0.8rem; color: var(--ds-text-400); margin: 0.5rem 0; }
+.fatores-lista { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
+.fator-check { display: inline-flex; align-items: center; gap: 0.4rem; border: 1px solid var(--ds-line); border-radius: var(--ds-radius-pill); padding: 0.35rem 0.75rem; font-size: 0.85rem; cursor: pointer; }
+.fator-check input { accent-color: var(--ds-blue); }
+.fator-check em { color: var(--ds-blue-dark); font-style: normal; font-weight: 600; }
+.ht-proposta-form .inline-add { margin-bottom: 0; }
