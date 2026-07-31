@@ -281,3 +281,17 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .fator-check input { accent-color: var(--ds-blue); }
 .fator-check em { color: var(--ds-blue-dark); font-style: normal; font-weight: 600; }
 .ht-proposta-form .inline-add { margin-bottom: 0; }
+
+/* Fase 2 — briefing, contratos, agenda */
+.page-head-actions { display: flex; gap: 0.5rem; }
+.form-block { display: block; font-size: 0.85rem; color: var(--ds-text-700); font-weight: 500; margin-bottom: 0.75rem; }
+.form-block input, .form-block textarea, .form-block select { margin-top: 0.3rem; }
+.agenda-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+.agenda-lista li { display: flex; gap: var(--ds-space-4); align-items: flex-start; padding-bottom: 0.75rem; border-bottom: 1px solid var(--ds-line); }
+.agenda-quando { display: flex; flex-direction: column; align-items: center; min-width: 3rem; }
+.agenda-quando strong { font-family: var(--ds-font-display); font-size: 1.1rem; }
+.agenda-quando span { font-size: 0.8rem; color: var(--ds-text-400); }
+.agenda-info { flex: 1; }
+.agenda-info strong { margin-right: 0.5rem; }
+.agenda-info p { margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--ds-text-500); }
+.agenda-lista--passados li { opacity: 0.65; }

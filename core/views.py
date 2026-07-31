@@ -33,9 +33,10 @@ def dashboard(request):
         ("Projetos e etapas", "Painel com etapa, pendências e margem.", "projetos_painel", True),
         ("Tarefas e horas", "Delegação com dono, prazo e timer.", "tarefas_lista", True),
         ("Financeiro", "Entradas, saídas, saldos e margem por projeto.", "financeiro_painel", True),
-        ("Contratos e briefing", "Documentos e escopo por projeto.", None, False),
-        ("Agenda", "Reuniões e visitas vinculadas.", None, False),
+        ("Contratos", "Parcelas no financeiro, aditivos e documentos.", "contratos_lista", True),
+        ("Agenda", "Reuniões, visitas e prazos vinculados.", "agenda", True),
         ("Obras", "Visitas, avanço e medições.", None, False),
+        ("Regulatório", "ART, RRT e CAU.", None, False),
     ]
     return render(
         request,

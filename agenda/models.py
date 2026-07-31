@@ -1,0 +1,35 @@
+from django.db import models
+
+from core.models import EmpresaModel, Rastreavel
+from crm.models import Cliente
+from projetos.models import Projeto
+
+
+class Compromisso(EmpresaModel, Rastreavel):
+    TIPO_CHOICES = [
+        ("reuniao", "Reunião"),
+        ("visita", "Visita a obra"),
+        ("prazo", "Prazo/entrega"),
+        ("outro", "Outro"),
+    ]
+
+    titulo = models.CharField(max_length=200)
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default="reuniao")
+    inicio = models.DateTimeField()
+    fim = models.DateTimeField(null=True, blank=True)
+    local = models.CharField(max_length=200, blank=True)
+    cliente = models.ForeignKey(
+        Cliente, on_delete=models.SET_NULL, null=True, blank=True, related_name="compromissos"
+    )
+    projeto = models.ForeignKey(
+        Projeto, on_delete=models.SET_NULL, null=True, blank=True, related_name="compromissos"
+    )
+    observacoes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["inicio"]
+        verbose_name = "compromisso"
+        verbose_name_plural = "compromissos"
+
+    def __str__(self):
+        return f"{self.titulo} — {self.inicio:%d/%m %H:%M}"

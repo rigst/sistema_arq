@@ -4,7 +4,7 @@ Sistema de gestão para escritórios de arquitetura e design de interiores.
 Django + HTMX + CSS/HTML/JS puro (design system `stolben-ui`), PostgreSQL e
 Celery/Redis. Ver o planejamento completo em [`PLANEJAMENTO.md`](PLANEJAMENTO.md).
 
-## Estado atual: Fase 1 concluída (núcleo de valor)
+## Estado atual: Fase 2 concluída (contratos, briefing e agenda)
 
 **Fundação (Fase 0):**
 - Projeto Django (`config`) com PostgreSQL (fallback SQLite em dev) e Celery/Redis
@@ -23,7 +23,18 @@ Celery/Redis. Ver o planejamento completo em [`PLANEJAMENTO.md`](PLANEJAMENTO.md
 - `tarefas` — tarefas com dono/prazo/critério + **timer** de horas por projeto.
 - `financeiro` — contas, lançamentos, saldos, resumo mensal e **margem por projeto**.
 
-A cadeia de valor está fechada: hora lançada → custo do projeto → margem no financeiro.
+**Precificação — hora técnica escolhível:** o custo da hora (custos÷horas úteis) é o piso
+usado na margem; a hora-base cobrada pode ser manual; e cada proposta ajusta sua hora técnica
+por **fatores de projeto** (urgência, complexidade, etc.) ou por valor livre.
+
+**Módulos de negócio (Fase 2):**
+- `contratos` — contrato por projeto, **parcelas que viram contas a receber** no financeiro
+  (marcar paga → lançamento realizado), aditivos/alterações de escopo (registro) e documentos.
+- `briefing` — formulário de 5 blocos + programa de necessidades, vinculado ao projeto.
+- `agenda` — reuniões, visitas e prazos ligados a cliente/projeto.
+
+A cadeia de valor está fechada: hora lançada → custo do projeto → margem no financeiro;
+e proposta → contrato → parcelas → financeiro.
 
 ## Rodar em desenvolvimento
 

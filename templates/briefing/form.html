@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Briefing — {{ projeto.nome }}{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head">
+        <span class="ds-kicker">Briefing</span>
+        <h1 class="ds-h2 ds-display">{{ projeto.nome }}</h1>
+        <p class="page-sub">O que o cliente pediu, o programa de necessidades e as restrições — escritos e vinculados ao projeto (base NBR 13532). <a href="{% url 'projeto_detalhe' projeto.pk %}">Voltar ao projeto</a>.</p>
+    </header>
+
+    <div class="detalhe-grid">
+        <form method="post" class="ds-card form-card">
+            {% csrf_token %}
+            <h3 class="ds-display">Blocos do briefing</h3>
+            <label class="form-block">Perfil e rotina do usuário {{ form.perfil_usuarios }}</label>
+            <label class="form-block">Orçamento previsto {{ form.orcamento_previsto }}</label>
+            <label class="form-block">Prazo desejado {{ form.prazo_desejado }}</label>
+            <label class="form-block">Restrições do terreno / legais {{ form.restricoes }}</label>
+            <label class="form-block">Referências {{ form.referencias }}</label>
+            <label class="form-block">Estilo / prioridades {{ form.estilo }}</label>
+            <button class="ds-btn ds-btn--solid" type="submit">Salvar briefing</button>
+        </form>
+
+        <div class="ds-card">
+            <h3 class="ds-display">Programa de necessidades</h3>
+            <form method="post" action="{% url 'briefing_add_ambiente' projeto.pk %}" class="inline-add">
+                {% csrf_token %}
+                {{ form_ambiente.nome }}
+                {{ form_ambiente.area_aprox }}
+                {{ form_ambiente.uso }}
+                <button class="ds-btn ds-btn--solid" type="submit">Adicionar</button>
+            </form>
+            <table class="data-table">
+                <thead><tr><th>Ambiente</th><th>Área</th><th>Uso</th><th></th></tr></thead>
+                <tbody>
+                {% for a in ambientes %}
+                    <tr>
+                        <td>{{ a.nome }}</td>
+                        <td>{% if a.area_aprox %}{{ a.area_aprox }} m²{% else %}—{% endif %}</td>
+                        <td>{{ a.uso|default:"—" }}</td>
+                        <td>
+                            <form method="post" action="{% url 'briefing_remove_ambiente' a.pk %}">
+                                {% csrf_token %}
+                                <button class="app-link-btn" type="submit">remover</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="4" class="data-empty">Nenhum ambiente listado.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Agenda{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head">
+        <span class="ds-kicker">Agenda</span>
+        <h1 class="ds-h2 ds-display">Reuniões, visitas e prazos</h1>
+        <p class="page-sub">Compromissos do escritório vinculados a clientes e projetos, fora da agenda pessoal.</p>
+    </header>
+
+    <div class="detalhe-grid">
+        <div class="ds-card">
+            <h3 class="ds-display">Próximos</h3>
+            <ul class="agenda-lista">
+                {% for c in proximos %}
+                <li>
+                    <div class="agenda-quando">
+                        <strong>{{ c.inicio|date:"d/m" }}</strong>
+                        <span>{{ c.inicio|date:"H:i" }}</span>
+                    </div>
+                    <div class="agenda-info">
+                        <strong>{{ c.titulo }}</strong>
+                        <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ c.get_tipo_display }}</span>
+                        <p>
+                            {% if c.projeto %}{{ c.projeto.nome }}{% endif %}
+                            {% if c.cliente %} · {{ c.cliente.nome }}{% endif %}
+                            {% if c.local %} · {{ c.local }}{% endif %}
+                        </p>
+                    </div>
+                    <form method="post" action="{% url 'agenda_remover' c.pk %}">
+                        {% csrf_token %}
+                        <button class="app-link-btn" type="submit">remover</button>
+                    </form>
+                </li>
+                {% empty %}
+                <li class="data-empty">Nenhum compromisso futuro.</li>
+                {% endfor %}
+            </ul>
+
+            {% if passados %}
+            <h3 class="ds-display" style="margin-top:1.5rem">Anteriores</h3>
+            <ul class="agenda-lista agenda-lista--passados">
+                {% for c in passados %}
+                <li>
+                    <div class="agenda-quando"><strong>{{ c.inicio|date:"d/m" }}</strong><span>{{ c.inicio|date:"H:i" }}</span></div>
+                    <div class="agenda-info"><strong>{{ c.titulo }}</strong><p>{{ c.get_tipo_display }}{% if c.projeto %} · {{ c.projeto.nome }}{% endif %}</p></div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+
+        <div class="ds-card form-card">
+            <h3 class="ds-display">Novo compromisso</h3>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button class="ds-btn ds-btn--solid" type="submit">Agendar</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

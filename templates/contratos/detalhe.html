@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}{{ contrato.titulo }}{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head page-head--row">
+        <div>
+            <span class="ds-kicker">Contrato{% if contrato.numero %} · {{ contrato.numero }}{% endif %}</span>
+            <h1 class="ds-h2 ds-display">{{ contrato.titulo }}</h1>
+            <p class="page-sub">
+                <a href="{% url 'projeto_detalhe' contrato.projeto.pk %}">{{ contrato.projeto.nome }}</a>
+                · {{ contrato.cliente.nome }}
+                · <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ contrato.get_status_display }}</span>
+                · R$ {{ contrato.valor_total }}
+            </p>
+        </div>
+        <a class="ds-btn" href="{% url 'contrato_editar' contrato.pk %}">Editar</a>
+    </header>
+
+    <div class="ds-card">
+        <h3 class="ds-display">Parcelas</h3>
+        {% if not parcelas %}
+        <form method="post" action="{% url 'contrato_gerar_parcelas' contrato.pk %}" class="inline-add">
+            {% csrf_token %}
+            {{ form_parcelas.quantidade }} {{ form_parcelas.primeira_data }} {{ form_parcelas.intervalo_dias }}
+            <button class="ds-btn ds-btn--solid" type="submit">Gerar parcelas</button>
+        </form>
+        <p class="ht-hint">As parcelas são divididas a partir do valor total do contrato.</p>
+        {% else %}
+        <table class="data-table">
+            <thead><tr><th>#</th><th>Vencimento</th><th>Valor</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            {% for p in parcelas %}
+                <tr>
+                    <td>{{ p.numero }}</td>
+                    <td>{{ p.vencimento|date:"d/m/Y" }}</td>
+                    <td>R$ {{ p.valor }}</td>
+                    <td>{% if p.paga %}<span class="valor--entrada">paga</span>{% else %}pendente{% endif %}</td>
+                    <td>
+                        <form method="post" action="{% url 'parcela_alternar' p.pk %}">
+                            {% csrf_token %}
+                            <button class="app-link-btn" type="submit">{% if p.paga %}marcar pendente{% else %}marcar paga{% endif %}</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% if not contrato.parcelas_lancadas %}
+        <form method="post" action="{% url 'contrato_lancar' contrato.pk %}">
+            {% csrf_token %}
+            <button class="ds-btn ds-btn--solid" type="submit">Lançar no contas a receber</button>
+            {% if not tem_conta %}<span class="ht-hint">Crie uma conta no Financeiro antes.</span>{% endif %}
+        </form>
+        {% else %}
+        <p class="ht-hint">Parcelas lançadas no financeiro ✓ (marcar como paga move o lançamento para “realizado”).</p>
+        {% endif %}
+        {% endif %}
+    </div>
+
+    <div class="detalhe-grid">
+        <div class="ds-card">
+            <h3 class="ds-display">Alterações de escopo</h3>
+            <form method="post" action="{% url 'contrato_alteracao' contrato.pk %}" class="inline-add">
+                {% csrf_token %}
+                {{ form_alteracao.tipo }}
+                {{ form_alteracao.descricao }}
+                {{ form_alteracao.valor_delta }}
+                <button class="ds-btn ds-btn--solid" type="submit">Registrar</button>
+            </form>
+            <ul class="timeline">
+                {% for a in alteracoes %}
+                <li>
+                    <span class="timeline-tipo">{{ a.get_tipo_display }}</span>
+                    <span class="timeline-data">{{ a.criado_em|date:"d/m/Y" }}{% if a.valor_delta %} · R$ {{ a.valor_delta }}{% endif %}</span>
+                    <p>{{ a.descricao|linebreaksbr }}</p>
+                </li>
+                {% empty %}
+                <li class="data-empty">Nenhum registro. Toda mudança pós-assinatura deve virar registro aqui.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="ds-card">
+            <h3 class="ds-display">Documentos</h3>
+            <form method="post" action="{% url 'contrato_documento' contrato.pk %}" enctype="multipart/form-data" class="inline-add">
+                {% csrf_token %}
+                {{ form_documento.titulo }}
+                {{ form_documento.arquivo }}
+                <button class="ds-btn ds-btn--solid" type="submit">Anexar</button>
+            </form>
+            <ul class="pendencias">
+                {% for d in documentos %}
+                <li><a href="{{ d.arquivo.url }}">{{ d.titulo }}</a><span class="timeline-data">{{ d.criado_em|date:"d/m/y" }}</span></li>
+                {% empty %}
+                <li class="data-empty">Nenhum documento anexado.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</section>
+{% endblock %}

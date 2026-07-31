@@ -12,7 +12,10 @@
                 · <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ projeto.get_status_display }}</span>
             </p>
         </div>
-        <a class="ds-btn" href="{% url 'projeto_editar' projeto.pk %}">Editar</a>
+        <div class="page-head-actions">
+            <a class="ds-btn" href="{% url 'briefing_projeto' projeto.pk %}">Briefing</a>
+            <a class="ds-btn" href="{% url 'projeto_editar' projeto.pk %}">Editar</a>
+        </div>
     </header>
 
     <div class="margem-strip ds-card">
