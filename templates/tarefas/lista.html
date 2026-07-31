@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Tarefas{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head">
+        <span class="ds-kicker">Tarefas e horas</span>
+        <h1 class="ds-h2 ds-display">Tarefas da equipe</h1>
+        <p class="page-sub">Cada tarefa com um dono, um prazo e um critério de pronto.</p>
+    </header>
+
+    <div class="ds-card timer-card">
+        {% if timer_ativo %}
+        <div class="timer-ativo">
+            <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>Cronômetro rodando</span>
+            <strong data-timer-start="{{ timer_ativo.inicio.isoformat }}">00:00:00</strong>
+            <span class="timer-alvo">{{ timer_ativo.tarefa.titulo|default:timer_ativo.descricao|default:"Sem tarefa" }}</span>
+            <form method="post" action="{% url 'timer_parar' %}">
+                {% csrf_token %}
+                <button class="ds-btn ds-btn--solid" type="submit">Parar</button>
+            </form>
+        </div>
+        {% else %}
+        <form method="post" action="{% url 'timer_iniciar' %}" class="inline-add">
+            {% csrf_token %}
+            <select name="tarefa">
+                <option value="">— tarefa (opcional) —</option>
+                {% for t in tarefas %}{% if t.status != "concluida" %}<option value="{{ t.pk }}">{{ t.titulo }}</option>{% endif %}{% endfor %}
+            </select>
+            <input type="text" name="descricao" placeholder="O que você vai fazer?">
+            <button class="ds-btn ds-btn--solid" type="submit">Iniciar cronômetro</button>
+        </form>
+        {% endif %}
+    </div>
+
+    <div class="detalhe-grid">
+        <div class="ds-card">
+            <h3 class="ds-display">Lista</h3>
+            <table class="data-table">
+                <thead><tr><th></th><th>Tarefa</th><th>Projeto</th><th>Responsável</th><th>Prazo</th></tr></thead>
+                <tbody>
+                {% for t in tarefas %}
+                    <tr class="{% if t.status == 'concluida' %}is-done{% endif %}">
+                        <td>
+                            <form method="post" action="{% url 'tarefa_concluir' t.pk %}">
+                                {% csrf_token %}
+                                <button class="check-btn" type="submit" title="alternar">{% if t.status == 'concluida' %}✓{% else %}○{% endif %}</button>
+                            </form>
+                        </td>
+                        <td>{{ t.titulo }}{% if t.sem_dono %} <span class="tag-alerta">sem dono</span>{% endif %}{% if t.atrasada %} <span class="tag-alerta">atrasada</span>{% endif %}</td>
+                        <td>{{ t.projeto.nome|default:"—" }}</td>
+                        <td>{{ t.responsavel|default:"—" }}</td>
+                        <td>{{ t.prazo|date:"d/m/y"|default:"—" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5" class="data-empty">Nenhuma tarefa ainda.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="ds-card form-card">
+            <h3 class="ds-display">Nova tarefa</h3>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button class="ds-btn ds-btn--solid" type="submit">Criar tarefa</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script nonce="{{ request.csp_nonce }}">
+(function () {
+    var el = document.querySelector("[data-timer-start]");
+    if (!el) return;
+    var inicio = new Date(el.getAttribute("data-timer-start")).getTime();
+    function tick() {
+        var s = Math.max(0, Math.floor((Date.now() - inicio) / 1000));
+        var h = String(Math.floor(s / 3600)).padStart(2, "0");
+        var m = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
+        var sec = String(s % 60).padStart(2, "0");
+        el.textContent = h + ":" + m + ":" + sec;
+    }
+    tick();
+    setInterval(tick, 1000);
+})();
+</script>
+{% endblock %}

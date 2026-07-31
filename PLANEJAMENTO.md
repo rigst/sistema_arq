@@ -1,7 +1,6 @@
-# Planejamento — Sistema de Gestão para Escritórios de Arquitetura (réplica do COP)
+# Planejamento — Sistema de Gestão para Escritórios de Arquitetura
 
-> Documento de planejamento técnico e funcional para replicar, com Django, o sistema
-> divulgado em https://cop.arq.br/. Baseado na análise integral do site (home, guias de
+> Baseado na análise integral de site (home, guias de
 > gestão, comparativos, FAQ, páginas de precificação, obras, briefing e diagnóstico).
 > **Escopo desta entrega: apenas o planejamento.** Nenhum código foi implementado.
 
@@ -14,7 +13,7 @@
   margem, alertas, limpeza de visitantes).
 - **Sem billing.** App **gratuito**, com **login e senha** e **acesso visitante que se
   autoexclui** (mesmo padrão dos seus outros apps — ver §3.3). Todas as features são
-  liberadas para todos; a tabela de planos do COP (§2.15) vira só referência de escopo.
+  liberadas para todos; a tabela de planos vira só referência de escopo.
 - **Convenções herdadas do `sistema_orcamentos`:** Django 6.x / Python 3.14, multiempresa
   via `Empresa`↔`auth.Group`, `Usuario(AbstractUser)` com campo `perfil`, middleware de
   empresa ativa, CSP/security headers com nonce, auditoria.
@@ -144,7 +143,7 @@ Consolidação de tudo que o site promete, para servir de checklist de cobertura
 - Responsivo (computador e celular).
 - Multiusuário com credenciais individuais (login/senha) + acesso visitante autoexcluível.
 
-### 2.15 Planos do COP — apenas referência de escopo (NÃO haverá cobrança)
+### 2.15 Planos — apenas referência de escopo (NÃO haverá cobrança)
 Como o app será gratuito, **todas** as features abaixo são construídas para todos os usuários.
 A tabela serve só para conferir que nada do produto original ficou de fora.
 

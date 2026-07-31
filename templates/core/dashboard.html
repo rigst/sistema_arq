@@ -14,14 +14,24 @@
     </header>
 
     <div class="modulo-grid">
-        {% for nome, descricao, fase in modulos %}
-        <article class="modulo-card ds-card">
+        {% for nome, descricao, url_name, ativo in modulos %}
+        {% if ativo %}
+        <a class="modulo-card ds-card modulo-card--ativo" href="{% url url_name %}">
             <div class="modulo-head">
                 <h3 class="ds-display">{{ nome }}</h3>
-                <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ fase }}</span>
+                <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>Disponível</span>
+            </div>
+            <p>{{ descricao }}</p>
+        </a>
+        {% else %}
+        <article class="modulo-card ds-card modulo-card--breve">
+            <div class="modulo-head">
+                <h3 class="ds-display">{{ nome }}</h3>
+                <span class="ds-badge ds-badge--warn"><span class="ds-dot"></span>Em breve</span>
             </div>
             <p>{{ descricao }}</p>
         </article>
+        {% endif %}
         {% endfor %}
     </div>
 </section>

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Nova proposta{% endblock %}
+
+{% block content %}
+<section class="page page--narrow">
+    <header class="page-head">
+        <span class="ds-kicker">Propostas</span>
+        <h1 class="ds-h2 ds-display">Nova proposta</h1>
+    </header>
+    <form method="post" class="ds-card form-card">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="form-actions">
+            <a class="ds-btn" href="{% url 'propostas_lista' %}">Cancelar</a>
+            <button class="ds-btn ds-btn--solid" type="submit">Criar</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

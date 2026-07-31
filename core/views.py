@@ -27,15 +27,15 @@ def dashboard(request):
     empresa ativa; os módulos (projetos, financeiro, etc.) entram nas próximas fases."""
     empresa = obter_empresa_ativa_usuario(request.user)
     modulos = [
-        ("CRM e clientes", "Contatos, funil e histórico de cada cliente.", "Fase 1"),
-        ("Precificação", "Hora técnica a partir dos custos fixos.", "Fase 1"),
-        ("Propostas", "Gerador de proposta com identidade do escritório.", "Fase 1"),
-        ("Projetos e etapas", "Templates, painel e acompanhamento.", "Fase 1"),
-        ("Tarefas e horas", "Delegação com dono, prazo e timer.", "Fase 1"),
-        ("Financeiro", "Entradas, saídas e margem por projeto.", "Fase 1"),
-        ("Contratos e briefing", "Documentos e escopo por projeto.", "Fase 2"),
-        ("Agenda", "Reuniões e visitas vinculadas.", "Fase 2"),
-        ("Obras", "Visitas, avanço e medições.", "Fase 4"),
+        ("CRM e clientes", "Contatos, funil e histórico de cada cliente.", "crm_lista", True),
+        ("Precificação", "Hora técnica a partir dos custos fixos.", "precificacao", True),
+        ("Propostas", "Gerador de proposta que vira projeto ao aprovar.", "proposta_nova", True),
+        ("Projetos e etapas", "Painel com etapa, pendências e margem.", "projetos_painel", True),
+        ("Tarefas e horas", "Delegação com dono, prazo e timer.", "tarefas_lista", True),
+        ("Financeiro", "Entradas, saídas, saldos e margem por projeto.", "financeiro_painel", True),
+        ("Contratos e briefing", "Documentos e escopo por projeto.", None, False),
+        ("Agenda", "Reuniões e visitas vinculadas.", None, False),
+        ("Obras", "Visitas, avanço e medições.", None, False),
     ]
     return render(
         request,

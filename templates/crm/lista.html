@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Clientes{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head page-head--row">
+        <div>
+            <span class="ds-kicker">CRM</span>
+            <h1 class="ds-h2 ds-display">Clientes</h1>
+        </div>
+        <a class="ds-btn ds-btn--solid" href="{% url 'crm_novo' %}">Novo cliente</a>
+    </header>
+
+    <div class="filtro-chips">
+        <a class="chip {% if not fase_ativa %}is-active{% endif %}" href="{% url 'crm_lista' %}">Todos</a>
+        {% for valor, rotulo in fases %}
+        <a class="chip {% if fase_ativa == valor %}is-active{% endif %}" href="?fase={{ valor }}">{{ rotulo }}</a>
+        {% endfor %}
+    </div>
+
+    <div class="ds-card">
+        <table class="data-table">
+            <thead><tr><th>Nome</th><th>Fase</th><th>Origem</th><th>Contato</th></tr></thead>
+            <tbody>
+            {% for cliente in clientes %}
+                <tr>
+                    <td><a href="{% url 'crm_detalhe' cliente.pk %}">{{ cliente.nome }}</a></td>
+                    <td><span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ cliente.get_fase_display }}</span></td>
+                    <td>{{ cliente.get_origem_display }}</td>
+                    <td>{{ cliente.email }}{% if cliente.telefone %} · {{ cliente.telefone }}{% endif %}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4" class="data-empty">Nenhum cliente cadastrado ainda.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

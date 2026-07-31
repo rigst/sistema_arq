@@ -1,18 +1,29 @@
 # Sistema ARQ
 
-Sistema de gestão para escritórios de arquitetura e design de interiores (réplica funcional
-do COP). Django + HTMX + CSS/HTML/JS puro (design system `stolben-ui`), PostgreSQL e
+Sistema de gestão para escritórios de arquitetura e design de interiores.
+Django + HTMX + CSS/HTML/JS puro (design system `stolben-ui`), PostgreSQL e
 Celery/Redis. Ver o planejamento completo em [`PLANEJAMENTO.md`](PLANEJAMENTO.md).
 
-## Estado atual: Fase 0 (fundação)
+## Estado atual: Fase 1 concluída (núcleo de valor)
 
+**Fundação (Fase 0):**
 - Projeto Django (`config`) com PostgreSQL (fallback SQLite em dev) e Celery/Redis
   (fallback eager em dev).
 - App `core`: tenant `Empresa`↔`auth.Group`, `tenancy`, middleware de empresa ativa,
-  CSP/security headers, mixin `Rastreavel` e registro central de limpeza de visitante.
+  CSP/security headers, mixins `EmpresaModel`/`Rastreavel` e registro central de limpeza
+  de visitante (`core.visitante_cleanup`).
 - App `usuarios`: `Usuario` com `perfil`, login/senha e **acesso visitante autoexcluível**
   (rate limit, TTL, limpeza no logout via signal e via task do Celery Beat).
-- Layout base (topbar, login, painel) responsivo.
+
+**Módulos de negócio (Fase 1):**
+- `crm` — clientes, funil e timeline de interações.
+- `precificacao` — custos fixos → **hora técnica**; serviço de precificação de etapa.
+- `propostas` — proposta com itens precificados; **aprovar gera o projeto** (com etapas).
+- `projetos` — painel (etapa, pendências, tempo parado, margem), etapas e pendências.
+- `tarefas` — tarefas com dono/prazo/critério + **timer** de horas por projeto.
+- `financeiro` — contas, lançamentos, saldos, resumo mensal e **margem por projeto**.
+
+A cadeia de valor está fechada: hora lançada → custo do projeto → margem no financeiro.
 
 ## Rodar em desenvolvimento
 

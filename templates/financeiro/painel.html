@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Financeiro{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head">
+        <span class="ds-kicker">Financeiro</span>
+        <h1 class="ds-h2 ds-display">Entradas, saídas e saldos</h1>
+        <p class="page-sub">Fechamento do mês {{ resumo.mes }}/{{ resumo.ano }}: entradas R$ {{ resumo.entradas }} · saídas R$ {{ resumo.saidas }} · saldo <strong>R$ {{ resumo.saldo }}</strong>.</p>
+    </header>
+
+    <div class="saldo-strip">
+        {% for s in saldos %}
+        <div class="ds-card saldo-card">
+            <span class="ds-kicker">{{ s.conta.nome }}{% if s.conta.pessoal %} · pessoal{% endif %}</span>
+            <strong>R$ {{ s.saldo }}</strong>
+        </div>
+        {% empty %}
+        <form method="post" action="{% url 'financeiro_nova_conta' %}" class="ds-card inline-add">
+            {% csrf_token %}
+            <p>Crie a primeira conta para começar:</p>
+            {{ form_conta.nome }}
+            {{ form_conta.saldo_inicial }}
+            <button class="ds-btn ds-btn--solid" type="submit">Criar conta</button>
+        </form>
+        {% endfor %}
+    </div>
+
+    {% if tem_conta %}
+    <div class="detalhe-grid">
+        <div class="ds-card">
+            <h3 class="ds-display">Lançamentos</h3>
+            <table class="data-table">
+                <thead><tr><th>Data</th><th>Descrição</th><th>Projeto</th><th>Tipo</th><th>Valor</th></tr></thead>
+                <tbody>
+                {% for l in lancamentos %}
+                    <tr>
+                        <td>{{ l.data|date:"d/m/y" }}</td>
+                        <td>{{ l.descricao }}</td>
+                        <td>{{ l.projeto.nome|default:"—" }}</td>
+                        <td>{{ l.get_tipo_display }}</td>
+                        <td class="valor valor--{{ l.tipo }}">R$ {{ l.valor }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5" class="data-empty">Nenhum lançamento ainda.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="ds-card form-card">
+            <h3 class="ds-display">Novo lançamento</h3>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button class="ds-btn ds-btn--solid" type="submit">Registrar</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

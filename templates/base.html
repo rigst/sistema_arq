@@ -21,9 +21,17 @@
     {% if user.is_authenticated %}
     <header class="app-topbar">
         <a class="app-brand" href="{% url 'dashboard' %}">Sistema<span>ARQ</span></a>
+        <nav class="app-nav">
+            <a href="{% url 'dashboard' %}">Painel</a>
+            <a href="{% url 'crm_lista' %}">Clientes</a>
+            <a href="{% url 'propostas_lista' %}">Propostas</a>
+            <a href="{% url 'projetos_painel' %}">Projetos</a>
+            <a href="{% url 'tarefas_lista' %}">Tarefas</a>
+            <a href="{% url 'financeiro_painel' %}">Financeiro</a>
+            <a href="{% url 'precificacao' %}">Precificação</a>
+        </nav>
         <div class="app-topbar-right">
             {% if user.nome_empresa %}<span class="app-chip">{{ user.nome_empresa }}</span>{% endif %}
-            <span class="app-user">{{ user }}</span>
             <form method="post" action="{% url 'logout' %}" class="app-inline-form">
                 {% csrf_token %}
                 <button type="submit" class="app-link-btn">Sair</button>

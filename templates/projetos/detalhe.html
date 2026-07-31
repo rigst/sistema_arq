@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{{ projeto.nome }}{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head page-head--row">
+        <div>
+            <span class="ds-kicker">Projeto · {{ projeto.get_tipo_display }}</span>
+            <h1 class="ds-h2 ds-display">{{ projeto.nome }}</h1>
+            <p class="page-sub">
+                <a href="{% url 'crm_detalhe' projeto.cliente.pk %}">{{ projeto.cliente.nome }}</a>
+                · <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ projeto.get_status_display }}</span>
+            </p>
+        </div>
+        <a class="ds-btn" href="{% url 'projeto_editar' projeto.pk %}">Editar</a>
+    </header>
+
+    <div class="margem-strip ds-card">
+        <div><span>Contratado</span><strong>R$ {{ projeto.valor_contratado }}</strong></div>
+        <div><span>Custo de horas</span><strong>R$ {{ margem.custo_horas }}</strong></div>
+        <div><span>Despesas</span><strong>R$ {{ margem.despesas }}</strong></div>
+        <div class="margem-final"><span>Margem</span><strong>R$ {{ margem.margem }} ({{ margem.margem_percent }}%)</strong></div>
+    </div>
+
+    <div class="detalhe-grid">
+        <div class="ds-card">
+            <h3 class="ds-display">Etapas</h3>
+            <ul class="etapas">
+                {% for etapa in etapas %}
+                <li class="etapa etapa--{{ etapa.status }}">
+                    <div>
+                        <strong>{{ etapa.ordem|add:1 }}. {{ etapa.nome }}</strong>
+                        <span class="etapa-status">{{ etapa.get_status_display }}{% if etapa.aprovada %} · aprovada{% endif %}</span>
+                    </div>
+                    {% if etapa.status != "concluida" %}
+                    <form method="post" action="{% url 'etapa_avancar' etapa.pk %}">
+                        {% csrf_token %}
+                        <button class="ds-btn" type="submit">{% if etapa.status == "pendente" %}Iniciar{% else %}Concluir{% endif %}</button>
+                    </form>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="ds-card">
+            <h3 class="ds-display">Pendências</h3>
+            <form method="post" action="{% url 'projeto_add_pendencia' projeto.pk %}" class="inline-add">
+                {% csrf_token %}
+                {{ form_pendencia.descricao }}
+                {{ form_pendencia.prazo }}
+                <button class="ds-btn ds-btn--solid" type="submit">Adicionar</button>
+            </form>
+            <ul class="pendencias">
+                {% for pend in pendencias %}
+                <li class="{% if pend.resolvida %}is-resolvida{% endif %}">
+                    <span>{{ pend.descricao }}{% if pend.prazo %} · {{ pend.prazo|date:"d/m/y" }}{% endif %}</span>
+                    {% if not pend.resolvida %}
+                    <form method="post" action="{% url 'pendencia_resolver' pend.pk %}">
+                        {% csrf_token %}
+                        <button class="app-link-btn" type="submit">resolver</button>
+                    </form>
+                    {% endif %}
+                </li>
+                {% empty %}
+                <li class="data-empty">Sem pendências.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</section>
+{% endblock %}

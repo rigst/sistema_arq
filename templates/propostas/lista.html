@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Propostas{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head page-head--row">
+        <div>
+            <span class="ds-kicker">Propostas</span>
+            <h1 class="ds-h2 ds-display">Propostas</h1>
+        </div>
+        <a class="ds-btn ds-btn--solid" href="{% url 'proposta_nova' %}">Nova proposta</a>
+    </header>
+
+    <div class="ds-card">
+        <table class="data-table">
+            <thead><tr><th>Título</th><th>Cliente</th><th>Status</th><th>Valor</th></tr></thead>
+            <tbody>
+            {% for p in propostas %}
+                <tr>
+                    <td><a href="{% url 'proposta_detalhe' p.pk %}">{{ p.titulo }}</a></td>
+                    <td>{{ p.cliente.nome }}</td>
+                    <td><span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ p.get_status_display }}</span></td>
+                    <td>R$ {{ p.valor_total }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4" class="data-empty">Nenhuma proposta ainda.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

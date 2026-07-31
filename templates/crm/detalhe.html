@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}{{ cliente.nome }}{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head page-head--row">
+        <div>
+            <span class="ds-kicker">Cliente</span>
+            <h1 class="ds-h2 ds-display">{{ cliente.nome }}</h1>
+            <p class="page-sub">
+                <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ cliente.get_fase_display }}</span>
+                · {{ cliente.get_origem_display }}
+            </p>
+        </div>
+        <a class="ds-btn" href="{% url 'crm_editar' cliente.pk %}">Editar</a>
+    </header>
+
+    <div class="detalhe-grid">
+        <div class="ds-card">
+            <h3 class="ds-display">Dados</h3>
+            <dl class="def-list">
+                <dt>E-mail</dt><dd>{{ cliente.email|default:"—" }}</dd>
+                <dt>Telefone</dt><dd>{{ cliente.telefone|default:"—" }}</dd>
+                <dt>Observações</dt><dd>{{ cliente.observacoes|default:"—"|linebreaksbr }}</dd>
+            </dl>
+        </div>
+
+        <div class="ds-card">
+            <h3 class="ds-display">Histórico</h3>
+            <form method="post" action="{% url 'crm_interacao' cliente.pk %}" class="inline-add">
+                {% csrf_token %}
+                {{ form_interacao.tipo }}
+                {{ form_interacao.descricao }}
+                <button class="ds-btn ds-btn--solid" type="submit">Registrar</button>
+            </form>
+            <ul class="timeline">
+                {% for i in interacoes %}
+                <li>
+                    <span class="timeline-tipo">{{ i.get_tipo_display }}</span>
+                    <span class="timeline-data">{{ i.criado_em|date:"d/m/Y H:i" }}</span>
+                    <p>{{ i.descricao|linebreaksbr }}</p>
+                </li>
+                {% empty %}
+                <li class="data-empty">Nenhuma interação registrada.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -28,6 +28,22 @@ class Empresa(models.Model):
         return self.nome
 
 
+class EmpresaModel(models.Model):
+    """Base para toda entidade de negócio: vincula ao tenant (grupo da empresa).
+    O CASCADE garante que, ao remover o grupo de um visitante, os dados vão junto
+    (a limpeza explícita em core.visitante_cleanup continua sendo a via principal)."""
+
+    empresa = models.ForeignKey(
+        "auth.Group",
+        on_delete=models.CASCADE,
+        related_name="+",
+        verbose_name="empresa",
+    )
+
+    class Meta:
+        abstract = True
+
+
 class Rastreavel(models.Model):
     """Mixin com o 'selo de origem' e trilha de criação. Toda entidade de negócio
     deve herdar deste mixin para suportar a rastreabilidade da jornada do dado

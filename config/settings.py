@@ -59,6 +59,14 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "core",
     "usuarios",
+    # Módulos de negócio. A ordem também define a ordem de limpeza de visitante:
+    # entidades com FK PROTECT (ex.: Cliente) devem vir depois de quem as referencia.
+    "precificacao",
+    "projetos",
+    "tarefas",
+    "propostas",
+    "financeiro",
+    "crm",
 ]
 
 MIDDLEWARE = [

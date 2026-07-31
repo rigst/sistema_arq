@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}{{ proposta.titulo }}{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head page-head--row">
+        <div>
+            <span class="ds-kicker">Proposta · hora técnica R$ {{ proposta.hora_tecnica_aplicada }}</span>
+            <h1 class="ds-h2 ds-display">{{ proposta.titulo }}</h1>
+            <p class="page-sub">{{ proposta.cliente.nome }} · <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ proposta.get_status_display }}</span></p>
+        </div>
+        {% if proposta.projeto_gerado %}
+        <a class="ds-btn ds-btn--solid" href="{% url 'projeto_detalhe' proposta.projeto_gerado.pk %}">Ver projeto</a>
+        {% elif itens %}
+        <form method="post" action="{% url 'proposta_aprovar' proposta.pk %}">
+            {% csrf_token %}
+            <button class="ds-btn ds-btn--solid" type="submit">Aprovar e gerar projeto</button>
+        </form>
+        {% endif %}
+    </header>
+
+    <div class="ds-card">
+        <h3 class="ds-display">Ambientes / etapas</h3>
+        <form method="post" action="{% url 'proposta_add_item' proposta.pk %}" class="inline-add">
+            {% csrf_token %}
+            {{ form_item.descricao }}
+            {{ form_item.horas_estimadas }}
+            <button class="ds-btn ds-btn--solid" type="submit">Precificar e adicionar</button>
+        </form>
+        <table class="data-table">
+            <thead><tr><th>Descrição</th><th>Horas</th><th>Valor</th><th></th></tr></thead>
+            <tbody>
+            {% for item in itens %}
+                <tr>
+                    <td>{{ item.descricao }}</td>
+                    <td>{{ item.horas_estimadas }}</td>
+                    <td>R$ {{ item.valor }}</td>
+                    <td>
+                        <form method="post" action="{% url 'proposta_remove_item' item.pk %}">
+                            {% csrf_token %}
+                            <button class="app-link-btn" type="submit">remover</button>
+                        </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4" class="data-empty">Adicione ambientes para compor o valor.</td></tr>
+            {% endfor %}
+            </tbody>
+            <tfoot><tr><th colspan="2">Total</th><th colspan="2">R$ {{ proposta.valor_total }}</th></tr></tfoot>
+        </table>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Projetos{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head page-head--row">
+        <div>
+            <span class="ds-kicker">Projetos</span>
+            <h1 class="ds-h2 ds-display">Painel de projetos</h1>
+            <p class="page-sub">Etapa atual, pendências, tempo parado e margem — lado a lado.</p>
+        </div>
+        <a class="ds-btn ds-btn--solid" href="{% url 'projeto_novo' %}">Novo projeto</a>
+    </header>
+
+    <div class="filtro-chips">
+        <a class="chip {% if not status_ativo %}is-active{% endif %}" href="{% url 'projetos_painel' %}">Todos</a>
+        {% for valor, rotulo in status_choices %}
+        <a class="chip {% if status_ativo == valor %}is-active{% endif %}" href="?status={{ valor }}">{{ rotulo }}</a>
+        {% endfor %}
+    </div>
+
+    <div class="projeto-grid">
+        {% for p in projetos %}
+        <article class="ds-card projeto-card">
+            <div class="projeto-card-top">
+                <a class="projeto-nome" href="{% url 'projeto_detalhe' p.pk %}">{{ p.nome }}</a>
+                <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ p.get_status_display }}</span>
+            </div>
+            <p class="projeto-cliente">{{ p.cliente.nome }} · {{ p.get_tipo_display }}</p>
+            <dl class="projeto-metricas">
+                <div><dt>Etapa atual</dt><dd>{{ p.etapa_atual.nome|default:"—" }}</dd></div>
+                <div><dt>Pendências</dt><dd>{{ p.pendencias_abertas }}</dd></div>
+                <div><dt>Parado há</dt><dd>{{ p.dias_parado }} d</dd></div>
+                <div><dt>Prazo</dt><dd>{{ p.data_prevista|date:"d/m/y"|default:"—" }}</dd></div>
+            </dl>
+        </article>
+        {% empty %}
+        <p class="data-empty">Nenhum projeto ainda. Crie o primeiro.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

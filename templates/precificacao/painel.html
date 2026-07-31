@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Precificação{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head">
+        <span class="ds-kicker">Precificação</span>
+        <h1 class="ds-h2 ds-display">Hora técnica do escritório</h1>
+        <p class="page-sub">A hora técnica é o custo fixo mensal dividido pelas horas úteis. É a base de propostas e da margem por projeto.</p>
+    </header>
+
+    <div class="ht-grid">
+        <div class="ds-card ht-destaque">
+            <span class="ds-kicker">Valor da hora técnica</span>
+            <strong class="ht-valor">R$ {{ hora_tecnica }}</strong>
+            <p class="ht-formula">R$ {{ total_custos }} em custos ÷ {{ config.horas_uteis_mes }} h/mês</p>
+        </div>
+
+        <form method="post" class="ds-card form-card">
+            {% csrf_token %}
+            <h3 class="ds-display">Parâmetros</h3>
+            {{ form_config.as_p }}
+            <button class="ds-btn ds-btn--solid" type="submit" name="salvar_config" value="1">Salvar parâmetros</button>
+        </form>
+    </div>
+
+    <div class="ds-card">
+        <h3 class="ds-display">Custos fixos mensais</h3>
+        <form method="post" action="{% url 'precificacao_add_custo' %}" class="inline-add">
+            {% csrf_token %}
+            {{ form_custo.descricao }}
+            {{ form_custo.valor_mensal }}
+            <button class="ds-btn ds-btn--solid" type="submit">Adicionar</button>
+        </form>
+
+        <table class="data-table">
+            <thead><tr><th>Descrição</th><th>Valor mensal</th><th>Ativo</th><th></th></tr></thead>
+            <tbody>
+            {% for custo in custos %}
+                <tr>
+                    <td>{{ custo.descricao }}</td>
+                    <td>R$ {{ custo.valor_mensal }}</td>
+                    <td>{% if custo.ativo %}Sim{% else %}Não{% endif %}</td>
+                    <td>
+                        <form method="post" action="{% url 'precificacao_remove_custo' custo.pk %}">
+                            {% csrf_token %}
+                            <button class="app-link-btn" type="submit">remover</button>
+                        </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4" class="data-empty">Nenhum custo cadastrado ainda.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
