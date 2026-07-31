@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br" class="ds-root">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Sistema ARQ{% endblock %} · Sistema ARQ</title>
+
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+    <link rel="apple-touch-icon" href="{% static 'favicon.png' %}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'css/stolben-ui.css' %}">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    {% if user.is_authenticated %}
+    <header class="app-topbar">
+        <a class="app-brand" href="{% url 'dashboard' %}">Sistema<span>ARQ</span></a>
+        <div class="app-topbar-right">
+            {% if user.nome_empresa %}<span class="app-chip">{{ user.nome_empresa }}</span>{% endif %}
+            <span class="app-user">{{ user }}</span>
+            <form method="post" action="{% url 'logout' %}" class="app-inline-form">
+                {% csrf_token %}
+                <button type="submit" class="app-link-btn">Sair</button>
+            </form>
+        </div>
+    </header>
+    {% endif %}
+
+    <main class="app-main">
+        {% if messages %}
+        <div class="app-messages">
+            {% for message in messages %}
+            <div class="app-message app-message--{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="{% static 'js/htmx.min.js' %}" nonce="{{ request.csp_nonce }}"></script>
+    <script src="{% static 'js/stolben-ui.js' %}" nonce="{{ request.csp_nonce }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,148 @@
+/* =================================================================
+   Sistema ARQ — estilos de layout do app (complementa o stolben-ui).
+   CSS puro, sem framework. Usa os tokens --ds-* do design system.
+   ================================================================= */
+
+body {
+    margin: 0;
+    background: var(--ds-bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ---- Barra superior ---- */
+.app-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ds-space-4);
+    padding: var(--ds-space-4) var(--ds-space-6);
+    background: var(--ds-surface);
+    border-bottom: 1px solid var(--ds-line);
+}
+.app-brand {
+    font-family: var(--ds-font-display);
+    font-weight: 600;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+    color: var(--ds-text-900);
+    text-decoration: none;
+}
+.app-brand span { color: var(--ds-blue); }
+.app-topbar-right { display: flex; align-items: center; gap: var(--ds-space-4); }
+.app-chip {
+    font-size: 0.8rem;
+    color: var(--ds-text-700);
+    background: #f3f4f6;
+    border: 1px solid var(--ds-line);
+    padding: 0.3rem 0.75rem;
+    border-radius: var(--ds-radius-pill);
+}
+.app-user { font-size: 0.9rem; color: var(--ds-text-500); }
+.app-inline-form { margin: 0; }
+.app-link-btn {
+    background: none;
+    border: 0;
+    color: var(--ds-blue-dark);
+    font: inherit;
+    cursor: pointer;
+    padding: 0;
+}
+.app-link-btn:hover { text-decoration: underline; }
+
+/* ---- Conteúdo ---- */
+.app-main {
+    flex: 1;
+    width: 100%;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: var(--ds-space-8) var(--ds-space-6);
+}
+
+/* ---- Mensagens ---- */
+.app-messages { display: flex; flex-direction: column; gap: var(--ds-space-2); margin-bottom: var(--ds-space-6); }
+.app-message {
+    padding: 0.75rem 1rem;
+    border-radius: var(--ds-radius-md);
+    font-size: 0.9rem;
+    border: 1px solid transparent;
+}
+.app-message--success { color: #1c6b3f; background: var(--ds-success-soft); border-color: var(--ds-success-border); }
+.app-message--error { color: #9b2c2c; background: var(--ds-danger-soft); border-color: var(--ds-danger-border); }
+.app-message--info, .app-message--warning { color: var(--ds-warn-strong); background: var(--ds-warn-soft); border-color: rgba(251,191,36,0.3); }
+
+/* ---- Página / cabeçalho ---- */
+.page-head { margin-bottom: var(--ds-space-8); }
+.page-sub { color: var(--ds-text-500); max-width: 46rem; }
+
+/* ---- Grade de módulos ---- */
+.modulo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: var(--ds-space-6);
+}
+.modulo-card { padding: var(--ds-space-6); }
+.modulo-head { display: flex; align-items: center; justify-content: space-between; gap: var(--ds-space-2); margin-bottom: var(--ds-space-2); }
+.modulo-head h3 { margin: 0; font-size: 1.05rem; }
+.modulo-card p { margin: 0; color: var(--ds-text-500); font-size: 0.9rem; }
+
+/* =================================================================
+   LOGIN
+   ================================================================= */
+.auth-shell {
+    min-height: calc(100vh - 4rem);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--ds-space-8);
+    max-width: 60rem;
+    margin: 0 auto;
+    align-items: center;
+}
+@media (min-width: 60rem) {
+    .auth-shell { grid-template-columns: 1.1fr 0.9fr; }
+}
+.auth-hero {
+    position: relative;
+    padding: var(--ds-space-12);
+    min-height: 20rem;
+    display: flex;
+    align-items: flex-end;
+}
+.auth-hero-inner { position: relative; z-index: 2; }
+.auth-hero .ds-glow { top: -6rem; left: -6rem; }
+
+.auth-card { display: flex; flex-direction: column; gap: var(--ds-space-6); }
+.auth-header h2 { margin: 0 0 0.25rem; }
+.auth-header p { margin: 0; color: var(--ds-text-500); }
+.auth-error { color: #9b2c2c; font-size: 0.9rem; margin: 0; }
+
+.auth-form { display: flex; flex-direction: column; gap: var(--ds-space-4); }
+.auth-field { display: block; }
+.auth-field > span { display: block; font-size: 0.85rem; color: var(--ds-text-700); margin-bottom: 0.4rem; }
+.auth-field input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid var(--ds-line);
+    border-radius: var(--ds-radius-md);
+    font: inherit;
+    color: var(--ds-text-900);
+    background: #fff;
+}
+.auth-field input:focus { outline: none; border-color: var(--ds-blue-light); box-shadow: var(--ds-focus-ring); }
+.auth-submit { width: 100%; }
+
+.auth-visitor { border-top: 1px solid var(--ds-line); padding-top: var(--ds-space-4); }
+.auth-visitor p { font-size: 0.85rem; color: var(--ds-text-500); margin: 0 0 var(--ds-space-3); }
+.auth-visitor-btn {
+    width: 100%;
+    justify-content: center;
+    background: #f3f4f6;
+    color: var(--ds-text-900);
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--ds-line);
+    border-radius: var(--ds-radius-md);
+}
+.auth-visitor-btn:hover { background: #e9ebef; }
+.auth-disclaimer { font-size: 0.75rem; color: var(--ds-text-400); margin: 0; }
