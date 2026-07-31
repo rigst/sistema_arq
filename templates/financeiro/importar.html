@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Importar extrato{% endblock %}
+
+{% block content %}
+<section class="page page--narrow">
+    <header class="page-head">
+        <span class="ds-kicker">Financeiro</span>
+        <h1 class="ds-h2 ds-display">Importar extrato bancário</h1>
+        <p class="page-sub">Envie um arquivo OFX ou CSV (data; descrição; valor). Cada transação é conciliada com um lançamento previsto de mesmo valor, ou vira um lançamento realizado novo.</p>
+    </header>
+
+    {% if resultado %}
+    <div class="ds-card margem-strip">
+        <div><span>Transações</span><strong>{{ resultado.total }}</strong></div>
+        <div><span>Conciliadas</span><strong>{{ resultado.conciliados }}</strong></div>
+        <div><span>Criadas</span><strong>{{ resultado.criados }}</strong></div>
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="ds-card form-card">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="form-actions">
+            <a class="ds-btn" href="{% url 'financeiro_painel' %}">Voltar</a>
+            <button class="ds-btn ds-btn--solid" type="submit">Importar</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

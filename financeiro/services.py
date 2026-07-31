@@ -49,6 +49,41 @@ def calcular_margem_projeto(projeto):
     }
 
 
+def dre(grupo, ano, mes):
+    """Demonstração de resultado do mês: realizado agrupado por categoria."""
+    from .models import Categoria, Lancamento
+
+    qs = Lancamento.objects.filter(
+        empresa=grupo, status="realizado", data__year=ano, data__month=mes
+    )
+
+    def _por_categoria(tipo):
+        linhas = []
+        agrup = (
+            qs.filter(tipo=tipo)
+            .values("categoria__nome")
+            .annotate(total=Sum("valor"))
+            .order_by("-total")
+        )
+        for row in agrup:
+            linhas.append({"categoria": row["categoria__nome"] or "Sem categoria", "total": row["total"]})
+        return linhas
+
+    entradas = _por_categoria("entrada")
+    saidas = _por_categoria("saida")
+    total_entradas = sum((l["total"] for l in entradas), Decimal("0"))
+    total_saidas = sum((l["total"] for l in saidas), Decimal("0"))
+    return {
+        "ano": ano,
+        "mes": mes,
+        "entradas": entradas,
+        "saidas": saidas,
+        "total_entradas": total_entradas,
+        "total_saidas": total_saidas,
+        "resultado": total_entradas - total_saidas,
+    }
+
+
 def resumo_mensal(grupo, ano=None, mes=None):
     from django.utils import timezone
 

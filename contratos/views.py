@@ -73,6 +73,29 @@ def detalhe_contrato(request, pk):
     )
 
 
+@login_required
+def contrato_pdf(request, pk):
+    from django.utils import timezone
+
+    from core.pdf import render_pdf
+
+    contrato = get_object_or_404(
+        queryset_da_empresa(Contrato.objects.select_related("projeto", "projeto__cliente"), request.user),
+        pk=pk,
+    )
+    return render_pdf(
+        "pdf/contrato.html",
+        {
+            "contrato": contrato,
+            "parcelas": contrato.parcelas.all(),
+            "alteracoes": contrato.alteracoes.all(),
+            "empresa_nome": request.user.nome_empresa,
+            "hoje": timezone.now(),
+        },
+        filename=f"contrato-{contrato.pk}.pdf",
+    )
+
+
 @require_POST
 @login_required
 def gerar_parcelas_view(request, pk):

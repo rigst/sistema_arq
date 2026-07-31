@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Painel visual{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head page-head--row">
+        <div>
+            <span class="ds-kicker">Projetos</span>
+            <h1 class="ds-h2 ds-display">Painel visual</h1>
+            <p class="page-sub">Arraste os cartões entre as colunas para mudar o status.</p>
+        </div>
+        <a class="ds-btn" href="{% url 'projetos_painel' %}">Ver em lista</a>
+    </header>
+
+    {% csrf_token %}
+    <div class="kanban" data-mover-url="/projetos/__pk__/status/">
+        {% for valor, rotulo, itens in colunas %}
+        <div class="kanban-col" data-status="{{ valor }}">
+            <h3 class="kanban-col-head">{{ rotulo }} <span>{{ itens|length }}</span></h3>
+            <div class="kanban-drop">
+                {% for p in itens %}
+                    {% include "projetos/_card_kanban.html" %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script nonce="{{ request.csp_nonce }}">
+(function () {
+    var board = document.querySelector(".kanban");
+    if (!board) return;
+    var csrf = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+    var urlTmpl = board.getAttribute("data-mover-url");
+    var arrastado = null;
+
+    board.addEventListener("dragstart", function (e) {
+        var card = e.target.closest(".kanban-card");
+        if (card) { arrastado = card; card.classList.add("is-dragging"); }
+    });
+    board.addEventListener("dragend", function () {
+        if (arrastado) arrastado.classList.remove("is-dragging");
+        arrastado = null;
+        document.querySelectorAll(".kanban-drop.is-over").forEach(function (d) { d.classList.remove("is-over"); });
+    });
+    board.querySelectorAll(".kanban-drop").forEach(function (drop) {
+        drop.addEventListener("dragover", function (e) { e.preventDefault(); drop.classList.add("is-over"); });
+        drop.addEventListener("dragleave", function () { drop.classList.remove("is-over"); });
+        drop.addEventListener("drop", function (e) {
+            e.preventDefault();
+            drop.classList.remove("is-over");
+            if (!arrastado) return;
+            var status = drop.closest(".kanban-col").getAttribute("data-status");
+            var pk = arrastado.getAttribute("data-pk");
+            drop.appendChild(arrastado);
+            atualizarContadores();
+            fetch(urlTmpl.replace("__pk__", pk), {
+                method: "POST",
+                headers: { "X-CSRFToken": csrf, "Content-Type": "application/x-www-form-urlencoded", "HX-Request": "true" },
+                body: "status=" + encodeURIComponent(status),
+            });
+        });
+    });
+    function atualizarContadores() {
+        board.querySelectorAll(".kanban-col").forEach(function (col) {
+            col.querySelector(".kanban-col-head span").textContent = col.querySelectorAll(".kanban-card").length;
+        });
+    }
+})();
+</script>
+{% endblock %}

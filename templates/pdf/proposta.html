@@ -1,0 +1,23 @@
+{% extends "pdf/base_pdf.html" %}
+{% block tipo %}Proposta comercial{% endblock %}
+
+{% block conteudo %}
+<h1>{{ proposta.titulo }}</h1>
+<p class="muted">Cliente: {{ proposta.cliente.nome }}
+    {% if proposta.validade %}· Validade: {{ proposta.validade|date:"d/m/Y" }}{% endif %}
+    · Hora técnica: R$ {{ proposta.hora_tecnica_aplicada }}</p>
+
+<table>
+    <thead><tr><th>Ambiente / etapa</th><th>Horas</th><th class="total">Valor</th></tr></thead>
+    <tbody>
+    {% for item in itens %}
+        <tr><td>{{ item.descricao }}</td><td>{{ item.horas_estimadas }}</td><td class="total">R$ {{ item.valor }}</td></tr>
+    {% endfor %}
+    </tbody>
+    <tfoot><tr><th>Total</th><th></th><th class="total">R$ {{ proposta.valor_total }}</th></tr></tfoot>
+</table>
+
+{% if proposta.observacoes %}
+<div class="bloco"><h3>Observações</h3><p>{{ proposta.observacoes|linebreaksbr }}</p></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<style>
+    @page { size: A4; margin: 2cm; }
+    body { font-family: "Helvetica", "Arial", sans-serif; color: #1f2430; font-size: 12px; line-height: 1.5; }
+    .doc-head { border-bottom: 2px solid #2563eb; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .doc-emp { font-size: 18px; font-weight: 700; color: #0f1115; }
+    .doc-tipo { text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; font-size: 11px; }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    .muted { color: #6b7280; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #e7e9ee; }
+    th { font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
+    tfoot th { border-top: 2px solid #cfd3da; font-size: 13px; color: #0f1115; }
+    .total { text-align: right; }
+    .doc-foot { margin-top: 30px; color: #9ca3af; font-size: 10px; border-top: 1px solid #e7e9ee; padding-top: 8px; }
+    .bloco { margin: 14px 0; }
+    .bloco h3 { font-size: 12px; margin: 0 0 4px; color: #2563eb; }
+</style>
+{% block extra_style %}{% endblock %}
+</head>
+<body>
+    <div class="doc-head">
+        <div>
+            <div class="doc-emp">{{ empresa_nome }}</div>
+            <div class="doc-tipo">{% block tipo %}Documento{% endblock %}</div>
+        </div>
+        <div class="muted">{{ hoje|date:"d/m/Y" }}</div>
+    </div>
+    {% block conteudo %}{% endblock %}
+    <div class="doc-foot">Gerado pelo Sistema ARQ · {{ hoje|date:"d/m/Y H:i" }}</div>
+</body>
+</html>

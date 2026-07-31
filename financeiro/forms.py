@@ -26,3 +26,13 @@ class ContaBancariaForm(forms.ModelForm):
     class Meta:
         model = ContaBancaria
         fields = ["nome", "saldo_inicial", "pessoal"]
+
+
+class ImportarExtratoForm(forms.Form):
+    conta = forms.ModelChoiceField(queryset=ContaBancaria.objects.none(), label="Conta")
+    arquivo = forms.FileField(label="Extrato (OFX ou CSV)")
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user is not None:
+            self.fields["conta"].queryset = queryset_da_empresa(ContaBancaria.objects.all(), user)

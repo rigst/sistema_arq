@@ -295,3 +295,20 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .agenda-info strong { margin-right: 0.5rem; }
 .agenda-info p { margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--ds-text-500); }
 .agenda-lista--passados li { opacity: 0.65; }
+
+/* Fase 3 — horas comparativo, kanban */
+.horas-comp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 0.6rem; }
+.horas-comp-head h3 { margin: 0; }
+.horas-ok { font-size: 0.7rem; color: var(--ds-success); background: var(--ds-success-soft); border: 1px solid var(--ds-success-border); padding: 0.1rem 0.4rem; border-radius: var(--ds-radius-pill); }
+
+.kanban { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(15rem, 1fr); gap: var(--ds-space-4); overflow-x: auto; padding-bottom: 0.5rem; }
+.kanban-col { background: var(--ds-panel); border: 1px solid var(--ds-line); border-radius: var(--ds-radius-lg); padding: var(--ds-space-4); display: flex; flex-direction: column; }
+.kanban-col-head { display: flex; justify-content: space-between; font-size: 0.9rem; margin: 0 0 0.75rem; color: var(--ds-text-700); }
+.kanban-col-head span { color: var(--ds-text-400); }
+.kanban-drop { display: flex; flex-direction: column; gap: 0.5rem; min-height: 4rem; flex: 1; border-radius: var(--ds-radius-md); transition: background 150ms ease; }
+.kanban-drop.is-over { background: var(--ds-blue-50); outline: 2px dashed var(--ds-blue-light); outline-offset: 2px; }
+.kanban-card { background: var(--ds-surface); border: 1px solid var(--ds-line); border-radius: var(--ds-radius-md); padding: 0.7rem 0.8rem; cursor: grab; box-shadow: var(--ds-shadow-soft); }
+.kanban-card.is-dragging { opacity: 0.5; }
+.kanban-card-nome { font-weight: 600; color: var(--ds-text-900); text-decoration: none; display: block; }
+.kanban-card-cli { margin: 0.2rem 0; font-size: 0.8rem; color: var(--ds-text-500); }
+.kanban-card-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--ds-text-400); }

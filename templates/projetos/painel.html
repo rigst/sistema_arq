@@ -9,7 +9,10 @@
             <h1 class="ds-h2 ds-display">Painel de projetos</h1>
             <p class="page-sub">Etapa atual, pendências, tempo parado e margem — lado a lado.</p>
         </div>
-        <a class="ds-btn ds-btn--solid" href="{% url 'projeto_novo' %}">Novo projeto</a>
+        <div class="page-head-actions">
+            <a class="ds-btn" href="{% url 'projetos_kanban' %}">Painel visual</a>
+            <a class="ds-btn ds-btn--solid" href="{% url 'projeto_novo' %}">Novo projeto</a>
+        </div>
     </header>
 
     <div class="filtro-chips">

@@ -9,14 +9,17 @@
             <h1 class="ds-h2 ds-display">{{ proposta.titulo }}</h1>
             <p class="page-sub">{{ proposta.cliente.nome }} · <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ proposta.get_status_display }}</span></p>
         </div>
-        {% if proposta.projeto_gerado %}
-        <a class="ds-btn ds-btn--solid" href="{% url 'projeto_detalhe' proposta.projeto_gerado.pk %}">Ver projeto</a>
-        {% elif itens %}
-        <form method="post" action="{% url 'proposta_aprovar' proposta.pk %}">
-            {% csrf_token %}
-            <button class="ds-btn ds-btn--solid" type="submit">Aprovar e gerar projeto</button>
-        </form>
-        {% endif %}
+        <div class="page-head-actions">
+            {% if itens %}<a class="ds-btn" href="{% url 'proposta_pdf' proposta.pk %}" target="_blank">PDF</a>{% endif %}
+            {% if proposta.projeto_gerado %}
+            <a class="ds-btn ds-btn--solid" href="{% url 'projeto_detalhe' proposta.projeto_gerado.pk %}">Ver projeto</a>
+            {% elif itens %}
+            <form method="post" action="{% url 'proposta_aprovar' proposta.pk %}">
+                {% csrf_token %}
+                <button class="ds-btn ds-btn--solid" type="submit">Aprovar e gerar projeto</button>
+            </form>
+            {% endif %}
+        </div>
     </header>
 
     {% if not proposta.projeto_gerado %}

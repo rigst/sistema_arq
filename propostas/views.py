@@ -137,6 +137,27 @@ def remover_item(request, pk):
     return redirect("proposta_detalhe", pk=proposta_pk)
 
 
+@login_required
+def proposta_pdf(request, pk):
+    from django.utils import timezone
+
+    from core.pdf import render_pdf
+
+    proposta = get_object_or_404(
+        queryset_da_empresa(Proposta.objects.select_related("cliente"), request.user), pk=pk
+    )
+    return render_pdf(
+        "pdf/proposta.html",
+        {
+            "proposta": proposta,
+            "itens": proposta.itens.all(),
+            "empresa_nome": request.user.nome_empresa,
+            "hoje": timezone.now(),
+        },
+        filename=f"proposta-{proposta.pk}.pdf",
+    )
+
+
 @require_POST
 @login_required
 def aprovar_proposta(request, pk):
@@ -146,6 +167,9 @@ def aprovar_proposta(request, pk):
         messages.info(request, "Esta proposta já gerou um projeto.")
         return redirect("proposta_detalhe", pk=proposta.pk)
 
+    horas_estimadas = sum(
+        (item.horas_estimadas for item in proposta.itens.all()), Decimal("0")
+    )
     with transaction.atomic():
         projeto = Projeto.objects.create(
             empresa=proposta.empresa,
@@ -153,6 +177,7 @@ def aprovar_proposta(request, pk):
             cliente=proposta.cliente,
             tipo=proposta.tipo_projeto,
             valor_contratado=proposta.valor_total,
+            horas_estimadas=horas_estimadas,
             data_inicio=timezone.localdate(),
             criado_por=request.user,
             origem_tipo="proposta",

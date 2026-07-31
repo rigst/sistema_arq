@@ -45,6 +45,10 @@ class Projeto(EmpresaModel, Rastreavel):
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default="residencial")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="ativo")
     valor_contratado = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    horas_estimadas = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0,
+        help_text="Horas previstas (vindas da proposta). Comparadas com as trabalhadas.",
+    )
     data_inicio = models.DateField(null=True, blank=True)
     data_prevista = models.DateField(null=True, blank=True)
     ultima_atualizacao = models.DateTimeField(default=timezone.now)
@@ -75,6 +79,20 @@ class Projeto(EmpresaModel, Rastreavel):
     @property
     def pendencias_abertas(self):
         return self.pendencias.filter(resolvida=False).count()
+
+    @property
+    def horas_trabalhadas(self):
+        from decimal import Decimal
+
+        total = Decimal("0")
+        for ap in self.apontamentos.all():
+            total += ap.horas
+        return total.quantize(Decimal("0.01"))
+
+    @property
+    def horas_saldo(self):
+        """Horas estimadas − trabalhadas. Negativo = estourou a estimativa."""
+        return (self.horas_estimadas or 0) - self.horas_trabalhadas
 
 
 class Etapa(EmpresaModel):

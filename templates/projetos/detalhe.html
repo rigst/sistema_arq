@@ -25,6 +25,18 @@
         <div class="margem-final"><span>Margem</span><strong>R$ {{ margem.margem }} ({{ margem.margem_percent }}%)</strong></div>
     </div>
 
+    <div class="ds-card horas-comp">
+        <div class="horas-comp-head">
+            <h3 class="ds-display">Horas projetadas × trabalhadas</h3>
+            <span>{{ projeto.horas_trabalhadas }} de {{ projeto.horas_estimadas }} h
+                {% if projeto.horas_saldo < 0 %}<span class="tag-alerta">estourou {{ projeto.horas_saldo|cut:"-" }} h</span>{% else %}<span class="horas-ok">restam {{ projeto.horas_saldo }} h</span>{% endif %}
+            </span>
+        </div>
+        <div class="ds-progress ds-progress--on-light">
+            <div class="ds-progress-fill" style="width: {{ horas_percent }}%"></div>
+        </div>
+    </div>
+
     <div class="detalhe-grid">
         <div class="ds-card">
             <h3 class="ds-display">Etapas</h3>

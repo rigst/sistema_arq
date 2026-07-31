@@ -4,7 +4,7 @@ Sistema de gestão para escritórios de arquitetura e design de interiores.
 Django + HTMX + CSS/HTML/JS puro (design system `stolben-ui`), PostgreSQL e
 Celery/Redis. Ver o planejamento completo em [`PLANEJAMENTO.md`](PLANEJAMENTO.md).
 
-## Estado atual: Fase 2 concluída (contratos, briefing e agenda)
+## Estado atual: Fase 3 concluída (análise avançada)
 
 **Fundação (Fase 0):**
 - Projeto Django (`config`) com PostgreSQL (fallback SQLite em dev) e Celery/Redis
@@ -35,6 +35,15 @@ por **fatores de projeto** (urgência, complexidade, etc.) ou por valor livre.
 
 A cadeia de valor está fechada: hora lançada → custo do projeto → margem no financeiro;
 e proposta → contrato → parcelas → financeiro.
+
+**Análise avançada (Fase 3):**
+- **Painel visual (kanban)** de projetos com arrastar-e-soltar (HTMX/JS, muda o status).
+- **Horas projetadas × trabalhadas** por projeto (estimativa vinda da proposta).
+- **PDF** de proposta e contrato (WeasyPrint).
+- **DRE** do mês por categoria + **exportação CSV**.
+- **Importar extrato** bancário (OFX/CSV) com conciliação automática por valor.
+
+Licenças das dependências e recomendação de licença do app: ver [`LICENCAS.md`](LICENCAS.md).
 
 ## Rodar em desenvolvimento
 

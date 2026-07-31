@@ -1,0 +1,8 @@
+<article class="kanban-card" draggable="true" data-pk="{{ p.pk }}">
+    <a class="kanban-card-nome" href="{% url 'projeto_detalhe' p.pk %}">{{ p.nome }}</a>
+    <p class="kanban-card-cli">{{ p.cliente.nome }}</p>
+    <div class="kanban-card-meta">
+        <span>{{ p.etapa_atual.nome|default:"—" }}</span>
+        {% if p.pendencias_abertas %}<span class="tag-alerta">{{ p.pendencias_abertas }} pend.</span>{% endif %}
+    </div>
+</article>

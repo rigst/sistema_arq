@@ -3,10 +3,16 @@
 
 {% block content %}
 <section class="page">
-    <header class="page-head">
-        <span class="ds-kicker">Financeiro</span>
-        <h1 class="ds-h2 ds-display">Entradas, saídas e saldos</h1>
-        <p class="page-sub">Fechamento do mês {{ resumo.mes }}/{{ resumo.ano }}: entradas R$ {{ resumo.entradas }} · saídas R$ {{ resumo.saidas }} · saldo <strong>R$ {{ resumo.saldo }}</strong>.</p>
+    <header class="page-head page-head--row">
+        <div>
+            <span class="ds-kicker">Financeiro</span>
+            <h1 class="ds-h2 ds-display">Entradas, saídas e saldos</h1>
+            <p class="page-sub">Fechamento do mês {{ resumo.mes }}/{{ resumo.ano }}: entradas R$ {{ resumo.entradas }} · saídas R$ {{ resumo.saidas }} · saldo <strong>R$ {{ resumo.saldo }}</strong>.</p>
+        </div>
+        <div class="page-head-actions">
+            <a class="ds-btn" href="{% url 'financeiro_dre' %}">DRE</a>
+            <a class="ds-btn" href="{% url 'financeiro_importar' %}">Importar extrato</a>
+        </div>
     </header>
 
     <div class="saldo-strip">

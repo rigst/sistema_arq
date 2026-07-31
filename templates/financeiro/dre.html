@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}DRE{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head page-head--row">
+        <div>
+            <span class="ds-kicker">Financeiro</span>
+            <h1 class="ds-h2 ds-display">DRE — {{ mes }}/{{ ano }}</h1>
+            <p class="page-sub">Demonstração de resultado do mês (realizado, por categoria).</p>
+        </div>
+        <div class="page-head-actions">
+            <a class="ds-btn" href="{% url 'financeiro_painel' %}">Voltar</a>
+            <a class="ds-btn ds-btn--solid" href="{% url 'financeiro_dre_csv' %}?ano={{ ano }}&mes={{ mes }}">Exportar CSV</a>
+        </div>
+    </header>
+
+    <div class="detalhe-grid">
+        <div class="ds-card">
+            <h3 class="ds-display">Entradas</h3>
+            <table class="data-table">
+                <tbody>
+                {% for l in dre.entradas %}<tr><td>{{ l.categoria }}</td><td class="valor valor--entrada">R$ {{ l.total }}</td></tr>{% empty %}<tr><td class="data-empty" colspan="2">Sem entradas.</td></tr>{% endfor %}
+                </tbody>
+                <tfoot><tr><th>Total</th><th class="valor--entrada">R$ {{ dre.total_entradas }}</th></tr></tfoot>
+            </table>
+        </div>
+        <div class="ds-card">
+            <h3 class="ds-display">Saídas</h3>
+            <table class="data-table">
+                <tbody>
+                {% for l in dre.saidas %}<tr><td>{{ l.categoria }}</td><td class="valor valor--saida">R$ {{ l.total }}</td></tr>{% empty %}<tr><td class="data-empty" colspan="2">Sem saídas.</td></tr>{% endfor %}
+                </tbody>
+                <tfoot><tr><th>Total</th><th class="valor--saida">R$ {{ dre.total_saidas }}</th></tr></tfoot>
+            </table>
+        </div>
+    </div>
+
+    <div class="ds-card margem-strip">
+        <div class="margem-final"><span>Resultado do mês</span><strong>R$ {{ dre.resultado }}</strong></div>
+    </div>
+</section>
+{% endblock %}

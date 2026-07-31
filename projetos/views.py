@@ -27,6 +27,33 @@ def painel_projetos(request):
 
 
 @login_required
+def kanban_projetos(request):
+    projetos = queryset_da_empresa(
+        Projeto.objects.select_related("cliente").prefetch_related("etapas", "pendencias"),
+        request.user,
+    )
+    colunas = [
+        (valor, rotulo, [p for p in projetos if p.status == valor])
+        for valor, rotulo in Projeto.STATUS_CHOICES
+    ]
+    return render(request, "projetos/kanban.html", {"colunas": colunas})
+
+
+@require_POST
+@login_required
+def mover_status(request, pk):
+    projeto = get_object_or_404(queryset_da_empresa(Projeto.objects.all(), request.user), pk=pk)
+    novo = request.POST.get("status", "")
+    if novo in dict(Projeto.STATUS_CHOICES):
+        projeto.status = novo
+        projeto.ultima_atualizacao = timezone.now()
+        projeto.save(update_fields=["status", "ultima_atualizacao"])
+    if request.headers.get("HX-Request"):
+        return render(request, "projetos/_card_kanban.html", {"p": projeto})
+    return redirect("projetos_kanban")
+
+
+@login_required
 def novo_projeto(request):
     if request.method == "POST":
         form = ProjetoForm(request.POST, user=request.user)
@@ -68,6 +95,9 @@ def detalhe_projeto(request, pk):
     projeto = get_object_or_404(
         queryset_da_empresa(Projeto.objects.select_related("cliente"), request.user), pk=pk
     )
+    trabalhadas = projeto.horas_trabalhadas
+    estimadas = projeto.horas_estimadas or 0
+    horas_percent = min(float(trabalhadas) / float(estimadas) * 100, 100) if estimadas else 0
     return render(
         request,
         "projetos/detalhe.html",
@@ -77,6 +107,7 @@ def detalhe_projeto(request, pk):
             "pendencias": projeto.pendencias.all(),
             "form_pendencia": PendenciaForm(),
             "margem": calcular_margem_projeto(projeto),
+            "horas_percent": round(horas_percent, 1),
         },
     )
 
