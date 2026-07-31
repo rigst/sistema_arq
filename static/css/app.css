@@ -3,6 +3,77 @@
    CSS puro, sem framework. Usa os tokens --ds-* do design system.
    ================================================================= */
 
+/* =================================================================
+   IDENTIDADE — "Prancheta técnica"
+   O Sistema ARQ reveste o Design System Stölben com o vocabulário da
+   prancheta de arquitetura: papel frio + tinta grafite, acento em verde
+   de tinta técnica (pinho) e NÚMEROS EM MONOESPAÇADA — cada percentual,
+   valor e registro é lido como numa folha de especificação.
+   Remapeia os tokens --ds-* (app.css carrega depois do stolben-ui).
+   ================================================================= */
+:root {
+    /* Superfícies: papel de prancheta (frio, não creme) + grafite */
+    --ds-bg: #edf0f0;
+    --ds-panel: #f4f6f6;
+    --ds-surface: #ffffff;
+    --ds-ink: #16191c;
+    --ds-ink-soft: #1f2429;
+
+    /* Acento: verde de tinta técnica (pinho) no lugar do azul */
+    --ds-blue: #1c6a53;
+    --ds-blue-light: #2a8368;
+    --ds-blue-dark: #14513f;
+    --ds-blue-50: #e8f2ee;
+    --ds-blue-100: #c9e2d9;
+
+    /* Estados: mantém âmbar/vermelho, alinhados ao acento */
+    --ds-warn-strong: #9a6207;
+
+    /* Tipografia: display técnico geométrico + monoespaçada p/ números */
+    --ds-font-display: "Space Grotesk", "Inter", sans-serif;
+    --arq-font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+
+    /* Foco e brilho no acento verde */
+    --ds-focus-ring: 0 0 0 3px rgba(28, 106, 83, 0.28);
+    --ds-shadow-glow-blue: 0 0 20px rgba(28, 106, 83, 0.22);
+}
+
+/* Atmosfera do acento (o glow do DS é azul fixo) */
+.ds-glow { background: rgba(28, 106, 83, 0.16); }
+
+/* --- Assinatura 1: números em monoespaçada (folha de especificação) --- */
+.num,
+.ht-valor,
+.saldo-card strong,
+.margem-strip strong,
+.ds-stat-strip strong,
+.timer-ativo strong,
+.agenda-quando strong {
+    font-family: var(--arq-font-mono);
+    font-feature-settings: "tnum" 1, "zero" 1;
+    letter-spacing: -0.02em;
+}
+.data-table td.num, .data-table th.num { text-align: right; white-space: nowrap; }
+
+/* --- Assinatura 2: linha de cota (dimension line) sob os títulos de cartão --- */
+.ds-card > h3.ds-display {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin-top: 0;
+}
+.ds-card > h3.ds-display::after {
+    content: "";
+    flex: 1;
+    height: 7px;
+    align-self: center;
+    background:
+        linear-gradient(var(--ds-line-dash), var(--ds-line-dash)) center / 100% 1px no-repeat,
+        linear-gradient(var(--ds-line-dash), var(--ds-line-dash)) left center / 1px 7px no-repeat,
+        linear-gradient(var(--ds-line-dash), var(--ds-line-dash)) right center / 1px 7px no-repeat;
+    opacity: 0.9;
+}
+
 body {
     margin: 0;
     background: var(--ds-bg);
@@ -58,6 +129,7 @@ body {
     max-width: 72rem;
     margin: 0 auto;
     padding: var(--ds-space-8) var(--ds-space-6);
+    box-sizing: border-box; /* padding dentro da largura: evita overflow horizontal < 72rem */
 }
 
 /* ---- Mensagens ---- */
@@ -312,3 +384,101 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .kanban-card-nome { font-weight: 600; color: var(--ds-text-900); text-decoration: none; display: block; }
 .kanban-card-cli { margin: 0.2rem 0; font-size: 0.8rem; color: var(--ds-text-500); }
 .kanban-card-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--ds-text-400); }
+
+/* =================================================================
+   FASE 4 — Obras, regulatório e notificações
+   ================================================================= */
+
+/* Barra superior: sino de notificações */
+.app-sino { position: relative; display: inline-flex; align-items: center; color: var(--ds-text-500); text-decoration: none; padding: 0.2rem; }
+.app-sino:hover { color: var(--ds-text-900); }
+.app-sino svg { width: 1.2rem; height: 1.2rem; }
+.app-sino-badge {
+    position: absolute; top: -0.35rem; right: -0.45rem; min-width: 1.05rem; height: 1.05rem;
+    padding: 0 0.25rem; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.66rem; font-weight: 600; color: #fff; background: var(--ds-danger); border-radius: var(--ds-radius-pill);
+}
+
+/* Obras — grade e cronograma */
+.obra-grid { display: grid; gap: var(--ds-space-6); grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr)); }
+.obra-card-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.cronograma { display: flex; flex-direction: column; gap: 0.5rem; margin: 0.9rem 0 0.6rem; }
+.cronograma-linha { display: grid; grid-template-columns: 4.5rem 1fr 3.2rem; align-items: center; gap: 0.6rem; }
+.cronograma-linha > span { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ds-text-400); }
+.cronograma-linha b { font-size: 0.85rem; text-align: right; }
+/* a barra "real" ganha um tom grafite para contrastar com a "prevista" verde */
+.cronograma-real { background: linear-gradient(90deg, #3a4149, #565f68) !important; box-shadow: none !important; }
+.desvio-alerta { font-size: 0.82rem; color: #9b2c2c; background: var(--ds-danger-soft); border: 1px solid var(--ds-danger-border); border-radius: var(--ds-radius-md); padding: 0.4rem 0.7rem; margin: 0.3rem 0 0; }
+.desvio-ok { font-size: 0.82rem; color: var(--ds-success); margin: 0.3rem 0 0; }
+
+.cronograma-resumo { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ds-space-8); }
+.cronograma-num { display: flex; flex-direction: column; gap: 0.15rem; }
+.cronograma-num strong { font-family: var(--arq-font-mono); font-size: 1.7rem; letter-spacing: -0.03em; }
+.desvio-forte { color: var(--ds-danger); }
+.cronograma-resumo .desvio-alerta { flex-basis: 100%; margin-top: 0.3rem; }
+
+.linha-desvio td:first-child { box-shadow: inset 3px 0 0 var(--ds-danger); }
+.avanco-form { display: flex; align-items: center; gap: 0.3rem; }
+.avanco-form input { width: 4rem; padding: 0.3rem 0.4rem; border: 1px solid var(--ds-line); border-radius: 0.5rem; font: inherit; font-family: var(--arq-font-mono); font-size: 0.82rem; }
+
+.visitas-timeline { margin-top: var(--ds-space-4); }
+.visita-pendencia { color: #9b2c2c; font-size: 0.85rem; }
+.visita-acao { color: var(--ds-blue-dark); font-size: 0.85rem; font-weight: 500; }
+.medicoes-lista { margin-top: var(--ds-space-4); }
+
+/* Regulatório — cartão de alerta */
+.alerta-card { border-left: 3px solid var(--ds-warn); }
+
+/* Notificações */
+.notif-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.6rem; }
+.notif-item { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--ds-space-4); background: var(--ds-surface); border: 1px solid var(--ds-line); border-left-width: 3px; border-radius: var(--ds-radius-md); padding: 0.8rem 1rem; }
+.notif-item--info { border-left-color: var(--ds-blue); }
+.notif-item--alerta { border-left-color: var(--ds-warn); }
+.notif-item--critico { border-left-color: var(--ds-danger); }
+.notif-item.is-lida { opacity: 0.55; }
+.notif-corpo strong { display: block; font-size: 0.95rem; }
+.notif-corpo p { margin: 0.15rem 0; font-size: 0.88rem; color: var(--ds-text-500); }
+
+/* =================================================================
+   FASE 5 — Diagnóstico (público) e onboarding
+   ================================================================= */
+.diagnostico .page-head { text-align: center; }
+.diagnostico .page-sub { margin-left: auto; margin-right: auto; }
+.diag-form { display: flex; flex-direction: column; gap: var(--ds-space-4); }
+.diag-pergunta { border: 0; margin: 0; padding: var(--ds-space-6); }
+.diag-pergunta legend { font-family: var(--ds-font-display); font-size: 1.05rem; font-weight: 500; padding: 0; }
+.diag-dim { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.16em; color: var(--ds-blue-dark); margin-bottom: 0.3rem; }
+.diag-opcoes { display: flex; flex-direction: column; gap: 0.5rem; margin-top: var(--ds-space-4); }
+.diag-opcao { display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.7rem 0.85rem; border: 1px solid var(--ds-line); border-radius: var(--ds-radius-md); cursor: pointer; transition: border-color 150ms ease, background 150ms ease; }
+.diag-opcao:hover { border-color: var(--ds-blue-light); background: var(--ds-blue-50); }
+.diag-opcao input { margin-top: 0.2rem; accent-color: var(--ds-blue); }
+.diag-opcao:has(input:checked) { border-color: var(--ds-blue); background: var(--ds-blue-50); box-shadow: var(--ds-focus-ring); }
+.diag-submit { align-self: flex-start; }
+
+.diag-resultado { text-align: center; display: flex; flex-direction: column; gap: var(--ds-space-4); align-items: center; }
+.diag-score { font-family: var(--arq-font-mono); }
+.diag-score strong { font-size: 3.4rem; letter-spacing: -0.04em; color: var(--ds-blue); }
+.diag-score span { font-size: 1.4rem; color: var(--ds-text-400); }
+.diag-resultado .ds-progress { max-width: 22rem; width: 100%; }
+.diag-faixa { margin: 0.2rem 0 0; }
+.diag-resultado p { max-width: 34rem; color: var(--ds-text-700); }
+
+/* Onboarding */
+.onb-progresso-topo { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.6rem; }
+.onb-progresso-topo strong { font-family: var(--arq-font-mono); font-size: 1.4rem; }
+.onb-progresso-topo span { color: var(--ds-text-500); font-size: 0.9rem; }
+.onb-etapas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.75rem; counter-reset: onb; }
+.onb-etapa { display: flex; align-items: center; gap: var(--ds-space-4); background: var(--ds-surface); border: 1px solid var(--ds-line); border-radius: var(--ds-radius-lg); padding: var(--ds-space-4) var(--ds-space-6); }
+.onb-etapa.is-atual { border-color: var(--ds-blue); box-shadow: var(--ds-shadow-soft); }
+.onb-etapa.is-feita { opacity: 0.72; }
+.onb-num { flex-shrink: 0; width: 2.2rem; height: 2.2rem; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid var(--ds-line); color: var(--ds-text-500); font-weight: 600; }
+.onb-etapa.is-atual .onb-num { background: var(--ds-blue); color: #fff; border-color: var(--ds-blue); }
+.onb-etapa.is-feita .onb-num { background: var(--ds-success-soft); color: var(--ds-success); border-color: var(--ds-success-border); }
+.onb-corpo { flex: 1; }
+.onb-corpo strong { display: block; }
+.onb-corpo p { margin: 0.15rem 0 0; font-size: 0.88rem; color: var(--ds-text-500); }
+.onb-feito { font-size: 0.8rem; color: var(--ds-success); }
+
+/* Tabelas largas: rolagem horizontal isolada (não empurra a página no mobile) */
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-scroll .data-table { min-width: 40rem; }

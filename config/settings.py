@@ -67,9 +67,15 @@ INSTALLED_APPS = [
     "contratos",
     "briefing",
     "agenda",
+    "obras",
+    "regulatorio",
+    "notificacoes",
     "propostas",
     "financeiro",
     "crm",
+    # Fase 5 — adoção (públicos/sem dados de negócio persistidos).
+    "diagnostico",
+    "onboarding",
 ]
 
 MIDDLEWARE = [
@@ -97,6 +103,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "core.context_processors.empresa_context",
+                "notificacoes.context_processors.notificacoes_context",
             ],
         },
     },

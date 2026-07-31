@@ -24,6 +24,11 @@ urlpatterns = [
     path("contratos/", include("contratos.urls")),
     path("briefing/", include("briefing.urls")),
     path("agenda/", include("agenda.urls")),
+    path("obras/", include("obras.urls")),
+    path("regulatorio/", include("regulatorio.urls")),
+    path("notificacoes/", include("notificacoes.urls")),
+    path("diagnostico/", include("diagnostico.urls")),
+    path("onboarding/", include("onboarding.urls")),
 ]
 
 if settings.DEBUG and settings.DEBUG_EXPOSE_MEDIA:

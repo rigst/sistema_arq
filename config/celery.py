@@ -14,6 +14,10 @@ app.conf.beat_schedule = {
         "task": "usuarios.tasks.limpar_visitantes_expirados_task",
         "schedule": 60 * 60,  # de hora em hora
     },
+    "varrer-alertas": {
+        "task": "notificacoes.tasks.varrer_alertas_task",
+        "schedule": 60 * 60 * 12,  # duas vezes ao dia
+    },
 }
 
 

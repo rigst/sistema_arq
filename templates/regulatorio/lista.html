@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Regulatório{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head page-head--row">
+        <div>
+            <span class="ds-kicker">Conformidade · CAU / CREA</span>
+            <h1 class="ds-h2 ds-display">ART, RRT e vínculo CAU</h1>
+            <p class="page-sub">Registro e baixa das obrigações técnicas, com alerta de pendência e vencimento.</p>
+        </div>
+        <a class="ds-btn ds-btn--solid" href="{% url 'regulatorio_nova' %}">Nova obrigação</a>
+    </header>
+
+    {% if alertas %}
+    <div class="ds-card alerta-card">
+        <h3 class="ds-display">Precisam de atenção</h3>
+        <ul class="pendencias">
+            {% for o in alertas %}
+            <li>
+                <span>
+                    <b class="num">{{ o.get_tipo_display }}{% if o.numero %} {{ o.numero }}{% endif %}</b>
+                    {% if o.projeto %}· {{ o.projeto.nome }}{% endif %}
+                    {% if o.vencida %}<span class="tag-alerta">vencida em {{ o.vencimento|date:"d/m/y" }}</span>
+                    {% elif o.vencendo %}<span class="tag-alerta">vence em {{ o.dias_para_vencer }} d</span>
+                    {% elif o.pendente_registro %}<span class="tag-alerta">registro pendente</span>{% endif %}
+                </span>
+                <a href="{% url 'regulatorio_editar' o.pk %}">resolver</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <div class="filtro-chips">
+        <a class="chip {% if not tipo_ativo %}is-active{% endif %}" href="{% url 'regulatorio_lista' %}">Todas</a>
+        {% for valor, rotulo in tipo_choices %}
+        <a class="chip {% if tipo_ativo == valor %}is-active{% endif %}" href="?tipo={{ valor }}">{{ rotulo }}</a>
+        {% endfor %}
+    </div>
+
+    <div class="ds-card">
+        <div class="table-scroll">
+        <table class="data-table">
+            <thead><tr><th>Tipo</th><th>Número</th><th>Projeto</th><th>Responsável</th><th>Vencimento</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            {% for o in obrigacoes %}
+                <tr {% if o.vencida %}class="linha-desvio"{% endif %}>
+                    <td>{{ o.get_tipo_display }}</td>
+                    <td class="num">{{ o.numero|default:"—" }}</td>
+                    <td>{{ o.projeto.nome|default:"escritório" }}</td>
+                    <td>{{ o.responsavel_tecnico|default:"—" }}</td>
+                    <td class="num">{{ o.vencimento|date:"d/m/y"|default:"—" }}</td>
+                    <td>
+                        {% if o.status == 'baixada' %}<span class="valor--entrada">baixada</span>
+                        {% elif o.status == 'registrada' %}<span class="ds-badge ds-badge--info"><span class="ds-dot"></span>registrada</span>
+                        {% else %}<span class="tag-alerta">pendente</span>{% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'regulatorio_editar' o.pk %}">editar</a>
+                        {% if o.status != 'baixada' %}
+                        · <form method="post" action="{% url 'regulatorio_baixar' o.pk %}" class="app-inline-form">
+                            {% csrf_token %}<button class="app-link-btn" type="submit">baixar</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="7" class="data-empty">Nenhuma obrigação registrada.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

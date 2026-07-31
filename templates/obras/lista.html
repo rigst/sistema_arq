@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load l10n %}
+{% block title %}Obras{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head page-head--row">
+        <div>
+            <span class="ds-kicker">Obras</span>
+            <h1 class="ds-h2 ds-display">Acompanhamento de obra</h1>
+            <p class="page-sub">Visitas técnicas, cronograma real × previsto e medições que liberam pagamento.</p>
+        </div>
+        <a class="ds-btn ds-btn--solid" href="{% url 'obra_nova' %}">Abrir obra</a>
+    </header>
+
+    <div class="obra-grid">
+        {% for o in obras %}
+        <article class="ds-card obra-card">
+            <div class="obra-card-top">
+                <a class="projeto-nome" href="{% url 'obra_detalhe' o.pk %}">{{ o.projeto.nome }}</a>
+                <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ o.get_status_display }}</span>
+            </div>
+            <p class="projeto-cliente">{{ o.cliente.nome }}{% if o.endereco %} · {{ o.endereco }}{% endif %}</p>
+
+            <div class="cronograma">
+                <div class="cronograma-linha">
+                    <span>Previsto</span>
+                    <div class="ds-progress ds-progress--on-light"><div class="ds-progress-fill" style="width: {{ o.avanco_previsto|unlocalize }}%"></div></div>
+                    <b class="num">{{ o.avanco_previsto }}%</b>
+                </div>
+                <div class="cronograma-linha">
+                    <span>Real</span>
+                    <div class="ds-progress ds-progress--on-light"><div class="ds-progress-fill cronograma-real" style="width: {{ o.avanco_real|unlocalize }}%"></div></div>
+                    <b class="num">{{ o.avanco_real }}%</b>
+                </div>
+            </div>
+            {% if o.em_desvio %}
+            <p class="desvio-alerta">Desvio de {{ o.desvio }} p.p. — obra atrasada frente ao previsto.</p>
+            {% else %}
+            <p class="desvio-ok">Dentro do previsto ({{ o.desvio }} p.p.).</p>
+            {% endif %}
+        </article>
+        {% empty %}
+        <p class="data-empty">Nenhuma obra aberta. Abra a obra de um projeto para acompanhar visitas e medições.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

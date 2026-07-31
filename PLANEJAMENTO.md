@@ -378,11 +378,13 @@ Contratos + parcelas + aditivos · Briefing estruturado · Agenda · Aprovaçõe
 Painel Visual (kanban) · Comparativo horas estimado×real · Propostas personalizadas ·
 DRE/Resumo financeiro exportável · Importação de extrato bancário.
 
-**Fase 4 — Obras e regulatório**
-Módulo de obras (visitas, avanço, medições) · CAU/ART/RRT · notificações/alertas.
+**Fase 4 — Obras e regulatório** ✅ concluída
+Módulo de obras (visitas, avanço, medições que liberam pagamento) · CAU/ART/RRT com alerta
+de vencimento · notificações/alertas (Celery Beat + `varrer_alertas`).
 
-**Fase 5 — Adoção**
-Onboarding guiado + migração de planilha · Diagnóstico público · refinamento de relatórios.
+**Fase 5 — Adoção** ✅ concluída
+Onboarding guiado (checklist derivado dos dados) · Diagnóstico público (stateless).
+Pendente/futuro: migração de planilha (import pandas) e refinamento de relatórios.
 
 ---
 

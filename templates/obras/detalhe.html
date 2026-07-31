@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Obra — {{ obra.projeto.nome }}{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head page-head--row">
+        <div>
+            <span class="ds-kicker">Obra{% if obra.responsavel_tecnico %} · RT {{ obra.responsavel_tecnico }}{% endif %}</span>
+            <h1 class="ds-h2 ds-display">{{ obra.projeto.nome }}</h1>
+            <p class="page-sub">
+                <a href="{% url 'projeto_detalhe' obra.projeto.pk %}">Ver projeto</a>
+                · {{ obra.cliente.nome }}
+                · <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ obra.get_status_display }}</span>
+            </p>
+        </div>
+        <div class="page-head-actions">
+            <a class="ds-btn" href="{% url 'obra_editar' obra.pk %}">Editar</a>
+        </div>
+    </header>
+
+    <div class="ds-card cronograma-resumo">
+        <div class="cronograma-num">
+            <span class="ds-kicker">Previsto</span>
+            <strong class="num">{{ obra.avanco_previsto }}%</strong>
+        </div>
+        <div class="cronograma-num">
+            <span class="ds-kicker">Real</span>
+            <strong class="num">{{ obra.avanco_real }}%</strong>
+        </div>
+        <div class="cronograma-num">
+            <span class="ds-kicker">Desvio</span>
+            <strong class="num {% if obra.em_desvio %}desvio-forte{% endif %}">{{ obra.desvio }} p.p.</strong>
+        </div>
+        {% if obra.em_desvio %}
+        <p class="desvio-alerta">A obra está {{ obra.desvio }} p.p. atrás do cronograma previsto.</p>
+        {% endif %}
+    </div>
+
+    <div class="ds-card">
+        <h3 class="ds-display">Etapas e cronograma</h3>
+        <div class="table-scroll">
+        <table class="data-table">
+            <thead><tr><th>Etapa</th><th>Previsto</th><th>Real</th><th>Desvio</th><th>Valor</th><th>Medido</th><th>Atualizar avanço</th></tr></thead>
+            <tbody>
+            {% for e in etapas %}
+                <tr {% if e.em_desvio %}class="linha-desvio"{% endif %}>
+                    <td>{{ e.nome }}</td>
+                    <td class="num">{{ e.percentual_previsto }}%</td>
+                    <td class="num">{{ e.percentual_real }}%</td>
+                    <td class="num">{{ e.desvio }} p.p.</td>
+                    <td class="num">R$ {{ e.valor }}</td>
+                    <td class="num">R$ {{ e.valor_medido }}</td>
+                    <td>
+                        <form method="post" action="{% url 'obra_avanco' e.pk %}" class="avanco-form">
+                            {% csrf_token %}
+                            <input type="number" step="0.1" min="0" max="100" name="percentual_previsto" value="{{ e.percentual_previsto }}" aria-label="Previsto">
+                            <input type="number" step="0.1" min="0" max="100" name="percentual_real" value="{{ e.percentual_real }}" aria-label="Real">
+                            <button class="app-link-btn" type="submit">salvar</button>
+                        </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="7" class="data-empty">Sem etapas. Adicione a primeira abaixo.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <form method="post" action="{% url 'obra_etapa' obra.pk %}" class="inline-add">
+            {% csrf_token %}
+            {{ form_etapa.nome }} {{ form_etapa.percentual_previsto }} {{ form_etapa.valor }}
+            <button class="ds-btn ds-btn--solid" type="submit">Adicionar etapa</button>
+        </form>
+    </div>
+
+    <div class="detalhe-grid">
+        <div class="ds-card">
+            <h3 class="ds-display">Visitas técnicas</h3>
+            <form method="post" action="{% url 'obra_visita' obra.pk %}" class="form-card">
+                {% csrf_token %}
+                {{ form_visita.as_p }}
+                <button class="ds-btn ds-btn--solid" type="submit">Registrar visita</button>
+            </form>
+            <ul class="timeline visitas-timeline">
+                {% for v in visitas %}
+                <li>
+                    <span class="timeline-tipo">{{ v.data|date:"d/m/Y" }}{% if v.etapa %} · {{ v.etapa.nome }}{% endif %}</span>
+                    <span class="timeline-data">{{ v.responsavel.get_short_name|default:v.responsavel }}</span>
+                    <p>{{ v.verificado|linebreaksbr }}</p>
+                    {% if v.pendencias %}<p class="visita-pendencia"><strong>Pendências:</strong> {{ v.pendencias|linebreaksbr }}</p>{% endif %}
+                    {% if v.proxima_acao %}<p class="visita-acao">→ {{ v.proxima_acao }}</p>{% endif %}
+                </li>
+                {% empty %}
+                <li class="data-empty">Nenhuma visita registrada.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="ds-card">
+            <h3 class="ds-display">Medições</h3>
+            <p class="ht-hint">Cada medição aprovada vira um lançamento (entrada, previsto) no financeiro do projeto.</p>
+            <form method="post" action="{% url 'obra_medicao' obra.pk %}" class="form-card">
+                {% csrf_token %}
+                {{ form_medicao.as_p }}
+                <button class="ds-btn ds-btn--solid" type="submit">Registrar medição</button>
+                {% if not tem_conta %}<span class="ht-hint">Crie uma conta no Financeiro para poder liberar.</span>{% endif %}
+            </form>
+            <ul class="pendencias medicoes-lista">
+                {% for m in medicoes %}
+                <li>
+                    <span>{{ m.data|date:"d/m/y" }} · {{ m.etapa.nome }} · <b class="num">{{ m.percentual_medido }}%</b> · <b class="num">R$ {{ m.valor_liberado }}</b></span>
+                    {% if m.aprovada %}
+                    <span class="valor--entrada">liberada ✓</span>
+                    {% else %}
+                    <form method="post" action="{% url 'medicao_aprovar' m.pk %}">
+                        {% csrf_token %}
+                        <button class="app-link-btn" type="submit">aprovar e liberar</button>
+                    </form>
+                    {% endif %}
+                </li>
+                {% empty %}
+                <li class="data-empty">Nenhuma medição.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</section>
+{% endblock %}

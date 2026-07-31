@@ -4,7 +4,16 @@ Sistema de gestão para escritórios de arquitetura e design de interiores.
 Django + HTMX + CSS/HTML/JS puro (design system `stolben-ui`), PostgreSQL e
 Celery/Redis. Ver o planejamento completo em [`PLANEJAMENTO.md`](PLANEJAMENTO.md).
 
-## Estado atual: Fase 3 concluída (análise avançada)
+Software proprietário — ver [`LICENSE`](LICENSE). As dependências mantêm suas
+próprias licenças (ver [`LICENCAS.md`](LICENCAS.md)).
+
+**Identidade visual — "Prancheta técnica":** o app veste o design system Stölben com
+o vocabulário da prancheta de arquitetura — papel frio + tinta grafite, acento em
+verde de tinta técnica, títulos em Space Grotesk e **números em monoespaçada**
+(cada percentual, valor e registro lido como numa folha de especificação), com
+linhas de cota sob os títulos de cartão.
+
+## Estado atual: Fase 5 concluída (adoção)
 
 **Fundação (Fase 0):**
 - Projeto Django (`config`) com PostgreSQL (fallback SQLite em dev) e Celery/Redis
@@ -43,7 +52,22 @@ e proposta → contrato → parcelas → financeiro.
 - **DRE** do mês por categoria + **exportação CSV**.
 - **Importar extrato** bancário (OFX/CSV) com conciliação automática por valor.
 
-Licenças das dependências e recomendação de licença do app: ver [`LICENCAS.md`](LICENCAS.md).
+**Obras e conformidade (Fase 4):**
+- `obras` — abertura da obra com etapas construtivas padrão; **cronograma real × previsto**
+  com alerta de desvio (ponderado pelo valor das etapas); **visitas técnicas** (verificado,
+  pendências, próxima ação) ligadas à etapa; **medições que, ao aprovar, viram lançamento
+  (entrada) no financeiro** do projeto.
+- `regulatorio` — **ART/RRT e vínculo CAU** por projeto, com status, vencimento e alerta de
+  pendência/vencimento.
+- `notificacoes` — motor de alertas (task Celery Beat + comando `varrer_alertas`): prazo de
+  tarefa, projeto parado, desvio de obra e obrigação vencida/pendente, com **sino e contador**
+  na barra superior e deduplicação por chave.
+
+**Adoção (Fase 5):**
+- `diagnostico` — ferramenta pública (sem login, sem persistência): 5 perguntas × 4 dimensões,
+  pontuação 0–10 e faixa de maturidade (Inicial / Intermediário / Avançado).
+- `onboarding` — **implantação guiada em 5 etapas** cujo progresso é derivado dos dados reais
+  do escritório (cliente → custos → conta → projeto → tarefa).
 
 ## Rodar em desenvolvimento
 
@@ -68,8 +92,9 @@ celery -A config worker -l info
 celery -A config beat -l info      # agenda a limpeza de visitantes expirados
 ```
 
-## Limpeza de visitantes (sem Celery)
+## Tarefas de manutenção (sem Celery)
 
 ```bash
-python manage.py limpar_visitantes_expirados
+python manage.py limpar_visitantes_expirados   # remove visitantes além do TTL
+python manage.py varrer_alertas                # gera notificações de prazo/desvio/obrigação
 ```

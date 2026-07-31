@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Notificações{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head page-head--row">
+        <div>
+            <span class="ds-kicker">Alertas</span>
+            <h1 class="ds-h2 ds-display">Notificações</h1>
+            <p class="page-sub">Prazos, projetos parados, desvios de obra e obrigações — gerados automaticamente.</p>
+        </div>
+        {% if nao_lidas %}
+        <form method="post" action="{% url 'notificacoes_todas' %}">
+            {% csrf_token %}
+            <button class="ds-btn" type="submit">Marcar todas como lidas</button>
+        </form>
+        {% endif %}
+    </header>
+
+    <ul class="notif-lista">
+        {% for n in notificacoes %}
+        <li class="notif-item notif-item--{{ n.nivel }} {% if n.lida %}is-lida{% endif %}">
+            <div class="notif-corpo">
+                <strong>{{ n.titulo }}</strong>
+                {% if n.mensagem %}<p>{{ n.mensagem }}</p>{% endif %}
+                <span class="timeline-data">{{ n.criado_em|date:"d/m/Y H:i" }}</span>
+            </div>
+            {% if not n.lida %}
+            <form method="post" action="{% url 'notificacao_lida' n.pk %}">
+                {% csrf_token %}
+                <button class="app-link-btn" type="submit">{% if n.url %}ver{% else %}marcar lida{% endif %}</button>
+            </form>
+            {% endif %}
+        </li>
+        {% empty %}
+        <li class="data-empty">Nenhuma notificação. Tudo em dia.</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endblock %}

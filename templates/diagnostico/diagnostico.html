@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load l10n %}
+{% block title %}Diagnóstico de gestão{% endblock %}
+
+{% block content %}
+<section class="page page--narrow diagnostico">
+    <header class="page-head">
+        <span class="ds-kicker">Ferramenta gratuita</span>
+        <h1 class="ds-h2 ds-display">Diagnóstico de gestão do escritório</h1>
+        <p class="page-sub">Cinco perguntas, resultado na hora. Nada é armazenado — é só um espelho da sua operação.</p>
+    </header>
+
+    {% if resultado %}
+    <div class="ds-card diag-resultado">
+        <span class="ds-kicker">Sua maturidade</span>
+        <div class="diag-score">
+            <strong class="num">{{ resultado.pontos }}</strong><span class="num">/{{ resultado.maximo }}</span>
+        </div>
+        <div class="ds-progress ds-progress--on-light"><div class="ds-progress-fill" style="width: {{ resultado.percentual|unlocalize }}%"></div></div>
+        <h3 class="ds-display diag-faixa">{{ resultado.faixa }}</h3>
+        <p>{{ resultado.descricao }}</p>
+        <div class="form-actions">
+            <a class="ds-btn" href="{% url 'diagnostico' %}">Refazer</a>
+            <a class="ds-btn ds-btn--solid" href="{% url 'login' %}">Testar o sistema</a>
+        </div>
+    </div>
+    {% else %}
+    <form method="post" class="diag-form">
+        {% csrf_token %}
+        {% for p in perguntas %}
+        <fieldset class="ds-card diag-pergunta">
+            <legend><span class="diag-dim">{{ p.dimensao }}</span>{{ p.texto }}</legend>
+            <div class="diag-opcoes">
+                {% for texto, valor in p.opcoes %}
+                <label class="diag-opcao">
+                    <input type="radio" name="{{ p.id }}" value="{{ forloop.counter0 }}" {% if forloop.first %}required{% endif %}>
+                    <span>{{ texto }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </fieldset>
+        {% endfor %}
+        <button class="ds-btn ds-btn--solid diag-submit" type="submit">Ver meu diagnóstico</button>
+    </form>
+    {% endif %}
+</section>
+{% endblock %}
