@@ -1,38 +1,53 @@
 {% extends "base.html" %}
-
+{% load l10n %}
 {% block title %}Painel{% endblock %}
 
 {% block content %}
 <section class="page">
-    <header class="page-head">
-        <span class="ds-kicker">Painel</span>
-        <h1 class="ds-h2 ds-display">Bem-vindo{% if user.nome_exibicao %}, {{ user.nome_exibicao }}{% endif %}</h1>
-        <p class="page-sub">
-            Escritório ativo: <strong>{{ user.nome_empresa }}</strong>.
-            Do briefing à obra: cliente, proposta, projeto, contrato, financeiro e conformidade num só lugar.
-        </p>
+    <header class="page-head dash-head">
+        <div>
+            <span class="ds-kicker">Painel · {{ user.nome_empresa }}</span>
+            <h1 class="ds-h2 ds-display">Bem-vindo{% if user.nome_exibicao %}, {{ user.nome_exibicao }}{% endif %}</h1>
+            <p class="page-sub">Do briefing à obra num só lugar. Comece pelo que precisa de atenção hoje.</p>
+        </div>
     </header>
 
-    <div class="modulo-grid">
-        {% for nome, descricao, url_name, ativo in modulos %}
-        {% if ativo %}
-        <a class="modulo-card ds-card modulo-card--ativo" href="{% url url_name %}">
-            <div class="modulo-head">
-                <h3 class="ds-display">{{ nome }}</h3>
-                <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>Disponível</span>
-            </div>
-            <p>{{ descricao }}</p>
+    <div class="kpi-row">
+        {% for k in kpis %}
+        <a class="kpi{% if k.alerta %} kpi--alert{% endif %}" href="{% url k.url %}">
+            <span class="kpi-label">{{ k.label }}</span>
+            <strong class="kpi-value num">{{ k.valor }}</strong>
+            <span class="kpi-foot">{{ k.rodape }}</span>
         </a>
-        {% else %}
-        <article class="modulo-card ds-card modulo-card--breve">
-            <div class="modulo-head">
-                <h3 class="ds-display">{{ nome }}</h3>
-                <span class="ds-badge ds-badge--warn"><span class="ds-dot"></span>Em breve</span>
-            </div>
-            <p>{{ descricao }}</p>
-        </article>
-        {% endif %}
         {% endfor %}
     </div>
+
+    {% if not onboarding.completo %}
+    <a class="dash-onb ds-card" href="{% url 'onboarding' %}">
+        <div class="dash-onb-info">
+            <span class="ds-kicker">Implantação guiada</span>
+            <strong>Continue os primeiros passos — {{ onboarding.concluidas }} de {{ onboarding.total }} prontos</strong>
+            <div class="ds-progress ds-progress--on-light"><div class="ds-progress-fill" style="width: {{ onboarding.percentual|unlocalize }}%"></div></div>
+        </div>
+        <span class="dash-onb-cta">Retomar →</span>
+    </a>
+    {% endif %}
+
+    {% for titulo, itens in grupos %}
+    <div class="dash-section">
+        <h2 class="dash-section-head ds-display">{{ titulo }}</h2>
+        <div class="modulo-grid">
+            {% for nome, descricao, url_name in itens %}
+            <a class="modulo-card ds-card modulo-card--ativo" href="{% url url_name %}">
+                <div class="modulo-head">
+                    <h3 class="ds-display">{{ nome }}</h3>
+                    <span class="modulo-seta" aria-hidden="true">→</span>
+                </div>
+                <p>{{ descricao }}</p>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
 </section>
 {% endblock %}

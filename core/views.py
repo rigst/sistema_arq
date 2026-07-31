@@ -23,27 +23,71 @@ def healthz(request):
 
 @login_required
 def dashboard(request):
-    """Painel inicial. Na Fase 0 é só o esqueleto que confirma o acesso e a
-    empresa ativa; os módulos (projetos, financeiro, etc.) entram nas próximas fases."""
+    """Painel inicial — cockpit: indicadores do escritório, próximo passo da
+    implantação e atalhos agrupados por área."""
+    from decimal import Decimal
+
+    from django.db.models import Sum
+
+    from core.tenancy import queryset_da_empresa
+    from financeiro.models import Lancamento
+    from obras.models import Obra
+    from onboarding.checklist import montar_checklist
+    from projetos.models import Projeto
+    from regulatorio.models import ObrigacaoTecnica
+    from tarefas.models import Tarefa
+
     empresa = obter_empresa_ativa_usuario(request.user)
-    modulos = [
-        ("Primeiros passos", "Implantação guiada em 5 etapas.", "onboarding", True),
-        ("CRM e clientes", "Contatos, funil e histórico de cada cliente.", "crm_lista", True),
-        ("Precificação", "Hora técnica a partir dos custos fixos.", "precificacao", True),
-        ("Propostas", "Gerador de proposta que vira projeto ao aprovar.", "proposta_nova", True),
-        ("Projetos e etapas", "Painel com etapa, pendências e margem.", "projetos_painel", True),
-        ("Tarefas e horas", "Delegação com dono, prazo e timer.", "tarefas_lista", True),
-        ("Financeiro", "Entradas, saídas, saldos e margem por projeto.", "financeiro_painel", True),
-        ("Contratos", "Parcelas no financeiro, aditivos e documentos.", "contratos_lista", True),
-        ("Agenda", "Reuniões, visitas e prazos vinculados.", "agenda", True),
-        ("Obras", "Visitas técnicas, cronograma real × previsto e medições.", "obras_lista", True),
-        ("Regulatório", "ART, RRT e vínculo CAU com alerta de vencimento.", "regulatorio_lista", True),
-        ("Notificações", "Prazos, projetos parados e desvios — automáticos.", "notificacoes_lista", True),
+    u = request.user
+
+    projetos_ativos = queryset_da_empresa(Projeto.objects.all(), u).filter(status="ativo").count()
+    obras = list(queryset_da_empresa(Obra.objects.prefetch_related("etapas"), u))
+    obras_desvio = sum(1 for o in obras if o.em_desvio)
+    tarefas_abertas = queryset_da_empresa(Tarefa.objects.all(), u).exclude(status="concluida").count()
+    a_receber = queryset_da_empresa(Lancamento.objects.all(), u).filter(
+        tipo="entrada", status="previsto"
+    ).aggregate(s=Sum("valor"))["s"] or Decimal("0")
+    obrigacoes = queryset_da_empresa(ObrigacaoTecnica.objects.all(), u).exclude(status="baixada")
+    obrig_alerta = sum(1 for o in obrigacoes if o.vencida or o.vencendo or o.pendente_registro)
+
+    kpis = [
+        {"label": "Projetos ativos", "valor": projetos_ativos, "rodape": "em andamento", "url": "projetos_painel"},
+        {"label": "Obras em desvio", "valor": obras_desvio, "rodape": "atrás do previsto", "url": "obras_lista", "alerta": obras_desvio > 0},
+        {"label": "A receber (previsto)", "valor": f"R$ {a_receber}", "rodape": "lançamentos previstos", "url": "financeiro_painel"},
+        {"label": "Tarefas abertas", "valor": tarefas_abertas, "rodape": "a fazer", "url": "tarefas_lista"},
     ]
+
+    onboarding = montar_checklist(u)
+
+    grupos = [
+        ("Comercial", [
+            ("Clientes", "Contatos, funil e histórico.", "crm_lista"),
+            ("Propostas", "Proposta que vira projeto ao aprovar.", "propostas_lista"),
+            ("Contratos", "Parcelas no financeiro, aditivos e documentos.", "contratos_lista"),
+        ]),
+        ("Produção", [
+            ("Projetos", "Painel com etapa, pendências e margem.", "projetos_painel"),
+            ("Obras", "Cronograma real × previsto e medições.", "obras_lista"),
+            ("Tarefas", "Delegação com dono, prazo e timer.", "tarefas_lista"),
+            ("Agenda", "Reuniões, visitas e prazos.", "agenda"),
+        ]),
+        ("Gestão", [
+            ("Financeiro", "Entradas, saídas, saldos e margem.", "financeiro_painel"),
+            ("Precificação", "Hora técnica a partir dos custos.", "precificacao"),
+            ("Regulatório", "ART, RRT e CAU com alerta de vencimento.", "regulatorio_lista"),
+        ]),
+    ]
+
     return render(
         request,
         "core/dashboard.html",
-        {"empresa": empresa, "modulos": modulos},
+        {
+            "empresa": empresa,
+            "kpis": kpis,
+            "onboarding": onboarding,
+            "grupos": grupos,
+            "obrig_alerta": obrig_alerta,
+        },
     )
 
 

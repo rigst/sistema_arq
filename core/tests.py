@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from django.test import TestCase
+from django.test import Client, TestCase
 
 from core.factories import criar_empresa_e_usuario
 from core.visitante_cleanup import limpar_dados_negocio
@@ -9,6 +9,30 @@ from notificacoes.models import Notificacao
 from obras.models import EtapaObra, Obra
 from projetos.models import Projeto
 from regulatorio.models import ObrigacaoTecnica
+
+
+class DashboardTests(TestCase):
+    def setUp(self):
+        self.user, self.grupo = criar_empresa_e_usuario()
+        self.client = Client(SERVER_NAME="localhost")
+        self.client.force_login(self.user)
+
+    def test_dashboard_cockpit_renderiza(self):
+        cliente = Cliente.objects.create(empresa=self.grupo, nome="Cliente")
+        projeto = Projeto.objects.create(
+            empresa=self.grupo, nome="Casa", cliente=cliente, status="ativo"
+        )
+        obra = Obra.objects.create(empresa=self.grupo, projeto=projeto)
+        EtapaObra.objects.create(
+            empresa=self.grupo, obra=obra, nome="Estrutura",
+            percentual_previsto=80, percentual_real=30, valor=Decimal("1000"),
+        )
+        resp = self.client.get("/")
+        self.assertEqual(resp.status_code, 200)
+        # KPIs e navegação lateral presentes.
+        self.assertContains(resp, "Projetos ativos")
+        self.assertContains(resp, "Obras em desvio")
+        self.assertContains(resp, "app-side")
 
 
 class LimpezaVisitanteFase4Tests(TestCase):
