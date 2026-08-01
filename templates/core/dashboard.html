@@ -40,22 +40,46 @@
     </a>
     {% endif %}
 
-    {% for titulo, cor, itens in grupos %}
-    <div class="dash-section dash-section--{{ cor }}">
-        <h2 class="dash-section-head ds-display">{{ titulo }}</h2>
-        <div class="modulo-grid">
-            {% for nome, descricao, url_name, simbolo in itens %}
-            <a class="modulo-card ds-card modulo-card--ativo" href="{% url url_name %}">
-                <span class="modulo-ico">{% include "core/_ico.html" with ico=simbolo %}</span>
-                <div class="modulo-head">
-                    <h3 class="ds-display">{{ nome }}</h3>
-                    <span class="modulo-seta" aria-hidden="true">→</span>
-                </div>
-                <p>{{ descricao }}</p>
-            </a>
-            {% endfor %}
+    {% comment %}
+    Antes aqui estava o menu inteiro repetido em cartão. Agora está o trabalho:
+    um projeto por linha, em que passo do roteiro ele parou e o botão que leva
+    direto para esse passo — com o projeto já no contexto.
+    {% endcomment %}
+    <section class="dash-frentes" aria-labelledby="frentes-titulo">
+        <div class="dash-frentes-topo">
+            <h2 class="dash-section-head ds-display" id="frentes-titulo">Onde cada projeto parou</h2>
+            <a class="ds-btn" href="{% url 'projetos_painel' %}">Todos os projetos</a>
         </div>
-    </div>
-    {% endfor %}
+
+        {% if frentes %}
+        <ul class="frente-lista">
+            {% for f in frentes %}
+            <li class="frente">
+                <div class="frente-id">
+                    <a class="frente-nome" href="{% url 'projeto_detalhe' f.projeto.pk %}">{{ f.projeto.nome }}</a>
+                    <span class="frente-cliente">{{ f.projeto.cliente.nome }} · {{ f.projeto.get_tipo_display }}</span>
+                </div>
+                <div class="frente-avanco">
+                    <div class="ds-progress ds-progress--on-light">
+                        <div class="ds-progress-fill" style="width: {{ f.percentual|unlocalize }}%"></div>
+                    </div>
+                    <span class="frente-conta num">{{ f.feitas }}/{{ f.total }} etapas</span>
+                </div>
+                {% if f.proxima %}
+                <a class="ds-btn ds-btn--solid frente-cta" href="{{ f.proxima.url }}">{{ f.proxima.cta }}</a>
+                {% else %}
+                <span class="frente-pronto">roteiro completo</span>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="frente-vazio">
+            Nenhum projeto ativo ainda. Comece por
+            <a href="{% url 'jornada_abrir' %}">abrir um projeto</a> — cliente e nome bastam,
+            o roteiro cuida do resto.
+        </p>
+        {% endif %}
+    </section>
 </section>
 {% endblock %}

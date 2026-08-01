@@ -7,6 +7,7 @@ from django.views.decorators.http import require_POST
 
 from decimal import Decimal, InvalidOperation
 
+from core.contexto import projeto_do_pedido
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 from precificacao.models import FatorPrecificacao
 from precificacao.services import aplicar_fatores, hora_tecnica_base, precificar_etapa
@@ -35,19 +36,26 @@ def lista_propostas(request):
 @login_required
 def nova_proposta(request):
     grupo = obter_grupo_empresa_ou_erro(request.user)
+    projeto = projeto_do_pedido(request)
     if request.method == "POST":
-        form = PropostaForm(request.POST, user=request.user)
+        form = PropostaForm(request.POST, user=request.user, projeto=projeto)
         if form.is_valid():
             proposta = form.save(commit=False)
             proposta.empresa = grupo
             proposta.criado_por = request.user
             proposta.hora_tecnica_aplicada = hora_tecnica_base(grupo)
+            if projeto is not None:
+                # Fecha o laço: a proposta nascida de um projeto aponta para ele,
+                # senão o roteiro continuaria dizendo que falta proposta.
+                proposta.projeto_gerado = projeto
             proposta.save()
-            messages.success(request, "Proposta criada. Ajuste a hora técnica e adicione os ambientes.")
+            messages.success(
+                request, "Proposta criada. Ajuste a hora técnica e adicione os ambientes."
+            )
             return redirect("proposta_detalhe", pk=proposta.pk)
     else:
-        form = PropostaForm(user=request.user)
-    return render(request, "propostas/form.html", {"form": form})
+        form = PropostaForm(user=request.user, projeto=projeto)
+    return render(request, "propostas/form.html", {"form": form, "projeto": projeto})
 
 
 @login_required

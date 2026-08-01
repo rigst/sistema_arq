@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from core.contexto import projeto_do_pedido
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 from financeiro.models import ContaBancaria
 
@@ -22,8 +23,9 @@ def lista_obras(request):
 
 @login_required
 def nova_obra(request):
+    projeto = projeto_do_pedido(request)
     if request.method == "POST":
-        form = ObraForm(request.POST, user=request.user)
+        form = ObraForm(request.POST, user=request.user, projeto=projeto)
         if form.is_valid():
             obra = form.save(commit=False)
             obra.empresa = obter_grupo_empresa_ou_erro(request.user)
@@ -33,8 +35,10 @@ def nova_obra(request):
             messages.success(request, "Obra aberta com etapas construtivas padrão.")
             return redirect("obra_detalhe", pk=obra.pk)
     else:
-        form = ObraForm(user=request.user)
-    return render(request, "obras/form.html", {"form": form, "titulo": "Abrir obra"})
+        form = ObraForm(user=request.user, projeto=projeto)
+    return render(
+        request, "obras/form.html", {"form": form, "titulo": "Abrir obra", "projeto": projeto}
+    )
 
 
 @login_required

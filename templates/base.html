@@ -42,47 +42,19 @@
             <span>Projeto novo</span>
         </a>
 
+        {% comment %}
+        Os grupos respondem "quando eu preciso disso", não "de que área é".
+        Antes eram três blocos por setor do escritório, e o resultado é que
+        cadastro de fornecedor, modelo de briefing e tarefa do dia estavam no
+        mesmo nível de urgência. Agora: o que pede ação hoje, o trabalho por
+        projeto, o dinheiro, e o que se configura uma vez e não se toca mais.
+        {% endcomment %}
         <nav class="app-nav" aria-label="Navegação principal">
-            <div class="nav-group">
+            <div class="nav-group nav-group--hoje">
+                <span class="nav-label">Hoje</span>
                 <a href="{% url 'dashboard' %}" class="nav-link{% if request.path == '/' %} is-active{% endif %}">
                     {% include "core/_ico.html" with ico="painel" %}
                     <span>Painel</span>
-                </a>
-                <a href="{% url 'onboarding' %}" class="nav-link{% if '/onboarding/' in request.path %} is-active{% endif %}">
-                    {% include "core/_ico.html" with ico="onboarding" %}
-                    <span>Primeiros passos</span>
-                </a>
-            </div>
-
-            <div class="nav-group nav-group--comercial">
-                <span class="nav-label">Comercial</span>
-                <a href="{% url 'crm_lista' %}" class="nav-link{% if '/clientes/' in request.path %} is-active{% endif %}">
-                    {% include "core/_ico.html" with ico="clientes" %}
-                    <span>Clientes</span>
-                </a>
-                <a href="{% url 'propostas_lista' %}" class="nav-link{% if '/propostas/' in request.path %} is-active{% endif %}">
-                    {% include "core/_ico.html" with ico="propostas" %}
-                    <span>Propostas</span>
-                </a>
-                <a href="{% url 'contratos_lista' %}" class="nav-link{% if '/contratos/' in request.path %} is-active{% endif %}">
-                    {% include "core/_ico.html" with ico="contratos" %}
-                    <span>Contratos</span>
-                </a>
-                <a href="{% url 'briefing_templates' %}" class="nav-link{% if '/briefing/' in request.path %} is-active{% endif %}">
-                    {% include "core/_ico.html" with ico="briefings" %}
-                    <span>Briefings</span>
-                </a>
-            </div>
-
-            <div class="nav-group nav-group--producao">
-                <span class="nav-label">Produção</span>
-                <a href="{% url 'projetos_painel' %}" class="nav-link{% if '/projetos/' in request.path %} is-active{% endif %}">
-                    {% include "core/_ico.html" with ico="projetos" %}
-                    <span>Projetos</span>
-                </a>
-                <a href="{% url 'obras_lista' %}" class="nav-link{% if '/obras/' in request.path %} is-active{% endif %}">
-                    {% include "core/_ico.html" with ico="obras" %}
-                    <span>Obras</span>
                 </a>
                 <a href="{% url 'tarefas_lista' %}" class="nav-link{% if '/tarefas/' in request.path %} is-active{% endif %}">
                     {% include "core/_ico.html" with ico="tarefas" %}
@@ -92,9 +64,26 @@
                     {% include "core/_ico.html" with ico="agenda" %}
                     <span>Agenda</span>
                 </a>
-                <a href="{% url 'fornecedores_lista' %}" class="nav-link{% if '/fornecedores/' in request.path %} is-active{% endif %}">
-                    {% include "core/_ico.html" with ico="fornecedores" %}
-                    <span>Fornecedores</span>
+                <a href="{% url 'notificacoes_lista' %}" class="nav-link{% if '/notificacoes/' in request.path %} is-active{% endif %}">
+                    {% include "core/_ico.html" with ico="notificacoes" %}
+                    <span>Notificações</span>
+                    {% if notificacoes_nao_lidas %}<span class="nav-badge num">{{ notificacoes_nao_lidas }}</span>{% endif %}
+                </a>
+            </div>
+
+            <div class="nav-group nav-group--producao">
+                <span class="nav-label">Projetos</span>
+                <a href="{% url 'projetos_painel' %}" class="nav-link{% if '/projetos/' in request.path %} is-active{% endif %}">
+                    {% include "core/_ico.html" with ico="projetos" %}
+                    <span>Projetos</span>
+                </a>
+                <a href="{% url 'crm_lista' %}" class="nav-link{% if '/clientes/' in request.path %} is-active{% endif %}">
+                    {% include "core/_ico.html" with ico="clientes" %}
+                    <span>Clientes</span>
+                </a>
+                <a href="{% url 'obras_lista' %}" class="nav-link{% if '/obras/' in request.path %} is-active{% endif %}">
+                    {% include "core/_ico.html" with ico="obras" %}
+                    <span>Obras</span>
                 </a>
                 <a href="{% url 'arquivos_lista' %}" class="nav-link{% if '/arquivos/' in request.path %} is-active{% endif %}">
                     {% include "core/_ico.html" with ico="arquivos" %}
@@ -103,27 +92,50 @@
             </div>
 
             <div class="nav-group nav-group--gestao">
-                <span class="nav-label">Gestão</span>
-                <a href="{% url 'financeiro_painel' %}" class="nav-link{% if '/financeiro/' in request.path %} is-active{% endif %}">
-                    {% include "core/_ico.html" with ico="financeiro" %}
-                    <span>Financeiro</span>
+                <span class="nav-label">Dinheiro</span>
+                <a href="{% url 'propostas_lista' %}" class="nav-link{% if '/propostas/' in request.path %} is-active{% endif %}">
+                    {% include "core/_ico.html" with ico="propostas" %}
+                    <span>Propostas</span>
                 </a>
-                <a href="{% url 'precificacao' %}" class="nav-link{% if '/precificacao/' in request.path %} is-active{% endif %}">
-                    {% include "core/_ico.html" with ico="precificacao" %}
-                    <span>Precificação</span>
+                <a href="{% url 'contratos_lista' %}" class="nav-link{% if '/contratos/' in request.path and '/modelos' not in request.path %} is-active{% endif %}">
+                    {% include "core/_ico.html" with ico="contratos" %}
+                    <span>Contratos</span>
                 </a>
                 <a href="{% url 'orcamentos_lista' %}" class="nav-link{% if '/orcamentos/' in request.path %} is-active{% endif %}">
                     {% include "core/_ico.html" with ico="orcamentos" %}
                     <span>Orçamentos</span>
                 </a>
+                <a href="{% url 'financeiro_painel' %}" class="nav-link{% if '/financeiro/' in request.path %} is-active{% endif %}">
+                    {% include "core/_ico.html" with ico="financeiro" %}
+                    <span>Financeiro</span>
+                </a>
+            </div>
+
+            <div class="nav-group nav-group--escritorio">
+                <span class="nav-label">Escritório</span>
+                <a href="{% url 'fornecedores_lista' %}" class="nav-link{% if '/fornecedores/' in request.path %} is-active{% endif %}">
+                    {% include "core/_ico.html" with ico="fornecedores" %}
+                    <span>Fornecedores</span>
+                </a>
+                <a href="{% url 'briefing_templates' %}" class="nav-link{% if '/briefing/' in request.path %} is-active{% endif %}">
+                    {% include "core/_ico.html" with ico="briefings" %}
+                    <span>Modelos de briefing</span>
+                </a>
+                <a href="{% url 'contratos_modelos' %}" class="nav-link{% if '/modelos' in request.path %} is-active{% endif %}">
+                    {% include "core/_ico.html" with ico="contratos" %}
+                    <span>Modelos de contrato</span>
+                </a>
+                <a href="{% url 'precificacao' %}" class="nav-link{% if '/precificacao/' in request.path %} is-active{% endif %}">
+                    {% include "core/_ico.html" with ico="precificacao" %}
+                    <span>Hora técnica</span>
+                </a>
                 <a href="{% url 'regulatorio_lista' %}" class="nav-link{% if '/regulatorio/' in request.path %} is-active{% endif %}">
                     {% include "core/_ico.html" with ico="regulatorio" %}
                     <span>Regulatório</span>
                 </a>
-                <a href="{% url 'notificacoes_lista' %}" class="nav-link{% if '/notificacoes/' in request.path %} is-active{% endif %}">
-                    {% include "core/_ico.html" with ico="notificacoes" %}
-                    <span>Notificações</span>
-                    {% if notificacoes_nao_lidas %}<span class="nav-badge num">{{ notificacoes_nao_lidas }}</span>{% endif %}
+                <a href="{% url 'onboarding' %}" class="nav-link{% if '/onboarding/' in request.path %} is-active{% endif %}">
+                    {% include "core/_ico.html" with ico="onboarding" %}
+                    <span>Primeiros passos</span>
                 </a>
             </div>
         </nav>

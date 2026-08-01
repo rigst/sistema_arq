@@ -14,10 +14,11 @@
             </p>
         </div>
         <div class="page-head-actions">
-            <a class="ds-btn" href="{% url 'briefing_projeto' projeto.pk %}">Briefing</a>
             <a class="ds-btn" href="{% url 'projeto_editar' projeto.pk %}">Editar</a>
         </div>
     </header>
+
+    {% include "projetos/_roteiro.html" %}
 
     <div class="margem-strip ds-card">
         <div><span>Contratado</span><strong>R$ {{ projeto.valor_contratado }}</strong></div>

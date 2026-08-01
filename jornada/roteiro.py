@@ -11,6 +11,8 @@ from typing import Callable
 
 from django.urls import reverse
 
+from core.contexto import com_projeto
+
 
 @dataclass
 class Etapa:
@@ -79,7 +81,9 @@ def montar_roteiro(projeto):
             cta="Ver proposta" if proposta else "Criar proposta",
             concluida=proposta is not None,
             url=(
-                _url("proposta_detalhe", pk=proposta.pk) if proposta else _url("proposta_nova")
+                _url("proposta_detalhe", pk=proposta.pk)
+                if proposta
+                else com_projeto(_url("proposta_nova"), projeto)
             ),
             resumo=proposta.get_status_display() if proposta else "",
         ),
@@ -90,7 +94,9 @@ def montar_roteiro(projeto):
             cta="Abrir contrato" if contrato else "Criar contrato",
             concluida=contrato is not None and contrato.status == "ativo",
             url=(
-                _url("contrato_detalhe", pk=contrato.pk) if contrato else _url("contrato_novo")
+                _url("contrato_detalhe", pk=contrato.pk)
+                if contrato
+                else com_projeto(_url("contrato_novo"), projeto)
             ),
             resumo=contrato.get_status_display() if contrato else "",
         ),
@@ -100,7 +106,11 @@ def montar_roteiro(projeto):
             descricao="Cronograma, visitas técnicas e medições que liberam pagamento.",
             cta="Abrir obra" if obra is None else "Acompanhar obra",
             concluida=obra is not None,
-            url=(_url("obra_detalhe", pk=obra.pk) if obra else _url("obra_nova")),
+            url=(
+                _url("obra_detalhe", pk=obra.pk)
+                if obra
+                else com_projeto(_url("obra_nova"), projeto)
+            ),
             resumo=obra.get_status_display() if obra else "",
         ),
     ]

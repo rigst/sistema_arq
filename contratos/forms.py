@@ -16,10 +16,16 @@ class ContratoForm(ArqModelForm):
             "observacoes": forms.Textarea(attrs={"rows": 2}),
         }
 
-    def __init__(self, *args, user=None, **kwargs):
+    def __init__(self, *args, user=None, projeto=None, **kwargs):
         super().__init__(*args, **kwargs)
         if user is not None:
             self.fields["projeto"].queryset = queryset_da_empresa(Projeto.objects.all(), user)
+        if projeto is not None:
+            self.fields["projeto"].initial = projeto.pk
+            self.fields["projeto"].disabled = True
+            self.fields["titulo"].initial = f"Contrato — {projeto.nome}"
+            if projeto.valor_contratado:
+                self.fields["valor_total"].initial = projeto.valor_contratado
 
 
 class GerarParcelasForm(ArqForm):

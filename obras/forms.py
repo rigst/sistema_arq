@@ -26,7 +26,7 @@ class ObraForm(ArqModelForm):
             "observacoes": forms.Textarea(attrs={"rows": 2}),
         }
 
-    def __init__(self, *args, user=None, **kwargs):
+    def __init__(self, *args, user=None, projeto=None, **kwargs):
         super().__init__(*args, **kwargs)
         if user is not None:
             # Só projetos sem obra (na edição, mantém o projeto já vinculado).
@@ -36,6 +36,9 @@ class ObraForm(ArqModelForm):
             else:
                 qs = qs.filter(obra__isnull=True)
             self.fields["projeto"].queryset = qs
+        if projeto is not None:
+            self.fields["projeto"].initial = projeto.pk
+            self.fields["projeto"].disabled = True
 
 
 class EtapaObraForm(ArqModelForm):

@@ -1,0 +1,37 @@
+{% load l10n %}
+{% comment %}
+A espinha do projeto. Mora na ficha do projeto porque é a resposta à pergunta
+"e agora, o que eu faço nesse projeto?" — pergunta que só tem sentido olhando
+para o projeto, não para uma tela separada.
+{% endcomment %}
+<section class="roteiro" aria-labelledby="roteiro-titulo">
+    <div class="roteiro-topo">
+        <div>
+            <h2 class="ds-display" id="roteiro-titulo">Roteiro do projeto</h2>
+            <p class="roteiro-sub">
+                {% if roteiro_proxima %}
+                    Próximo passo: <strong>{{ roteiro_proxima.titulo|lower }}</strong> — {{ roteiro_proxima.descricao|lower }}
+                {% else %}
+                    Todas as etapas cumpridas. O projeto está com briefing, orçamento, proposta, contrato e obra no lugar.
+                {% endif %}
+            </p>
+        </div>
+        <span class="roteiro-percent num">{{ roteiro_percent }}%</span>
+    </div>
+
+    <ol class="roteiro-trilha">
+        {% for etapa in roteiro %}
+        <li class="roteiro-passo{% if etapa.concluida %} is-feito{% endif %}{% if roteiro_proxima and roteiro_proxima.chave == etapa.chave %} is-atual{% endif %}">
+            <a href="{{ etapa.url }}" title="{{ etapa.descricao }}">
+                <span class="roteiro-marca num" aria-hidden="true">{% if etapa.concluida %}✓{% else %}{{ forloop.counter }}{% endif %}</span>
+                <span class="roteiro-nome">{{ etapa.titulo }}</span>
+                <span class="roteiro-estado">
+                    {% if etapa.resumo %}{{ etapa.resumo }}
+                    {% elif etapa.concluida %}pronto
+                    {% else %}{{ etapa.cta|lower }}{% endif %}
+                </span>
+            </a>
+        </li>
+        {% endfor %}
+    </ol>
+</section>

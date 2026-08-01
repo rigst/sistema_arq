@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from core.contexto import projeto_do_pedido
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 from financeiro.models import ContaBancaria
 
@@ -21,8 +22,9 @@ def lista_contratos(request):
 
 @login_required
 def novo_contrato(request):
+    projeto = projeto_do_pedido(request)
     if request.method == "POST":
-        form = ContratoForm(request.POST, user=request.user)
+        form = ContratoForm(request.POST, user=request.user, projeto=projeto)
         if form.is_valid():
             contrato = form.save(commit=False)
             contrato.empresa = obter_grupo_empresa_ou_erro(request.user)
@@ -31,8 +33,12 @@ def novo_contrato(request):
             messages.success(request, "Contrato criado.")
             return redirect("contrato_detalhe", pk=contrato.pk)
     else:
-        form = ContratoForm(user=request.user)
-    return render(request, "contratos/form.html", {"form": form, "titulo": "Novo contrato"})
+        form = ContratoForm(user=request.user, projeto=projeto)
+    return render(
+        request,
+        "contratos/form.html",
+        {"form": form, "titulo": "Novo contrato", "projeto": projeto},
+    )
 
 
 @login_required

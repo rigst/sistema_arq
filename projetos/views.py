@@ -91,6 +91,7 @@ def editar_projeto(request, pk):
 @login_required
 def detalhe_projeto(request, pk):
     from financeiro.services import calcular_margem_projeto
+    from jornada.roteiro import montar_roteiro, percentual, proxima_etapa
 
     projeto = get_object_or_404(
         queryset_da_empresa(Projeto.objects.select_related("cliente"), request.user), pk=pk
@@ -98,6 +99,9 @@ def detalhe_projeto(request, pk):
     trabalhadas = projeto.horas_trabalhadas
     estimadas = projeto.horas_estimadas or 0
     horas_percent = min(float(trabalhadas) / float(estimadas) * 100, 100) if estimadas else 0
+    # O roteiro mora aqui, e não numa página só dele: ter duas telas centrais
+    # por projeto era o que fazia ninguém saber em qual delas olhar.
+    roteiro = montar_roteiro(projeto)
     return render(
         request,
         "projetos/detalhe.html",
@@ -108,6 +112,9 @@ def detalhe_projeto(request, pk):
             "form_pendencia": PendenciaForm(),
             "margem": calcular_margem_projeto(projeto),
             "horas_percent": round(horas_percent, 1),
+            "roteiro": roteiro,
+            "roteiro_proxima": proxima_etapa(roteiro),
+            "roteiro_percent": percentual(roteiro),
         },
     )
 

@@ -166,17 +166,19 @@ a { color: var(--ds-blue-dark); }
 .app-side-head { display: flex; align-items: center; justify-content: space-between; padding: 1.15rem 1.15rem 0.9rem; }
 .nav-burger { display: none; }
 
-.app-nav { flex: 1; overflow-y: auto; padding: 0.25rem 0.75rem 1.25rem; display: flex; flex-direction: column; gap: 1.35rem; }
+.app-nav { flex: 1; overflow-y: auto; padding: 0.25rem 0.75rem 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
 .nav-group { display: flex; flex-direction: column; gap: 0.1rem; }
-.nav-label { display: flex; align-items: center; gap: 0.45rem; padding: 0.5rem 0.6rem 0.35rem; }
+.nav-label { display: flex; align-items: center; gap: 0.45rem; padding: 0.35rem 0.6rem 0.25rem; }
 .nav-label::before { content: ""; width: 0.45rem; height: 0.45rem; border-radius: 1px; background: currentColor; }
 .nav-group--comercial .nav-label { color: var(--arq-blue); }
 .nav-group--producao .nav-label { color: var(--arq-green); }
 .nav-group--gestao .nav-label { color: var(--arq-amber); }
+.nav-group--hoje .nav-label { color: var(--arq-clay); }
+.nav-group--escritorio .nav-label { color: var(--ds-text-500); }
 
 .nav-link {
     position: relative; display: flex; align-items: center; gap: 0.7rem;
-    padding: 0.5rem 0.65rem; border-radius: 0.55rem; text-decoration: none;
+    padding: 0.42rem 0.65rem; border-radius: 0.55rem; text-decoration: none;
     color: var(--ds-text-700); font-size: 0.9rem;
     transition: background var(--arq-fast) ease, color var(--arq-fast) ease;
 }
@@ -817,18 +819,28 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .tela-login .app-main--public { max-width: none; padding: 0; flex: 1; display: flex; }
 .tela-login .auth-shell { flex: 1; }
 .auth-shell {
-    position: relative; min-height: 100vh; display: grid; align-items: end;
-    grid-template-columns: 1fr; gap: 2rem;
-    padding: clamp(1.5rem, 4vw, 3.5rem);
-    box-sizing: border-box;
+    position: relative; min-height: 100vh;
     background: url("../img/login-arquitetura.jpg") center / cover no-repeat, var(--ds-ink);
 }
 .auth-shell::before {
     content: ""; position: absolute; inset: 0; pointer-events: none;
-    background: linear-gradient(to top, rgba(10, 14, 15, 0.9) 8%, rgba(10, 14, 15, 0.55) 45%, rgba(10, 14, 15, 0.35));
+    background:
+        linear-gradient(105deg, rgba(10, 14, 15, 0.84) 0%, rgba(10, 14, 15, 0.52) 34%,
+            rgba(10, 14, 15, 0.26) 58%, rgba(10, 14, 15, 0.46) 100%),
+        linear-gradient(to top, rgba(10, 14, 15, 0.55), transparent 38%);
+}
+/* A foto sangra na tela inteira, mas o conteúdo obedece a uma largura de
+   trabalho e fica centrado: o cartão sai da beirada direita e o texto sobe
+   do canto para o corpo da imagem. */
+.auth-quadro {
+    position: relative; z-index: 2; min-height: 100vh;
+    display: grid; grid-template-columns: 1fr; gap: 2.5rem; align-items: center;
+    max-width: 76rem; margin: 0 auto;
+    padding: clamp(1.5rem, 4vw, 3.5rem);
+    box-sizing: border-box;
 }
 @media (min-width: 62rem) {
-    .auth-shell { grid-template-columns: minmax(0, 1fr) 22.5rem; align-items: end; gap: 3rem; }
+    .auth-quadro { grid-template-columns: minmax(0, 1fr) 21rem; gap: 4.5rem; }
 }
 
 /* Texto livre sobre a imagem — sem card */
@@ -932,7 +944,7 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
     .modulo-grid { gap: 0; }
     .saldo-card + .saldo-card { padding-left: 0; border-left: 0; }
     .dash-carimbo > div + div { padding-left: 0; border-left: 0; }
-    .auth-shell { align-items: stretch; align-content: end; }
+    .auth-quadro { align-items: stretch; align-content: center; }
 }
 
 /* =================================================================
@@ -1110,35 +1122,35 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
    assim o pátio atravessa: dá para ver a cor e o contorno do concreto
    se movendo por baixo do texto. */
 .app-main {
-    background: linear-gradient(160deg,
-        rgba(255, 255, 255, 0.54), rgba(255, 255, 255, 0.44) 42%, rgba(255, 255, 255, 0.5));
-    -webkit-backdrop-filter: var(--vidro-desfoque-forte); backdrop-filter: var(--vidro-desfoque-forte);
-    border-left: 1px solid var(--vidro-borda);
-    box-shadow: var(--vidro-fio), var(--vidro-aro), -12px 0 40px rgba(18, 32, 28, 0.14);
+    background: var(--ds-bg);
+    border-left: 1px solid var(--ds-line);
+    box-shadow: -12px 0 40px rgba(18, 32, 28, 0.16);
 }
 .app-main--public { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
 
 /* --- Barra lateral: a lâmina mais transparente do sistema ------- */
 .app-side {
     background: linear-gradient(180deg,
-        rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.56) 48%, rgba(255, 255, 255, 0.64));
+        rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.8) 48%, rgba(255, 255, 255, 0.84));
     -webkit-backdrop-filter: var(--vidro-desfoque); backdrop-filter: var(--vidro-desfoque);
     border-right: 1px solid var(--vidro-borda);
     box-shadow: var(--vidro-fio), var(--vidro-aro), 2px 0 40px rgba(18, 32, 28, 0.18);
 }
 .app-side-foot { border-top-color: rgba(255, 255, 255, 0.45); }
-.app-empresa-info span, .app-sair, .pe-legal a { color: #2f3a37; }
-.nav-link { color: #222b28; }
-.nav-link:hover { background: rgba(255, 255, 255, 0.45); }
+.app-empresa-info span, .app-sair, .pe-legal a { color: #2a3532; }
+.nav-link { color: #16201d; font-weight: 500; }
+.nav-link:hover { background: rgba(255, 255, 255, 0.8); color: #0d1614; }
 .nav-link.is-active {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.6));
     box-shadow: var(--vidro-fio), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
     color: var(--ds-blue-dark);
 }
-.nav-label { color: #2f3a37; }
-.nav-group--comercial .nav-label { color: #143a5c; }
-.nav-group--producao .nav-label { color: #0d4030; }
-.nav-group--gestao .nav-label { color: #5c3b05; }
+.nav-label { color: #2a3532; }
+.nav-group--comercial .nav-label { color: #17456e; }
+.nav-group--producao .nav-label { color: #10493a; }
+.nav-group--gestao .nav-label { color: #6a4406; }
+.nav-group--hoje .nav-label { color: #8d2d1e; }
+.nav-group--escritorio .nav-label { color: #3f4a46; }
 
 /* Botão de destaque: vidro verde com o corte aceso */
 .nav-destaque {
@@ -1204,15 +1216,12 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.56), inset 0 0 0 1px rgba(255, 255, 255, 0.22),
                 0 12px 30px rgba(18, 60, 48, 0.38);
 }
-/* O reflexo que atravessa o botão de ponta a ponta */
-.ds-btn::after {
-    content: ""; position: absolute; top: 0; bottom: 0; width: 45%; left: -60%;
-    pointer-events: none; z-index: 0;
-    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.6), transparent);
-    transform: skewX(-18deg);
-    transition: left 620ms var(--arq-ease);
-}
-.ds-btn:hover::after { left: 115%; }
+/* Sem reflexo correndo por dentro. O botão responde como peça física: sobe
+   um fio no hover, afunda ao ser apertado. */
+.ds-btn { transition: background var(--arq-fast) ease, border-color var(--arq-fast) ease,
+                      box-shadow var(--arq-mid) var(--arq-ease), transform var(--arq-fast) var(--arq-ease-out); }
+.ds-btn:hover { transform: translateY(-1px); }
+.ds-btn:active { transform: translateY(1px); transition-duration: 60ms; }
 .ds-btn > * { position: relative; z-index: 1; }
 
 /* Chips: lâminas mínimas */
@@ -1396,11 +1405,222 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .kpi--amber { --sec: #6d460a; }
 .kpi--alert { --sec: #8e2a1c; }
 
-/* No estreito a lateral rola por cima do conteúdo: ali a lâmina fecha. */
+/* No estreito a lateral rola por cima do conteúdo. */
 @media (max-width: 62rem) {
-    .app-side { background: rgba(255, 255, 255, 0.9); }
-    .app-main {
-        background: rgba(255, 255, 255, 0.76); border-left: 0;
-        box-shadow: var(--vidro-fio);
-    }
+    .app-side { background: rgba(255, 255, 255, 0.94); }
+    .app-main { border-left: 0; box-shadow: none; }
+}
+
+/* =================================================================
+   A SUPERFÍCIE DE TRABALHO É OPACA
+   O vidro fica onde é acabamento — login e barra lateral. Onde se lê e
+   se digita, o fundo tem de ficar parado: fundo que muda conforme o que
+   passa por baixo é bonito por dez segundos e cansa no resto do dia.
+   ================================================================= */
+.app-main { --ds-text-500: #5b6a65; --ds-text-400: #78857f; }
+
+.kpi-row, .dash-onb, .projeto-card, .obra-card, .kanban-card,
+.alerta-card, .ia-bloco, .timer-card.is-rodando, .kanban-col {
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+.kpi-row::after, .dash-onb::after, .projeto-card::after, .obra-card::after,
+.alerta-card::after, .ia-bloco::after, .lamina-brilho::before { display: none; }
+
+.kpi-row { background: var(--ds-surface); border-color: var(--ds-line); box-shadow: var(--ds-shadow-soft); }
+.kpi:hover { background: var(--ds-panel); }
+.projeto-card, .obra-card, .kanban-card {
+    background: var(--ds-surface); border-color: var(--ds-line); box-shadow: var(--ds-shadow-soft);
+}
+.projeto-card:hover, .obra-card:hover, .kanban-card:hover {
+    border-color: var(--ds-blue-light); box-shadow: 0 2px 4px rgba(20, 24, 26, 0.06), 0 14px 32px rgba(20, 24, 26, 0.1);
+}
+.kanban-col { background: var(--ds-panel); box-shadow: none; }
+.dash-onb { background: var(--ds-blue-50); border-color: var(--ds-blue-100); box-shadow: none; }
+.dash-onb:hover { background: var(--ds-blue-100); }
+.alerta-card { background: #f6efe0; border-color: #e6d3ab; box-shadow: none; }
+.ia-bloco { background: #efecf6; border-color: #d3cae6; box-shadow: none; }
+.timer-card.is-rodando { background: var(--ds-blue-50); border-color: var(--ds-blue-100); }
+
+.ds-btn:not(.ds-btn--solid) {
+    background: var(--ds-surface); border-color: var(--ds-line-dash);
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+    box-shadow: 0 1px 2px rgba(18, 32, 28, 0.06); color: var(--ds-text-900);
+}
+.ds-btn:not(.ds-btn--solid):hover {
+    background: var(--ds-panel); border-color: var(--ds-blue-light);
+    box-shadow: 0 3px 10px rgba(18, 32, 28, 0.12); color: var(--ds-blue-dark);
+}
+.chip {
+    background: var(--ds-surface); border-color: var(--ds-line-dash);
+    -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; color: var(--ds-text-700);
+}
+.chip:hover { background: var(--ds-panel); border-color: var(--ds-blue-light); }
+.chip.is-active { background: var(--ds-ink); border-color: var(--ds-ink); color: #fff; box-shadow: none; }
+.ds-badge--info { background: var(--ds-blue-50); border-color: var(--ds-blue-100); box-shadow: none; }
+
+.form-card input, .form-card select, .form-card textarea,
+.form-block input, .form-block select, .form-block textarea,
+.inline-add, .inline-add input, .inline-add select,
+.timer-campo input, .timer-campo select,
+.briefing-complemento textarea, .contrato-corpo, .diag-opcao, .briefing-opcao {
+    background: var(--ds-surface); border-color: var(--ds-line-dash); box-shadow: none;
+}
+/* A barra lateral é a única lâmina que continua: ali a transparência é
+   moldura, não superfície de leitura demorada. */
+.app-side .ds-btn:not(.ds-btn--solid) { background: rgba(255, 255, 255, 0.7); }
+
+/* No login o brilho vira reflexo de canto: a faixa diagonal cruzava o campo
+   de digitação e sujava a leitura. */
+.auth-card::after {
+    background: radial-gradient(30rem 22rem at 2% -8%, rgba(255, 255, 255, 0.4), transparent 60%);
+}
+
+/* Com a folha opaca, o pátio só pode aparecer atrás da barra lateral. Solto
+   na tela inteira ele reaparecia como duas tiras de foto nas margens da
+   folha, o que é pior do que não ter fundo nenhum. */
+.app-shell::before { inset: 0 auto 0 0; width: var(--arq-lateral); }
+.app-shell { background: var(--ds-bg); }
+.app-frame { background: var(--ds-bg); }
+@media (max-width: 62rem) {
+    .app-shell::before { inset: 0; width: auto; }
+}
+
+/* =================================================================
+   BARRAS DE ROLAGEM — um fio, não um trilho
+   ================================================================= */
+* { scrollbar-width: thin; scrollbar-color: rgba(60, 78, 72, 0.32) transparent; }
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background: rgba(60, 78, 72, 0.28);
+    border-radius: 99px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(60, 78, 72, 0.5); background-clip: content-box; }
+::-webkit-scrollbar-corner { background: transparent; }
+
+/* =================================================================
+   ROTEIRO — a espinha do projeto
+   Seis passos numa linha, dentro da ficha do projeto. Não é decoração
+   de progresso: cada passo é o link para a tela daquela etapa, já com o
+   projeto no contexto, e diz em uma linha o que existe ali hoje.
+   ================================================================= */
+.roteiro { margin: 0 0 2.25rem; }
+.roteiro-topo {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 1.5rem; margin-bottom: 0.9rem;
+}
+.roteiro-topo h2 { margin: 0 0 0.15rem; font-size: 1.05rem; }
+.roteiro-sub { margin: 0; color: var(--ds-text-500); font-size: 0.88rem; }
+.roteiro-sub strong { color: var(--ds-text-900); font-weight: 600; }
+.roteiro-percent {
+    font-family: var(--arq-font-mono); font-size: 1.35rem; font-weight: 600;
+    color: var(--ds-blue-dark); flex-shrink: 0;
+}
+
+.roteiro-trilha {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
+    border: 1px solid var(--ds-line); border-radius: 0.75rem; overflow: hidden;
+    background: var(--ds-surface);
+}
+.roteiro-passo + .roteiro-passo { border-left: 1px solid var(--ds-line); }
+.roteiro-passo a {
+    display: flex; flex-direction: column; gap: 0.35rem;
+    padding: 0.85rem 0.9rem 0.95rem; height: 100%; box-sizing: border-box;
+    text-decoration: none; color: inherit;
+    transition: background var(--arq-fast) ease;
+}
+.roteiro-passo a:hover { background: var(--ds-panel); }
+.roteiro-marca {
+    width: 1.5rem; height: 1.5rem; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.76rem; font-weight: 600;
+    background: var(--ds-panel); color: var(--ds-text-500);
+    border: 1px solid var(--ds-line-dash);
+}
+.roteiro-nome { font-size: 0.86rem; font-weight: 500; line-height: 1.3; }
+.roteiro-estado {
+    font-family: var(--arq-font-mono); font-size: 0.7rem;
+    color: var(--ds-text-500); line-height: 1.35;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* Feito: a marca vira o verde do sistema. */
+.roteiro-passo.is-feito .roteiro-marca {
+    background: var(--ds-blue-50); border-color: var(--ds-blue-100); color: var(--ds-blue-dark);
+}
+/* Atual: o único passo com peso. É onde a pessoa deve clicar agora. */
+.roteiro-passo.is-atual { background: var(--ds-blue-50); }
+.roteiro-passo.is-atual a:hover { background: var(--ds-blue-100); }
+.roteiro-passo.is-atual .roteiro-marca {
+    background: var(--ds-blue); border-color: var(--ds-blue); color: #fff;
+}
+.roteiro-passo.is-atual .roteiro-nome { font-weight: 600; color: var(--ds-blue-dark); }
+.roteiro-passo.is-atual .roteiro-estado { color: var(--ds-blue-dark); }
+
+@media (max-width: 68rem) {
+    .roteiro-trilha { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .roteiro-passo:nth-child(3n + 1) { border-left: 0; }
+    .roteiro-passo:nth-child(n + 4) { border-top: 1px solid var(--ds-line); }
+}
+@media (max-width: 40rem) {
+    .roteiro-trilha { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .roteiro-passo:nth-child(n) { border-left: 1px solid var(--ds-line); border-top: 1px solid var(--ds-line); }
+    .roteiro-passo:nth-child(odd) { border-left: 0; }
+    .roteiro-passo:nth-child(-n + 2) { border-top: 0; }
+    .roteiro-topo { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+}
+
+/* A faixa de contexto: de onde esta tela foi aberta. */
+.contexto-projeto {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 0.75rem;
+    margin: 0 0 1.5rem; padding: 0.65rem 0 0.75rem;
+    border-top: 1px solid var(--ds-line); border-bottom: 1px solid var(--ds-line);
+}
+.contexto-projeto .ds-kicker { margin: 0; }
+.contexto-projeto a { font-weight: 600; color: var(--ds-blue-dark); }
+.contexto-cliente { color: var(--ds-text-500); font-size: 0.85rem; }
+
+/* =================================================================
+   FRENTES — o painel mostra trabalho, não menu
+   ================================================================= */
+.dash-frentes { margin-top: 2.5rem; }
+.dash-frentes-topo {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1.5rem; margin-bottom: 1rem;
+}
+.dash-frentes-topo .dash-section-head { margin: 0; }
+
+.frente-lista { list-style: none; margin: 0; padding: 0; }
+.frente {
+    display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+    align-items: center; gap: 1.5rem;
+    padding: 0.95rem 0; border-top: 1px solid var(--ds-line);
+}
+.frente:last-child { border-bottom: 1px solid var(--ds-line); }
+.frente-id { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.frente-nome {
+    font-weight: 600; color: var(--ds-text-900); text-decoration: none;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.frente-nome:hover { color: var(--ds-blue-dark); text-decoration: underline; }
+.frente-cliente {
+    font-size: 0.8rem; color: var(--ds-text-500);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.frente-avanco { display: flex; flex-direction: column; gap: 0.35rem; }
+.frente-conta { font-family: var(--arq-font-mono); font-size: 0.72rem; color: var(--ds-text-500); }
+.frente-cta { white-space: nowrap; }
+.frente-pronto {
+    font-family: var(--arq-font-mono); font-size: 0.75rem;
+    color: var(--ds-blue-dark); white-space: nowrap;
+}
+.frente-vazio { color: var(--ds-text-500); margin: 0; }
+
+@media (max-width: 52rem) {
+    .frente { grid-template-columns: 1fr; gap: 0.7rem; }
+    .frente-cta { justify-self: start; }
+    .dash-frentes-topo { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
 }

@@ -1,0 +1,15 @@
+{% comment %}
+Faixa de contexto. Quando um formulário é aberto a partir de um projeto, ele
+precisa dizer isso na cara: senão a pessoa não sabe se está criando algo solto
+ou algo ligado ao projeto, e é daí que sai o cadastro órfão.
+
+O projeto viaja na querystring; o form não tem action, então o POST volta para
+a mesma URL e o contexto se mantém sem campo escondido nenhum.
+{% endcomment %}
+{% if projeto %}
+<p class="contexto-projeto">
+    <span class="ds-kicker">Dentro do projeto</span>
+    <a href="{% url 'projeto_detalhe' projeto.pk %}">{{ projeto.nome }}</a>
+    <span class="contexto-cliente">{{ projeto.cliente.nome }}</span>
+</p>
+{% endif %}

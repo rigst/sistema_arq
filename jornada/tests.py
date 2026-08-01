@@ -69,7 +69,8 @@ class RoteiroTests(TestCase):
             },
         )
         projeto = Projeto.objects.get(nome="Apartamento Vila Nova")
-        self.assertRedirects(resposta, f"/projeto-novo/{projeto.pk}/")
+        # O roteiro mora na ficha do projeto: abrir cai direto lá.
+        self.assertRedirects(resposta, f"/projetos/{projeto.pk}/")
         self.assertEqual(projeto.cliente.nome, "João Pereira")
         self.assertEqual(projeto.empresa, self.grupo)
 
@@ -102,3 +103,44 @@ class RoteiroTests(TestCase):
         self.client.force_login(intruso)
         aceitar_documentos(intruso)
         self.assertEqual(self.client.get(f"/projeto-novo/{self.projeto.pk}/").status_code, 404)
+
+    def test_rota_antiga_do_roteiro_encaminha_para_o_projeto(self):
+        resposta = self.client.get(f"/projeto-novo/{self.projeto.pk}/")
+        self.assertRedirects(resposta, f"/projetos/{self.projeto.pk}/")
+
+    def test_ficha_do_projeto_traz_o_roteiro(self):
+        resposta = self.client.get(f"/projetos/{self.projeto.pk}/")
+        self.assertContains(resposta, "Roteiro do projeto")
+        # As etapas que abrem formulário global levam o projeto no contexto.
+        self.assertContains(resposta, f"/obras/nova/?projeto={self.projeto.pk}")
+
+    def test_formulario_aberto_do_projeto_ja_vem_preenchido(self):
+        """O ganho todo do contexto: não redigitar o que o sistema já sabe."""
+        resposta = self.client.get(f"/contratos/novo/?projeto={self.projeto.pk}")
+        form = resposta.context["form"]
+        self.assertEqual(form.fields["projeto"].initial, self.projeto.pk)
+        self.assertTrue(form.fields["projeto"].disabled)
+        self.assertIn(self.projeto.nome, form.fields["titulo"].initial)
+        self.assertContains(resposta, "Dentro do projeto")
+
+    def test_proposta_criada_do_projeto_fecha_o_laco(self):
+        self.client.post(
+            f"/propostas/nova/?projeto={self.projeto.pk}",
+            {"titulo": "Proposta — Casa", "tipo_projeto": "residencial"},
+        )
+        self.projeto.refresh_from_db()
+        proposta = getattr(self.projeto, "proposta_origem", None)
+        self.assertIsNotNone(proposta)
+        self.assertEqual(proposta.cliente, self.projeto.cliente)
+        # E com isso a etapa de proposta do roteiro passa a contar como feita.
+        etapas = {e.chave: e for e in montar_roteiro(self.projeto)}
+        self.assertTrue(etapas["proposta"].concluida)
+
+    def test_projeto_de_outra_empresa_nao_vira_contexto(self):
+        outro_grupo = Group.objects.create(name="Escritório vizinho")
+        alheio = Projeto.objects.create(
+            empresa=outro_grupo, cliente=self.cliente, nome="Alheio", tipo="residencial"
+        )
+        resposta = self.client.get(f"/contratos/novo/?projeto={alheio.pk}")
+        self.assertNotContains(resposta, "Dentro do projeto")
+        self.assertFalse(resposta.context["form"].fields["projeto"].disabled)

@@ -59,30 +59,29 @@ def dashboard(request):
 
     onboarding = montar_checklist(u)
 
-    # (nome, descrição, url_name, ícone) — o ícone repete o da barra lateral,
-    # para que o atalho e o item de menu sejam reconhecidos como a mesma coisa.
-    grupos = [
-        ("Comercial", "comercial", [
-            ("Clientes", "Contatos, funil e histórico.", "crm_lista", "clientes"),
-            ("Propostas", "Proposta que vira projeto ao aprovar.", "propostas_lista", "propostas"),
-            ("Contratos", "Parcelas no financeiro, aditivos e documentos.", "contratos_lista", "contratos"),
-            ("Briefings", "Roteiros de pergunta com respostas prontas.", "briefing_templates", "briefings"),
-        ]),
-        ("Produção", "producao", [
-            ("Projetos", "Painel com etapa, pendências e margem.", "projetos_painel", "projetos"),
-            ("Obras", "Cronograma real × previsto e medições.", "obras_lista", "obras"),
-            ("Tarefas", "Delegação com dono, prazo e timer.", "tarefas_lista", "tarefas"),
-            ("Agenda", "Reuniões, visitas e prazos.", "agenda", "agenda"),
-            ("Fornecedores", "Quem executa, por categoria e avaliação.", "fornecedores_lista", "fornecedores"),
-            ("Arquivos", "Enviados, recebidos e pagos, com valor.", "arquivos_lista", "arquivos"),
-        ]),
-        ("Gestão", "gestao", [
-            ("Financeiro", "Entradas, saídas, saldos e margem.", "financeiro_painel", "financeiro"),
-            ("Precificação", "Hora técnica a partir dos custos.", "precificacao", "precificacao"),
-            ("Orçamentos", "Custo de execução item a item.", "orcamentos_lista", "orcamentos"),
-            ("Regulatório", "ART, RRT e CAU com alerta de vencimento.", "regulatorio_lista", "regulatorio"),
-        ]),
-    ]
+    # O painel não repete o menu. A barra lateral já lista os módulos; repetir
+    # tudo em cartão não informava nada e ainda dava a impressão de que existem
+    # duas formas diferentes de chegar no mesmo lugar. No lugar disso, a única
+    # pergunta que o painel precisa responder: em que pé está cada projeto e
+    # qual é o próximo passo dele.
+    from jornada.roteiro import montar_roteiro, percentual, proxima_etapa
+
+    frentes = []
+    for projeto in (
+        queryset_da_empresa(Projeto.objects.select_related("cliente"), u)
+        .filter(status="ativo")
+        .order_by("-ultima_atualizacao")[:8]
+    ):
+        etapas = montar_roteiro(projeto)
+        frentes.append(
+            {
+                "projeto": projeto,
+                "proxima": proxima_etapa(etapas),
+                "percentual": percentual(etapas),
+                "feitas": sum(1 for e in etapas if e.concluida),
+                "total": len(etapas),
+            }
+        )
 
     return render(
         request,
@@ -91,7 +90,7 @@ def dashboard(request):
             "empresa": empresa,
             "kpis": kpis,
             "onboarding": onboarding,
-            "grupos": grupos,
+            "frentes": frentes,
             "obrig_alerta": obrig_alerta,
         },
     )
