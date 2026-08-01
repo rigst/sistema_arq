@@ -47,6 +47,11 @@ class Arquivo(EmpresaModel, Rastreavel):
     projeto = models.ForeignKey(
         Projeto, on_delete=models.CASCADE, related_name="arquivos", null=True, blank=True
     )
+    fase = models.ForeignKey(
+        "fases.Fase",
+        on_delete=models.CASCADE, null=True, blank=True, related_name="arquivos",
+        help_text="A fase a que este arquivo pertence. Sem ela, o arquivo é do projeto todo.",
+    )
     fornecedor = models.ForeignKey(
         "fornecedores.Fornecedor",
         on_delete=models.SET_NULL,
@@ -89,6 +94,35 @@ class Arquivo(EmpresaModel, Rastreavel):
     def extensao(self):
         nome = self.arquivo.name or ""
         return nome.rsplit(".", 1)[-1].lower() if "." in nome else ""
+
+    # Extensões que o navegador abre sozinho. O resto se baixa: tentar exibir
+    # um DWG numa aba só produz uma tela em branco e uma dúvida.
+    IMAGENS = {"png", "jpg", "jpeg", "gif", "webp", "avif", "svg"}
+    NAVEGAVEIS = IMAGENS | {"pdf"}
+
+    @property
+    def eh_imagem(self):
+        return self.extensao in self.IMAGENS
+
+    @property
+    def eh_pdf(self):
+        return self.extensao == "pdf"
+
+    @property
+    def visualizavel(self):
+        return self.extensao in self.NAVEGAVEIS
+
+    @property
+    def tamanho_legivel(self):
+        try:
+            n = self.arquivo.size
+        except (ValueError, OSError):
+            return ""
+        for unidade in ("B", "kB", "MB", "GB"):
+            if n < 1024 or unidade == "GB":
+                return f"{n:.0f} {unidade}" if unidade == "B" else f"{n:.1f} {unidade}"
+            n /= 1024
+        return ""
 
     @property
     def eh_financeiro(self):

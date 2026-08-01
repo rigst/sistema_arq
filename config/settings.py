@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     "orcamentos",
     "arquivos",
     "jornada",
+    "fases",
     # Termos, privacidade e registro de aceites.
     "legal",
 ]

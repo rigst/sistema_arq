@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Editar {{ arquivo.titulo }}{% endblock %}
+
+{% block content %}
+<section class="page page--narrow">
+    <a class="voltar" href="{{ destino }}"><span aria-hidden="true">←</span> Voltar</a>
+
+    <header class="page-head">
+        <span class="ds-kicker">Arquivo</span>
+        <h1 class="ds-h2 ds-display">Editar arquivo</h1>
+        <p class="page-sub">
+            Muda o nome e a classificação. O arquivo em si continua o mesmo —
+            para trocar o conteúdo, anexe uma versão nova.
+        </p>
+    </header>
+
+    <form method="post" class="form-card">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <p>{{ form.titulo.label_tag }}{{ form.titulo }}{{ form.titulo.errors }}</p>
+        <p>{{ form.categoria.label_tag }}{{ form.categoria }}</p>
+        <p>{{ form.observacoes.label_tag }}{{ form.observacoes }}</p>
+        <div class="form-actions">
+            <a class="ds-btn" href="{{ destino }}">Cancelar</a>
+            <button class="ds-btn ds-btn--solid" type="submit">Salvar</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

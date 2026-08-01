@@ -11,7 +11,7 @@ from core.contexto import projeto_do_pedido
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 from precificacao.models import FatorPrecificacao
 from precificacao.services import aplicar_fatores, hora_tecnica_base, precificar_etapa
-from projetos.models import Projeto, criar_etapas_padrao
+from projetos.models import Projeto
 
 from .forms import ItemPropostaForm, PropostaForm
 from .models import ItemProposta, Proposta
@@ -191,7 +191,9 @@ def aprovar_proposta(request, pk):
             origem_tipo="proposta",
             origem_id=proposta.pk,
         )
-        criar_etapas_padrao(projeto)
+        from fases.models import montar_fases
+
+        montar_fases(projeto)
         proposta.status = "aprovada"
         proposta.projeto_gerado = projeto
         proposta.save(update_fields=["status", "projeto_gerado"])

@@ -41,6 +41,9 @@ class AmbientePrograma(EmpresaModel):
 
     briefing = models.ForeignKey(Briefing, on_delete=models.CASCADE, related_name="ambientes")
     nome = models.CharField(max_length=100)
+    quantidade = models.PositiveSmallIntegerField(
+        default=1, help_text="Quantos ambientes desse tipo (3 dormitórios, 2 banheiros)."
+    )
     area_aprox = models.DecimalField(
         max_digits=8, decimal_places=2, null=True, blank=True, help_text="Área aproximada (m²).",
         verbose_name="área aproximada",
@@ -54,6 +57,13 @@ class AmbientePrograma(EmpresaModel):
 
     def __str__(self):
         return self.nome
+
+    @property
+    def area_total(self):
+        """Área do tipo inteiro: é o que soma no programa, não a unidade."""
+        if self.area_aprox is None:
+            return None
+        return self.area_aprox * self.quantidade
 
 
 # =====================================================================

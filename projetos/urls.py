@@ -10,10 +10,5 @@ urlpatterns = [
     path("<int:pk>/", views.detalhe_projeto, name="projeto_detalhe"),
     path("<int:pk>/editar/", views.editar_projeto, name="projeto_editar"),
     path("<int:pk>/pendencia/", views.adicionar_pendencia, name="projeto_add_pendencia"),
-    path("etapa/<int:pk>/avancar/", views.avancar_etapa, name="etapa_avancar"),
     path("pendencia/<int:pk>/resolver/", views.resolver_pendencia, name="pendencia_resolver"),
-    path("<int:pk>/disciplina/", views.adicionar_disciplina, name="projeto_add_disciplina"),
-    path("disciplina/<int:pk>/avancar/", views.avancar_disciplina, name="disciplina_avancar"),
-    path("disciplina/<int:pk>/remover/", views.remover_disciplina, name="disciplina_remover"),
-    path("etapa/<int:pk>/fornecedor/", views.definir_fornecedor_etapa, name="etapa_fornecedor"),
 ]

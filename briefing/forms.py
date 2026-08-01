@@ -26,7 +26,7 @@ class BriefingForm(ArqModelForm):
 class AmbienteForm(ArqModelForm):
     class Meta:
         model = AmbientePrograma
-        fields = ["nome", "area_aprox", "uso"]
+        fields = ["nome", "quantidade", "area_aprox", "uso"]
 
 
 class TemplateBriefingForm(ArqModelForm):

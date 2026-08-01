@@ -27,17 +27,20 @@
             <form method="post" action="{% url 'briefing_add_ambiente' projeto.pk %}" class="inline-add">
                 {% csrf_token %}
                 {{ form_ambiente.nome }}
+                {{ form_ambiente.quantidade }}
                 {{ form_ambiente.area_aprox }}
                 {{ form_ambiente.uso }}
                 <button class="ds-btn ds-btn--solid" type="submit">Adicionar</button>
             </form>
             <table class="data-table">
-                <thead><tr><th>Ambiente</th><th>Área</th><th>Uso</th><th></th></tr></thead>
+                <thead><tr><th>Ambiente</th><th class="num">Qtd.</th><th class="num">m² cada</th><th class="num">m² total</th><th>Uso</th><th></th></tr></thead>
                 <tbody>
                 {% for a in ambientes %}
                     <tr>
                         <td>{{ a.nome }}</td>
-                        <td>{% if a.area_aprox %}{{ a.area_aprox }} m²{% else %}—{% endif %}</td>
+                        <td class="num">{{ a.quantidade }}</td>
+                        <td class="num">{{ a.area_aprox|default:"—" }}</td>
+                        <td class="num">{{ a.area_total|default:"—" }}</td>
                         <td>{{ a.uso|default:"—" }}</td>
                         <td>
                             <form method="post" action="{% url 'briefing_remove_ambiente' a.pk %}">
@@ -47,7 +50,7 @@
                         </td>
                     </tr>
                 {% empty %}
-                    <tr><td colspan="4" class="data-empty">Nenhum ambiente listado.</td></tr>
+                    <tr><td colspan="6" class="data-empty">Nenhum ambiente listado.</td></tr>
                 {% endfor %}
                 </tbody>
             </table>

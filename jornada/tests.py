@@ -1,13 +1,11 @@
 from django.contrib.auth.models import Group
 from django.test import TestCase
 
-from briefing.models import Briefing, RespostaBriefing
-from briefing.services import semear_templates_padrao
 from core.tenancy import obter_grupo_empresa_padrao
 from crm.models import Cliente
+from fases.models import Fase, montar_fases
 from jornada.roteiro import montar_roteiro, percentual, proxima_etapa
 from legal.testing import aceitar_documentos
-from orcamentos.models import ItemOrcamento, Orcamento
 from projetos.models import Projeto
 from usuarios.models import Usuario
 
@@ -24,39 +22,32 @@ class RoteiroTests(TestCase):
         self.projeto = Projeto.objects.create(
             empresa=self.grupo, cliente=self.cliente, nome="Residência Ipê"
         )
+        montar_fases(self.projeto)
 
-    def test_roteiro_comeca_so_com_o_cliente_pronto(self):
+    def test_roteiro_e_a_lista_de_fases_na_ordem(self):
         etapas = montar_roteiro(self.projeto)
-        self.assertEqual([e.chave for e in etapas][:3], ["cliente", "briefing", "orcamento"])
-        self.assertTrue(etapas[0].concluida)
+        self.assertEqual(
+            [e.chave for e in etapas],
+            ["briefing", "proposta", "estudo_preliminar", "anteprojeto", "executivo"],
+        )
         self.assertEqual(proxima_etapa(etapas).chave, "briefing")
-        self.assertEqual(percentual(etapas), 17)
+        self.assertEqual(percentual(etapas), 0)
 
-    def test_briefing_respondido_avanca_o_roteiro(self):
-        template = semear_templates_padrao(self.grupo, self.user)[0]
-        briefing = Briefing.objects.create(projeto=self.projeto, empresa=self.grupo)
-        RespostaBriefing.objects.create(
-            briefing=briefing,
-            empresa=self.grupo,
-            pergunta=template.perguntas.first(),
-            texto="Casal com dois filhos",
-        )
+    def test_fase_aprovada_avanca_o_roteiro(self):
+        briefing = self.projeto.fases.get(chave="briefing")
+        briefing.iniciar(self.user)
+        briefing.concluir_sem_aprovacao(self.user)
         etapas = montar_roteiro(self.projeto)
-        self.assertTrue(next(e for e in etapas if e.chave == "briefing").concluida)
-        self.assertEqual(proxima_etapa(etapas).chave, "orcamento")
+        self.assertTrue(etapas[0].concluida)
+        self.assertEqual(proxima_etapa(etapas).chave, "proposta")
+        self.assertEqual(percentual(etapas), 20)
 
-    def test_orcamento_so_conta_quando_tem_item(self):
-        orcamento = Orcamento.objects.create(projeto=self.projeto, empresa=self.grupo)
-        self.assertFalse(next(e for e in montar_roteiro(self.projeto) if e.chave == "orcamento").concluida)
-
-        ItemOrcamento.objects.create(
-            orcamento=orcamento,
-            empresa=self.grupo,
-            descricao="Marcenaria da cozinha",
-            quantidade=1,
-            valor_unitario=25000,
-        )
-        self.assertTrue(next(e for e in montar_roteiro(self.projeto) if e.chave == "orcamento").concluida)
+    def test_proxima_prioriza_a_fase_ja_aberta(self):
+        """Uma fase em elaboração pede mais atenção do que a seguinte, que nem
+        começou — senão o painel manda o arquiteto começar coisa nova."""
+        anteprojeto = self.projeto.fases.get(chave="anteprojeto")
+        anteprojeto.iniciar(self.user)
+        self.assertEqual(proxima_etapa(montar_roteiro(self.projeto)).chave, "anteprojeto")
 
     def test_abrir_cria_cliente_e_projeto_de_uma_vez(self):
         resposta = self.client.post(
@@ -111,11 +102,12 @@ class RoteiroTests(TestCase):
         resposta = self.client.get(f"/projeto-novo/{self.projeto.pk}/")
         self.assertRedirects(resposta, f"/projetos/{self.projeto.pk}/")
 
-    def test_ficha_do_projeto_traz_o_roteiro(self):
+    def test_ficha_do_projeto_traz_as_fases(self):
         resposta = self.client.get(f"/projetos/{self.projeto.pk}/")
-        self.assertContains(resposta, "Roteiro do projeto")
-        # As etapas que abrem formulário global levam o projeto no contexto.
-        self.assertContains(resposta, f"/propostas/nova/?projeto={self.projeto.pk}")
+        self.assertContains(resposta, "Fases do projeto")
+        self.assertContains(resposta, "Estudo preliminar")
+        fase = self.projeto.fases.get(chave="anteprojeto")
+        self.assertContains(resposta, f"/fases/{fase.pk}/")
 
     def test_execucao_so_entra_no_roteiro_quando_o_projeto_tem(self):
         """Muitos trabalhos terminam no projeto entregue; a obra é exceção."""
@@ -128,13 +120,20 @@ class RoteiroTests(TestCase):
         self.assertEqual(etapas[-1].chave, "execucao")
         self.assertIn(f"/obras/nova/?projeto={self.projeto.pk}", etapas[-1].url)
 
-    def test_ordem_do_roteiro_segue_a_pratica(self):
-        self.projeto.tem_execucao = True
-        self.projeto.save(update_fields=["tem_execucao"])
-        self.assertEqual(
-            [e.chave for e in montar_roteiro(self.projeto)],
-            ["cliente", "briefing", "orcamento", "proposta", "contrato", "elaboracao", "execucao"],
+    def test_abertura_liga_os_complementares_escolhidos(self):
+        self.client.post(
+            "/projeto-novo/novo/",
+            {
+                "cliente_existente": self.cliente.pk,
+                "nome": "Casa com estrutural",
+                "tipo": "residencial",
+                "complementares": ["comp_estrutural"],
+            },
         )
+        projeto = Projeto.objects.get(nome="Casa com estrutural")
+        chaves = list(projeto.fases.values_list("chave", flat=True))
+        self.assertIn("comp_estrutural", chaves)
+        self.assertNotIn("comp_eletrica", chaves)
 
     def test_formulario_aberto_do_projeto_ja_vem_preenchido(self):
         """O ganho todo do contexto: não redigitar o que o sistema já sabe."""
@@ -154,9 +153,7 @@ class RoteiroTests(TestCase):
         proposta = getattr(self.projeto, "proposta_origem", None)
         self.assertIsNotNone(proposta)
         self.assertEqual(proposta.cliente, self.projeto.cliente)
-        # E com isso a etapa de proposta do roteiro passa a contar como feita.
-        etapas = {e.chave: e for e in montar_roteiro(self.projeto)}
-        self.assertTrue(etapas["proposta"].concluida)
+
 
     def test_projeto_de_outra_empresa_nao_vira_contexto(self):
         outro_grupo = Group.objects.create(name="Escritório vizinho")

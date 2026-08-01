@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}A.R.Q.{% endblock %} · A.R.Q.</title>
+    <meta name="description" content="A.R.Q. — gestão para escritórios de arquitetura: do briefing e do programa de necessidades até o projeto executivo, fase a fase.">
 
     <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
     <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
@@ -30,7 +31,12 @@
     <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Abrir menu de navegação">
     <aside class="app-side">
         <div class="app-side-head">
-            <a class="app-brand" href="{% url 'dashboard' %}" aria-label="{{ empresa_ativa.nome|default:'A.R.Q.' }} — início">
+            {% comment %}
+            Sem aria-label aqui: o texto visível já nomeia o link, e um rótulo
+            que não contém o texto visível quebra o comando de voz — a pessoa
+            fala o que lê na tela e nada acontece.
+            {% endcomment %}
+            <a class="app-brand" href="{% url 'dashboard' %}">
                 {% if empresa_ativa.logo %}
                 <img class="app-brand-logo" src="{{ empresa_ativa.logo.url }}" alt="">
                 <span class="app-brand-word">{{ empresa_ativa.nome }}</span>

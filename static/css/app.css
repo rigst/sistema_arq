@@ -1968,3 +1968,235 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
     font-family: var(--ds-font-sans); font-size: 0.82rem;
     text-transform: none; letter-spacing: normal;
 }
+
+/* =================================================================
+   SEM CONTORNO BRANCO
+   O aro claro veio do vidro e ficou onde não devia: em cartão e botão
+   sobre folha opaca ele não é reflexo, é só um traço branco que suja a
+   borda. Fica um fio cinza discreto, e o brilho só onde há vidro real —
+   login e barra lateral.
+   ================================================================= */
+.kpi-row, .projeto-card, .obra-card, .kanban-card, .dash-onb,
+.alerta-card, .ia-bloco, .timer-card, .modulo-card, .ds-card {
+    box-shadow: none;
+    border-color: var(--ds-line);
+}
+.kpi-row { border: 1px solid var(--ds-line); }
+.projeto-card, .obra-card, .kanban-card {
+    border: 1px solid var(--ds-line);
+    box-shadow: none;
+}
+.projeto-card:hover, .obra-card:hover, .kanban-card:hover {
+    border-color: var(--ds-line-dash);
+    box-shadow: 0 2px 10px rgba(20, 24, 26, 0.07);
+    transform: none;
+}
+.ds-btn:not(.ds-btn--solid) {
+    border: 1px solid var(--ds-line-dash);
+    box-shadow: none;
+}
+.ds-btn:not(.ds-btn--solid):hover {
+    background: var(--ds-panel); border-color: var(--ds-text-400);
+    box-shadow: none; color: var(--ds-text-900);
+}
+.ds-btn--solid {
+    background: var(--ds-blue); border-color: var(--ds-blue);
+    box-shadow: none;
+}
+.ds-btn--solid:hover { background: var(--ds-blue-dark); border-color: var(--ds-blue-dark); }
+.chip { border: 1px solid var(--ds-line-dash); box-shadow: none; }
+.form-card input, .form-card select, .form-card textarea,
+.form-block input, .form-block select, .form-block textarea,
+.inline-add, .inline-add input, .inline-add select,
+.timer-campo input, .timer-campo select,
+.briefing-complemento textarea, .contrato-corpo, .diag-opcao, .briefing-opcao {
+    box-shadow: none; border: 1px solid var(--ds-line-dash);
+}
+.dash-hero, .page-head--foto { box-shadow: none; }
+.app-main { box-shadow: 0 0 0 1px rgba(18, 32, 28, 0.07); }
+
+/* =================================================================
+   FASES
+   ================================================================= */
+.fase-lista { list-style: none; margin: 0 0 1.25rem; padding: 0; }
+.fase-linha { border-top: 1px solid var(--ds-line); }
+.fase-linha:last-child { border-bottom: 1px solid var(--ds-line); }
+.fase-linha-corpo {
+    display: grid; grid-template-columns: 2rem minmax(0, 1fr) auto;
+    align-items: center; gap: 1rem;
+    padding: 0.85rem 0.6rem; text-decoration: none; color: inherit;
+    transition: background var(--arq-fast) ease;
+}
+.fase-linha-corpo:hover { background: var(--ds-panel); }
+.fase-num {
+    width: 1.75rem; height: 1.75rem; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.78rem; font-weight: 600;
+    background: var(--ds-panel); color: var(--ds-text-500);
+    border: 1px solid var(--ds-line-dash);
+}
+.fase-id { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.fase-id strong { font-weight: 500; }
+.fase-resumo {
+    font-size: 0.82rem; color: var(--ds-text-500);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.fase-situacao { display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem; }
+.fase-num-arquivos { font-family: var(--arq-font-mono); font-size: 0.7rem; color: var(--ds-text-500); }
+
+.fase-selo {
+    display: inline-block; padding: 0.18rem 0.5rem; border-radius: 0.35rem;
+    font-family: var(--arq-font-mono); font-size: 0.68rem;
+    text-transform: uppercase; letter-spacing: 0.07em;
+    background: var(--ds-panel); color: var(--ds-text-500);
+    border: 1px solid var(--ds-line);
+}
+.fase-selo--em_elaboracao { background: var(--ds-blue-50); color: var(--ds-blue-dark); border-color: var(--ds-blue-100); }
+.fase-selo--aguardando_cliente { background: #f6efe0; color: #6d460a; border-color: #e6d3ab; }
+.fase-selo--ajustes { background: #f7e6e2; color: #8e2a1c; border-color: #e7c2b9; }
+.fase-selo--aprovada { background: var(--ds-blue); color: #fff; border-color: var(--ds-blue); }
+
+.fase-linha--aprovada .fase-num { background: var(--ds-blue); border-color: var(--ds-blue); color: #fff; }
+.fase-linha--em_elaboracao .fase-num,
+.fase-linha--ajustes .fase-num { background: var(--ds-blue-50); border-color: var(--ds-blue-light); color: var(--ds-blue-dark); }
+.fase-linha--em_elaboracao .fase-id strong,
+.fase-linha--ajustes .fase-id strong { font-weight: 600; color: var(--ds-blue-dark); }
+.fase-linha.is-complementar .fase-num { border-style: dashed; }
+
+.complementar-oferta { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.6rem; }
+.complementar-oferta li { display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap; }
+.complementar-oferta span { font-size: 0.84rem; color: var(--ds-text-500); }
+
+/* --- A área de trabalho da fase ---------------------------------- */
+.fase-estado {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 1.5rem; flex-wrap: wrap;
+    padding: 1rem 1.15rem; margin-bottom: 1.5rem;
+    border: 1px solid var(--ds-line); border-radius: 0.6rem; background: var(--ds-panel);
+}
+.fase-estado--aguardando_cliente { background: #faf5ea; border-color: #e6d3ab; }
+.fase-estado--ajustes { background: #fbf0ed; border-color: #e7c2b9; }
+.fase-estado--aprovada { background: var(--ds-blue-50); border-color: var(--ds-blue-100); }
+.fase-estado-texto { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.85rem; }
+.fase-estado-texto > p { flex-basis: 100%; margin: 0.2rem 0 0; }
+.fase-prazo, .fase-quem { font-family: var(--arq-font-mono); font-size: 0.74rem; color: var(--ds-text-500); }
+.fase-prazo.is-atrasada { color: var(--ds-danger); font-weight: 600; }
+.fase-aviso { font-size: 0.87rem; color: var(--ds-text-700); }
+.fase-acoes { display: flex; gap: 0.6rem; }
+
+.fase-entrega { margin: 0 0 1rem; padding-left: 1.1rem; }
+.fase-entrega li { margin-bottom: 0.25rem; }
+.fase-atalhos { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+
+.fase-resposta {
+    padding: 1.15rem 1.25rem; margin-bottom: 2rem;
+    border: 1px solid var(--ds-line-dash); border-radius: 0.6rem; background: var(--ds-surface);
+}
+.fase-resposta .bloco-titulo { margin-top: 0; }
+.fase-resposta-botoes { display: flex; gap: 0.6rem; margin-top: 0.85rem; flex-wrap: wrap; }
+.fase-remover { margin-top: 0.85rem; }
+
+/* --- Arquivos ------------------------------------------------------ */
+.galeria {
+    list-style: none; margin: 0 0 1.5rem; padding: 0;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: 0.85rem;
+}
+.galeria li { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+.galeria a {
+    display: block; aspect-ratio: 4 / 3; overflow: hidden;
+    border: 1px solid var(--ds-line); border-radius: 0.5rem; background: var(--ds-panel);
+}
+.galeria img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.galeria span {
+    font-size: 0.76rem; color: var(--ds-text-500);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.arquivo-lista { list-style: none; margin: 0 0 1rem; padding: 0; }
+.arquivo {
+    display: grid; grid-template-columns: 3rem minmax(0, 1fr) auto;
+    align-items: center; gap: 1rem;
+    padding: 0.7rem 0; border-top: 1px solid var(--ds-line);
+}
+.arquivo:last-child { border-bottom: 1px solid var(--ds-line); }
+.arquivo-tipo {
+    font-family: var(--arq-font-mono); font-size: 0.66rem;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--ds-text-500); text-align: center;
+    padding: 0.22rem 0.3rem; border: 1px solid var(--ds-line-dash); border-radius: 0.3rem;
+}
+.arquivo-id { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.arquivo-id a { font-weight: 500; color: var(--ds-text-900); text-decoration: none; }
+.arquivo-id a:hover { color: var(--ds-blue-dark); text-decoration: underline; }
+.arquivo-meta { font-size: 0.76rem; color: var(--ds-text-500); }
+.arquivo-acoes { display: flex; align-items: center; gap: 0.85rem; }
+
+/* --- Histórico ---------------------------------------------------- */
+.registro-novo { margin-bottom: 1.5rem; }
+.registro-envio { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+.registro-envio select { flex: 0 1 16rem; }
+
+.linha-tempo { list-style: none; margin: 0; padding: 0; }
+.registro {
+    display: grid; grid-template-columns: 1rem minmax(0, 1fr); gap: 0.85rem;
+    padding: 0.7rem 0; border-top: 1px solid var(--ds-line);
+}
+.registro:last-child { border-bottom: 1px solid var(--ds-line); }
+.registro-marca {
+    width: 0.55rem; height: 0.55rem; border-radius: 50%; margin-top: 0.4rem;
+    background: var(--ds-line-dash);
+}
+.registro--cliente .registro-marca { background: var(--arq-amber); }
+.registro--comentario .registro-marca { background: var(--ds-blue); }
+.registro-texto { margin: 0 0 0.15rem; font-size: 0.92rem; white-space: pre-line; }
+.registro--sistema .registro-texto { color: var(--ds-text-500); }
+.registro-meta { font-family: var(--arq-font-mono); font-size: 0.68rem; color: var(--ds-text-500); }
+
+@media (max-width: 46rem) {
+    .fase-linha-corpo { grid-template-columns: 2rem minmax(0, 1fr); }
+    .fase-situacao { grid-column: 2; align-items: flex-start; }
+    .arquivo { grid-template-columns: 3rem minmax(0, 1fr); }
+    .arquivo-acoes { grid-column: 2; }
+}
+
+/* O próximo passo, em uma linha e clicável. Substitui a trilha completa na
+   ficha do projeto: a lista de fases logo abaixo já mostra o caminho todo, e
+   ter as duas coisas era dizer o mesmo duas vezes. */
+.proximo-passo {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center; gap: 0.2rem 1.5rem;
+    padding: 0.95rem 1.15rem; margin-bottom: 2rem;
+    border: 1px solid var(--ds-blue-100); border-radius: 0.6rem;
+    background: var(--ds-blue-50); text-decoration: none; color: inherit;
+    transition: border-color var(--arq-fast) ease;
+}
+.proximo-passo:hover { border-color: var(--ds-blue-light); }
+.proximo-passo .ds-kicker { grid-column: 1; margin: 0; color: var(--ds-blue-dark); }
+.proximo-passo strong { grid-column: 1; font-size: 1rem; }
+.proximo-passo-desc { grid-column: 1; font-size: 0.86rem; color: var(--ds-text-500); }
+.proximo-passo-cta {
+    grid-column: 2; grid-row: 1 / -1; white-space: nowrap;
+    font-weight: 600; color: var(--ds-blue-dark);
+}
+@media (max-width: 46rem) {
+    .proximo-passo { grid-template-columns: 1fr; }
+    .proximo-passo-cta { grid-column: 1; grid-row: auto; margin-top: 0.4rem; }
+}
+
+/* O programa de necessidades repetido dentro da fase que o consome. */
+.insumos .programa { margin-bottom: 1.25rem; }
+.insumos .programa tfoot th { font-weight: 600; border-top: 2px solid var(--ds-line-dash); }
+.insumo-notas { display: flex; flex-direction: column; gap: 0.7rem; margin: 0 0 1.25rem; }
+.insumo-notas > div { display: flex; flex-direction: column; gap: 0.15rem; }
+.insumo-notas dt {
+    font-family: var(--arq-font-mono); font-size: 0.68rem;
+    text-transform: uppercase; letter-spacing: 0.07em; color: var(--ds-text-500);
+}
+.insumo-notas dd { margin: 0; font-size: 0.9rem; white-space: pre-line; }
+.acoes-linha { display: flex; align-items: center; gap: 0.85rem; white-space: nowrap; }
+
+/* Rótulo que existe para o leitor de tela e não para o olho. */
+.ds-oculto {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}

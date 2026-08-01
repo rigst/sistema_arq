@@ -7,7 +7,7 @@
         <div>
             <span class="ds-kicker">Projetos</span>
             <h1 class="ds-h2 ds-display">Painel de projetos</h1>
-            <p class="page-sub">Etapa atual, pendências, tempo parado e margem — lado a lado.</p>
+            <p class="page-sub">Fase atual, pendências, tempo parado e margem — lado a lado.</p>
         </div>
         <div class="page-head-actions">
             <a class="ds-btn" href="{% url 'projetos_kanban' %}">Painel visual</a>
@@ -31,7 +31,7 @@
             </div>
             <p class="projeto-cliente">{{ p.cliente.nome }} · {{ p.get_tipo_display }}</p>
             <dl class="projeto-metricas">
-                <div><dt>Etapa atual</dt><dd>{{ p.etapa_atual.nome|default:"—" }}</dd></div>
+                <div><dt>Fase atual</dt><dd>{{ p.fase_atual.nome|default:"—" }}</dd></div>
                 <div><dt>Pendências</dt><dd>{{ p.pendencias_abertas }}</dd></div>
                 <div><dt>Parado há</dt><dd>{{ p.dias_parado }} d</dd></div>
                 <div><dt>Prazo</dt><dd>{{ p.data_prevista|date:"d/m/y"|default:"—" }}</dd></div>

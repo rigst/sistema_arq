@@ -10,10 +10,9 @@ class ProjetosConfig(AppConfig):
         from core.visitante_cleanup import registrar_limpeza
 
         def _limpar(grupo):
-            from .models import Etapa, Pendencia, Projeto, Tag
+            from .models import Pendencia, Projeto, Tag
 
             Pendencia.objects.filter(empresa=grupo).delete()
-            Etapa.objects.filter(empresa=grupo).delete()
             Projeto.objects.filter(empresa=grupo).delete()
             Tag.objects.filter(empresa=grupo).delete()
 

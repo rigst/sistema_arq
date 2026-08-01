@@ -7,7 +7,8 @@ from django.urls import reverse
 from core.forms import ArqForm
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 from crm.models import Cliente
-from projetos.models import Projeto, criar_etapas_padrao
+from fases.models import montar_fases
+from projetos.models import Projeto
 
 
 class SelectCliente(forms.Select):
@@ -56,6 +57,15 @@ class AberturaForm(ArqForm):
 
     nome = forms.CharField(label="Nome do projeto", max_length=200)
     tipo = forms.ChoiceField(label="Tipo de projeto", choices=Projeto.TIPO_CHOICES)
+    cidade = forms.CharField(label="Cidade", max_length=120, required=False)
+    uf = forms.CharField(label="UF", max_length=2, required=False)
+    endereco = forms.CharField(label="Endereço ou referência do terreno", max_length=200, required=False)
+    complementares = forms.MultipleChoiceField(
+        label="Projetos complementares",
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        help_text="Opcionais, e podem ser ligados depois. Cada um começa a partir do anteprojeto.",
+    )
     tem_execucao = forms.BooleanField(
         label="O escritório também acompanha a execução da obra",
         required=False,
@@ -67,6 +77,9 @@ class AberturaForm(ArqForm):
         self.fields["cliente_existente"].queryset = queryset_da_empresa(
             Cliente.objects.filter(ativo=True), user
         )
+        from fases.catalogo import COMPLEMENTARES
+
+        self.fields["complementares"].choices = [(p.chave, p.nome) for p in COMPLEMENTARES]
 
     def clean(self):
         dados = super().clean()
@@ -102,9 +115,12 @@ def abrir(request):
                 nome=form.cleaned_data["nome"],
                 tipo=form.cleaned_data["tipo"],
                 tem_execucao=form.cleaned_data["tem_execucao"],
+                cidade=form.cleaned_data["cidade"],
+                uf=form.cleaned_data["uf"],
+                endereco=form.cleaned_data["endereco"],
                 status="ativo",
             )
-            criar_etapas_padrao(projeto)
+            montar_fases(projeto, complementares=form.cleaned_data["complementares"])
             messages.success(
                 request, "Projeto aberto. O próximo passo é o briefing — está aberto abaixo."
             )

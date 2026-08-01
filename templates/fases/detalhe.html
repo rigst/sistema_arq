@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% block title %}{{ fase.nome }} — {{ projeto.nome }}{% endblock %}
+
+{% block content %}
+<section class="page page--leitura">
+    {% include "core/_voltar.html" with projeto_voltar=projeto %}
+
+    <header class="page-head">
+        <span class="ds-kicker">{{ projeto.nome }} · {{ projeto.get_tipo_display }}</span>
+        <h1 class="ds-h2 ds-display">{{ fase.nome }}</h1>
+        <p class="page-sub">{{ fase.resumo }}</p>
+    </header>
+
+    {% comment %}
+    O cabeçalho de estado responde as três perguntas que a pessoa faz ao abrir
+    a fase: em que pé está, o que precisa acontecer para avançar, e qual é o
+    botão disso. Um bloco só, e não três espalhados.
+    {% endcomment %}
+    <div class="fase-estado fase-estado--{{ fase.status }}">
+        <div class="fase-estado-texto">
+            <span class="fase-selo">{{ fase.get_status_display }}</span>
+            {% if fase.prazo %}<span class="fase-prazo{% if fase.atrasada %} is-atrasada{% endif %}">entrega {{ fase.prazo|date:"d/m/Y" }}</span>{% endif %}
+            {% if fase.fornecedor %}<span class="fase-quem">{{ fase.fornecedor.nome }}</span>{% endif %}
+
+            {% if not fase.liberada and fase.status == "nao_iniciada" %}
+            <p class="fase-aviso">{{ fase.impedimento }} Dá para começar mesmo assim — a ordem é orientação, não bloqueio.</p>
+            {% elif fase.status == "aguardando_cliente" %}
+            <p class="fase-aviso">Enviada em {{ fase.enviada_em|date:"d/m/Y" }}. Registre a resposta quando ela chegar.</p>
+            {% elif fase.status == "ajustes" %}
+            <p class="fase-aviso">O cliente pediu ajustes{% if fase.parecer %}: “{{ fase.parecer }}”{% endif %}</p>
+            {% elif fase.status == "aprovada" %}
+            <p class="fase-aviso">Aprovada em {{ fase.respondida_em|date:"d/m/Y" }}{% if fase.parecer %} — “{{ fase.parecer }}”{% endif %}</p>
+            {% endif %}
+        </div>
+
+        <div class="fase-acoes">
+            {% if fase.status == "nao_iniciada" %}
+            <form method="post" action="{% url 'fase_iniciar' fase.pk %}" class="app-inline-form">
+                {% csrf_token %}<button class="ds-btn ds-btn--solid" type="submit">Começar a fase</button>
+            </form>
+            {% elif fase.status == "em_elaboracao" or fase.status == "ajustes" %}
+                {% if fase.exige_aprovacao %}
+                <form method="post" action="{% url 'fase_enviar' fase.pk %}" class="app-inline-form">
+                    {% csrf_token %}<button class="ds-btn ds-btn--solid" type="submit">Enviar ao cliente</button>
+                </form>
+                {% else %}
+                <form method="post" action="{% url 'fase_concluir' fase.pk %}" class="app-inline-form">
+                    {% csrf_token %}<button class="ds-btn ds-btn--solid" type="submit">Concluir fase</button>
+                </form>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    {% if fase.status == "aguardando_cliente" %}
+    <form method="post" action="{% url 'fase_responder' fase.pk %}" class="fase-resposta form-card">
+        {% csrf_token %}
+        <h2 class="bloco-titulo">Resposta do cliente</h2>
+        <p>{{ form_resposta.parecer.label_tag }}{{ form_resposta.parecer }}</p>
+        <p class="ht-hint">{{ form_resposta.parecer.help_text }}</p>
+        <div class="fase-resposta-botoes">
+            <button class="ds-btn ds-btn--solid" type="submit" name="decisao" value="aprovar">Cliente aprovou</button>
+            <button class="ds-btn" type="submit" name="decisao" value="ajustes">Pediu ajustes</button>
+        </div>
+    </form>
+    {% endif %}
+
+    <section class="secao">
+        <h2 class="secao-titulo ds-display">O que sai desta fase</h2>
+        <p class="secao-sub">Entra aqui: {{ fase.consome|lower }}</p>
+        <ul class="fase-entrega">
+            {% for item in fase.entrega %}<li>{{ item }}</li>{% endfor %}
+        </ul>
+        {% if fase.chave == "briefing" %}
+        <p><a class="ds-btn" href="{% url 'briefing_responder' projeto.pk %}">Abrir o roteiro de briefing</a></p>
+        {% elif fase.chave == "proposta" %}
+        <p class="fase-atalhos">
+            <a class="ds-btn" href="{% url 'proposta_nova' %}?projeto={{ projeto.pk }}">Montar proposta</a>
+            <a class="ds-btn" href="{% url 'contrato_novo' %}?projeto={{ projeto.pk }}">Redigir contrato</a>
+        </p>
+        {% endif %}
+    </section>
+
+    {% comment %}Arquivos da fase. Cada fase tem os seus: é o que permite saber
+    qual versão o cliente aprovou.{% endcomment %}
+    {% if insumos %}
+    <section class="secao insumos" id="insumos">
+        <h2 class="secao-titulo ds-display">Do briefing</h2>
+        <p class="secao-sub">
+            O que o cliente pediu, à mão, para desenhar em cima disso — e não de memória.
+        </p>
+
+        {% if insumos.ambientes %}
+        <table class="data-table programa">
+            <thead><tr><th>Ambiente</th><th>Uso</th><th class="num">Qtd.</th><th class="num">m² cada</th><th class="num">m² total</th></tr></thead>
+            <tbody>
+                {% for a in insumos.ambientes %}
+                <tr>
+                    <td>{{ a.nome }}</td>
+                    <td>{{ a.uso|default:"—" }}</td>
+                    <td class="num">{{ a.quantidade }}</td>
+                    <td class="num">{{ a.area_aprox|default:"—" }}</td>
+                    <td class="num">{{ a.area_total|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            {% if insumos.area_total %}
+            <tfoot><tr><th colspan="4">Área do programa</th><th class="num">{{ insumos.area_total }} m²</th></tr></tfoot>
+            {% endif %}
+        </table>
+        {% else %}
+        <p class="data-empty">
+            O programa de necessidades ainda está vazio.
+            <a href="{% url 'briefing_projeto' projeto.pk %}">Preencher no briefing</a>.
+        </p>
+        {% endif %}
+
+        {% if insumos.referencias or insumos.estilo or insumos.restricoes %}
+        <dl class="insumo-notas">
+            {% if insumos.estilo %}<div><dt>Estilo</dt><dd>{{ insumos.estilo }}</dd></div>{% endif %}
+            {% if insumos.referencias %}<div><dt>Referências</dt><dd>{{ insumos.referencias }}</dd></div>{% endif %}
+            {% if insumos.restricoes %}<div><dt>Restrições</dt><dd>{{ insumos.restricoes }}</dd></div>{% endif %}
+        </dl>
+        {% endif %}
+        <p><a class="ds-btn" href="{% url 'briefing_projeto' projeto.pk %}">Abrir o briefing completo</a></p>
+    </section>
+    {% endif %}
+
+    <section class="secao" id="arquivos">
+        <h2 class="secao-titulo ds-display">Arquivos desta fase</h2>
+        <p class="secao-sub">Pranchas, PDFs, imagens e referências. O que o navegador abre, abre aqui mesmo.</p>
+
+        {% if imagens %}
+        <ul class="galeria">
+            {% for a in imagens %}
+            <li>
+                <a href="{% url 'fase_arquivo_ver' a.pk %}" target="_blank" rel="noopener" title="{{ a.titulo }}">
+                    <img src="{% url 'fase_arquivo_ver' a.pk %}" alt="{{ a.titulo }}" loading="lazy">
+                </a>
+                <span>{{ a.titulo }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% if arquivos %}
+        <ul class="arquivo-lista">
+            {% for a in arquivos %}
+            <li class="arquivo">
+                <span class="arquivo-tipo num">{{ a.extensao|default:"—" }}</span>
+                <div class="arquivo-id">
+                    <a href="{% url 'fase_arquivo_ver' a.pk %}" {% if a.visualizavel %}target="_blank" rel="noopener"{% endif %}>{{ a.titulo }}</a>
+                    <span class="arquivo-meta">
+                        {{ a.get_categoria_display }} · {{ a.criado_em|date:"d/m/y H:i" }}
+                        {% if a.criado_por %} · {{ a.criado_por.get_username }}{% endif %}
+                        {% if a.tamanho_legivel %} · {{ a.tamanho_legivel }}{% endif %}
+                    </span>
+                </div>
+                <div class="arquivo-acoes">
+                    <a class="app-link-btn" href="{% url 'fase_arquivo_editar' a.pk %}">editar</a>
+                    <form method="post" action="{% url 'fase_arquivo_remover' a.pk %}" class="app-inline-form">
+                        {% csrf_token %}<button class="app-link-btn" type="submit">remover</button>
+                    </form>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="data-empty">Nenhum arquivo nesta fase ainda.</p>
+        {% endif %}
+
+        <details class="abrir-campo">
+            <summary>Anexar arquivo</summary>
+            <form method="post" action="{% url 'fase_anexar' fase.pk %}" enctype="multipart/form-data" class="form-card">
+                {% csrf_token %}
+                <p>{{ form_arquivo.titulo.label_tag }}{{ form_arquivo.titulo }}</p>
+                <p>{{ form_arquivo.arquivo.label_tag }}{{ form_arquivo.arquivo }}</p>
+                <div class="form-dupla">
+                    <p>{{ form_arquivo.categoria.label_tag }}{{ form_arquivo.categoria }}</p>
+                    <p>{{ form_arquivo.fluxo.label_tag }}{{ form_arquivo.fluxo }}</p>
+                </div>
+                <p>{{ form_arquivo.observacoes.label_tag }}{{ form_arquivo.observacoes }}</p>
+                <button class="ds-btn ds-btn--solid" type="submit">Anexar</button>
+            </form>
+        </details>
+    </section>
+
+    <section class="secao" id="historico">
+        <h2 class="secao-titulo ds-display">Histórico</h2>
+        <p class="secao-sub">Conversas com o cliente, decisões internas e o que o sistema registrou.</p>
+
+        <form method="post" action="{% url 'fase_comentar' fase.pk %}" class="form-card registro-novo">
+            {% csrf_token %}
+            <p>{{ form_registro.texto.label_tag }}{{ form_registro.texto }}</p>
+            <div class="registro-envio">
+                <label class="ds-oculto" for="{{ form_registro.tipo.id_for_label }}">{{ form_registro.tipo.label }}</label>
+                {{ form_registro.tipo }}
+                <button class="ds-btn ds-btn--solid" type="submit">Registrar</button>
+            </div>
+        </form>
+
+        <ol class="linha-tempo">
+            {% for r in registros %}
+            <li class="registro registro--{{ r.tipo }}">
+                <span class="registro-marca" aria-hidden="true"></span>
+                <div>
+                    <p class="registro-texto">{{ r.texto }}</p>
+                    <span class="registro-meta">
+                        {{ r.get_tipo_display }} · {{ r.criado_em|date:"d/m/y H:i" }}
+                        {% if r.autor %} · {{ r.autor.get_username }}{% endif %}
+                    </span>
+                </div>
+            </li>
+            {% empty %}
+            <li class="data-empty">Nada registrado ainda.</li>
+            {% endfor %}
+        </ol>
+    </section>
+
+    <details class="abrir-campo">
+        <summary>Prazo e responsável</summary>
+        <form method="post" action="{% url 'fase_ajustar' fase.pk %}" class="form-card">
+            {% csrf_token %}
+            <div class="form-dupla">
+                <p>{{ form_ajuste.prazo.label_tag }}{{ form_ajuste.prazo }}</p>
+                <p>{{ form_ajuste.fornecedor.label_tag }}{{ form_ajuste.fornecedor }}</p>
+            </div>
+            <button class="ds-btn ds-btn--solid" type="submit">Salvar</button>
+        </form>
+        {% if fase.complementar %}
+        <form method="post" action="{% url 'fase_remover' fase.pk %}" class="app-inline-form fase-remover">
+            {% csrf_token %}
+            <button class="app-link-btn" type="submit">Remover este complementar do projeto</button>
+        </form>
+        {% endif %}
+    </details>
+</section>
+{% endblock %}

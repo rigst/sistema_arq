@@ -1,0 +1,54 @@
+{% comment %}
+As fases do projeto, em coluna. Cada linha diz o nome, em que pé está, quanto
+material tem e o que fazer agora — e é o link para a área de trabalho da fase.
+{% endcomment %}
+<section class="secao" id="fases">
+    <h2 class="secao-titulo ds-display">Fases do projeto</h2>
+    <p class="secao-sub">
+        Cada fase guarda o próprio material e a própria aprovação. Uma fase se abre
+        quando a anterior é aprovada pelo cliente — é o que evita desenhar em cima de
+        decisão não confirmada.
+    </p>
+
+    <ol class="fase-lista">
+        {% for f in fases %}
+        <li class="fase-linha fase-linha--{{ f.status }}{% if f.complementar %} is-complementar{% endif %}">
+            <a class="fase-linha-corpo" href="{% url 'fase_detalhe' f.pk %}">
+                <span class="fase-num num" aria-hidden="true">{% if f.status == "aprovada" %}✓{% else %}{{ forloop.counter }}{% endif %}</span>
+                <span class="fase-id">
+                    <strong>{{ f.nome }}</strong>
+                    <span class="fase-resumo">{{ f.resumo }}</span>
+                </span>
+                <span class="fase-situacao">
+                    <span class="fase-selo fase-selo--{{ f.status }}">{{ f.get_status_display }}</span>
+                    <span class="fase-num-arquivos num">
+                        {{ f.arquivos.count }} arq.{% if f.prazo %} · {{ f.prazo|date:"d/m/y" }}{% endif %}
+                    </span>
+                </span>
+            </a>
+        </li>
+        {% endfor %}
+    </ol>
+
+    {% if complementares_disponiveis %}
+    <details class="abrir-campo">
+        <summary>Adicionar projeto complementar</summary>
+        <p class="ht-hint">
+            Opcionais e sob demanda. Cada um parte do anteprojeto aprovado, porque é aí
+            que existe planta para calcular em cima.
+        </p>
+        <ul class="complementar-oferta">
+            {% for p in complementares_disponiveis %}
+            <li>
+                <form method="post" action="{% url 'fase_ativar_complementar' projeto.pk %}" class="app-inline-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="chave" value="{{ p.chave }}">
+                    <button class="ds-btn" type="submit">+ {{ p.nome }}</button>
+                </form>
+                <span>{{ p.resumo }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </details>
+    {% endif %}
+</section>

@@ -7,15 +7,16 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
+from fases.models import montar_fases
 
-from .forms import DisciplinaForm, EtapaFornecedorForm, PendenciaForm, ProjetoForm
-from .models import Disciplina, Etapa, Pendencia, Projeto, criar_etapas_padrao
+from .forms import PendenciaForm, ProjetoForm
+from .models import Pendencia, Projeto
 
 
 @login_required
 def painel_projetos(request):
     projetos = queryset_da_empresa(
-        Projeto.objects.select_related("cliente").prefetch_related("etapas", "pendencias"),
+        Projeto.objects.select_related("cliente").prefetch_related("fases", "pendencias"),
         request.user,
     )
     status = request.GET.get("status", "")
@@ -31,7 +32,7 @@ def painel_projetos(request):
 @login_required
 def kanban_projetos(request):
     projetos = queryset_da_empresa(
-        Projeto.objects.select_related("cliente").prefetch_related("etapas", "pendencias"),
+        Projeto.objects.select_related("cliente").prefetch_related("fases", "pendencias"),
         request.user,
     )
     colunas = [
@@ -65,8 +66,8 @@ def novo_projeto(request):
             projeto.criado_por = request.user
             projeto.save()
             form.save_m2m()
-            criar_etapas_padrao(projeto)
-            messages.success(request, "Projeto criado com etapas padrão.")
+            montar_fases(projeto)
+            messages.success(request, "Projeto criado. O fluxo começa pelo briefing.")
             return redirect("projeto_detalhe", pk=projeto.pk)
     else:
         form = ProjetoForm(user=request.user)
@@ -94,6 +95,7 @@ def editar_projeto(request, pk):
 def detalhe_projeto(request, pk):
     from financeiro.services import calcular_margem_projeto
     from jornada.roteiro import montar_roteiro, percentual, proxima_etapa
+    from fases.catalogo import COMPLEMENTARES
 
     projeto = get_object_or_404(
         queryset_da_empresa(Projeto.objects.select_related("cliente"), request.user), pk=pk
@@ -109,34 +111,17 @@ def detalhe_projeto(request, pk):
         "projetos/detalhe.html",
         {
             "projeto": projeto,
-            "etapas": projeto.etapas.all(),
             "pendencias": projeto.pendencias.all(),
             "form_pendencia": PendenciaForm(),
             "margem": calcular_margem_projeto(projeto),
             "horas_percent": round(horas_percent, 1),
-            "disciplinas": projeto.disciplinas.select_related("fornecedor"),
-            "form_disciplina": DisciplinaForm(user=request.user),
+            "fases": projeto.fases.select_related("fornecedor"),
+            "complementares_disponiveis": complementares_disponiveis(projeto),
             "roteiro": roteiro,
             "roteiro_proxima": proxima_etapa(roteiro),
             "roteiro_percent": percentual(roteiro),
         },
     )
-
-
-@require_POST
-@login_required
-def avancar_etapa(request, pk):
-    etapa = get_object_or_404(queryset_da_empresa(Etapa.objects.all(), request.user), pk=pk)
-    if etapa.status == "pendente":
-        etapa.status = "andamento"
-    elif etapa.status == "andamento":
-        etapa.status = "concluida"
-        etapa.aprovada = True
-        etapa.aprovada_em = timezone.now()
-    etapa.save()
-    etapa.projeto.tocar()
-    messages.success(request, f"Etapa “{etapa.nome}” atualizada.")
-    return redirect("projeto_detalhe", pk=etapa.projeto.pk)
 
 
 @require_POST
@@ -167,60 +152,9 @@ def resolver_pendencia(request, pk):
     return redirect("projeto_detalhe", pk=pendencia.projeto.pk)
 
 
-@require_POST
-@login_required
-def adicionar_disciplina(request, pk):
-    projeto = get_object_or_404(queryset_da_empresa(Projeto.objects.all(), request.user), pk=pk)
-    form = DisciplinaForm(request.POST, user=request.user)
-    if form.is_valid():
-        disciplina = form.save(commit=False)
-        disciplina.projeto = projeto
-        disciplina.empresa = projeto.empresa
-        try:
-            disciplina.save()
-        except IntegrityError:
-            messages.error(request, "Essa disciplina já está no projeto.")
-        else:
-            projeto.tocar()
-            messages.success(request, f"Disciplina “{disciplina.get_nome_display()}” adicionada.")
-    else:
-        messages.error(request, form.errors.as_text())
-    return redirect(reverse("projeto_detalhe", kwargs={"pk": projeto.pk}) + "#elaboracao")
+def complementares_disponiveis(projeto):
+    """Os complementares que ainda não foram ligados neste projeto."""
+    from fases.catalogo import COMPLEMENTARES
 
-
-@require_POST
-@login_required
-def avancar_disciplina(request, pk):
-    disciplina = get_object_or_404(
-        queryset_da_empresa(Disciplina.objects.all(), request.user), pk=pk
-    )
-    ordem = ["pendente", "andamento", "concluida"]
-    atual = ordem.index(disciplina.status)
-    disciplina.status = ordem[min(atual + 1, len(ordem) - 1)]
-    disciplina.save(update_fields=["status"])
-    disciplina.projeto.tocar()
-    return redirect(
-        reverse("projeto_detalhe", kwargs={"pk": disciplina.projeto.pk}) + "#elaboracao"
-    )
-
-
-@require_POST
-@login_required
-def remover_disciplina(request, pk):
-    disciplina = get_object_or_404(
-        queryset_da_empresa(Disciplina.objects.all(), request.user), pk=pk
-    )
-    projeto_pk = disciplina.projeto_id
-    disciplina.delete()
-    return redirect(reverse("projeto_detalhe", kwargs={"pk": projeto_pk}) + "#elaboracao")
-
-
-@require_POST
-@login_required
-def definir_fornecedor_etapa(request, pk):
-    etapa = get_object_or_404(queryset_da_empresa(Etapa.objects.all(), request.user), pk=pk)
-    form = EtapaFornecedorForm(request.POST, instance=etapa, user=request.user)
-    if form.is_valid():
-        form.save()
-        etapa.projeto.tocar()
-    return redirect(reverse("projeto_detalhe", kwargs={"pk": etapa.projeto.pk}) + "#elaboracao")
+    ja_tem = set(projeto.fases.values_list("chave", flat=True))
+    return [p for p in COMPLEMENTARES if p.chave not in ja_tem]
