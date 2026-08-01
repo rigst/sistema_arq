@@ -849,10 +849,6 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .auth-card {
     position: relative; z-index: 2; display: flex; flex-direction: column; gap: 1.15rem;
     padding: 1.75rem; border-radius: 0.9rem;
-    background: rgba(255, 255, 255, 0.85);
-    -webkit-backdrop-filter: blur(24px) saturate(1.15); backdrop-filter: blur(24px) saturate(1.15);
-    border: 1px solid rgba(255, 255, 255, 0.55);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
 }
 /* sobre o vidro o texto secundário sobe um degrau: a foto atrás rouba contraste */
 .auth-card .auth-header p, .auth-card .auth-visitor p,
@@ -1055,4 +1051,231 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .contrato-corpo:focus {
     outline: none; background: var(--ds-surface);
     border-color: var(--ds-blue-light); box-shadow: var(--ds-focus-ring);
+}
+
+/* =================================================================
+   PAPEL VEGETAL — a camada de vidro do A.R.Q.
+   -----------------------------------------------------------------
+   Vidro aqui não é vidro de iOS: é o papel vegetal que o arquiteto
+   sobrepõe à prancheta para estudar sem tocar no desenho de baixo.
+   Vegetal é translúcido, difunde o que está atrás e mostra o corte
+   como um fio de luz — que é exatamente o que backdrop-filter faz.
+
+   O que o vidro refrata é o pochê: a hachura de fundo passa por baixo
+   das superfícies e some sob o desfoque. Sem algo com detalhe atrás,
+   vidro não se lê — por isso a camada ambiente vem primeiro.
+
+   Orçamento de GPU: desfoque real só onde a superfície é única e
+   grande (lateral, cartão de login, faixa de indicadores) ou pequena
+   (botões, chips). Cartões em grade usam só transparência.
+   ================================================================= */
+
+:root {
+    /* Véus: o branco do vegetal é levemente frio, nunca puro */
+    --vidro-veu: rgba(252, 254, 253, 0.7);
+    --vidro-veu-forte: rgba(252, 254, 253, 0.84);
+    --vidro-veu-leve: rgba(252, 254, 253, 0.55);
+
+    /* 20px é o meio do caminho entre "sujo" e "sem efeito"; a saturação
+       devolve a cor que o desfoque come. */
+    --vidro-desfoque: blur(16px) saturate(140%);
+    --vidro-desfoque-curto: blur(12px) saturate(130%);
+
+    /* O corte do vegetal: fio de luz no topo + aro interno */
+    --vidro-fio: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    --vidro-aro: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+    --vidro-borda: rgba(20, 24, 26, 0.09);
+    --vidro-sombra: 0 6px 24px rgba(20, 24, 26, 0.07);
+    --vidro-sombra-alta: 0 14px 40px rgba(20, 24, 26, 0.12);
+}
+
+/* --- Camada ambiente: a luz da sala e o pochê que o vidro difunde --- */
+.app-shell::before {
+    content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none;
+    background:
+        /* Desfoque destrói textura fina e preserva mancha grande: é a mancha
+           que faz o vidro se ler. Luz entrando em cima à esquerda, verde de
+           tinta pousando embaixo, azul de prancha ao fundo à direita. */
+        radial-gradient(32rem 28rem at 1% -8%, rgba(255, 255, 255, 1), transparent 68%),
+        radial-gradient(28rem 32rem at -8% 98%, rgba(28, 106, 83, 0.28), transparent 70%),
+        var(--ds-bg);
+}
+/* A hachura fica forte atrás da lateral e some ao entrar na folha, para não
+   competir com o conteúdo. */
+/* Atrás da lateral vai uma foto de concreto, desbotada quase ao limite. Vidro
+   sobre cor chapada não se lê: o que faz o vegetal aparecer é ter forma por
+   baixo para dissolver. Junto vai a hachura, que sobrevive na margem da folha
+   onde não há véu por cima. */
+.app-shell::after {
+    content: ""; position: fixed; top: 0; bottom: 0; left: 0; width: var(--arq-lateral);
+    z-index: -1; pointer-events: none; opacity: 0.42;
+    background:
+        repeating-linear-gradient(-45deg, rgba(28, 106, 83, 0.22) 0 1px, transparent 1px 14px),
+        url("../img/hero-producao.jpg") left center / cover no-repeat;
+    /* Exatamente a largura da lateral: a foto é o que o vegetal dissolve,
+       não decoração vazando para a folha. */
+}
+.app-shell { background: transparent; }
+
+/* --- Barra lateral: a folha de vegetal sobre a prancheta --- */
+/* O gradiente de cima para baixo é o brilho que uma folha inclinada faz:
+   mais luz onde a marca fica, mais transparência no rodapé. */
+.app-side {
+    background: linear-gradient(180deg,
+        rgba(252, 254, 253, 0.86), rgba(252, 254, 253, 0.74) 55%, rgba(252, 254, 253, 0.8));
+    -webkit-backdrop-filter: blur(16px) saturate(150%); backdrop-filter: blur(16px) saturate(150%);
+    border-right: 1px solid var(--vidro-borda);
+    box-shadow: var(--vidro-fio), 1px 0 28px rgba(20, 24, 26, 0.06);
+}
+.app-side-foot { border-top-color: var(--vidro-borda); }
+
+/* O ativo do menu ganha vidro tingido em vez de bloco chapado */
+.nav-link.is-active {
+    background: rgba(28, 106, 83, 0.11);
+    box-shadow: inset 0 0 0 1px rgba(28, 106, 83, 0.14);
+}
+.nav-link:hover { background: rgba(255, 255, 255, 0.6); }
+.nav-link.is-active:hover { background: rgba(28, 106, 83, 0.15); }
+
+/* Botão de destaque: vidro tingido de verde com fio de luz */
+.nav-destaque {
+    background: linear-gradient(180deg, var(--ds-blue-light), var(--ds-blue));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 4px 14px rgba(28, 106, 83, 0.24);
+}
+.nav-destaque:hover {
+    background: linear-gradient(180deg, var(--ds-blue), var(--ds-blue-dark));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 8px 22px rgba(28, 106, 83, 0.3);
+}
+
+/* --- Botões --- */
+/* Secundário vira vegetal: o pochê aparece por baixo e some no desfoque. */
+.ds-btn:not(.ds-btn--solid) {
+    background: var(--vidro-veu-forte);
+    border-color: var(--vidro-borda);
+    box-shadow: var(--vidro-fio);
+}
+.ds-btn:not(.ds-btn--solid):hover {
+    background: var(--vidro-veu-forte);
+    border-color: var(--ds-blue-100);
+    box-shadow: var(--vidro-fio), var(--vidro-sombra);
+}
+/* O principal continua sólido — é o contraste que carrega a ação —, mas
+   ganha o brilho do corte para pertencer à mesma família. */
+.ds-btn--solid {
+    background: linear-gradient(180deg, var(--ds-blue-light), var(--ds-blue));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+.ds-btn--solid:hover {
+    background: linear-gradient(180deg, var(--ds-blue), var(--ds-blue-dark));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 6px 18px rgba(28, 106, 83, 0.28);
+}
+
+/* Chips e badges: vegetal fino */
+.chip {
+    background: var(--vidro-veu-forte);
+    border-color: var(--vidro-borda);
+    box-shadow: var(--vidro-fio);
+}
+.chip:hover { background: var(--vidro-veu-forte); border-color: var(--ds-blue-100); }
+.chip.is-active {
+    background: var(--ds-ink); border-color: var(--ds-ink); color: #fff;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+.ds-badge--info { background: rgba(28, 106, 83, 0.1); border-color: rgba(28, 106, 83, 0.2); }
+
+/* --- Faixa de indicadores: uma folha só, com os filetes por transparência --- */
+.kpi-row {
+    background: var(--vidro-borda);
+    border-color: var(--vidro-borda);
+    -webkit-backdrop-filter: var(--vidro-desfoque); backdrop-filter: var(--vidro-desfoque);
+    box-shadow: var(--vidro-fio), var(--vidro-sombra);
+}
+.kpi { background: var(--vidro-veu-forte); }
+.kpi:hover { background: rgba(255, 255, 255, 0.94); }
+
+/* --- Superfícies em grade: transparência sem desfoque (custo de GPU) --- */
+.projeto-card, .obra-card, .kanban-card {
+    background: var(--vidro-veu-forte);
+    border-color: var(--vidro-borda);
+    box-shadow: var(--vidro-fio);
+}
+.projeto-card:hover, .obra-card:hover, .kanban-card:hover {
+    border-color: var(--ds-blue-100);
+    box-shadow: var(--vidro-fio), var(--vidro-sombra);
+}
+.kanban-col { background: var(--vidro-veu-leve); }
+.dash-onb { box-shadow: var(--vidro-fio); }
+.alerta-card, .ia-bloco, .timer-card.is-rodando { box-shadow: var(--vidro-fio); }
+
+/* Campos: o preenchido vira vegetal fino sobre o ambiente */
+.form-card input, .form-card select, .form-card textarea,
+.form-block input, .form-block select, .form-block textarea,
+.inline-add, .timer-campo input, .timer-campo select,
+.briefing-complemento textarea, .contrato-corpo, .diag-opcao {
+    background: var(--vidro-veu-leve);
+    border-color: var(--vidro-borda);
+}
+.inline-add input, .inline-add select { background: var(--vidro-veu-forte); }
+.form-card input:focus, .form-card select:focus, .form-card textarea:focus,
+.form-block input:focus, .form-block select:focus, .form-block textarea:focus,
+.timer-campo input:focus, .timer-campo select:focus,
+.briefing-complemento textarea:focus, .contrato-corpo:focus { background: #fff; }
+
+/* Cabeçalho com foto: o texto ganha um véu para não brigar com a imagem */
+.dash-hero, .page-head--foto { box-shadow: var(--vidro-fio); }
+
+/* --- Login: o vegetal mais espesso, porque atrás dele há uma foto --- */
+/* Aqui o vidro pode ser o mais fino do sistema: a foto atrás é escura e
+   contrastada, então o texto continua com folga mesmo com véu de 0.76.
+   O gradiente diagonal é o brilho da folha inclinada contra a luz. */
+.auth-card {
+    background: linear-gradient(148deg,
+        rgba(255, 255, 255, 0.84), rgba(252, 254, 253, 0.72) 46%, rgba(252, 254, 253, 0.78));
+    -webkit-backdrop-filter: blur(22px) saturate(160%); backdrop-filter: blur(22px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow: var(--vidro-fio), var(--vidro-aro), 0 24px 60px rgba(0, 0, 0, 0.36);
+}
+.auth-card .auth-field input {
+    background: rgba(255, 255, 255, 0.62);
+    border-color: rgba(20, 24, 26, 0.12);
+}
+.auth-card .ds-btn:not(.ds-btn--solid) {
+    background: rgba(255, 255, 255, 0.6);
+    border-color: rgba(20, 24, 26, 0.14);
+}
+.auth-card .ds-btn:not(.ds-btn--solid):hover { background: rgba(255, 255, 255, 0.82); }
+/* A marca sobre a foto ganha o mesmo vegetal, em versão escura */
+.auth-brand .mk-plate { fill: rgba(255, 255, 255, 0.16); }
+
+/* =================================================================
+   QUANDO O VIDRO NÃO PODE EXISTIR
+   Duas saídas obrigatórias: navegador sem backdrop-filter e usuário
+   que pediu menos transparência. Nos dois casos, superfície opaca.
+   ================================================================= */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .app-side, .auth-card, .kpi-row, .kpi, .ds-btn:not(.ds-btn--solid), .chip,
+    .projeto-card, .obra-card, .kanban-card { background: var(--ds-surface); }
+    .app-shell::after { display: none; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+    .app-shell::after { display: none; }
+    .app-side, .auth-card, .kpi, .ds-btn:not(.ds-btn--solid), .chip,
+    .projeto-card, .obra-card, .kanban-card, .inline-add input, .inline-add select {
+        background: var(--ds-surface);
+        -webkit-backdrop-filter: none; backdrop-filter: none;
+    }
+    .kpi-row, .dash-onb { -webkit-backdrop-filter: none; backdrop-filter: none; }
+    .form-card input, .form-card select, .form-card textarea,
+    .form-block input, .form-block select, .form-block textarea,
+    .inline-add, .timer-campo input, .timer-campo select,
+    .briefing-complemento textarea, .contrato-corpo, .diag-opcao { background: var(--ds-panel); }
+    .auth-card .auth-field input { background: #fff; -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+
+/* No estreito a lateral é sticky e passa por cima do conteúdo ao rolar:
+   ali o véu precisa ser mais fechado para o texto de baixo não vazar. */
+@media (max-width: 62rem) {
+    .app-side { background: rgba(252, 254, 253, 0.94); }
+    .app-shell::after { display: none; }
 }
