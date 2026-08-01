@@ -1,9 +1,10 @@
 from django import forms
 
 from .models import AmbientePrograma, Briefing
+from core.forms import ArqModelForm
 
 
-class BriefingForm(forms.ModelForm):
+class BriefingForm(ArqModelForm):
     class Meta:
         model = Briefing
         fields = [
@@ -22,7 +23,7 @@ class BriefingForm(forms.ModelForm):
         }
 
 
-class AmbienteForm(forms.ModelForm):
+class AmbienteForm(ArqModelForm):
     class Meta:
         model = AmbientePrograma
         fields = ["nome", "area_aprox", "uso"]

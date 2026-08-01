@@ -44,14 +44,15 @@ class Projeto(EmpresaModel, Rastreavel):
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name="projetos")
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default="residencial")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="ativo")
-    valor_contratado = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    valor_contratado = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="valor contratado")
     horas_estimadas = models.DecimalField(
         max_digits=10, decimal_places=2, default=0,
         help_text="Horas previstas (vindas da proposta). Comparadas com as trabalhadas.",
+        verbose_name="horas estimadas",
     )
-    data_inicio = models.DateField(null=True, blank=True)
-    data_prevista = models.DateField(null=True, blank=True)
-    ultima_atualizacao = models.DateTimeField(default=timezone.now)
+    data_inicio = models.DateField(null=True, blank=True, verbose_name="data de início")
+    data_prevista = models.DateField(null=True, blank=True, verbose_name="data prevista")
+    ultima_atualizacao = models.DateTimeField(default=timezone.now, verbose_name="última atualização")
     tags = models.ManyToManyField(Tag, blank=True, related_name="projetos")
 
     class Meta:
@@ -106,9 +107,9 @@ class Etapa(EmpresaModel):
     nome = models.CharField(max_length=100)
     ordem = models.PositiveIntegerField(default=0)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pendente")
-    data_prevista = models.DateField(null=True, blank=True)
+    data_prevista = models.DateField(null=True, blank=True, verbose_name="data prevista")
     aprovada = models.BooleanField(default=False)
-    aprovada_em = models.DateTimeField(null=True, blank=True)
+    aprovada_em = models.DateTimeField(null=True, blank=True, verbose_name="aprovada em")
 
     class Meta:
         ordering = ["ordem", "id"]
@@ -119,9 +120,10 @@ class Etapa(EmpresaModel):
 
 class Pendencia(EmpresaModel):
     projeto = models.ForeignKey(Projeto, on_delete=models.CASCADE, related_name="pendencias")
-    descricao = models.CharField(max_length=200)
+    descricao = models.CharField(max_length=200, verbose_name="descrição")
     responsavel = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+",
+        verbose_name="responsável",
     )
     prazo = models.DateField(null=True, blank=True)
     resolvida = models.BooleanField(default=False)

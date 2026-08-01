@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ documento.titulo }}{% endblock %}
+
+{% block content %}
+<article class="page page--leitura">
+    {% if not user.is_authenticated %}
+    <a class="app-brand doc-voltar" href="{% url 'login' %}">
+        <svg class="app-brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+            <rect class="mk-plate" width="32" height="32" rx="7.5"/>
+            <path class="mk-a" d="M8.4 24.3 L16 7.4 L23.6 24.3" fill="none" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path class="mk-cota" d="M11.7 18.7 H20.3" fill="none" stroke-width="2.7" stroke-linecap="round"/>
+        </svg>
+        <span class="app-brand-word">A.R.Q.</span>
+    </a>
+    {% endif %}
+
+    <header class="page-head">
+        <span class="ds-kicker">Versão {{ documento.versao }} · em vigor desde {{ documento.vigente_desde|date:"d/m/Y" }}</span>
+        <h1 class="ds-h2 ds-display">{{ documento.titulo }}</h1>
+    </header>
+
+    <div class="prosa">
+        {% for tipo, texto in documento.paragrafos %}
+            {% if tipo == "titulo" %}<h2 class="ds-display">{{ texto }}</h2>
+            {% elif tipo == "item" %}<p class="prosa-item">{{ texto }}</p>
+            {% else %}<p>{{ texto }}</p>{% endif %}
+        {% endfor %}
+    </div>
+
+    {% if outro %}
+    <footer class="prosa-pe">
+        <a href="{{ outro.url_publica }}">Ler também: {{ outro.titulo }}</a>
+    </footer>
+    {% endif %}
+</article>
+{% endblock %}

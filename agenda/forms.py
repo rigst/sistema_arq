@@ -5,9 +5,10 @@ from crm.models import Cliente
 from projetos.models import Projeto
 
 from .models import Compromisso
+from core.forms import ArqModelForm
 
 
-class CompromissoForm(forms.ModelForm):
+class CompromissoForm(ArqModelForm):
     class Meta:
         model = Compromisso
         fields = ["titulo", "tipo", "inicio", "fim", "local", "cliente", "projeto", "observacoes"]

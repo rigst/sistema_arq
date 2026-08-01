@@ -66,3 +66,29 @@ simples e permissiva, compatível com todas as dependências acima. Alternativas
 > Observação: distribuir binários de `psycopg`/`Pyphen` (ex.: em uma imagem Docker) mantém
 > as obrigações LGPL — na prática, disponibilizar as versões dessas libs e permitir sua
 > troca. Rodando via `pip install`, isso já é atendido.
+
+## Imagens e tipografia
+
+**Fotos** (`static/img/*.jpg`): Unsplash — a
+[Unsplash License](https://unsplash.com/license) permite uso comercial e não
+comercial, sem pedir permissão nem atribuição. As imagens foram baixadas,
+recortadas e recomprimidas para dentro do repositório, então o app não depende
+de CDN externo em produção.
+
+| Arquivo | Origem |
+| --- | --- |
+| `login-arquitetura.jpg` | `unsplash.com/photos/1625390711106-3728815ebcd9` |
+| `hero-painel.jpg` | `unsplash.com/photos/1546414701-81cc6963c67f` |
+| `hero-obra.jpg` | `unsplash.com/photos/1522743791393-522312deeebf` |
+
+**Fontes**: Archivo, IBM Plex Sans e IBM Plex Mono, todas sob
+[SIL Open Font License 1.1](https://openfontlicense.org/), servidas pelo Google
+Fonts. A OFL permite uso, modificação e redistribuição, inclusive comercial;
+a única restrição prática é não vender as fontes isoladamente.
+
+## Termos de uso e política de privacidade
+
+O texto em `legal/textos.py` é um rascunho redigido para este projeto, com base
+na LGPD (Lei 13.709/2018). **Não é parecer jurídico.** Antes de usar em
+produção com clientes reais, revise com um advogado — em especial os trechos de
+retenção de dados, papel de controlador/operador e foro.

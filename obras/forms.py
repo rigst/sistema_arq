@@ -5,9 +5,10 @@ from core.tenancy import queryset_da_empresa
 from projetos.models import Projeto
 
 from .models import EtapaObra, Medicao, Obra, VisitaTecnica
+from core.forms import ArqModelForm
 
 
-class ObraForm(forms.ModelForm):
+class ObraForm(ArqModelForm):
     class Meta:
         model = Obra
         fields = [
@@ -37,7 +38,7 @@ class ObraForm(forms.ModelForm):
             self.fields["projeto"].queryset = qs
 
 
-class EtapaObraForm(forms.ModelForm):
+class EtapaObraForm(ArqModelForm):
     class Meta:
         model = EtapaObra
         fields = [
@@ -50,7 +51,7 @@ class EtapaObraForm(forms.ModelForm):
         }
 
 
-class VisitaTecnicaForm(forms.ModelForm):
+class VisitaTecnicaForm(ArqModelForm):
     class Meta:
         model = VisitaTecnica
         fields = ["etapa", "data", "verificado", "pendencias", "proxima_acao"]
@@ -71,7 +72,7 @@ class VisitaTecnicaForm(forms.ModelForm):
             self.fields["etapa"].required = False
 
 
-class MedicaoForm(forms.ModelForm):
+class MedicaoForm(ArqModelForm):
     class Meta:
         model = Medicao
         fields = ["etapa", "data", "percentual_medido", "valor_liberado", "descricao"]

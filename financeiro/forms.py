@@ -4,9 +4,10 @@ from core.tenancy import queryset_da_empresa
 from projetos.models import Projeto
 
 from .models import Categoria, ContaBancaria, Lancamento
+from core.forms import ArqForm, ArqModelForm
 
 
-class LancamentoForm(forms.ModelForm):
+class LancamentoForm(ArqModelForm):
     class Meta:
         model = Lancamento
         fields = ["tipo", "conta", "categoria", "projeto", "descricao", "valor", "data", "status"]
@@ -22,13 +23,13 @@ class LancamentoForm(forms.ModelForm):
             self.fields["projeto"].required = False
 
 
-class ContaBancariaForm(forms.ModelForm):
+class ContaBancariaForm(ArqModelForm):
     class Meta:
         model = ContaBancaria
         fields = ["nome", "saldo_inicial", "pessoal"]
 
 
-class ImportarExtratoForm(forms.Form):
+class ImportarExtratoForm(ArqForm):
     conta = forms.ModelChoiceField(queryset=ContaBancaria.objects.none(), label="Conta")
     arquivo = forms.FileField(label="Extrato (OFX ou CSV)")
 

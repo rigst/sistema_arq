@@ -4,9 +4,10 @@ from core.tenancy import queryset_da_empresa
 from projetos.models import Projeto
 
 from .models import Tarefa
+from core.forms import ArqModelForm
 
 
-class TarefaForm(forms.ModelForm):
+class TarefaForm(ArqModelForm):
     class Meta:
         model = Tarefa
         fields = ["titulo", "descricao", "projeto", "responsavel", "criterio_pronto", "prazo", "status"]

@@ -27,7 +27,7 @@ class Cliente(EmpresaModel, Rastreavel):
     telefone = models.CharField(max_length=40, blank=True)
     origem = models.CharField(max_length=20, choices=ORIGEM_CHOICES, default="outro")
     fase = models.CharField(max_length=20, choices=FASE_CHOICES, default="lead")
-    observacoes = models.TextField(blank=True)
+    observacoes = models.TextField(blank=True, verbose_name="observações")
     ativo = models.BooleanField(default=True)
 
     class Meta:
@@ -52,7 +52,7 @@ class Interacao(EmpresaModel):
 
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name="interacoes")
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default="nota")
-    descricao = models.TextField()
+    descricao = models.TextField( verbose_name="descrição")
     autor = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )

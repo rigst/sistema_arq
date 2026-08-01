@@ -30,12 +30,12 @@ class Obra(EmpresaModel, Rastreavel):
     ]
 
     projeto = models.OneToOneField(Projeto, on_delete=models.CASCADE, related_name="obra")
-    endereco = models.CharField(max_length=250, blank=True)
-    responsavel_tecnico = models.CharField(max_length=150, blank=True)
+    endereco = models.CharField(max_length=250, blank=True, verbose_name="endereço")
+    responsavel_tecnico = models.CharField(max_length=150, blank=True, verbose_name="responsável técnico")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="planejada")
-    data_inicio = models.DateField(null=True, blank=True)
-    data_prevista_fim = models.DateField(null=True, blank=True)
-    observacoes = models.TextField(blank=True)
+    data_inicio = models.DateField(null=True, blank=True, verbose_name="data de início")
+    data_prevista_fim = models.DateField(null=True, blank=True, verbose_name="fim previsto")
+    observacoes = models.TextField(blank=True, verbose_name="observações")
 
     class Meta:
         ordering = ["-criado_em"]
@@ -87,13 +87,15 @@ class EtapaObra(EmpresaModel):
     obra = models.ForeignKey(Obra, on_delete=models.CASCADE, related_name="etapas")
     nome = models.CharField(max_length=120)
     ordem = models.PositiveIntegerField(default=0)
-    data_prevista_inicio = models.DateField(null=True, blank=True)
-    data_prevista_fim = models.DateField(null=True, blank=True)
+    data_prevista_inicio = models.DateField(null=True, blank=True, verbose_name="início previsto")
+    data_prevista_fim = models.DateField(null=True, blank=True, verbose_name="fim previsto")
     percentual_previsto = models.DecimalField(
-        max_digits=5, decimal_places=1, default=0, help_text="Avanço planejado até hoje (0–100)."
+        max_digits=5, decimal_places=1, default=0, help_text="Avanço planejado até hoje (0–100).",
+        verbose_name="percentual previsto",
     )
     percentual_real = models.DecimalField(
-        max_digits=5, decimal_places=1, default=0, help_text="Avanço executado (0–100)."
+        max_digits=5, decimal_places=1, default=0, help_text="Avanço executado (0–100).",
+        verbose_name="percentual real",
     )
     valor = models.DecimalField(
         max_digits=14, decimal_places=2, default=0,
@@ -132,11 +134,12 @@ class VisitaTecnica(EmpresaModel, Rastreavel):
     )
     data = models.DateField(default=timezone.localdate)
     responsavel = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+",
+        verbose_name="responsável",
     )
     verificado = models.TextField(help_text="O que foi verificado na visita.")
-    pendencias = models.TextField(blank=True, help_text="Pendências a resolver (deixe vazio se ok).")
-    proxima_acao = models.CharField(max_length=250, blank=True)
+    pendencias = models.TextField(blank=True, help_text="Pendências a resolver (deixe vazio se ok).", verbose_name="pendências")
+    proxima_acao = models.CharField(max_length=250, blank=True, verbose_name="próxima ação")
 
     class Meta:
         ordering = ["-data", "-id"]
@@ -151,10 +154,11 @@ class Medicao(EmpresaModel):
     etapa = models.ForeignKey(EtapaObra, on_delete=models.CASCADE, related_name="medicoes")
     data = models.DateField(default=timezone.localdate)
     percentual_medido = models.DecimalField(
-        max_digits=5, decimal_places=1, default=0, help_text="Avanço verificado nesta medição."
+        max_digits=5, decimal_places=1, default=0, help_text="Avanço verificado nesta medição.",
+        verbose_name="percentual medido",
     )
-    valor_liberado = models.DecimalField(max_digits=14, decimal_places=2, default=0)
-    descricao = models.CharField(max_length=200, blank=True)
+    valor_liberado = models.DecimalField(max_digits=14, decimal_places=2, default=0, verbose_name="valor liberado")
+    descricao = models.CharField(max_length=200, blank=True, verbose_name="descrição")
     aprovada = models.BooleanField(default=False)
     # Lançamento (contas a receber) criado no financeiro ao aprovar.
     lancamento = models.ForeignKey(

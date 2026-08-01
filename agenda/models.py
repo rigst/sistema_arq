@@ -13,9 +13,9 @@ class Compromisso(EmpresaModel, Rastreavel):
         ("outro", "Outro"),
     ]
 
-    titulo = models.CharField(max_length=200)
+    titulo = models.CharField(max_length=200, verbose_name="título")
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default="reuniao")
-    inicio = models.DateTimeField()
+    inicio = models.DateTimeField( verbose_name="início")
     fim = models.DateTimeField(null=True, blank=True)
     local = models.CharField(max_length=200, blank=True)
     cliente = models.ForeignKey(
@@ -24,7 +24,7 @@ class Compromisso(EmpresaModel, Rastreavel):
     projeto = models.ForeignKey(
         Projeto, on_delete=models.SET_NULL, null=True, blank=True, related_name="compromissos"
     )
-    observacoes = models.TextField(blank=True)
+    observacoes = models.TextField(blank=True, verbose_name="observações")
 
     class Meta:
         ordering = ["inicio"]

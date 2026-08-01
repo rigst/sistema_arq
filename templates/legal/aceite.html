@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Aceite dos termos{% endblock %}
+
+{% block content %}
+<section class="page page--leitura aceite">
+    <header class="page-head">
+        <span class="ds-kicker">{% if primeira_vez %}Antes de começar{% else %}Documentos atualizados{% endif %}</span>
+        <h1 class="ds-h2 ds-display">
+            {% if primeira_vez %}Leia e aceite para usar o A.R.Q.{% else %}Publicamos uma versão nova{% endif %}
+        </h1>
+        <p class="page-sub">
+            {% if primeira_vez %}
+            São dois documentos curtos. Registramos seu aceite com data, hora e endereço de acesso.
+            {% else %}
+            Você já tinha aceitado a versão anterior. Confira o que mudou e aceite de novo para continuar.
+            {% endif %}
+        </p>
+    </header>
+
+    <ul class="aceite-docs">
+        {% for d in pendentes %}
+        <li>
+            <div>
+                <a class="aceite-doc-nome" href="{{ d.url_publica }}" target="_blank" rel="noopener">{{ d.titulo }}</a>
+                <span class="aceite-doc-versao num">v{{ d.versao }}</span>
+                {% if d.resumo_mudancas %}<p>{{ d.resumo_mudancas }}</p>{% endif %}
+            </div>
+            <a class="aceite-doc-ler" href="{{ d.url_publica }}" target="_blank" rel="noopener">Ler</a>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <form method="post" class="aceite-form">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+        <label class="aceite-check">
+            <input type="checkbox" name="aceito" value="1" required>
+            <span>Li e aceito {% for d in pendentes %}{% if not forloop.first %}{% if forloop.last %} e {% else %}, {% endif %}{% endif %}o documento <strong>{{ d.titulo }}</strong> (v{{ d.versao }}){% endfor %}.</span>
+        </label>
+        <button class="ds-btn ds-btn--solid" type="submit">Aceitar e continuar</button>
+    </form>
+
+    {# fora do formulário de aceite: <form> não pode aninhar <form> #}
+    <form method="post" action="{% url 'logout' %}" class="aceite-sair">
+        {% csrf_token %}
+        <button type="submit" class="app-link-btn">Sair sem aceitar</button>
+    </form>
+</section>
+{% endblock %}

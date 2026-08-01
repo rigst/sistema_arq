@@ -9,6 +9,7 @@ from notificacoes.models import Notificacao
 from obras.models import EtapaObra, Obra
 from projetos.models import Projeto
 from regulatorio.models import ObrigacaoTecnica
+from legal.testing import aceitar_documentos
 
 
 class DashboardTests(TestCase):
@@ -16,6 +17,7 @@ class DashboardTests(TestCase):
         self.user, self.grupo = criar_empresa_e_usuario()
         self.client = Client(SERVER_NAME="localhost")
         self.client.force_login(self.user)
+        aceitar_documentos(self.user)
 
     def test_dashboard_cockpit_renderiza(self):
         cliente = Cliente.objects.create(empresa=self.grupo, nome="Cliente")

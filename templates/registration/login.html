@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}Entrar{% endblock %}
+{% block body_class %}tela-login{% endblock %}
 
 {% block content %}
 <section class="auth-shell">
-    <div class="auth-hero ds-panel-dark">
+    <div class="auth-hero">
         <div class="auth-hero-inner">
             <span class="auth-brand">
                 <svg viewBox="0 0 32 32" aria-hidden="true">
@@ -19,7 +20,7 @@
         </div>
     </div>
 
-    <div class="auth-card ds-card">
+    <div class="auth-card">
         <div class="auth-header">
             <h2 class="ds-display">Entrar</h2>
             <p>Acesse com seu usuário e senha.</p>
@@ -51,13 +52,18 @@
         </form>
 
         <div class="auth-visitor">
-            <p>Quer só conhecer a interface? O acesso visitante cria um escritório temporário que se autoexclui.</p>
+            <p>Quer só conhecer a interface? O acesso visitante cria um escritório temporário que se autoexclui em 24 horas.</p>
             <form method="post">
                 {% csrf_token %}
                 <button class="ds-btn auth-visitor-btn" type="submit" name="entrar_visitante" value="1">Entrar como visitante</button>
             </form>
         </div>
 
+        <p class="auth-legal">
+            Ao entrar, você aceita os
+            <a href="{% url 'termos' %}">Termos de uso</a> e a
+            <a href="{% url 'privacidade' %}">Política de privacidade</a>.
+        </p>
         <p class="auth-disclaimer">Projeto em desenvolvimento, com foco em aprendizado e portfólio. Pode passar por ajustes.</p>
     </div>
 </section>

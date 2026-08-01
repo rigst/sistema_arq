@@ -13,7 +13,7 @@ class Usuario(AbstractUser):
     ]
 
     perfil = models.CharField(max_length=20, choices=PERFIL_CHOICES, default="equipe")
-    nome_exibicao = models.CharField(max_length=150, blank=True)
+    nome_exibicao = models.CharField(max_length=150, blank=True, verbose_name="nome de exibição")
 
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)

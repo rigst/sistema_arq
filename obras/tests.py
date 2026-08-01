@@ -9,6 +9,7 @@ from projetos.models import Projeto
 
 from .models import EtapaObra, Medicao, Obra
 from .services import aprovar_medicao
+from legal.testing import aceitar_documentos
 
 
 class ObraModelTests(TestCase):
@@ -85,6 +86,7 @@ class ObraViewTests(TestCase):
         self.user, self.grupo = criar_empresa_e_usuario()
         self.client = Client(SERVER_NAME="localhost")
         self.client.force_login(self.user)
+        aceitar_documentos(self.user)
         self.cliente = Cliente.objects.create(empresa=self.grupo, nome="Cliente Z")
         self.projeto = Projeto.objects.create(
             empresa=self.grupo, nome="Studio", cliente=self.cliente

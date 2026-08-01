@@ -4,6 +4,7 @@ from core.tenancy import queryset_da_empresa
 from crm.models import Cliente
 
 from .models import ItemProposta, Proposta
+from core.forms import ArqModelForm
 
 TIPO_CHOICES = [
     ("residencial", "Residencial"),
@@ -13,7 +14,7 @@ TIPO_CHOICES = [
 ]
 
 
-class PropostaForm(forms.ModelForm):
+class PropostaForm(ArqModelForm):
     tipo_projeto = forms.ChoiceField(choices=TIPO_CHOICES)
 
     class Meta:
@@ -30,7 +31,7 @@ class PropostaForm(forms.ModelForm):
             self.fields["cliente"].queryset = queryset_da_empresa(Cliente.objects.all(), user)
 
 
-class ItemPropostaForm(forms.ModelForm):
+class ItemPropostaForm(ArqModelForm):
     class Meta:
         model = ItemProposta
         fields = ["descricao", "horas_estimadas"]

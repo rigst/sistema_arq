@@ -14,14 +14,14 @@ class Contrato(EmpresaModel, Rastreavel):
     ]
 
     projeto = models.ForeignKey(Projeto, on_delete=models.CASCADE, related_name="contratos")
-    numero = models.CharField(max_length=40, blank=True)
-    titulo = models.CharField(max_length=200)
-    valor_total = models.DecimalField(max_digits=14, decimal_places=2, default=0)
-    data_assinatura = models.DateField(null=True, blank=True)
+    numero = models.CharField(max_length=40, blank=True, verbose_name="número")
+    titulo = models.CharField(max_length=200, verbose_name="título")
+    valor_total = models.DecimalField(max_digits=14, decimal_places=2, default=0, verbose_name="valor total")
+    data_assinatura = models.DateField(null=True, blank=True, verbose_name="data de assinatura")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="rascunho")
-    observacoes = models.TextField(blank=True)
+    observacoes = models.TextField(blank=True, verbose_name="observações")
     # Evita lançar as parcelas mais de uma vez no financeiro.
-    parcelas_lancadas = models.BooleanField(default=False)
+    parcelas_lancadas = models.BooleanField(default=False, verbose_name="parcelas lançadas")
 
     class Meta:
         ordering = ["-criado_em"]
@@ -38,8 +38,8 @@ class Contrato(EmpresaModel, Rastreavel):
 
 class Parcela(EmpresaModel):
     contrato = models.ForeignKey(Contrato, on_delete=models.CASCADE, related_name="parcelas")
-    numero = models.PositiveIntegerField(default=1)
-    descricao = models.CharField(max_length=120, blank=True)
+    numero = models.PositiveIntegerField(default=1, verbose_name="número")
+    descricao = models.CharField(max_length=120, blank=True, verbose_name="descrição")
     valor = models.DecimalField(max_digits=14, decimal_places=2)
     vencimento = models.DateField()
     paga = models.BooleanField(default=False)
@@ -68,9 +68,10 @@ class AlteracaoEscopo(EmpresaModel):
 
     contrato = models.ForeignKey(Contrato, on_delete=models.CASCADE, related_name="alteracoes")
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default="alteracao")
-    descricao = models.TextField()
+    descricao = models.TextField( verbose_name="descrição")
     valor_delta = models.DecimalField(
-        max_digits=14, decimal_places=2, default=0, help_text="Impacto no valor (+/-)."
+        max_digits=14, decimal_places=2, default=0, help_text="Impacto no valor (+/-).",
+        verbose_name="variação de valor",
     )
     registrado_por = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
@@ -93,7 +94,7 @@ class Documento(EmpresaModel):
     contrato = models.ForeignKey(
         Contrato, on_delete=models.CASCADE, related_name="documentos", null=True, blank=True
     )
-    titulo = models.CharField(max_length=200)
+    titulo = models.CharField(max_length=200, verbose_name="título")
     arquivo = models.FileField(upload_to="documentos/%Y/%m/")
     criado_em = models.DateTimeField(auto_now_add=True)
 

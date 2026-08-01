@@ -4,19 +4,20 @@
 
 {% block content %}
 <section class="page">
-    {# Carimbo de prancha: o cabeçalho do painel se lê como o selo de uma folha técnica. #}
     <header class="dash-hero">
         <div class="dash-hero-in">
             <span class="ds-kicker">Painel do escritório</span>
             <h1 class="ds-h2 ds-display">Bem-vindo{% if user.nome_exibicao %}, {{ user.nome_exibicao }}{% endif %}</h1>
             <p>Do briefing à obra num só lugar. Comece pelo que precisa de atenção hoje.</p>
         </div>
-        <dl class="dash-carimbo">
-            <div><dt>Escritório</dt><dd>{{ user.nome_empresa|default:"—" }}</dd></div>
-            <div><dt>Responsável</dt><dd>{{ user.nome_exibicao|default:user.get_username }}</dd></div>
-            <div><dt>Data</dt><dd class="num">{% now "d/m/Y" %}</dd></div>
-        </dl>
     </header>
+
+    {# Carimbo de prancha: os campos da folha, impressos logo abaixo do cabeçalho. #}
+    <dl class="dash-carimbo">
+        <div><dt>Escritório</dt><dd>{{ user.nome_empresa|default:"—" }}</dd></div>
+        <div><dt>Responsável</dt><dd>{{ user.nome_exibicao|default:user.get_username }}</dd></div>
+        <div><dt>Data</dt><dd class="num">{% now "d/m/Y" %}</dd></div>
+    </dl>
 
     <div class="kpi-row">
         {% for k in kpis %}

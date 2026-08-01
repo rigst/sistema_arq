@@ -10,7 +10,7 @@ class Notificacao(EmpresaModel):
         ("critico", "Crítico"),
     ]
 
-    titulo = models.CharField(max_length=160)
+    titulo = models.CharField(max_length=160, verbose_name="título")
     mensagem = models.CharField(max_length=300, blank=True)
     nivel = models.CharField(max_length=10, choices=NIVEL_CHOICES, default="alerta")
     url = models.CharField(max_length=300, blank=True, help_text="Link relativo para a origem.")

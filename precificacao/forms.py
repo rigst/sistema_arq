@@ -1,15 +1,16 @@
 from django import forms
 
 from .models import ConfiguracaoPrecificacao, CustoFixo, FatorPrecificacao
+from core.forms import ArqModelForm
 
 
-class CustoFixoForm(forms.ModelForm):
+class CustoFixoForm(ArqModelForm):
     class Meta:
         model = CustoFixo
         fields = ["descricao", "valor_mensal", "ativo"]
 
 
-class ConfiguracaoPrecificacaoForm(forms.ModelForm):
+class ConfiguracaoPrecificacaoForm(ArqModelForm):
     class Meta:
         model = ConfiguracaoPrecificacao
         fields = [
@@ -26,7 +27,7 @@ class ConfiguracaoPrecificacaoForm(forms.ModelForm):
         }
 
 
-class FatorPrecificacaoForm(forms.ModelForm):
+class FatorPrecificacaoForm(ArqModelForm):
     class Meta:
         model = FatorPrecificacao
         fields = ["nome", "percentual", "ativo"]

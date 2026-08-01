@@ -4,6 +4,7 @@ from core.factories import criar_empresa_e_usuario
 from crm.models import Cliente
 
 from .checklist import montar_checklist
+from legal.testing import aceitar_documentos
 
 
 class OnboardingChecklistTests(TestCase):
@@ -30,6 +31,7 @@ class OnboardingViewTests(TestCase):
         self.user, self.grupo = criar_empresa_e_usuario()
         self.client = Client(SERVER_NAME="localhost")
         self.client.force_login(self.user)
+        aceitar_documentos(self.user)
 
     def test_pagina_200(self):
         self.assertEqual(self.client.get("/onboarding/").status_code, 200)

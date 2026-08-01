@@ -6,7 +6,7 @@ from projetos.models import Projeto
 
 class ContaBancaria(EmpresaModel):
     nome = models.CharField(max_length=100)
-    saldo_inicial = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    saldo_inicial = models.DecimalField(max_digits=14, decimal_places=2, default=0, verbose_name="saldo inicial")
     pessoal = models.BooleanField(
         default=False, help_text="Marque para separar o caixa pessoal do escritório."
     )
@@ -44,7 +44,7 @@ class Lancamento(EmpresaModel, Rastreavel):
     projeto = models.ForeignKey(
         Projeto, on_delete=models.SET_NULL, null=True, blank=True, related_name="lancamentos"
     )
-    descricao = models.CharField(max_length=200)
+    descricao = models.CharField(max_length=200, verbose_name="descrição")
     valor = models.DecimalField(max_digits=14, decimal_places=2)
     data = models.DateField()
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="realizado")

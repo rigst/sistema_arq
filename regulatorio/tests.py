@@ -6,6 +6,7 @@ from django.utils import timezone
 from core.factories import criar_empresa_e_usuario
 
 from .models import ObrigacaoTecnica
+from legal.testing import aceitar_documentos
 
 
 class ObrigacaoModelTests(TestCase):
@@ -42,6 +43,7 @@ class RegulatorioViewTests(TestCase):
         self.user, self.grupo = criar_empresa_e_usuario()
         self.client = Client(SERVER_NAME="localhost")
         self.client.force_login(self.user)
+        aceitar_documentos(self.user)
 
     def test_criar_e_baixar(self):
         resp = self.client.post(

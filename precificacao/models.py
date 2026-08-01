@@ -9,20 +9,24 @@ class ConfiguracaoPrecificacao(EmpresaModel):
     """Parâmetros de precificação do escritório (um registro por empresa)."""
 
     horas_uteis_mes = models.PositiveIntegerField(
-        default=160, help_text="Horas realmente trabalhadas no mês (base da hora técnica)."
+        default=160, help_text="Horas realmente trabalhadas no mês (base da hora técnica).",
+        verbose_name="horas úteis por mês",
     )
     margem_seguranca_percent = models.DecimalField(
         max_digits=5, decimal_places=2, default=Decimal("10.00"),
         help_text="Margem de segurança sobre as horas estimadas.",
+        verbose_name="margem de segurança (%)",
     )
     reserva_percent = models.DecimalField(
         max_digits=5, decimal_places=2, default=Decimal("20.00"),
         help_text="Reserva do escritório (impostos, reinvestimento, imprevistos).",
+        verbose_name="reserva (%)",
     )
     hora_tecnica_manual = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True,
         help_text="Se preenchida, é a hora técnica-base cobrada (sobrepõe o cálculo por custos). "
         "O valor por custos continua sendo o piso usado no cálculo de margem.",
+        verbose_name="hora técnica manual",
     )
 
     class Meta:
@@ -57,8 +61,8 @@ class FatorPrecificacao(EmpresaModel):
 class CustoFixo(EmpresaModel, Rastreavel):
     """Custo mensal fixo do escritório (pró-labore, aluguel, energia, ...)."""
 
-    descricao = models.CharField(max_length=150)
-    valor_mensal = models.DecimalField(max_digits=12, decimal_places=2)
+    descricao = models.CharField(max_length=150, verbose_name="descrição")
+    valor_mensal = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="valor mensal")
     ativo = models.BooleanField(default=True)
 
     class Meta:

@@ -14,6 +14,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("login/", UsuarioLoginView.as_view(), name="login"),
     path("logout/", UsuarioLogoutView.as_view(), name="logout"),
+    path("", include("legal.urls")),
     path("", include("core.urls")),
     path("clientes/", include("crm.urls")),
     path("precificacao/", include("precificacao.urls")),

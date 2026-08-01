@@ -15,12 +15,12 @@ class Proposta(EmpresaModel, Rastreavel):
     ]
 
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name="propostas")
-    titulo = models.CharField(max_length=200)
-    tipo_projeto = models.CharField(max_length=20, default="residencial")
-    hora_tecnica_aplicada = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    titulo = models.CharField(max_length=200, verbose_name="título")
+    tipo_projeto = models.CharField(max_length=20, default="residencial", verbose_name="tipo de projeto")
+    hora_tecnica_aplicada = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="hora técnica aplicada")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="rascunho")
     validade = models.DateField(null=True, blank=True)
-    observacoes = models.TextField(blank=True)
+    observacoes = models.TextField(blank=True, verbose_name="observações")
     # Fatores de projeto aplicados para chegar à hora técnica desta proposta.
     fatores = models.ManyToManyField(
         "precificacao.FatorPrecificacao", blank=True, related_name="propostas"
@@ -47,8 +47,8 @@ class ItemProposta(EmpresaModel):
     """Ambiente/etapa da proposta com horas estimadas e valor calculado."""
 
     proposta = models.ForeignKey(Proposta, on_delete=models.CASCADE, related_name="itens")
-    descricao = models.CharField(max_length=200)
-    horas_estimadas = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    descricao = models.CharField(max_length=200, verbose_name="descrição")
+    horas_estimadas = models.DecimalField(max_digits=8, decimal_places=2, default=0, verbose_name="horas estimadas")
     valor = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     ordem = models.PositiveIntegerField(default=0)
 

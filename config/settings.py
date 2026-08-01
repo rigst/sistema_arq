@@ -76,6 +76,8 @@ INSTALLED_APPS = [
     # Fase 5 — adoção (públicos/sem dados de negócio persistidos).
     "diagnostico",
     "onboarding",
+    # Termos, privacidade e registro de aceites.
+    "legal",
 ]
 
 MIDDLEWARE = [
@@ -86,6 +88,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "core.middleware.EmpresaAtivaMiddleware",
+    "legal.middleware.AceiteLegalMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]

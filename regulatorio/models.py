@@ -27,14 +27,14 @@ class ObrigacaoTecnica(EmpresaModel, Rastreavel):
         help_text="Deixe vazio para obrigações do escritório (ex.: registro CAU).",
     )
     tipo = models.CharField(max_length=10, choices=TIPO_CHOICES, default="art")
-    numero = models.CharField(max_length=60, blank=True)
-    responsavel_tecnico = models.CharField(max_length=150, blank=True)
+    numero = models.CharField(max_length=60, blank=True, verbose_name="número")
+    responsavel_tecnico = models.CharField(max_length=150, blank=True, verbose_name="responsável técnico")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pendente")
-    data_registro = models.DateField(null=True, blank=True)
+    data_registro = models.DateField(null=True, blank=True, verbose_name="data de registro")
     vencimento = models.DateField(null=True, blank=True)
     valor = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     arquivo = models.FileField(upload_to="regulatorio/%Y/%m/", null=True, blank=True)
-    observacoes = models.TextField(blank=True)
+    observacoes = models.TextField(blank=True, verbose_name="observações")
 
     class Meta:
         ordering = ["status", "vencimento", "-criado_em"]

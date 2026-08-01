@@ -4,9 +4,10 @@ from crm.models import Cliente
 from core.tenancy import queryset_da_empresa
 
 from .models import Pendencia, Projeto
+from core.forms import ArqModelForm
 
 
-class ProjetoForm(forms.ModelForm):
+class ProjetoForm(ArqModelForm):
     class Meta:
         model = Projeto
         fields = ["nome", "cliente", "tipo", "status", "valor_contratado", "data_inicio", "data_prevista", "tags"]
@@ -26,7 +27,7 @@ class ProjetoForm(forms.ModelForm):
             self.fields["tags"].queryset = queryset_da_empresa(Tag.objects.all(), user)
 
 
-class PendenciaForm(forms.ModelForm):
+class PendenciaForm(ArqModelForm):
     class Meta:
         model = Pendencia
         fields = ["descricao", "prazo"]

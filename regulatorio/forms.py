@@ -4,9 +4,10 @@ from core.tenancy import queryset_da_empresa
 from projetos.models import Projeto
 
 from .models import ObrigacaoTecnica
+from core.forms import ArqModelForm
 
 
-class ObrigacaoTecnicaForm(forms.ModelForm):
+class ObrigacaoTecnicaForm(ArqModelForm):
     class Meta:
         model = ObrigacaoTecnica
         fields = [

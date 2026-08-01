@@ -21,11 +21,6 @@
 <body class="{% if user.is_authenticated %}app-shell{% else %}app-public{% endif %} {% block body_class %}{% endblock %}">
 
     {% if user.is_authenticated %}
-    {# Barras de fundo — grade de prancheta, atrás de tudo, fora do texto #}
-    <div class="app-bg" aria-hidden="true">
-        <div class="app-bg-rules"><span></span><span></span><span></span><span></span><span></span></div>
-    </div>
-
     <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Abrir menu de navegação">
     <aside class="app-side">
         <div class="app-side-head">
@@ -129,6 +124,10 @@
                     Sair
                 </button>
             </form>
+            <div class="pe-legal pe-legal--lateral">
+                <a href="{% url 'termos' %}">Termos</a>
+                <a href="{% url 'privacidade' %}">Privacidade</a>
+            </div>
         </div>
     </aside>
 
