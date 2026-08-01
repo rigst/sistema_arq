@@ -17,7 +17,7 @@
             <strong class="num">{{ resultado.pontos }}</strong><span class="num">/{{ resultado.maximo }}</span>
         </div>
         <div class="ds-progress ds-progress--on-light"><div class="ds-progress-fill" style="width: {{ resultado.percentual|unlocalize }}%"></div></div>
-        <h3 class="ds-display diag-faixa">{{ resultado.faixa }}</h3>
+        <h2 class="ds-display diag-faixa">{{ resultado.faixa }}</h2>
         <p>{{ resultado.descricao }}</p>
         <div class="form-actions">
             <a class="ds-btn" href="{% url 'diagnostico' %}">Refazer</a>

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load l10n %}
+{% block title %}Roteiro — {{ projeto.nome }}{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head page-head--row">
+        <div>
+            <span class="ds-kicker">Roteiro do projeto</span>
+            <h1 class="ds-h2 ds-display">{{ projeto.nome }}</h1>
+            <p class="page-sub">
+                {{ projeto.cliente.nome }} · {{ projeto.get_tipo_display }}.
+                Siga de cima para baixo: cada etapa só faz sentido depois da anterior.
+            </p>
+        </div>
+        <a class="ds-btn" href="{% url 'projeto_detalhe' projeto.pk %}">Ficha do projeto</a>
+    </header>
+
+    <div class="roteiro-progresso">
+        <div class="onb-progresso-topo">
+            <strong class="num">{{ percentual }}%</strong>
+            <span>{% if proxima %}próxima: {{ proxima.titulo|lower }}{% else %}roteiro completo{% endif %}</span>
+        </div>
+        <div class="ds-progress ds-progress--on-light">
+            <div class="ds-progress-fill" style="width: {{ percentual|unlocalize }}%"></div>
+        </div>
+    </div>
+
+    <ol class="onb-etapas roteiro-etapas">
+        {% for etapa in etapas %}
+        <li class="onb-etapa {% if etapa.concluida %}is-feita{% endif %}{% if proxima and proxima.chave == etapa.chave %} is-atual{% endif %}">
+            <div class="onb-num num">{% if etapa.concluida %}✓{% else %}{{ forloop.counter }}{% endif %}</div>
+            <div class="onb-corpo">
+                <strong>{{ etapa.titulo }}</strong>
+                <p>{{ etapa.descricao }}</p>
+                {% if etapa.resumo %}<span class="roteiro-resumo num">{{ etapa.resumo }}</span>{% endif %}
+            </div>
+            <a class="ds-btn {% if proxima and proxima.chave == etapa.chave %}ds-btn--solid{% endif %}" href="{{ etapa.url }}">{{ etapa.cta }}</a>
+        </li>
+        {% endfor %}
+    </ol>
+</section>
+{% endblock %}

@@ -13,7 +13,7 @@
 
     <div class="detalhe-grid">
         <div class="ds-card">
-            <h3 class="ds-display">Próximos</h3>
+            <h2 class="ds-display">Próximos</h2>
             <ul class="agenda-lista">
                 {% for c in proximos %}
                 <li>
@@ -41,7 +41,7 @@
             </ul>
 
             {% if passados %}
-            <h3 class="ds-display" style="margin-top:1.5rem">Anteriores</h3>
+            <h2 class="ds-display" style="margin-top:1.5rem">Anteriores</h2>
             <ul class="agenda-lista agenda-lista--passados">
                 {% for c in passados %}
                 <li>
@@ -54,7 +54,7 @@
         </div>
 
         <div class="ds-card form-card">
-            <h3 class="ds-display">Novo compromisso</h3>
+            <h2 class="ds-display">Novo compromisso</h2>
             <form method="post">
                 {% csrf_token %}
                 {{ form.as_p }}

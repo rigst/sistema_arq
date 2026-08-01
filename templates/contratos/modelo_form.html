@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{% if modelo %}{{ modelo.nome }}{% else %}Novo modelo{% endif %}{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head">
+        <span class="ds-kicker">Modelo de contrato</span>
+        <h1 class="ds-h2 ds-display">{% if modelo %}{{ modelo.nome }}{% else %}Novo modelo{% endif %}</h1>
+        <p class="page-sub">
+            Marcadores como <code>{% templatetag openvariable %}cliente{% templatetag closevariable %}</code>
+            são trocados pelos dados do projeto. O que ficar sem valor aparece como
+            [PREENCHER: ...] em vez de sumir.
+        </p>
+    </header>
+
+    <div class="detalhe-grid">
+        <form method="post" class="ds-card form-card">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="form-actions">
+                <a class="ds-btn" href="{% url 'contratos_modelos' %}">Cancelar</a>
+                <button class="ds-btn ds-btn--solid" type="submit">Salvar modelo</button>
+            </div>
+        </form>
+
+        <div class="ds-card">
+            <h2 class="ds-display">Marcadores</h2>
+            <table class="data-table">
+                <tbody>
+                {% for marcador, rotulo in marcadores %}
+                <tr><td class="num">{{ marcador }}</td><td>{{ rotulo }}</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -30,6 +30,10 @@ urlpatterns = [
     path("notificacoes/", include("notificacoes.urls")),
     path("diagnostico/", include("diagnostico.urls")),
     path("onboarding/", include("onboarding.urls")),
+    path("fornecedores/", include("fornecedores.urls")),
+    path("orcamentos/", include("orcamentos.urls")),
+    path("arquivos/", include("arquivos.urls")),
+    path("projeto-novo/", include("jornada.urls")),
 ]
 
 if settings.DEBUG and settings.DEBUG_EXPOSE_MEDIA:

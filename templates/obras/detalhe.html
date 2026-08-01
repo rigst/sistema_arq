@@ -37,7 +37,7 @@
     </div>
 
     <div class="ds-card">
-        <h3 class="ds-display">Etapas e cronograma</h3>
+        <h2 class="ds-display">Etapas e cronograma</h2>
         <div class="table-scroll">
         <table class="data-table">
             <thead><tr><th>Etapa</th><th>Previsto</th><th>Real</th><th>Desvio</th><th>Valor</th><th>Medido</th><th>Atualizar avanço</th></tr></thead>
@@ -74,7 +74,7 @@
 
     <div class="detalhe-grid">
         <div class="ds-card">
-            <h3 class="ds-display">Visitas técnicas</h3>
+            <h2 class="ds-display">Visitas técnicas</h2>
             <form method="post" action="{% url 'obra_visita' obra.pk %}" class="form-card">
                 {% csrf_token %}
                 {{ form_visita.as_p }}
@@ -96,7 +96,7 @@
         </div>
 
         <div class="ds-card">
-            <h3 class="ds-display">Medições</h3>
+            <h2 class="ds-display">Medições</h2>
             <p class="ht-hint">Cada medição aprovada vira um lançamento (entrada, previsto) no financeiro do projeto.</p>
             <form method="post" action="{% url 'obra_medicao' obra.pk %}" class="form-card">
                 {% csrf_token %}

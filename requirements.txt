@@ -9,3 +9,4 @@ gunicorn==23.0.0
 sqlparse==0.5.5
 weasyprint==63.1
 ofxparse==0.21
+anthropic>=0.116.0

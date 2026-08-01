@@ -54,3 +54,122 @@ class AmbientePrograma(EmpresaModel):
 
     def __str__(self):
         return self.nome
+
+
+# =====================================================================
+# Templates de briefing — perguntas com respostas objetivas pré-prontas
+# =====================================================================
+
+
+class TemplateBriefing(EmpresaModel, Rastreavel):
+    """Um roteiro de perguntas reaproveitável.
+
+    O escritório monta o roteiro uma vez por tipo de projeto e, na reunião,
+    só marca as opções. Isso é o que faz o briefing acontecer de verdade:
+    escrever da estaca zero a cada cliente é o que ninguém faz.
+    """
+
+    nome = models.CharField(max_length=150)
+    tipo_projeto = models.CharField(
+        "tipo de projeto",
+        max_length=20,
+        blank=True,
+        help_text="Deixe em branco para servir a qualquer tipo.",
+    )
+    descricao = models.TextField("descrição", blank=True)
+    ativo = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["nome"]
+        verbose_name = "template de briefing"
+        verbose_name_plural = "templates de briefing"
+
+    def __str__(self):
+        return self.nome
+
+
+class PerguntaTemplate(EmpresaModel):
+    TIPO_CHOICES = [
+        ("opcao", "Escolha uma opção"),
+        ("multipla", "Escolha várias"),
+        ("texto", "Resposta escrita"),
+        ("numero", "Número"),
+    ]
+
+    template = models.ForeignKey(
+        TemplateBriefing, on_delete=models.CASCADE, related_name="perguntas"
+    )
+    bloco = models.CharField(
+        max_length=80,
+        blank=True,
+        help_text="Agrupa as perguntas na tela (ex.: Rotina, Orçamento, Estilo).",
+    )
+    texto = models.CharField(max_length=300)
+    tipo = models.CharField(max_length=10, choices=TIPO_CHOICES, default="opcao")
+    ajuda = models.CharField(max_length=250, blank=True)
+    ordem = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["ordem", "id"]
+        verbose_name = "pergunta do template"
+        verbose_name_plural = "perguntas do template"
+
+    def __str__(self):
+        return self.texto
+
+    @property
+    def aceita_opcoes(self):
+        return self.tipo in {"opcao", "multipla"}
+
+
+class OpcaoPergunta(EmpresaModel):
+    """Resposta objetiva pré-pronta. É o que se marca na reunião."""
+
+    pergunta = models.ForeignKey(
+        PerguntaTemplate, on_delete=models.CASCADE, related_name="opcoes"
+    )
+    texto = models.CharField(max_length=200)
+    ordem = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["ordem", "id"]
+        verbose_name = "opção de resposta"
+        verbose_name_plural = "opções de resposta"
+
+    def __str__(self):
+        return self.texto
+
+
+class RespostaBriefing(EmpresaModel):
+    """O que o cliente respondeu. Opções marcadas e o complemento escrito
+    convivem: a opção dá a estrutura, o texto guarda o que só aquele cliente
+    disse."""
+
+    briefing = models.ForeignKey(Briefing, on_delete=models.CASCADE, related_name="respostas")
+    pergunta = models.ForeignKey(
+        PerguntaTemplate, on_delete=models.CASCADE, related_name="respostas"
+    )
+    opcoes = models.ManyToManyField(OpcaoPergunta, blank=True, related_name="respostas")
+    texto = models.TextField("complemento", blank=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["briefing", "pergunta"], name="resposta_unica_por_pergunta"
+            )
+        ]
+        ordering = ["pergunta__ordem", "id"]
+        verbose_name = "resposta do briefing"
+        verbose_name_plural = "respostas do briefing"
+
+    def __str__(self):
+        return f"{self.pergunta} — {self.resumo}"
+
+    @property
+    def resumo(self):
+        """Opções marcadas e complemento em uma linha, para leitura e para a IA."""
+        partes = [o.texto for o in self.opcoes.all()]
+        if self.texto.strip():
+            partes.append(self.texto.strip())
+        return " · ".join(partes)

@@ -3,7 +3,7 @@ from django import forms
 from core.tenancy import queryset_da_empresa
 from projetos.models import Projeto
 
-from .models import AlteracaoEscopo, Contrato, Documento
+from .models import AlteracaoEscopo, Contrato, Documento, ModeloContrato
 from core.forms import ArqForm, ArqModelForm
 
 
@@ -41,3 +41,10 @@ class DocumentoForm(ArqModelForm):
     class Meta:
         model = Documento
         fields = ["titulo", "arquivo"]
+
+
+class ModeloContratoForm(ArqModelForm):
+    class Meta:
+        model = ModeloContrato
+        fields = ["nome", "descricao", "corpo", "padrao", "ativo"]
+        widgets = {"corpo": forms.Textarea(attrs={"rows": 20, "spellcheck": "true"})}

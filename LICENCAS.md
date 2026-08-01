@@ -67,6 +67,17 @@ simples e permissiva, compatível com todas as dependências acima. Alternativas
 > as obrigações LGPL — na prática, disponibilizar as versões dessas libs e permitir sua
 > troca. Rodando via `pip install`, isso já é atendido.
 
+## Apoio de IA (opcional)
+
+O pacote `anthropic` (SDK oficial da Anthropic, licença MIT) é usado por
+`core/ia.py` para dois rascunhos: leitura do briefing e minuta de contrato.
+
+O recurso é **desligado por padrão**. Só aparece na interface quando existe
+`ANTHROPIC_API_KEY` no ambiente. Quando ligado, o conteúdo enviado no prompt
+(respostas do briefing ou dados do contrato) sai para a API da Anthropic — as
+telas avisam isso antes do envio, e o uso é cobrado na conta de quem configurou
+a chave. O sistema inteiro funciona sem a chave e sem o pacote instalado.
+
 ## Imagens e tipografia
 
 **Fotos** (`static/img/*.jpg`): Unsplash — a

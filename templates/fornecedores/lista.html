@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Fornecedores{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head page-head--row page-head--foto page-head--producao">
+        <div>
+            <span class="ds-kicker">Rede de execução</span>
+            <h1 class="ds-h2 ds-display">Fornecedores</h1>
+            <p class="page-sub">
+                Quem executa: marcenaria, serralheria, elétrica, mobiliário. Cada item do
+                orçamento aponta para o fornecedor que deu o preço, e a avaliação lembra
+                como foi trabalhar com ele da última vez.
+            </p>
+        </div>
+        <a class="ds-btn ds-btn--solid" href="{% url 'fornecedor_novo' %}">Novo fornecedor</a>
+    </header>
+
+    {% if categorias %}
+    <div class="filtro-chips">
+        <a class="chip {% if not categoria_ativa %}is-active{% endif %}" href="{% url 'fornecedores_lista' %}">Todas</a>
+        {% for valor, rotulo in categorias %}
+        <a class="chip {% if categoria_ativa == valor %}is-active{% endif %}" href="?categoria={{ valor }}">{{ rotulo }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="table-scroll">
+    <table class="data-table">
+        <thead><tr><th>Nome</th><th>Categoria</th><th>Contato</th><th>Cidade</th><th>Avaliação</th><th></th></tr></thead>
+        <tbody>
+        {% for f in fornecedores %}
+            <tr {% if not f.ativo %}class="is-done"{% endif %}>
+                <td><a href="{% url 'fornecedor_editar' f.pk %}">{{ f.nome }}</a></td>
+                <td>{{ f.get_categoria_display }}</td>
+                <td>{{ f.contato|default:"—" }}{% if f.telefone %} · {{ f.telefone }}{% endif %}</td>
+                <td>{{ f.cidade|default:"—" }}</td>
+                <td>{% if f.avaliacao %}{{ f.get_avaliacao_display }}{% else %}—{% endif %}</td>
+                <td><a href="{% url 'fornecedor_editar' f.pk %}">editar</a></td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="6" class="data-empty">Nenhum fornecedor cadastrado. Comece pelos que você já usa em toda obra.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</section>
+{% endblock %}

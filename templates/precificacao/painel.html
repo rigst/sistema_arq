@@ -22,7 +22,7 @@
 
         <form method="post" class="ds-card form-card">
             {% csrf_token %}
-            <h3 class="ds-display">Parâmetros</h3>
+            <h2 class="ds-display">Parâmetros</h2>
             {{ form_config.as_p }}
             <button class="ds-btn ds-btn--solid" type="submit" name="salvar_config" value="1">Salvar parâmetros</button>
         </form>
@@ -30,7 +30,7 @@
 
     <div class="detalhe-grid">
         <div class="ds-card">
-            <h3 class="ds-display">Custos fixos mensais</h3>
+            <h2 class="ds-display">Custos fixos mensais</h2>
             <form method="post" action="{% url 'precificacao_add_custo' %}" class="inline-add">
                 {% csrf_token %}
                 {{ form_custo.descricao }}
@@ -59,7 +59,7 @@
         </div>
 
         <div class="ds-card">
-            <h3 class="ds-display">Fatores por projeto</h3>
+            <h2 class="ds-display">Fatores por projeto</h2>
             <p class="page-sub">Variáveis que ajustam a hora técnica cobrada (ex.: urgência +30%, alta complexidade +25%, cliente recorrente −10%). Você escolhe quais aplicar em cada proposta.</p>
             <form method="post" action="{% url 'precificacao_add_fator' %}" class="inline-add">
                 {% csrf_token %}

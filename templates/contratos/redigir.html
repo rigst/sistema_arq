@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Redigir — {{ contrato.titulo }}{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head page-head--row">
+        <div>
+            <span class="ds-kicker">Contrato · {{ contrato.get_status_display }}</span>
+            <h1 class="ds-h2 ds-display">{{ contrato.titulo }}</h1>
+            <p class="page-sub">
+                {{ contrato.projeto.nome }} · {{ contrato.cliente.nome }}. Gere a partir de um
+                modelo, peça uma minuta à IA ou escreva à mão — o texto fica sempre editável.
+            </p>
+        </div>
+        <a class="ds-btn" href="{% url 'contrato_detalhe' contrato.pk %}">Voltar ao contrato</a>
+    </header>
+
+    <div class="detalhe-grid">
+        <div class="ds-card">
+            <h2 class="ds-display">Gerar de um modelo</h2>
+            {% if modelos %}
+            <form method="post" class="inline-add">
+                {% csrf_token %}
+                <input type="hidden" name="acao" value="gerar">
+                <select name="modelo" aria-label="Modelo">
+                    {% for m in modelos %}<option value="{{ m.pk }}">{{ m.nome }}</option>{% endfor %}
+                </select>
+                <button class="ds-btn ds-btn--solid" type="submit">Gerar texto</button>
+            </form>
+            <p class="ht-hint">Substitui o texto atual pelo modelo com os dados deste projeto.</p>
+            {% else %}
+            <p class="data-empty">Nenhum modelo cadastrado.
+                <a href="{% url 'contratos_modelos' %}">Criar um agora</a>.</p>
+            {% endif %}
+        </div>
+
+        <div class="ds-card ia-bloco">
+            <h2 class="ds-display">Minuta pela IA</h2>
+            {% if ia_disponivel %}
+            <p class="ht-hint">
+                Envia os dados do contrato (cliente, projeto, valor, prazo) para a API da
+                Anthropic e recebe uma minuta em cláusulas numeradas. É rascunho de trabalho:
+                revise cláusula por cláusula e passe por um advogado antes de assinar.
+            </p>
+            <form method="post" class="form-card">
+                {% csrf_token %}
+                <input type="hidden" name="acao" value="ia">
+                <p><label>O que esta minuta precisa ter de diferente
+                    <textarea name="instrucoes" rows="3" placeholder="Ex.: incluir cláusula de multa por atraso do cliente e prever 3 visitas de obra"></textarea>
+                </label></p>
+                <button class="ds-btn" type="submit">Redigir minuta</button>
+            </form>
+            {% else %}
+            <p class="ht-hint">
+                Apoio de IA desligado. Defina <code>ANTHROPIC_API_KEY</code> no ambiente e
+                instale a biblioteca <code>anthropic</code> para habilitar. Os modelos salvos
+                funcionam sem isso.
+            </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <form method="post" class="ds-card form-card">
+        {% csrf_token %}
+        <input type="hidden" name="acao" value="salvar">
+        <h2 class="ds-display">Texto do contrato</h2>
+        <textarea name="corpo" aria-label="Texto do contrato" rows="28" class="contrato-corpo" spellcheck="true">{{ contrato.corpo }}</textarea>
+        <div class="form-actions">
+            <button class="ds-btn ds-btn--solid" type="submit">Salvar texto</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

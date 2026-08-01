@@ -36,7 +36,7 @@
     {% if tem_conta %}
     <div class="detalhe-grid">
         <div class="ds-card">
-            <h3 class="ds-display">Lançamentos</h3>
+            <h2 class="ds-display">Lançamentos</h2>
             <table class="data-table">
                 <thead><tr><th>Data</th><th>Descrição</th><th>Projeto</th><th>Tipo</th><th>Valor</th></tr></thead>
                 <tbody>
@@ -56,7 +56,7 @@
         </div>
 
         <div class="ds-card form-card">
-            <h3 class="ds-display">Novo lançamento</h3>
+            <h2 class="ds-display">Novo lançamento</h2>
             <form method="post">
                 {% csrf_token %}
                 {{ form.as_p }}

@@ -179,3 +179,150 @@ def alternar_parcela(request, pk):
         parcela.lancamento.status = "realizado" if parcela.paga else "previsto"
         parcela.lancamento.save(update_fields=["status"])
     return redirect("contrato_detalhe", pk=parcela.contrato_id)
+
+
+# =====================================================================
+# Modelos de contrato — minutas salvas, geração e apoio de IA
+# =====================================================================
+
+from core.ia import IAIndisponivel, disponivel as ia_disponivel, redigir_contrato  # noqa: E402
+
+from .forms import ModeloContratoForm  # noqa: E402
+from .models import ModeloContrato  # noqa: E402
+from .modelos_padrao import MODELOS_PADRAO  # noqa: E402
+
+
+def _meus_modelos(user):
+    return queryset_da_empresa(ModeloContrato.objects.all(), user)
+
+
+def _contexto_do_contrato(contrato):
+    """Os dados do projeto que preenchem os marcadores da minuta."""
+    from django.utils import timezone
+
+    projeto = contrato.projeto
+    cliente = projeto.cliente
+    obra = getattr(projeto, "obra", None)
+    return {
+        "cliente": cliente.nome,
+        "cliente_documento": getattr(cliente, "documento", "") or "",
+        "projeto": projeto.nome,
+        "tipo_projeto": projeto.get_tipo_display(),
+        "escritorio": contrato.empresa.name,
+        "valor": f"R$ {contrato.valor_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+        "data": timezone.localdate().strftime("%d/%m/%Y"),
+        "prazo": projeto.data_prevista.strftime("%d/%m/%Y") if projeto.data_prevista else "",
+        "endereco": getattr(obra, "endereco", "") or "",
+    }
+
+
+@login_required
+def modelos_lista(request):
+    return render(
+        request,
+        "contratos/modelos.html",
+        {
+            "modelos": _meus_modelos(request.user),
+            "form": ModeloContratoForm(),
+            "marcadores": ModeloContrato.MARCADORES.items(),
+        },
+    )
+
+
+@require_POST
+@login_required
+def modelos_semear(request):
+    grupo = obter_grupo_empresa_ou_erro(request.user)
+    criados = 0
+    for dados in MODELOS_PADRAO:
+        if _meus_modelos(request.user).filter(nome=dados["nome"]).exists():
+            continue
+        ModeloContrato.objects.create(
+            empresa=grupo, criado_por=request.user, **dados
+        )
+        criados += 1
+    if criados:
+        messages.success(request, f"{criados} modelo(s) prontos adicionados. Revise o texto.")
+    else:
+        messages.info(request, "Os modelos prontos já estavam cadastrados.")
+    return redirect("contratos_modelos")
+
+
+@login_required
+def modelo_editar(request, pk=None):
+    modelo = get_object_or_404(_meus_modelos(request.user), pk=pk) if pk else None
+    if request.method == "POST":
+        form = ModeloContratoForm(request.POST, instance=modelo)
+        if form.is_valid():
+            salvo = form.save(commit=False)
+            if modelo is None:
+                salvo.empresa = obter_grupo_empresa_ou_erro(request.user)
+                salvo.criado_por = request.user
+            salvo.save()
+            messages.success(request, "Modelo salvo.")
+            return redirect("contratos_modelos")
+    else:
+        form = ModeloContratoForm(instance=modelo)
+    return render(
+        request,
+        "contratos/modelo_form.html",
+        {"form": form, "modelo": modelo, "marcadores": ModeloContrato.MARCADORES.items()},
+    )
+
+
+@require_POST
+@login_required
+def modelo_remover(request, pk):
+    modelo = get_object_or_404(_meus_modelos(request.user), pk=pk)
+    modelo.delete()
+    messages.success(request, "Modelo removido.")
+    return redirect("contratos_modelos")
+
+
+@login_required
+def redigir(request, pk):
+    """Tela onde o contrato ganha texto: gera a partir de um modelo, pede uma
+    minuta à IA ou escreve à mão. O texto fica sempre editável."""
+    contrato = get_object_or_404(
+        queryset_da_empresa(Contrato.objects.select_related("projeto__cliente"), request.user),
+        pk=pk,
+    )
+
+    if request.method == "POST":
+        acao = request.POST.get("acao")
+        if acao == "gerar":
+            modelo = _meus_modelos(request.user).filter(pk=request.POST.get("modelo")).first()
+            if modelo is None:
+                messages.error(request, "Escolha um modelo.")
+            else:
+                contrato.corpo = modelo.gerar(_contexto_do_contrato(contrato))
+                contrato.save(update_fields=["corpo"])
+                messages.success(request, f"Texto gerado a partir de “{modelo.nome}”. Revise.")
+        elif acao == "ia":
+            try:
+                contrato.corpo = redigir_contrato(
+                    _contexto_do_contrato(contrato),
+                    request.POST.get("instrucoes", ""),
+                )
+            except IAIndisponivel as erro:
+                messages.error(request, str(erro))
+            else:
+                contrato.save(update_fields=["corpo"])
+                messages.success(
+                    request, "Minuta redigida. É um rascunho — revise cláusula por cláusula."
+                )
+        else:
+            contrato.corpo = request.POST.get("corpo", "")
+            contrato.save(update_fields=["corpo"])
+            messages.success(request, "Texto do contrato salvo.")
+        return redirect("contrato_redigir", pk=contrato.pk)
+
+    return render(
+        request,
+        "contratos/redigir.html",
+        {
+            "contrato": contrato,
+            "modelos": _meus_modelos(request.user).filter(ativo=True),
+            "ia_disponivel": ia_disponivel(),
+        },
+    )

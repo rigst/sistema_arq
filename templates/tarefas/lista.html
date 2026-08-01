@@ -12,7 +12,7 @@
     </header>
 
     <section class="ds-card timer-card {% if timer_ativo %}is-rodando{% endif %}">
-        <h3 class="ds-display">Apontamento de horas</h3>
+        <h2 class="ds-display">Apontamento de horas</h2>
         {% if timer_ativo %}
         <div class="timer-ativo">
             <div class="timer-relogio">
@@ -50,7 +50,7 @@
 
     <div class="detalhe-grid">
         <div class="ds-card">
-            <h3 class="ds-display">Lista</h3>
+            <h2 class="ds-display">Lista</h2>
             <table class="data-table">
                 <thead><tr><th></th><th>Tarefa</th><th>Projeto</th><th>Responsável</th><th>Prazo</th></tr></thead>
                 <tbody>
@@ -75,7 +75,7 @@
         </div>
 
         <div class="ds-card form-card">
-            <h3 class="ds-display">Nova tarefa</h3>
+            <h2 class="ds-display">Nova tarefa</h2>
             <form method="post">
                 {% csrf_token %}
                 {{ form.as_p }}

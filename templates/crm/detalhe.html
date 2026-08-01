@@ -17,7 +17,7 @@
 
     <div class="detalhe-grid">
         <div class="ds-card">
-            <h3 class="ds-display">Dados</h3>
+            <h2 class="ds-display">Dados</h2>
             <dl class="def-list">
                 <dt>E-mail</dt><dd>{{ cliente.email|default:"—" }}</dd>
                 <dt>Telefone</dt><dd>{{ cliente.telefone|default:"—" }}</dd>
@@ -26,7 +26,7 @@
         </div>
 
         <div class="ds-card">
-            <h3 class="ds-display">Histórico</h3>
+            <h2 class="ds-display">Histórico</h2>
             <form method="post" action="{% url 'crm_interacao' cliente.pk %}" class="inline-add">
                 {% csrf_token %}
                 {{ form_interacao.tipo }}

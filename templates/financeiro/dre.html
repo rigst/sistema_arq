@@ -18,7 +18,7 @@
 
     <div class="detalhe-grid">
         <div class="ds-card">
-            <h3 class="ds-display">Entradas</h3>
+            <h2 class="ds-display">Entradas</h2>
             <table class="data-table">
                 <tbody>
                 {% for l in dre.entradas %}<tr><td>{{ l.categoria }}</td><td class="valor valor--entrada">R$ {{ l.total }}</td></tr>{% empty %}<tr><td class="data-empty" colspan="2">Sem entradas.</td></tr>{% endfor %}
@@ -27,7 +27,7 @@
             </table>
         </div>
         <div class="ds-card">
-            <h3 class="ds-display">Saídas</h3>
+            <h2 class="ds-display">Saídas</h2>
             <table class="data-table">
                 <tbody>
                 {% for l in dre.saidas %}<tr><td>{{ l.categoria }}</td><td class="valor valor--saida">R$ {{ l.total }}</td></tr>{% empty %}<tr><td class="data-empty" colspan="2">Sem saídas.</td></tr>{% endfor %}

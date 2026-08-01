@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{% if fornecedor %}{{ fornecedor.nome }}{% else %}Novo fornecedor{% endif %}{% endblock %}
+
+{% block content %}
+<section class="page page--narrow">
+    <header class="page-head">
+        <span class="ds-kicker">Fornecedores</span>
+        <h1 class="ds-h2 ds-display">{% if fornecedor %}{{ fornecedor.nome }}{% else %}Novo fornecedor{% endif %}</h1>
+    </header>
+
+    <form method="post" class="ds-card form-card">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="form-actions">
+            <a class="ds-btn" href="{% url 'fornecedores_lista' %}">Cancelar</a>
+            <button class="ds-btn ds-btn--solid" type="submit">Salvar</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

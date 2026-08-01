@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import AmbientePrograma, Briefing
+from .models import AmbientePrograma, Briefing, TemplateBriefing
 from core.forms import ArqModelForm
 
 
@@ -27,3 +27,10 @@ class AmbienteForm(ArqModelForm):
     class Meta:
         model = AmbientePrograma
         fields = ["nome", "area_aprox", "uso"]
+
+
+class TemplateBriefingForm(ArqModelForm):
+    class Meta:
+        model = TemplateBriefing
+        fields = ["nome", "tipo_projeto", "descricao", "ativo"]
+        widgets = {"descricao": forms.Textarea(attrs={"rows": 2})}

@@ -104,6 +104,7 @@ a { color: var(--ds-blue-dark); }
 /* =================================================================
    COTA — abre seção. Assinatura nº 1.
    ================================================================= */
+.ds-card > h2.ds-display,
 .ds-card > h3.ds-display,
 .dash-section-head,
 .prosa h2,
@@ -114,6 +115,7 @@ a { color: var(--ds-blue-dark); }
     font-variation-settings: "wdth" 106, "wght" 600;
     font-size: 1.02rem;
 }
+.ds-card > h2.ds-display::after,
 .ds-card > h3.ds-display::after,
 .dash-section-head::after,
 .secao-titulo::after {
@@ -670,7 +672,7 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 }
 
 .timer-card.is-rodando { padding: 1.15rem 1.3rem 1.25rem; border-radius: 0.8rem; background: var(--ds-blue-50); border: 1px solid var(--ds-blue-100); }
-.timer-card.is-rodando > h3.ds-display { --sec: var(--ds-blue-light); color: var(--ds-blue-dark); }
+.timer-card.is-rodando > h2.ds-display, .timer-card.is-rodando > h3.ds-display { --sec: var(--ds-blue-light); color: var(--ds-blue-dark); }
 .timer-ativo { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem 1.75rem; }
 .timer-relogio { display: flex; flex-direction: column; gap: 0.1rem; }
 .timer-relogio .ds-kicker { color: var(--ds-blue-dark); }
@@ -725,7 +727,7 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
     border: 1px solid color-mix(in srgb, var(--arq-amber) 26%, var(--ds-line));
     border-radius: 0.8rem; padding: 1.15rem 1.3rem;
 }
-.alerta-card > h3.ds-display { --sec: var(--arq-amber); color: var(--arq-amber); }
+.alerta-card > h2.ds-display, .alerta-card > h3.ds-display { --sec: var(--arq-amber); color: var(--arq-amber); }
 .alerta-card .pendencias li { border-bottom-color: color-mix(in srgb, var(--arq-amber) 18%, var(--ds-line)); }
 .alerta-card .pendencias li:last-child { border-bottom: 0; padding-bottom: 0; }
 
@@ -956,4 +958,101 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .ds-root :focus-visible, a:focus-visible, button:focus-visible,
 input:focus-visible, select:focus-visible, textarea:focus-visible {
     outline: 2px solid var(--ds-blue-light); outline-offset: 2px;
+}
+
+/* =================================================================
+   FASE 6 — projeto novo, briefings, fornecedores, orçamento, arquivos
+   ================================================================= */
+
+/* Botão de destaque na lateral: a ação que abre o fluxo linear */
+.nav-destaque {
+    display: flex; align-items: center; gap: 0.6rem;
+    margin: 0 0.75rem 0.35rem; padding: 0.62rem 0.8rem;
+    border-radius: 0.6rem; text-decoration: none;
+    background: var(--ds-blue); color: #fff; font-weight: 600; font-size: 0.9rem;
+    transition: background var(--arq-fast) ease, box-shadow var(--arq-mid) var(--arq-ease);
+}
+.nav-destaque svg { width: 1.05rem; height: 1.05rem; flex-shrink: 0; }
+.nav-destaque:hover { background: var(--ds-blue-dark); box-shadow: 0 4px 14px rgba(28, 106, 83, 0.26); }
+
+/* --- Roteiro do projeto --- */
+.roteiro-progresso { max-width: 32rem; }
+.roteiro-etapas .onb-corpo { flex: 1; }
+.roteiro-resumo { display: block; margin-top: 0.3rem; font-size: 0.78rem; color: var(--ds-text-500); }
+.jornada-novo-cliente { display: grid; gap: 0 1rem; grid-template-columns: 1fr; }
+@media (min-width: 42rem) { .jornada-novo-cliente { grid-template-columns: 1fr 1fr; } }
+
+/* --- Briefings --- */
+.briefing-roteiro {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+    padding: 0.9rem 0.35rem; border-bottom: 1px solid var(--ds-line);
+}
+.briefing-roteiro:last-child { border-bottom: 0; }
+.briefing-roteiro-nome {
+    font-family: var(--ds-font-display); font-variation-settings: "wdth" 106, "wght" 600;
+    font-size: 1rem; color: var(--ds-text-900); text-decoration: none;
+}
+.briefing-roteiro-nome:hover { color: var(--ds-blue-dark); }
+.briefing-roteiro p { margin: 0.2rem 0 0.35rem; font-size: 0.88rem; color: var(--ds-text-500); }
+.briefing-bloco {
+    margin: 1.5rem 0 0.5rem; font-family: var(--arq-font-mono); font-size: 0.68rem;
+    text-transform: uppercase; letter-spacing: 0.14em; color: var(--ds-text-500);
+}
+.briefing-pergunta-linha { align-items: flex-start; }
+.briefing-opcoes-preview { display: block; margin-top: 0.2rem; font-size: 0.82rem; color: var(--ds-text-500); }
+
+.briefing-respostas { display: flex; flex-direction: column; gap: 2rem; }
+.briefing-pergunta { border: 0; margin: 0 0 1.75rem; padding: 0; overflow: hidden; }
+.briefing-pergunta:last-of-type { margin-bottom: 0; }
+.briefing-pergunta legend {
+    float: left; width: 100%; padding: 0; margin: 0 0 0.6rem;
+    font-weight: 600; font-size: 0.96rem; line-height: 1.35;
+}
+.briefing-opcoes { clear: both; display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.7rem; }
+.briefing-opcao {
+    display: inline-flex; align-items: center; gap: 0.45rem; cursor: pointer;
+    padding: 0.38rem 0.8rem; border-radius: 999px; font-size: 0.87rem;
+    background: var(--ds-panel); border: 1px solid transparent;
+    transition: background var(--arq-fast) ease, border-color var(--arq-fast) ease;
+}
+.briefing-opcao input { accent-color: var(--ds-blue); }
+.briefing-opcao:hover { background: var(--ds-blue-50); }
+.briefing-opcao:has(input:checked) { background: var(--ds-blue-50); border-color: var(--ds-blue); }
+.briefing-complemento { clear: both; display: block; }
+.briefing-complemento > span {
+    display: block; margin-bottom: 0.3rem;
+    font-family: var(--arq-font-mono); font-size: 0.66rem; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--ds-text-500);
+}
+.briefing-complemento textarea {
+    width: 100%; box-sizing: border-box; padding: 0.6rem 0.8rem; font: inherit;
+    background: var(--ds-panel); border: 1px solid transparent; border-radius: 0.5rem;
+}
+.briefing-complemento textarea:focus {
+    outline: none; background: var(--ds-surface);
+    border-color: var(--ds-blue-light); box-shadow: var(--ds-focus-ring);
+}
+
+/* --- Apoio de IA: sempre marcado como rascunho, nunca como resultado final --- */
+.ia-bloco { background: color-mix(in srgb, var(--arq-violet) 4%, #fff); border: 1px solid color-mix(in srgb, var(--arq-violet) 20%, var(--ds-line)); border-radius: 0.8rem; padding: 1.15rem 1.3rem; }
+.ia-bloco > h2.ds-display, .ia-bloco > h3.ds-display { --sec: var(--arq-violet); color: var(--arq-violet); }
+.ia-rascunho {
+    border-left: 3px solid var(--arq-violet);
+    background: color-mix(in srgb, var(--arq-violet) 5%, #fff);
+    border-radius: 0 0.7rem 0.7rem 0; padding: 1rem 1.2rem;
+}
+.ia-rascunho .ds-kicker { color: var(--arq-violet); display: block; margin-bottom: 0.4rem; }
+.ia-rascunho p { margin: 0 0 0.6rem; line-height: 1.6; }
+.ia-rascunho p:last-child { margin-bottom: 0; }
+
+/* --- Contrato: o corpo é para ler, então monoespaçada e linha larga --- */
+.contrato-corpo {
+    width: 100%; box-sizing: border-box; padding: 1rem 1.15rem;
+    font-family: var(--arq-font-mono); font-size: 0.82rem; line-height: 1.7;
+    background: var(--ds-panel); border: 1px solid transparent; border-radius: 0.6rem;
+    resize: vertical;
+}
+.contrato-corpo:focus {
+    outline: none; background: var(--ds-surface);
+    border-color: var(--ds-blue-light); box-shadow: var(--ds-focus-ring);
 }

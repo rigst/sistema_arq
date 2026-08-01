@@ -13,4 +13,11 @@ urlpatterns = [
     path("<int:pk>/alteracao/", views.registrar_alteracao, name="contrato_alteracao"),
     path("<int:pk>/documento/", views.enviar_documento, name="contrato_documento"),
     path("parcela/<int:pk>/alternar/", views.alternar_parcela, name="parcela_alternar"),
+    # Modelos de contrato e redação da minuta.
+    path("modelos/", views.modelos_lista, name="contratos_modelos"),
+    path("modelos/padroes/", views.modelos_semear, name="contratos_modelos_padroes"),
+    path("modelos/novo/", views.modelo_editar, name="contrato_modelo_novo"),
+    path("modelos/<int:pk>/", views.modelo_editar, name="contrato_modelo_editar"),
+    path("modelos/<int:pk>/remover/", views.modelo_remover, name="contrato_modelo_remover"),
+    path("<int:pk>/redigir/", views.redigir, name="contrato_redigir"),
 ]

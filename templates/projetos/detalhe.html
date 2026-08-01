@@ -28,7 +28,7 @@
 
     <div class="ds-card horas-comp">
         <div class="horas-comp-head">
-            <h3 class="ds-display">Horas projetadas × trabalhadas</h3>
+            <h2 class="ds-display">Horas projetadas × trabalhadas</h2>
             <span>{{ projeto.horas_trabalhadas }} de {{ projeto.horas_estimadas }} h
                 {% if projeto.horas_saldo < 0 %}<span class="tag-alerta">estourou {{ projeto.horas_saldo|cut:"-" }} h</span>{% else %}<span class="horas-ok">restam {{ projeto.horas_saldo }} h</span>{% endif %}
             </span>
@@ -40,7 +40,7 @@
 
     <div class="detalhe-grid">
         <div class="ds-card">
-            <h3 class="ds-display">Etapas</h3>
+            <h2 class="ds-display">Etapas</h2>
             <ul class="etapas">
                 {% for etapa in etapas %}
                 <li class="etapa etapa--{{ etapa.status }}">
@@ -60,7 +60,7 @@
         </div>
 
         <div class="ds-card">
-            <h3 class="ds-display">Pendências</h3>
+            <h2 class="ds-display">Pendências</h2>
             <form method="post" action="{% url 'projeto_add_pendencia' projeto.pk %}" class="inline-add">
                 {% csrf_token %}
                 {{ form_pendencia.descricao }}

@@ -20,6 +20,11 @@ class Contrato(EmpresaModel, Rastreavel):
     data_assinatura = models.DateField(null=True, blank=True, verbose_name="data de assinatura")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="rascunho")
     observacoes = models.TextField(blank=True, verbose_name="observações")
+    corpo = models.TextField(
+        "texto do contrato",
+        blank=True,
+        help_text="Cláusulas do contrato. Gere a partir de um modelo e revise aqui.",
+    )
     # Evita lançar as parcelas mais de uma vez no financeiro.
     parcelas_lancadas = models.BooleanField(default=False, verbose_name="parcelas lançadas")
 
@@ -103,3 +108,49 @@ class Documento(EmpresaModel):
 
     def __str__(self):
         return self.titulo
+
+
+class ModeloContrato(EmpresaModel, Rastreavel):
+    """Minuta reaproveitável. O corpo usa marcadores entre chaves duplas que
+    são trocados pelos dados do projeto na hora de gerar — assim o escritório
+    escreve o contrato uma vez e só confere nas próximas."""
+
+    MARCADORES = {
+        "{{cliente}}": "Nome do cliente",
+        "{{cliente_documento}}": "CPF/CNPJ do cliente",
+        "{{projeto}}": "Nome do projeto",
+        "{{tipo_projeto}}": "Tipo do projeto",
+        "{{escritorio}}": "Nome do escritório",
+        "{{valor}}": "Valor total do contrato",
+        "{{data}}": "Data de hoje",
+        "{{prazo}}": "Data prevista de entrega",
+        "{{endereco}}": "Endereço da obra",
+    }
+
+    nome = models.CharField(max_length=150)
+    descricao = models.CharField("descrição", max_length=250, blank=True)
+    corpo = models.TextField(
+        help_text="Use marcadores como {{cliente}} e {{valor}}; eles são trocados ao gerar."
+    )
+    padrao = models.BooleanField(
+        "modelo padrão", default=False, help_text="Sugerido primeiro ao criar um contrato."
+    )
+    ativo = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["-padrao", "nome"]
+        verbose_name = "modelo de contrato"
+        verbose_name_plural = "modelos de contrato"
+
+    def __str__(self):
+        return self.nome
+
+    def gerar(self, contexto: dict) -> str:
+        """Troca os marcadores pelos valores. O que não vier no contexto fica
+        visível como [PREENCHER: ...] em vez de sumir silenciosamente."""
+        texto = self.corpo
+        for marcador, rotulo in self.MARCADORES.items():
+            chave = marcador.strip("{}")
+            valor = contexto.get(chave)
+            texto = texto.replace(marcador, str(valor) if valor else f"[PREENCHER: {rotulo}]")
+        return texto

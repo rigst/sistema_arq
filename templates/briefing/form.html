@@ -12,7 +12,7 @@
     <div class="detalhe-grid">
         <form method="post" class="ds-card form-card">
             {% csrf_token %}
-            <h3 class="ds-display">Blocos do briefing</h3>
+            <h2 class="ds-display">Blocos do briefing</h2>
             <label class="form-block">Perfil e rotina do usuário {{ form.perfil_usuarios }}</label>
             <label class="form-block">Orçamento previsto {{ form.orcamento_previsto }}</label>
             <label class="form-block">Prazo desejado {{ form.prazo_desejado }}</label>
@@ -23,7 +23,7 @@
         </form>
 
         <div class="ds-card">
-            <h3 class="ds-display">Programa de necessidades</h3>
+            <h2 class="ds-display">Programa de necessidades</h2>
             <form method="post" action="{% url 'briefing_add_ambiente' projeto.pk %}" class="inline-add">
                 {% csrf_token %}
                 {{ form_ambiente.nome }}

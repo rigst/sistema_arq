@@ -24,7 +24,7 @@
 
     {% if not proposta.projeto_gerado %}
     <div class="ds-card">
-        <h3 class="ds-display">Hora técnica desta proposta</h3>
+        <h2 class="ds-display">Hora técnica desta proposta</h2>
         <p class="page-sub">Hora-base do escritório: <strong>R$ {{ base }}</strong>. Escolha um valor manual ou aplique os fatores do projeto.</p>
         <form method="post" action="{% url 'proposta_hora_tecnica' proposta.pk %}" class="ht-proposta-form">
             {% csrf_token %}
@@ -50,7 +50,7 @@
     {% endif %}
 
     <div class="ds-card">
-        <h3 class="ds-display">Ambientes / etapas</h3>
+        <h2 class="ds-display">Ambientes / etapas</h2>
         <p class="page-sub">Precificados com a hora técnica desta proposta: <strong>R$ {{ proposta.hora_tecnica_aplicada }}</strong>.</p>
         <form method="post" action="{% url 'proposta_add_item' proposta.pk %}" class="inline-add">
             {% csrf_token %}

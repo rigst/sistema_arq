@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Projeto novo{% endblock %}
+
+{% block content %}
+<section class="page page--narrow">
+    <header class="page-head">
+        <span class="ds-kicker">Fluxo guiado</span>
+        <h1 class="ds-h2 ds-display">Começar um projeto</h1>
+        <p class="page-sub">
+            Dois campos e o projeto existe. A partir daí o sistema mostra o roteiro —
+            briefing, orçamento, proposta, contrato e obra — na ordem, sem você precisar
+            caçar cada tela no menu.
+        </p>
+    </header>
+
+    <form method="post" class="ds-card form-card">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<p class="auth-error">{{ form.non_field_errors.0 }}</p>{% endif %}
+
+        <h2 class="ds-display">Quem é o cliente</h2>
+        {{ form.cliente_existente.label_tag }}{{ form.cliente_existente }}
+        <p class="ht-hint">Se ainda não está cadastrado, preencha abaixo — criamos junto.</p>
+        <div class="jornada-novo-cliente">
+            <p>{{ form.cliente_nome.label_tag }}{{ form.cliente_nome }}</p>
+            <p>{{ form.cliente_email.label_tag }}{{ form.cliente_email }}</p>
+            <p>{{ form.cliente_telefone.label_tag }}{{ form.cliente_telefone }}</p>
+        </div>
+
+        <h2 class="ds-display">O projeto</h2>
+        <p>{{ form.nome.label_tag }}{{ form.nome }}</p>
+        <p>{{ form.tipo.label_tag }}{{ form.tipo }}</p>
+        <p>{{ form.data_prevista.label_tag }}{{ form.data_prevista }}</p>
+
+        <button class="ds-btn ds-btn--solid" type="submit">Abrir projeto e ver o roteiro</button>
+    </form>
+</section>
+{% endblock %}

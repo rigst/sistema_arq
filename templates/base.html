@@ -37,6 +37,11 @@
             </label>
         </div>
 
+        <a class="nav-destaque" href="{% url 'jornada_abrir' %}">
+            {% include "core/_ico.html" with ico="novo" %}
+            <span>Projeto novo</span>
+        </a>
+
         <nav class="app-nav" aria-label="Navegação principal">
             <div class="nav-group">
                 <a href="{% url 'dashboard' %}" class="nav-link{% if request.path == '/' %} is-active{% endif %}">
@@ -63,6 +68,10 @@
                     {% include "core/_ico.html" with ico="contratos" %}
                     <span>Contratos</span>
                 </a>
+                <a href="{% url 'briefing_templates' %}" class="nav-link{% if '/briefing/' in request.path %} is-active{% endif %}">
+                    {% include "core/_ico.html" with ico="briefings" %}
+                    <span>Briefings</span>
+                </a>
             </div>
 
             <div class="nav-group nav-group--producao">
@@ -83,6 +92,14 @@
                     {% include "core/_ico.html" with ico="agenda" %}
                     <span>Agenda</span>
                 </a>
+                <a href="{% url 'fornecedores_lista' %}" class="nav-link{% if '/fornecedores/' in request.path %} is-active{% endif %}">
+                    {% include "core/_ico.html" with ico="fornecedores" %}
+                    <span>Fornecedores</span>
+                </a>
+                <a href="{% url 'arquivos_lista' %}" class="nav-link{% if '/arquivos/' in request.path %} is-active{% endif %}">
+                    {% include "core/_ico.html" with ico="arquivos" %}
+                    <span>Arquivos</span>
+                </a>
             </div>
 
             <div class="nav-group nav-group--gestao">
@@ -94,6 +111,10 @@
                 <a href="{% url 'precificacao' %}" class="nav-link{% if '/precificacao/' in request.path %} is-active{% endif %}">
                     {% include "core/_ico.html" with ico="precificacao" %}
                     <span>Precificação</span>
+                </a>
+                <a href="{% url 'orcamentos_lista' %}" class="nav-link{% if '/orcamentos/' in request.path %} is-active{% endif %}">
+                    {% include "core/_ico.html" with ico="orcamentos" %}
+                    <span>Orçamentos</span>
                 </a>
                 <a href="{% url 'regulatorio_lista' %}" class="nav-link{% if '/regulatorio/' in request.path %} is-active{% endif %}">
                     {% include "core/_ico.html" with ico="regulatorio" %}

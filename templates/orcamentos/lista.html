@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Orçamentos{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head page-head--foto page-head--gestao">
+        <div>
+            <span class="ds-kicker">Custo de execução</span>
+            <h1 class="ds-h2 ds-display">Orçamentos</h1>
+            <p class="page-sub">
+                Quanto custa executar a obra, item a item. Não se confunde com a proposta:
+                a proposta cobra o projeto, o orçamento estima a execução — e é ele que o
+                cliente compara com o que os fornecedores mandam.
+            </p>
+        </div>
+    </header>
+
+    <div class="table-scroll">
+    <table class="data-table">
+        <thead><tr><th>Orçamento</th><th>Projeto</th><th>Versão</th><th>Status</th><th class="num">Itens</th><th class="num">Total</th></tr></thead>
+        <tbody>
+        {% for o in orcamentos %}
+            <tr>
+                <td><a href="{% url 'orcamento_detalhe' o.pk %}">{{ o.titulo }}</a></td>
+                <td>{{ o.projeto.nome }}</td>
+                <td class="num">v{{ o.versao }}</td>
+                <td><span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ o.get_status_display }}</span></td>
+                <td class="num">{{ o.itens.count }}</td>
+                <td class="num">R$ {{ o.total }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="6" class="data-empty">Nenhum orçamento ainda. Abra um a partir da ficha do projeto.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</section>
+{% endblock %}

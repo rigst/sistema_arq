@@ -21,7 +21,7 @@
     </header>
 
     <div class="ds-card">
-        <h3 class="ds-display">Parcelas</h3>
+        <h2 class="ds-display">Parcelas</h2>
         {% if not parcelas %}
         <form method="post" action="{% url 'contrato_gerar_parcelas' contrato.pk %}" class="inline-add">
             {% csrf_token %}
@@ -63,7 +63,7 @@
 
     <div class="detalhe-grid">
         <div class="ds-card">
-            <h3 class="ds-display">Alterações de escopo</h3>
+            <h2 class="ds-display">Alterações de escopo</h2>
             <form method="post" action="{% url 'contrato_alteracao' contrato.pk %}" class="inline-add">
                 {% csrf_token %}
                 {{ form_alteracao.tipo }}
@@ -85,7 +85,7 @@
         </div>
 
         <div class="ds-card">
-            <h3 class="ds-display">Documentos</h3>
+            <h2 class="ds-display">Documentos</h2>
             <form method="post" action="{% url 'contrato_documento' contrato.pk %}" enctype="multipart/form-data" class="inline-add">
                 {% csrf_token %}
                 {{ form_documento.titulo }}

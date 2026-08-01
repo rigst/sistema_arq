@@ -98,3 +98,18 @@ celery -A config beat -l info      # agenda a limpeza de visitantes expirados
 python manage.py limpar_visitantes_expirados   # remove visitantes além do TTL
 python manage.py varrer_alertas                # gera notificações de prazo/desvio/obrigação
 ```
+
+## Apoio de IA (opcional)
+
+Duas telas ganham um botão de rascunho quando `ANTHROPIC_API_KEY` está no
+ambiente: a leitura do briefing e a minuta de contrato. Sem a chave, o botão
+some e todo o resto continua funcionando.
+
+```sh
+pip install anthropic
+export ANTHROPIC_API_KEY=sk-ant-...
+```
+
+O que sai no prompt vai para a API da Anthropic e é cobrado na conta da chave.
+O texto sempre volta como rascunho editável — nada é gravado direto no
+documento final.

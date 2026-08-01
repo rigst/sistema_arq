@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Briefing — {{ projeto.nome }}{% endblock %}
+
+{% block content %}
+<section class="page">
+    <header class="page-head page-head--row">
+        <div>
+            <span class="ds-kicker">Briefing · {{ template.nome }}</span>
+            <h1 class="ds-h2 ds-display">{{ projeto.nome }}</h1>
+            <p class="page-sub">
+                Marque as respostas durante a conversa. O campo de complemento guarda o que
+                o cliente disse com as palavras dele — é ali que costuma estar o projeto.
+            </p>
+        </div>
+        <div class="page-head-actions">
+            <a class="ds-btn" href="{% url 'jornada_roteiro' projeto.pk %}">Roteiro</a>
+            <a class="ds-btn" href="{% url 'briefing_projeto' projeto.pk %}">Blocos NBR</a>
+        </div>
+    </header>
+
+    {% if templates.count > 1 %}
+    <form method="post" action="{% url 'briefing_aplicar_template' projeto.pk %}" class="inline-add">
+        {% csrf_token %}
+        <select name="template" aria-label="Roteiro">
+            {% for t in templates %}<option value="{{ t.pk }}" {% if t.pk == template.pk %}selected{% endif %}>{{ t.nome }}</option>{% endfor %}
+        </select>
+        <button class="ds-btn" type="submit">Trocar de roteiro</button>
+    </form>
+    {% endif %}
+
+    {% if leitura_ia %}
+    <div class="ia-rascunho">
+        <span class="ds-kicker">Leitura da IA · rascunho</span>
+        <p>{{ leitura_ia|linebreaksbr }}</p>
+        <p class="ht-hint">Gerado por IA a partir das respostas. Confira antes de usar com o cliente.</p>
+    </div>
+    {% endif %}
+
+    <form method="post" class="briefing-respostas">
+        {% csrf_token %}
+        {% for bloco in blocos %}
+        <section class="ds-card">
+            <h2 class="ds-display">{{ bloco.nome }}</h2>
+            {% for p in bloco.perguntas %}
+            <fieldset class="briefing-pergunta">
+                <legend>{{ p.texto }}</legend>
+                {% if p.ajuda %}<p class="ht-hint">{{ p.ajuda }}</p>{% endif %}
+
+                {% if p.aceita_opcoes %}
+                <div class="briefing-opcoes">
+                    {% for o in p.opcoes.all %}
+                    <label class="briefing-opcao">
+                        <input type="{% if p.tipo == 'multipla' %}checkbox{% else %}radio{% endif %}"
+                               name="p{{ p.pk }}" value="{{ o.pk }}"
+                               {% if o.pk in p.marcadas %}checked{% endif %}>
+                        <span>{{ o.texto }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <label class="briefing-complemento">
+                    <span>{% if p.aceita_opcoes %}Complemento{% else %}Resposta{% endif %}</span>
+                    <textarea name="t{{ p.pk }}" rows="2">{{ p.resposta_texto }}</textarea>
+                </label>
+            </fieldset>
+            {% endfor %}
+        </section>
+        {% endfor %}
+
+        <div class="form-actions">
+            <button class="ds-btn ds-btn--solid" type="submit">Salvar respostas</button>
+        </div>
+    </form>
+
+    <div class="ds-card ia-bloco">
+        <h2 class="ds-display">Leitura do briefing pela IA</h2>
+        {% if ia_disponivel %}
+        <p class="ht-hint">
+            Envia as respostas deste briefing para a API da Anthropic e devolve uma leitura
+            em três parágrafos: o que o cliente quer, onde há contradição e o que já dá para
+            fechar como escopo. É rascunho para o arquiteto, não texto para o cliente.
+        </p>
+        <form method="post" action="{% url 'briefing_leitura_ia' projeto.pk %}">
+            {% csrf_token %}
+            <button class="ds-btn" type="submit">Pedir leitura à IA</button>
+        </form>
+        {% else %}
+        <p class="ht-hint">
+            Apoio de IA desligado. Para habilitar, defina <code>ANTHROPIC_API_KEY</code> no
+            ambiente e instale a biblioteca <code>anthropic</code>. Todo o resto do briefing
+            funciona sem isso.
+        </p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

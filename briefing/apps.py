@@ -10,8 +10,19 @@ class BriefingConfig(AppConfig):
         from core.visitante_cleanup import registrar_limpeza
 
         def _limpar(grupo):
-            from .models import AmbientePrograma, Briefing
+            from .models import (
+                AmbientePrograma,
+                Briefing,
+                OpcaoPergunta,
+                PerguntaTemplate,
+                RespostaBriefing,
+                TemplateBriefing,
+            )
 
+            RespostaBriefing.objects.filter(empresa=grupo).delete()
+            OpcaoPergunta.objects.filter(empresa=grupo).delete()
+            PerguntaTemplate.objects.filter(empresa=grupo).delete()
+            TemplateBriefing.objects.filter(empresa=grupo).delete()
             AmbientePrograma.objects.filter(empresa=grupo).delete()
             Briefing.objects.filter(empresa=grupo).delete()
 

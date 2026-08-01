@@ -66,16 +66,20 @@ def dashboard(request):
             ("Clientes", "Contatos, funil e histórico.", "crm_lista", "clientes"),
             ("Propostas", "Proposta que vira projeto ao aprovar.", "propostas_lista", "propostas"),
             ("Contratos", "Parcelas no financeiro, aditivos e documentos.", "contratos_lista", "contratos"),
+            ("Briefings", "Roteiros de pergunta com respostas prontas.", "briefing_templates", "briefings"),
         ]),
         ("Produção", "producao", [
             ("Projetos", "Painel com etapa, pendências e margem.", "projetos_painel", "projetos"),
             ("Obras", "Cronograma real × previsto e medições.", "obras_lista", "obras"),
             ("Tarefas", "Delegação com dono, prazo e timer.", "tarefas_lista", "tarefas"),
             ("Agenda", "Reuniões, visitas e prazos.", "agenda", "agenda"),
+            ("Fornecedores", "Quem executa, por categoria e avaliação.", "fornecedores_lista", "fornecedores"),
+            ("Arquivos", "Enviados, recebidos e pagos, com valor.", "arquivos_lista", "arquivos"),
         ]),
         ("Gestão", "gestao", [
             ("Financeiro", "Entradas, saídas, saldos e margem.", "financeiro_painel", "financeiro"),
             ("Precificação", "Hora técnica a partir dos custos.", "precificacao", "precificacao"),
+            ("Orçamentos", "Custo de execução item a item.", "orcamentos_lista", "orcamentos"),
             ("Regulatório", "ART, RRT e CAU com alerta de vencimento.", "regulatorio_lista", "regulatorio"),
         ]),
     ]
