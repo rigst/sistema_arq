@@ -148,3 +148,57 @@ houver incidente relevante, comunicamos os afetados e a ANPD.
 Quando esta política mudar, publicamos uma versão nova e pedimos seu aceite antes de \
 continuar usando. As versões aceitas ficam registradas com data e hora.
 """
+
+
+# --- v1.1: acrescenta licença do software, autoria e contato ---------------
+
+_LICENCA_E_CONTATO = """\
+## Licença do software
+
+O A.R.Q. é software proprietário. O código-fonte e os arquivos que o acompanham \
+pertencem ao autor, e o copyright está registrado no arquivo LICENSE do projeto.
+
+Ao usar o sistema você recebe uma licença de uso pessoal, limitada, revogável e \
+intransferível — nada além disso. Não é concedida permissão para copiar, modificar, \
+distribuir, sublicenciar, vender ou fazer engenharia reversa do software sem \
+autorização prévia e por escrito do autor.
+
+O software é fornecido no estado em que se encontra, sem garantia de qualquer tipo, \
+como já diz a seção "O que não prometemos".
+
+A licença trata do software. Ela não alcança:
+
+- os dados que você cadastra, que continuam seus;
+- as bibliotecas de terceiros, cada uma sob a própria licença (ver LICENCAS.md);
+- as fotografias da interface, sob a Unsplash License;
+- as fontes Archivo e IBM Plex, sob a SIL Open Font License 1.1.
+
+A marca A.R.Q. e o nome Stölben não são licenciados para uso de terceiros.
+
+## Quem responde por este sistema
+
+O A.R.Q. é desenvolvido e operado por:
+
+**Rodrigo Stölben** — desenvolvedor de software
+
+- Site: stolben.com
+- E-mail: rodrigo@stolben.com
+- Código: github.com/rigst
+
+Esse é o canal para dúvidas sobre estes termos, pedidos relacionados aos seus dados \
+pessoais (previstos na Política de Privacidade) e qualquer relato de problema ou \
+falha de segurança.
+"""
+
+TERMOS_V11 = TERMOS_V1.replace(
+    "## Lei aplicável", _LICENCA_E_CONTATO + "\n## Lei aplicável"
+)
+
+PRIVACIDADE_V11 = PRIVACIDADE_V1.replace(
+    "## Quem trata os dados\n\nQuem opera esta instalação do A.R.Q. é o controlador",
+    "## Quem trata os dados\n\n**Rodrigo Stölben** (stolben.com · rodrigo@stolben.com), "
+    "que opera esta instalação do A.R.Q., é o controlador",
+).replace(
+    "Para exercer qualquer um deles, fale com quem opera esta instalação do sistema. \\\nRespondemos em até 15 dias.",
+    "Para exercer qualquer um deles, escreva para rodrigo@stolben.com. Respondemos em \\\naté 15 dias.",
+)

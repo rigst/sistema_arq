@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from legal.models import AceiteLegal, DocumentoLegal
-from legal.services import documentos_pendentes
+from legal.services import documento_vigente, documentos_pendentes
 from usuarios.models import Usuario
 
 
@@ -27,10 +27,11 @@ class DocumentosPublicosTests(TestCase):
         self.assertEqual(self.client.get("/termos/").status_code, 404)
 
     def test_versao_futura_nao_entra_em_vigor(self):
+        vigente = documento_vigente(DocumentoLegal.TERMOS).versao
         futura = timezone.now() + timezone.timedelta(days=30)
         publicar(DocumentoLegal.TERMOS, "9.9", quando=futura)
         resposta = self.client.get("/termos/")
-        self.assertEqual(resposta.context["documento"].versao, "1.0")
+        self.assertEqual(resposta.context["documento"].versao, vigente)
 
 
 class AceiteTests(TestCase):
@@ -87,6 +88,7 @@ class AceiteTests(TestCase):
         self.assertEqual([d.versao for d in pendentes], ["2.0"])
 
     def test_aceite_da_versao_antiga_continua_registrado(self):
+        anterior = documento_vigente(DocumentoLegal.TERMOS).versao
         self.client.post("/aceite/", {"aceito": "1"})
         publicar(DocumentoLegal.TERMOS, "2.0")
         self.client.post("/aceite/", {"aceito": "1"})
@@ -96,7 +98,7 @@ class AceiteTests(TestCase):
                 usuario=self.usuario, documento__tipo=DocumentoLegal.TERMOS
             ).values_list("documento__versao", flat=True)
         )
-        self.assertEqual(versoes, ["1.0", "2.0"])
+        self.assertEqual(versoes, sorted([anterior, "2.0"]))
 
     def test_termos_seguem_acessiveis_com_aceite_pendente(self):
         self.assertEqual(self.client.get("/termos/").status_code, 200)

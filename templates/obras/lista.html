@@ -4,7 +4,7 @@
 
 {% block content %}
 <section class="page">
-    <header class="page-head page-head--row">
+    <header class="page-head page-head--row page-head--foto page-head--obra">
         <div>
             <span class="ds-kicker">Obras</span>
             <h1 class="ds-h2 ds-display">Acompanhamento de obra</h1>
@@ -17,7 +17,7 @@
         {% for o in obras %}
         <article class="ds-card obra-card">
             <div class="obra-card-top">
-                <a class="projeto-nome" href="{% url 'obra_detalhe' o.pk %}">{{ o.projeto.nome }}</a>
+                <a class="projeto-nome" href="{% url 'obra_detalhe' o.pk %}" title="{{ o.projeto.nome }}">{{ o.projeto.nome }}</a>
                 <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ o.get_status_display }}</span>
             </div>
             <p class="projeto-cliente">{{ o.cliente.nome }}{% if o.endereco %} · {{ o.endereco }}{% endif %}</p>

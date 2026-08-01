@@ -92,3 +92,8 @@ O texto em `legal/textos.py` é um rascunho redigido para este projeto, com base
 na LGPD (Lei 13.709/2018). **Não é parecer jurídico.** Antes de usar em
 produção com clientes reais, revise com um advogado — em especial os trechos de
 retenção de dados, papel de controlador/operador e foro.
+
+A seção "Licença do software" dos termos descreve a licença **proprietária** do
+`LICENSE` deste repositório. Se a licença do projeto mudar, publique uma versão
+nova do documento (`legal/textos.py` + migração de dados) — mudar o texto de uma
+versão já aceita descaracterizaria o registro de aceite.

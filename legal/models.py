@@ -1,6 +1,18 @@
+import re
+
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from django.utils.html import escape
+from django.utils.safestring import mark_safe
+
+_NEGRITO = re.compile(r"\*\*(.+?)\*\*", re.S)
+
+
+def _negrito(texto: str):
+    """Converte **assim** em <strong>. Escapa antes de marcar como seguro,
+    para que o conteúdo do documento nunca injete HTML."""
+    return mark_safe(_NEGRITO.sub(r"<strong>\1</strong>", escape(texto)))
 
 
 class DocumentoLegal(models.Model):
@@ -71,9 +83,9 @@ class DocumentoLegal(models.Model):
                 for linha in trecho.splitlines():
                     linha = linha.strip()
                     if linha.startswith("- "):
-                        blocos.append(("item", linha[2:].strip()))
+                        blocos.append(("item", _negrito(linha[2:].strip())))
             else:
-                blocos.append(("texto", " ".join(trecho.split())))
+                blocos.append(("texto", _negrito(" ".join(trecho.split()))))
         return blocos
 
 

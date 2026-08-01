@@ -3,35 +3,50 @@
 
 {% block content %}
 <section class="page">
-    <header class="page-head">
-        <span class="ds-kicker">Tarefas e horas</span>
-        <h1 class="ds-h2 ds-display">Tarefas da equipe</h1>
-        <p class="page-sub">Cada tarefa com um dono, um prazo e um critério de pronto.</p>
+    <header class="page-head page-head--foto page-head--producao">
+        <div>
+            <span class="ds-kicker">Tarefas e horas</span>
+            <h1 class="ds-h2 ds-display">Tarefas da equipe</h1>
+            <p class="page-sub">Cada tarefa com um dono, um prazo e um critério de pronto. As horas apontadas aqui viram o custo real do projeto e a comparação com o estimado.</p>
+        </div>
     </header>
 
-    <div class="ds-card timer-card">
+    <section class="ds-card timer-card {% if timer_ativo %}is-rodando{% endif %}">
+        <h3 class="ds-display">Apontamento de horas</h3>
         {% if timer_ativo %}
         <div class="timer-ativo">
-            <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>Cronômetro rodando</span>
-            <strong data-timer-start="{{ timer_ativo.inicio.isoformat }}">00:00:00</strong>
-            <span class="timer-alvo">{{ timer_ativo.tarefa.titulo|default:timer_ativo.descricao|default:"Sem tarefa" }}</span>
+            <div class="timer-relogio">
+                <span class="ds-kicker">Rodando desde {{ timer_ativo.inicio|date:"H:i" }}</span>
+                <strong data-timer-start="{{ timer_ativo.inicio.isoformat }}">00:00:00</strong>
+            </div>
+            <p class="timer-alvo">{{ timer_ativo.tarefa.titulo|default:timer_ativo.descricao|default:"Sem tarefa vinculada" }}</p>
             <form method="post" action="{% url 'timer_parar' %}">
                 {% csrf_token %}
-                <button class="ds-btn ds-btn--solid" type="submit">Parar</button>
+                <button class="ds-btn ds-btn--solid" type="submit">Parar e registrar</button>
             </form>
         </div>
         {% else %}
-        <form method="post" action="{% url 'timer_iniciar' %}" class="inline-add">
+        <p class="timer-explica">
+            Marque o tempo enquanto trabalha. Ao parar, as horas entram no projeto da tarefa
+            e alimentam a comparação de horas estimadas × trabalhadas e o custo real.
+        </p>
+        <form method="post" action="{% url 'timer_iniciar' %}" class="timer-form">
             {% csrf_token %}
-            <select name="tarefa">
-                <option value="">— tarefa (opcional) —</option>
-                {% for t in tarefas %}{% if t.status != "concluida" %}<option value="{{ t.pk }}">{{ t.titulo }}</option>{% endif %}{% endfor %}
-            </select>
-            <input type="text" name="descricao" placeholder="O que você vai fazer?">
+            <label class="timer-campo">
+                <span>Tarefa</span>
+                <select name="tarefa">
+                    <option value="">Sem tarefa vinculada</option>
+                    {% for t in tarefas %}{% if t.status != "concluida" %}<option value="{{ t.pk }}">{{ t.titulo }}</option>{% endif %}{% endfor %}
+                </select>
+            </label>
+            <label class="timer-campo timer-campo--cresce">
+                <span>No que você vai trabalhar</span>
+                <input type="text" name="descricao" placeholder="Ex.: detalhamento das esquadrias">
+            </label>
             <button class="ds-btn ds-btn--solid" type="submit">Iniciar cronômetro</button>
         </form>
         {% endif %}
-    </div>
+    </section>
 
     <div class="detalhe-grid">
         <div class="ds-card">

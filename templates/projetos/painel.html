@@ -3,7 +3,7 @@
 
 {% block content %}
 <section class="page">
-    <header class="page-head page-head--row">
+    <header class="page-head page-head--row page-head--foto page-head--producao">
         <div>
             <span class="ds-kicker">Projetos</span>
             <h1 class="ds-h2 ds-display">Painel de projetos</h1>
@@ -26,7 +26,7 @@
         {% for p in projetos %}
         <article class="ds-card projeto-card">
             <div class="projeto-card-top">
-                <a class="projeto-nome" href="{% url 'projeto_detalhe' p.pk %}">{{ p.nome }}</a>
+                <a class="projeto-nome" href="{% url 'projeto_detalhe' p.pk %}" title="{{ p.nome }}">{{ p.nome }}</a>
                 <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ p.get_status_display }}</span>
             </div>
             <p class="projeto-cliente">{{ p.cliente.nome }} · {{ p.get_tipo_display }}</p>

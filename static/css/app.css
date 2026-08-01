@@ -205,13 +205,16 @@ a { color: var(--ds-blue-dark); }
 .app-empresa-info strong { font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .app-empresa-info span { color: var(--ds-text-500); font-family: var(--arq-font-mono); font-size: 0.7rem; }
 .app-sair {
-    display: flex; align-items: center; gap: 0.5rem; background: none; border: 0;
-    color: var(--ds-text-500); font: inherit; font-size: 0.85rem; cursor: pointer; padding: 0.3rem 0.15rem;
+    display: flex; align-items: center; gap: 0.4rem; background: none; border: 0;
+    color: var(--ds-text-500); font: inherit; font-size: 0.78rem; cursor: pointer; padding: 0.2rem 0;
     transition: color var(--arq-fast) ease;
 }
-.app-sair svg { width: 1rem; height: 1rem; }
+.app-sair svg { width: 0.9rem; height: 0.9rem; }
 .app-sair:hover { color: var(--ds-danger); }
 .app-inline-form { margin: 0; }
+/* Sair e os links legais dividem a última linha da lateral */
+.app-side-rodape { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.app-side-rodape .pe-legal { padding: 0; }
 .app-link-btn { background: none; border: 0; color: var(--ds-blue-dark); font: inherit; cursor: pointer; padding: 0; transition: color var(--arq-fast) ease; }
 .app-link-btn:hover { text-decoration: underline; }
 
@@ -237,14 +240,16 @@ a { color: var(--ds-blue-dark); }
    RITMO — a página e suas seções
    ================================================================= */
 .page { display: flex; flex-direction: column; gap: var(--arq-gap); }
-.page--narrow { max-width: 42rem; }
-.page--leitura { max-width: 44rem; }
-.app-main--public .page--leitura { margin: 0 auto; }
+/* telas de conteúdo curto ficam centradas na folha, não coladas à esquerda */
+.page--narrow { max-width: 42rem; margin: 0 auto; width: 100%; }
+.page--leitura { max-width: 44rem; margin: 0 auto; width: 100%; }
 .doc-voltar { align-self: flex-start; }
 
 .page-head { margin-bottom: 0; }
 .page-head--row { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.5rem; }
-.page-head--row > :not(:first-child) { padding-top: 1.15rem; flex-shrink: 0; }
+/* desloca as ações para a linha do título — com margem, não com padding:
+   padding aqui deformaria o próprio botão quando ele é filho direto */
+.page-head--row > :not(:first-child) { margin-top: 1.15rem; flex-shrink: 0; }
 .page-head .ds-kicker { display: block; }
 .page-head h1 { margin: 0.3rem 0 0; }
 .page-sub { margin: 0.6rem 0 0; color: var(--ds-text-500); max-width: 46rem; line-height: 1.55; }
@@ -419,19 +424,37 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 /* =================================================================
    PAINEL — hero claro com foto, faixa de indicadores e índice
    ================================================================= */
-.dash-hero {
-    position: relative; overflow: hidden; border-radius: 0.9rem;
-    min-height: 13rem; display: flex; align-items: center;
-    padding: 2rem 2.25rem;
+/* --- Cabeçalho com foto: sangra até as bordas da folha e encosta no topo.
+   A imagem entra pela direita e some no papel; o texto fica sobre o papel. --- */
+.dash-hero, .page-head--foto {
+    position: relative; overflow: hidden;
+    margin: -2.6rem -3rem 0; padding: 3.1rem 3rem 2.3rem;
+    min-height: 12rem; display: flex; align-items: flex-end;
+    justify-content: space-between; gap: 1.5rem;
     background:
-        linear-gradient(96deg, var(--ds-surface) 30%, rgba(255, 255, 255, 0.82) 48%, rgba(255, 255, 255, 0.05) 76%),
-        url("../img/hero-painel.jpg") center bottom / cover no-repeat, var(--ds-panel);
-    border: 1px solid var(--ds-line);
+        /* a foto dissolve no papel embaixo, em vez de terminar num corte seco */
+        linear-gradient(to top, var(--ds-bg) 2%, transparent 42%),
+        linear-gradient(96deg,
+            var(--ds-bg) 26%,
+            color-mix(in srgb, var(--ds-bg) 78%, transparent) 46%,
+            transparent 74%),
+        var(--hero, none) center bottom / cover no-repeat,
+        var(--ds-panel);
+    animation: none;
 }
-.dash-hero-in { position: relative; z-index: 2; max-width: 34rem; }
-.dash-hero .ds-kicker { display: block; color: var(--ds-blue-dark); }
+.dash-hero { --hero: url("../img/hero-painel.jpg"); }
+/* nas páginas internas a foto é faixa, não hero: mais baixa que a do painel */
+.page-head--foto { min-height: 9.5rem; padding: 2.5rem 3rem 1.9rem; }
+.page-head--comercial { --hero: url("../img/hero-comercial.jpg"); }
+.page-head--producao { --hero: url("../img/hero-producao.jpg"); }
+.page-head--gestao { --hero: url("../img/hero-gestao.jpg"); }
+.page-head--obra { --hero: url("../img/hero-obra.jpg"); }
+
+.dash-hero-in, .page-head--foto > div:first-child { position: relative; z-index: 2; max-width: 36rem; }
+.dash-hero .ds-kicker, .page-head--foto .ds-kicker { display: block; color: var(--ds-blue-dark); }
 .dash-hero h1 { margin: 0.45rem 0 0.5rem; color: var(--ds-text-900); }
-.dash-hero p { margin: 0; color: var(--ds-text-700); max-width: 30rem; }
+.dash-hero p { margin: 0; color: var(--ds-text-700); max-width: 32rem; }
+.page-head--foto > :not(:first-child) { position: relative; z-index: 2; margin-top: 0; }
 
 /* Carimbo: campos da folha, impressos abaixo do hero */
 .dash-carimbo {
@@ -500,11 +523,11 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .modulo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 0 2.5rem; }
 .modulo-card {
     display: grid; grid-template-columns: 1.35rem 1fr auto; align-items: baseline; gap: 0 0.85rem;
-    padding: 0.85rem 0.35rem; text-decoration: none; color: inherit;
-    border-top: 1px solid var(--ds-line);
-    transition: background var(--arq-fast) ease, padding-left var(--arq-mid) var(--arq-ease);
+    padding: 0.7rem 0.6rem; margin-left: -0.6rem; border-radius: 0.5rem;
+    text-decoration: none; color: inherit;
+    transition: background var(--arq-fast) ease;
 }
-.modulo-card:hover { background: var(--ds-panel); padding-left: 0.7rem; }
+.modulo-card:hover { background: var(--ds-surface); }
 .modulo-ico { color: var(--sec); display: flex; grid-row: span 2; align-self: start; padding-top: 0.1rem; }
 .modulo-ico svg { width: 1.2rem; height: 1.2rem; }
 .modulo-head { display: contents; }
@@ -516,14 +539,18 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 /* =================================================================
    PROJETOS E OBRAS — objetos numa grade, aqui a superfície faz sentido
    ================================================================= */
-.projeto-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr)); }
-.obra-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr)); }
+/* align-items: start impede que um card alto estique os vizinhos da linha */
+.projeto-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr)); align-items: start; }
+.obra-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr)); align-items: start; }
 .projeto-card, .obra-card { padding: 1.25rem 1.35rem 1.35rem; transition: border-color var(--arq-fast) ease, box-shadow var(--arq-mid) var(--arq-ease); }
 .projeto-card:hover, .obra-card:hover { border-color: var(--ds-blue-100); box-shadow: var(--ds-shadow-soft); }
 .projeto-card-top, .obra-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; }
+/* o título ocupa sempre duas linhas: nome curto e nome longo alinham igual */
 .projeto-nome {
     font-family: var(--ds-font-display); font-variation-settings: "wdth" 108, "wght" 600;
-    font-size: 1.05rem; color: var(--ds-text-900); text-decoration: none;
+    font-size: 1.05rem; line-height: 1.3; color: var(--ds-text-900); text-decoration: none;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
+    overflow: hidden; min-height: 2.6em;
 }
 .projeto-nome:hover { color: var(--ds-blue-dark); }
 .projeto-cliente { margin: 0.3rem 0 1rem; font-size: 0.86rem; color: var(--ds-text-500); }
@@ -622,9 +649,33 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 /* =================================================================
    TAREFAS, AGENDA E LINHA DO TEMPO
    ================================================================= */
-.timer-ativo { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
-.timer-ativo strong { font-size: 1.7rem; letter-spacing: 0.01em; }
-.timer-alvo { color: var(--ds-text-500); }
+/* --- Apontamento de horas --- */
+.timer-explica { margin: 0 0 1.15rem; color: var(--ds-text-500); font-size: 0.88rem; max-width: 46rem; line-height: 1.55; }
+.timer-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.85rem; }
+.timer-campo { display: flex; flex-direction: column; gap: 0.35rem; min-width: 13rem; }
+.timer-campo--cresce { flex: 1; min-width: 16rem; }
+.timer-campo > span {
+    font-family: var(--arq-font-mono); font-size: 0.68rem; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.12em; color: var(--ds-text-500);
+}
+.timer-campo input, .timer-campo select {
+    width: 100%; box-sizing: border-box; padding: 0.6rem 0.8rem; font: inherit;
+    color: var(--ds-text-900); background: var(--ds-panel);
+    border: 1px solid transparent; border-radius: 0.5rem;
+    transition: background var(--arq-fast) ease, border-color var(--arq-fast) ease, box-shadow var(--arq-fast) ease;
+}
+.timer-campo input:focus, .timer-campo select:focus {
+    outline: none; background: var(--ds-surface);
+    border-color: var(--ds-blue-light); box-shadow: var(--ds-focus-ring);
+}
+
+.timer-card.is-rodando { padding: 1.15rem 1.3rem 1.25rem; border-radius: 0.8rem; background: var(--ds-blue-50); border: 1px solid var(--ds-blue-100); }
+.timer-card.is-rodando > h3.ds-display { --sec: var(--ds-blue-light); color: var(--ds-blue-dark); }
+.timer-ativo { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem 1.75rem; }
+.timer-relogio { display: flex; flex-direction: column; gap: 0.1rem; }
+.timer-relogio .ds-kicker { color: var(--ds-blue-dark); }
+.timer-ativo strong { font-size: 1.9rem; line-height: 1.1; letter-spacing: 0.01em; color: var(--ds-text-900); }
+.timer-alvo { flex: 1; min-width: 12rem; margin: 0; color: var(--ds-text-700); }
 
 .agenda-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .agenda-lista li { display: flex; gap: 1.15rem; align-items: flex-start; padding: 0.85rem 0.35rem; border-bottom: 1px solid var(--ds-line); }
@@ -775,7 +826,7 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
     background: linear-gradient(to top, rgba(10, 14, 15, 0.9) 8%, rgba(10, 14, 15, 0.55) 45%, rgba(10, 14, 15, 0.35));
 }
 @media (min-width: 62rem) {
-    .auth-shell { grid-template-columns: minmax(0, 1.25fr) minmax(21rem, 0.75fr); align-items: end; gap: 3rem; }
+    .auth-shell { grid-template-columns: minmax(0, 1fr) 22.5rem; align-items: end; gap: 3rem; }
 }
 
 /* Texto livre sobre a imagem — sem card */
@@ -791,15 +842,29 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .auth-hero h1 { margin: 0; color: #fff; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35); }
 .auth-hero .ds-muted { color: rgba(255, 255, 255, 0.62); }
 
-/* Formulário: painel translúcido, legível sobre a foto */
+/* Formulário: vidro sobre a foto. O véu de branco a 78% deixa o concreto
+   aparecer e ainda mantém o texto acima de 9:1 de contraste. */
 .auth-card {
-    position: relative; z-index: 2; display: flex; flex-direction: column; gap: 1.25rem;
-    padding: 1.85rem; border-radius: 0.9rem;
-    background: rgba(255, 255, 255, 0.95);
-    -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    position: relative; z-index: 2; display: flex; flex-direction: column; gap: 1.15rem;
+    padding: 1.75rem; border-radius: 0.9rem;
+    background: rgba(255, 255, 255, 0.85);
+    -webkit-backdrop-filter: blur(24px) saturate(1.15); backdrop-filter: blur(24px) saturate(1.15);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
 }
+/* sobre o vidro o texto secundário sobe um degrau: a foto atrás rouba contraste */
+.auth-card .auth-header p, .auth-card .auth-visitor p,
+.auth-card .auth-legal, .auth-card .auth-disclaimer,
+.auth-card .auth-field > span { color: var(--ds-text-700); }
+.auth-card .auth-disclaimer { font-size: 0.76rem; }
+.auth-card .auth-field input {
+    background: rgba(255, 255, 255, 0.6);
+    border-color: rgba(20, 24, 26, 0.09);
+}
+.auth-card .auth-field input:focus { background: #fff; border-color: var(--ds-blue-light); }
+.auth-card .ds-btn:not(.ds-btn--solid) { background: rgba(255, 255, 255, 0.65); border-color: rgba(20, 24, 26, 0.12); }
+.auth-card .ds-btn:not(.ds-btn--solid):hover { background: #fff; }
+.auth-visitor { border-top-color: rgba(20, 24, 26, 0.1); }
 .auth-header h2 { margin: 0 0 0.2rem; font-size: 1.35rem; }
 .auth-header p { margin: 0; color: var(--ds-text-500); font-size: 0.9rem; }
 .auth-error { color: var(--ds-danger); font-size: 0.9rem; margin: 0; }
@@ -848,14 +913,22 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
     .app-main { border-left: 0; padding: 1.6rem 1.15rem 3.5rem; min-height: auto; }
     .page { gap: 1.85rem; }
     .page-head--row { flex-direction: column; align-items: stretch; gap: 1rem; }
-    .page-head--row > :not(:first-child) { padding-top: 0; }
+    .page-head--row > :not(:first-child) { margin-top: 0; }
     .page-head-actions { flex-wrap: wrap; }
-    .dash-hero {
-        min-height: 0; padding: 1.6rem 1.35rem;
+    /* No estreito a foto vira faixa no topo e o texto desce para o papel:
+       sobrepor texto na imagem aqui destruiria a legibilidade. */
+    .dash-hero, .page-head--foto {
+        margin: -1.6rem -1.15rem 0; padding: 6.5rem 1.15rem 1.4rem;
+        min-height: 0; flex-direction: column; align-items: stretch; gap: 1rem;
         background:
-            linear-gradient(to top, var(--ds-surface) 45%, rgba(255, 255, 255, 0.8) 70%, rgba(255, 255, 255, 0.25)),
-            url("../img/hero-painel.jpg") center 62% / cover no-repeat, var(--ds-panel);
+            linear-gradient(to top,
+                var(--ds-bg) 42%,
+                color-mix(in srgb, var(--ds-bg) 80%, transparent) 62%,
+                transparent 88%),
+            var(--hero, none) center top / cover no-repeat, var(--ds-panel);
     }
+    .dash-hero-in, .page-head--foto > div:first-child { max-width: none; }
+    .page-head--foto > :not(:first-child) { margin-top: 0; }
     .dash-onb { flex-direction: column; align-items: flex-start; gap: 1rem; }
     .detalhe-grid, .ht-grid { gap: 1.85rem; }
     .modulo-grid { gap: 0; }

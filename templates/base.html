@@ -117,16 +117,18 @@
                 </div>
             </div>
             {% endif %}
-            <form method="post" action="{% url 'logout' %}" class="app-inline-form">
-                {% csrf_token %}
-                <button type="submit" class="app-sair">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                    Sair
-                </button>
-            </form>
-            <div class="pe-legal pe-legal--lateral">
-                <a href="{% url 'termos' %}">Termos</a>
-                <a href="{% url 'privacidade' %}">Privacidade</a>
+            <div class="app-side-rodape">
+                <div class="pe-legal pe-legal--lateral">
+                    <a href="{% url 'termos' %}">Termos</a>
+                    <a href="{% url 'privacidade' %}">Privacidade</a>
+                </div>
+                <form method="post" action="{% url 'logout' %}" class="app-inline-form">
+                    {% csrf_token %}
+                    <button type="submit" class="app-sair">
+                        Sair
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    </button>
+                </form>
             </div>
         </div>
     </aside>
