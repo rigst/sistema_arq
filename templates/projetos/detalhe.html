@@ -3,7 +3,9 @@
 {% block title %}{{ projeto.nome }}{% endblock %}
 
 {% block content %}
-<section class="page">
+<section class="page page--leitura">
+    {% include "core/_voltar.html" with url_voltar_nome="projetos_painel" rotulo_voltar="Projetos" %}
+
     <header class="page-head page-head--row">
         <div>
             <span class="ds-kicker">Projeto · {{ projeto.get_tipo_display }}</span>
@@ -11,6 +13,7 @@
             <p class="page-sub">
                 <a href="{% url 'crm_detalhe' projeto.cliente.pk %}">{{ projeto.cliente.nome }}</a>
                 · <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ projeto.get_status_display }}</span>
+                {% if projeto.tem_execucao %}· com acompanhamento de execução{% endif %}
             </p>
         </div>
         <div class="page-head-actions">
@@ -20,14 +23,14 @@
 
     {% include "projetos/_roteiro.html" %}
 
-    <div class="margem-strip ds-card">
+    <div class="margem-strip">
         <div><span>Contratado</span><strong>R$ {{ projeto.valor_contratado }}</strong></div>
         <div><span>Custo de horas</span><strong>R$ {{ margem.custo_horas }}</strong></div>
         <div><span>Despesas</span><strong>R$ {{ margem.despesas }}</strong></div>
         <div class="margem-final"><span>Margem</span><strong>R$ {{ margem.margem }} ({{ margem.margem_percent }}%)</strong></div>
     </div>
 
-    <div class="ds-card horas-comp">
+    <div class="horas-comp">
         <div class="horas-comp-head">
             <h2 class="ds-display">Horas projetadas × trabalhadas</h2>
             <span>{{ projeto.horas_trabalhadas }} de {{ projeto.horas_estimadas }} h
@@ -39,51 +42,126 @@
         </div>
     </div>
 
-    <div class="detalhe-grid">
-        <div class="ds-card">
-            <h2 class="ds-display">Etapas</h2>
-            <ul class="etapas">
-                {% for etapa in etapas %}
-                <li class="etapa etapa--{{ etapa.status }}">
-                    <div>
-                        <strong>{{ etapa.ordem|add:1 }}. {{ etapa.nome }}</strong>
-                        <span class="etapa-status">{{ etapa.get_status_display }}{% if etapa.aprovada %} · aprovada{% endif %}</span>
+    {% comment %}
+    Elaboração: o que de fato se produz. Disciplinas (o projeto que na verdade
+    são vários) e as etapas de prancha, cada uma podendo apontar quem executa.
+    {% endcomment %}
+    <section class="secao" id="elaboracao">
+        <h2 class="secao-titulo ds-display">Elaboração</h2>
+        <p class="secao-sub">
+            Um trabalho de arquitetura é vários projetos ao mesmo tempo. Aqui ficam as
+            disciplinas — quem faz cada uma, prazo e situação — e as etapas de prancha.
+        </p>
+
+        <div class="disciplinas">
+            <h3 class="bloco-titulo">Disciplinas</h3>
+            {% if disciplinas %}
+            <ul class="disciplina-lista">
+                {% for d in disciplinas %}
+                <li class="disciplina disciplina--{{ d.status }}">
+                    <div class="disciplina-id">
+                        <strong>{{ d.get_nome_display }}</strong>
+                        {% if d.descricao %}<span class="disciplina-desc">{{ d.descricao }}</span>{% endif %}
                     </div>
-                    {% if etapa.status != "concluida" %}
-                    <form method="post" action="{% url 'etapa_avancar' etapa.pk %}">
-                        {% csrf_token %}
-                        <button class="ds-btn" type="submit">{% if etapa.status == "pendente" %}Iniciar{% else %}Concluir{% endif %}</button>
-                    </form>
-                    {% endif %}
+                    <span class="disciplina-quem">
+                        {{ d.responsavel_visivel }}{% if d.prazo %} · {{ d.prazo|date:"d/m/y" }}{% endif %}
+                    </span>
+                    <span class="disciplina-status">{{ d.get_status_display }}</span>
+                    <div class="disciplina-acoes">
+                        {% if d.status != "concluida" %}
+                        <form method="post" action="{% url 'disciplina_avancar' d.pk %}" class="app-inline-form">
+                            {% csrf_token %}
+                            <button class="ds-btn" type="submit">{% if d.status == "pendente" %}Iniciar{% else %}Concluir{% endif %}</button>
+                        </form>
+                        {% endif %}
+                        <form method="post" action="{% url 'disciplina_remover' d.pk %}" class="app-inline-form">
+                            {% csrf_token %}
+                            <button class="app-link-btn" type="submit">remover</button>
+                        </form>
+                    </div>
                 </li>
                 {% endfor %}
             </ul>
+            {% else %}
+            <p class="data-empty">
+                Nenhuma disciplina ainda. Comece pelo arquitetônico e some as complementares
+                conforme o projeto exigir.
+            </p>
+            {% endif %}
+
+            <details class="abrir-campo">
+                <summary>Adicionar disciplina</summary>
+                <form method="post" action="{% url 'projeto_add_disciplina' projeto.pk %}" class="form-card">
+                    {% csrf_token %}
+                    <div class="form-dupla">
+                        <p>{{ form_disciplina.nome.label_tag }}{{ form_disciplina.nome }}</p>
+                        <p>{{ form_disciplina.prazo.label_tag }}{{ form_disciplina.prazo }}</p>
+                    </div>
+                    <label class="form-marcar">
+                        {{ form_disciplina.interna }}
+                        <span>
+                            <strong>{{ form_disciplina.interna.label }}</strong>
+                            <small>{{ form_disciplina.interna.help_text }}</small>
+                        </span>
+                    </label>
+                    <p>{{ form_disciplina.fornecedor.label_tag }}{{ form_disciplina.fornecedor }}</p>
+                    <p>{{ form_disciplina.descricao.label_tag }}{{ form_disciplina.descricao }}</p>
+                    <button class="ds-btn ds-btn--solid" type="submit">Adicionar disciplina</button>
+                </form>
+            </details>
         </div>
 
-        <div class="ds-card">
-            <h2 class="ds-display">Pendências</h2>
-            <form method="post" action="{% url 'projeto_add_pendencia' projeto.pk %}" class="inline-add">
-                {% csrf_token %}
-                {{ form_pendencia.descricao }}
-                {{ form_pendencia.prazo }}
-                <button class="ds-btn ds-btn--solid" type="submit">Adicionar</button>
-            </form>
-            <ul class="pendencias">
-                {% for pend in pendencias %}
-                <li class="{% if pend.resolvida %}is-resolvida{% endif %}">
-                    <span>{{ pend.descricao }}{% if pend.prazo %} · {{ pend.prazo|date:"d/m/y" }}{% endif %}</span>
-                    {% if not pend.resolvida %}
-                    <form method="post" action="{% url 'pendencia_resolver' pend.pk %}">
-                        {% csrf_token %}
-                        <button class="app-link-btn" type="submit">resolver</button>
-                    </form>
-                    {% endif %}
-                </li>
-                {% empty %}
-                <li class="data-empty">Sem pendências.</li>
-                {% endfor %}
-            </ul>
+        <div class="detalhe-grid">
+            <div>
+                <h3 class="bloco-titulo">Etapas de prancha</h3>
+                <ul class="etapas">
+                    {% for etapa in etapas %}
+                    <li class="etapa etapa--{{ etapa.status }}">
+                        <div>
+                            <strong>{{ etapa.ordem|add:1 }}. {{ etapa.nome }}</strong>
+                            <span class="etapa-status">
+                                {{ etapa.get_status_display }}{% if etapa.aprovada %} · aprovada{% endif %}
+                                {% if etapa.fornecedor %} · {{ etapa.fornecedor.nome }}{% endif %}
+                            </span>
+                        </div>
+                        {% if etapa.status != "concluida" %}
+                        <form method="post" action="{% url 'etapa_avancar' etapa.pk %}" class="app-inline-form">
+                            {% csrf_token %}
+                            <button class="ds-btn" type="submit">{% if etapa.status == "pendente" %}Iniciar{% else %}Concluir{% endif %}</button>
+                        </form>
+                        {% endif %}
+                    </li>
+                    {% empty %}
+                    <li class="data-empty">Sem etapas.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="bloco-titulo">Pendências</h3>
+                <form method="post" action="{% url 'projeto_add_pendencia' projeto.pk %}" class="inline-add">
+                    {% csrf_token %}
+                    {{ form_pendencia.descricao }}
+                    {{ form_pendencia.prazo }}
+                    <button class="ds-btn ds-btn--solid" type="submit">Adicionar</button>
+                </form>
+                <ul class="pendencias">
+                    {% for pend in pendencias %}
+                    <li class="{% if pend.resolvida %}is-resolvida{% endif %}">
+                        <span>{{ pend.descricao }}{% if pend.prazo %} · {{ pend.prazo|date:"d/m/y" }}{% endif %}</span>
+                        {% if not pend.resolvida %}
+                        <form method="post" action="{% url 'pendencia_resolver' pend.pk %}" class="app-inline-form">
+                            {% csrf_token %}
+                            <button class="app-link-btn" type="submit">resolver</button>
+                        </form>
+                        {% endif %}
+                    </li>
+                    {% empty %}
+                    <li class="data-empty">Sem pendências.</li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
-    </div>
+    </section>
 </section>
 {% endblock %}

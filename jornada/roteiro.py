@@ -34,18 +34,28 @@ def _url(nome, **kwargs):
 
 
 def montar_roteiro(projeto):
-    """As seis etapas de um projeto, na ordem em que acontecem."""
+    """As etapas de um projeto, na ordem em que acontecem de verdade.
+
+    Briefing antes de orçamento porque não se orça o que ainda não foi definido;
+    orçamento antes de proposta porque a proposta cobra em cima de um custo
+    conhecido; contrato antes de começar a desenhar. A execução só entra na
+    lista quando o escritório acompanha a obra — que é a minoria dos trabalhos.
+    """
     briefing = getattr(projeto, "briefing", None)
     respostas = briefing.respostas.count() if briefing else 0
     orcamento = projeto.orcamentos.order_by("-criado_em").first()
     proposta = getattr(projeto, "proposta_origem", None)
     contrato = projeto.contratos.order_by("-criado_em").first()
     obra = getattr(projeto, "obra", None)
+    tarefas_abertas = projeto.tarefas.exclude(status="concluida").count()
+    tarefas_total = projeto.tarefas.count()
+    etapas_feitas = projeto.etapas.filter(status="concluida").count()
+    etapas_total = projeto.etapas.count()
 
-    return [
+    etapas = [
         Etapa(
             chave="cliente",
-            titulo="Cliente cadastrado",
+            titulo="Cliente",
             descricao="Contato, origem e histórico de conversa.",
             cta="Ver cliente",
             concluida=True,
@@ -54,17 +64,17 @@ def montar_roteiro(projeto):
         ),
         Etapa(
             chave="briefing",
-            titulo="Briefing respondido",
+            titulo="Briefing",
             descricao="Rode o roteiro de perguntas com o cliente e registre o que ele quer.",
             cta="Responder briefing",
             concluida=respostas > 0,
             url=_url("briefing_responder", projeto_pk=projeto.pk),
-            resumo=f"{respostas} pergunta(s) respondida(s)" if respostas else "",
+            resumo=f"{respostas} resposta(s)" if respostas else "",
         ),
         Etapa(
             chave="orcamento",
-            titulo="Orçamento de execução",
-            descricao="Estime o custo da obra item a item, com fornecedor por item.",
+            titulo="Orçamento",
+            descricao="Quanto custa executar, item a item — a base para saber o que cobrar.",
             cta="Montar orçamento" if orcamento is None else "Abrir orçamento",
             concluida=orcamento is not None and orcamento.itens.exists(),
             url=(
@@ -76,7 +86,7 @@ def montar_roteiro(projeto):
         ),
         Etapa(
             chave="proposta",
-            titulo="Proposta de honorários",
+            titulo="Proposta",
             descricao="O que o escritório cobra pelo projeto, calculado da hora técnica.",
             cta="Ver proposta" if proposta else "Criar proposta",
             concluida=proposta is not None,
@@ -89,7 +99,7 @@ def montar_roteiro(projeto):
         ),
         Etapa(
             chave="contrato",
-            titulo="Contrato assinado",
+            titulo="Contrato",
             descricao="Gere a minuta a partir de um modelo, revise e registre a assinatura.",
             cta="Abrir contrato" if contrato else "Criar contrato",
             concluida=contrato is not None and contrato.status == "ativo",
@@ -101,19 +111,40 @@ def montar_roteiro(projeto):
             resumo=contrato.get_status_display() if contrato else "",
         ),
         Etapa(
-            chave="obra",
-            titulo="Obra aberta",
-            descricao="Cronograma, visitas técnicas e medições que liberam pagamento.",
-            cta="Abrir obra" if obra is None else "Acompanhar obra",
-            concluida=obra is not None,
-            url=(
-                _url("obra_detalhe", pk=obra.pk)
-                if obra
-                else com_projeto(_url("obra_nova"), projeto)
+            chave="elaboracao",
+            titulo="Elaboração",
+            descricao="As disciplinas e as etapas de prancha: é aqui que o projeto é feito.",
+            cta="Ver elaboração",
+            concluida=etapas_total > 0 and etapas_feitas == etapas_total,
+            url=f"{_url('projeto_detalhe', pk=projeto.pk)}#elaboracao",
+            resumo=(
+                f"{etapas_feitas}/{etapas_total} etapas"
+                + (f" · {tarefas_abertas} tarefa(s) aberta(s)" if tarefas_abertas else "")
+                if etapas_total
+                else (f"{tarefas_total} tarefa(s)" if tarefas_total else "")
             ),
-            resumo=obra.get_status_display() if obra else "",
         ),
     ]
+
+    # A execução é opcional e por isso entra por último e só quando marcada.
+    if projeto.tem_execucao:
+        etapas.append(
+            Etapa(
+                chave="execucao",
+                titulo="Execução",
+                descricao="Cronograma de obra, visitas técnicas e medições que liberam pagamento.",
+                cta="Abrir execução" if obra is None else "Acompanhar execução",
+                concluida=obra is not None and obra.status == "concluida",
+                url=(
+                    _url("obra_detalhe", pk=obra.pk)
+                    if obra
+                    else com_projeto(_url("obra_nova"), projeto)
+                ),
+                resumo=obra.get_status_display() if obra else "",
+            )
+        )
+
+    return etapas
 
 
 def proxima_etapa(etapas):

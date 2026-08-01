@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.test import Client, TestCase
 
 from core.factories import criar_empresa_e_usuario
+from core.models import Empresa
 from core.visitante_cleanup import limpar_dados_negocio
 from crm.models import Cliente
 from notificacoes.models import Notificacao
@@ -10,6 +11,7 @@ from obras.models import EtapaObra, Obra
 from projetos.models import Projeto
 from regulatorio.models import ObrigacaoTecnica
 from legal.testing import aceitar_documentos
+from usuarios.models import Usuario
 
 
 class DashboardTests(TestCase):
@@ -33,7 +35,7 @@ class DashboardTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         # KPIs e navegação lateral presentes.
         self.assertContains(resp, "Projetos ativos")
-        self.assertContains(resp, "Obras em desvio")
+        self.assertContains(resp, "Execução em desvio")
         self.assertContains(resp, "app-side")
 
 
@@ -59,3 +61,57 @@ class LimpezaVisitanteFase4Tests(TestCase):
         self.assertFalse(ObrigacaoTecnica.objects.filter(empresa=self.grupo).exists())
         self.assertFalse(Notificacao.objects.filter(empresa=self.grupo).exists())
         self.assertFalse(Cliente.objects.filter(empresa=self.grupo).exists())
+
+
+class IdentidadeTests(TestCase):
+    """A imagem de fundo do painel é do escritório, não do sistema."""
+
+    def setUp(self):
+        from core.tenancy import obter_grupo_empresa_padrao
+
+        self.grupo = obter_grupo_empresa_padrao()
+        self.user = Usuario.objects.create_user(username="ident", password="senha-de-teste")
+        self.user.groups.add(self.grupo)
+        aceitar_documentos(self.user)
+        self.client.force_login(self.user)
+
+    def _png(self, nome="fundo.png"):
+        """Um PNG mínimo de verdade: ImageField valida o conteúdo, não a extensão."""
+        import io
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from PIL import Image
+
+        buf = io.BytesIO()
+        Image.new("RGB", (8, 8), (40, 80, 70)).save(buf, format="PNG")
+        return SimpleUploadedFile(nome, buf.getvalue(), content_type="image/png")
+
+    def test_envia_imagem_de_fundo_e_ela_entra_no_painel(self):
+        resp = self.client.post(
+            "/escritorio/identidade/",
+            {"nome": self.grupo.empresa_registro.nome, "imagem_fundo": self._png()},
+        )
+        self.assertRedirects(resp, "/escritorio/identidade/")
+
+        empresa = Empresa.objects.get(grupo=self.grupo)
+        self.assertTrue(empresa.imagem_fundo)
+
+        painel = self.client.get("/")
+        self.assertContains(painel, "--fundo-escritorio")
+        self.assertContains(painel, empresa.imagem_fundo.url)
+        empresa.imagem_fundo.delete(save=True)
+
+    def test_sem_imagem_o_painel_nao_declara_a_variavel(self):
+        self.assertNotContains(self.client.get("/"), "--fundo-escritorio")
+
+    def test_remover_imagem_volta_para_o_padrao(self):
+        self.client.post(
+            "/escritorio/identidade/",
+            {"nome": self.grupo.empresa_registro.nome, "imagem_fundo": self._png()},
+        )
+        self.client.post(
+            "/escritorio/identidade/",
+            {"nome": self.grupo.empresa_registro.nome, "limpar_fundo": "on"},
+        )
+        self.assertFalse(Empresa.objects.get(grupo=self.grupo).imagem_fundo)
+        self.assertNotContains(self.client.get("/"), "--fundo-escritorio")

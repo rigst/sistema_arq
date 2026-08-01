@@ -16,6 +16,12 @@
 
     <link rel="stylesheet" href="{% static 'css/stolben-ui.css' %}">
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
+    {% if empresa_ativa.imagem_fundo %}
+    <style nonce="{{ request.csp_nonce }}">
+        /* Fundo do escritório, enviado em Escritório → Identidade. */
+        .app-shell { --fundo-escritorio: url("{{ empresa_ativa.imagem_fundo.url }}"); }
+    </style>
+    {% endif %}
     {% block extra_head %}{% endblock %}
 </head>
 <body class="{% if user.is_authenticated %}app-shell{% else %}app-public{% endif %} {% block body_class %}{% endblock %}">
@@ -24,13 +30,18 @@
     <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Abrir menu de navegação">
     <aside class="app-side">
         <div class="app-side-head">
-            <a class="app-brand" href="{% url 'dashboard' %}" aria-label="A.R.Q. — início">
+            <a class="app-brand" href="{% url 'dashboard' %}" aria-label="{{ empresa_ativa.nome|default:'A.R.Q.' }} — início">
+                {% if empresa_ativa.logo %}
+                <img class="app-brand-logo" src="{{ empresa_ativa.logo.url }}" alt="">
+                <span class="app-brand-word">{{ empresa_ativa.nome }}</span>
+                {% else %}
                 <svg class="app-brand-mark" viewBox="0 0 32 32" aria-hidden="true">
                     <rect class="mk-plate" width="32" height="32" rx="7.5"/>
                     <path class="mk-a" d="M8.4 24.3 L16 7.4 L23.6 24.3" fill="none" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/>
                     <path class="mk-cota" d="M11.7 18.7 H20.3" fill="none" stroke-width="2.7" stroke-linecap="round"/>
                 </svg>
                 <span class="app-brand-word">A.R.Q.</span>
+                {% endif %}
             </a>
             <label for="nav-toggle" class="nav-burger" aria-label="Abrir menu">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
@@ -39,7 +50,7 @@
 
         <a class="nav-destaque" href="{% url 'jornada_abrir' %}">
             {% include "core/_ico.html" with ico="novo" %}
-            <span>Projeto novo</span>
+            <span>Novo projeto</span>
         </a>
 
         {% comment %}
@@ -83,7 +94,7 @@
                 </a>
                 <a href="{% url 'obras_lista' %}" class="nav-link{% if '/obras/' in request.path %} is-active{% endif %}">
                     {% include "core/_ico.html" with ico="obras" %}
-                    <span>Obras</span>
+                    <span>Execução</span>
                 </a>
                 <a href="{% url 'arquivos_lista' %}" class="nav-link{% if '/arquivos/' in request.path %} is-active{% endif %}">
                     {% include "core/_ico.html" with ico="arquivos" %}
@@ -132,6 +143,10 @@
                 <a href="{% url 'regulatorio_lista' %}" class="nav-link{% if '/regulatorio/' in request.path %} is-active{% endif %}">
                     {% include "core/_ico.html" with ico="regulatorio" %}
                     <span>Regulatório</span>
+                </a>
+                <a href="{% url 'identidade' %}" class="nav-link{% if '/escritorio/' in request.path %} is-active{% endif %}">
+                    {% include "core/_ico.html" with ico="identidade" %}
+                    <span>Identidade</span>
                 </a>
                 <a href="{% url 'onboarding' %}" class="nav-link{% if '/onboarding/' in request.path %} is-active{% endif %}">
                     {% include "core/_ico.html" with ico="onboarding" %}

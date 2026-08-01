@@ -2,7 +2,8 @@
 {% block title %}{{ contrato.titulo }}{% endblock %}
 
 {% block content %}
-<section class="page">
+<section class="page page--leitura">
+    {% include "core/_voltar.html" with projeto_voltar=contrato.projeto %}
     <header class="page-head page-head--row">
         <div>
             <span class="ds-kicker">Contrato{% if contrato.numero %} · {{ contrato.numero }}{% endif %}</span>

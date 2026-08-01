@@ -1,0 +1,14 @@
+{% comment %}
+O caminho de volta, sempre no mesmo lugar: primeiro elemento da página, antes
+do título. Recebe ou um projeto (o caso mais comum — voltar para a ficha de
+onde se veio) ou um nome de rota com rótulo.
+{% endcomment %}
+{% if projeto_voltar %}
+<a class="voltar" href="{% url 'projeto_detalhe' projeto_voltar.pk %}">
+    <span aria-hidden="true">←</span> Voltar para {{ projeto_voltar.nome }}
+</a>
+{% elif url_voltar_nome %}
+<a class="voltar" href="{% url url_voltar_nome %}">
+    <span aria-hidden="true">←</span> Voltar para {{ rotulo_voltar }}
+</a>
+{% endif %}

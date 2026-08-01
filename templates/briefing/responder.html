@@ -2,7 +2,8 @@
 {% block title %}Briefing — {{ projeto.nome }}{% endblock %}
 
 {% block content %}
-<section class="page">
+<section class="page page--leitura">
+    {% include "core/_voltar.html" with projeto_voltar=projeto %}
     <header class="page-head page-head--row">
         <div>
             <span class="ds-kicker">Briefing · {{ template.nome }}</span>
@@ -13,7 +14,7 @@
             </p>
         </div>
         <div class="page-head-actions">
-            <a class="ds-btn" href="{% url 'jornada_roteiro' projeto.pk %}">Roteiro</a>
+
             <a class="ds-btn" href="{% url 'briefing_projeto' projeto.pk %}">Blocos NBR</a>
         </div>
     </header>

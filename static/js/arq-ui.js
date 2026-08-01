@@ -72,7 +72,52 @@
         });
     }
 
-    function iniciar() { contarNumeros(); preencherBarras(); marcarEnvio(); }
+    /* Abertura de projeto em dois passos.
+       Sem JavaScript o formulário aparece inteiro e funciona igual — o que o
+       script faz é esconder o que ainda não interessa, não habilitar nada. */
+    function aberturaEmPassos() {
+        var form = document.querySelector("[data-abertura]");
+        if (!form) return;
+
+        var seletor = form.querySelector("#id_cliente_existente");
+        var ficha = form.querySelector("[data-cliente-ficha]");
+        var blocoNovo = form.querySelector("[data-cliente-novo]");
+        var passoProjeto = form.querySelector("[data-passo-projeto]");
+        if (!seletor || !ficha || !blocoNovo || !passoProjeto) return;
+
+        var campoNome = form.querySelector("#id_cliente_nome");
+
+        function clienteResolvido() {
+            return Boolean(seletor.value) || Boolean(campoNome && campoNome.value.trim());
+        }
+
+        function pintar() {
+            var opcao = seletor.options[seletor.selectedIndex];
+            var existente = Boolean(seletor.value);
+
+            ficha.hidden = !existente;
+            blocoNovo.hidden = existente;
+            /* Campo escondido não pode continuar exigindo preenchimento. */
+            if (campoNome) campoNome.disabled = existente;
+
+            if (existente && opcao) {
+                ["nome", "email", "telefone"].forEach(function (campo) {
+                    var alvo = ficha.querySelector('[data-ficha="' + campo + '"]');
+                    if (alvo) alvo.textContent = opcao.getAttribute("data-" + campo) || "—";
+                });
+                var link = ficha.querySelector("[data-ficha-link]");
+                if (link) link.href = opcao.getAttribute("data-url") || "#";
+            }
+
+            passoProjeto.hidden = !clienteResolvido();
+        }
+
+        seletor.addEventListener("change", pintar);
+        if (campoNome) campoNome.addEventListener("input", pintar);
+        pintar();
+    }
+
+    function iniciar() { contarNumeros(); preencherBarras(); marcarEnvio(); aberturaEmPassos(); }
 
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", iniciar);

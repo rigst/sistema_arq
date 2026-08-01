@@ -2,7 +2,8 @@
 {% block title %}{{ cliente.nome }}{% endblock %}
 
 {% block content %}
-<section class="page">
+<section class="page page--leitura">
+    {% include "core/_voltar.html" with url_voltar_nome="crm_lista" rotulo_voltar="Clientes" %}
     <header class="page-head page-head--row">
         <div>
             <span class="ds-kicker">Cliente</span>

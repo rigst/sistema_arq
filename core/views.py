@@ -52,7 +52,7 @@ def dashboard(request):
 
     kpis = [
         {"label": "Projetos ativos", "valor": projetos_ativos, "rodape": "em andamento", "url": "projetos_painel", "cor": "blue"},
-        {"label": "Obras em desvio", "valor": obras_desvio, "rodape": "atrás do previsto", "url": "obras_lista", "cor": "alert" if obras_desvio else "green"},
+        {"label": "Execução em desvio", "valor": obras_desvio, "rodape": "atrás do previsto", "url": "obras_lista", "cor": "alert" if obras_desvio else "green"},
         {"label": "A receber (previsto)", "valor": f"R$ {a_receber}", "rodape": "lançamentos previstos", "url": "financeiro_painel", "cor": "green"},
         {"label": "Tarefas abertas", "valor": tarefas_abertas, "rodape": "a fazer", "url": "tarefas_lista", "cor": "violet"},
     ]
@@ -111,3 +111,24 @@ def alternar_empresa(request):
     ):
         return redirect(destino)
     return redirect(reverse("dashboard"))
+
+
+@login_required
+def identidade(request):
+    """Marca e imagem de fundo do escritório."""
+    from core.forms_empresa import IdentidadeEmpresaForm
+
+    empresa = obter_empresa_ativa_usuario(request.user)
+    if empresa is None:
+        raise PermissionDenied("Usuário sem empresa vinculada.")
+
+    if request.method == "POST":
+        form = IdentidadeEmpresaForm(request.POST, request.FILES, instance=empresa)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Identidade do escritório atualizada.")
+            return redirect("identidade")
+    else:
+        form = IdentidadeEmpresaForm(instance=empresa)
+
+    return render(request, "core/identidade.html", {"form": form, "empresa": empresa})

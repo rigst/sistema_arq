@@ -32,12 +32,12 @@ def nova_obra(request):
             obra.criado_por = request.user
             obra.save()
             criar_etapas_obra_padrao(obra)
-            messages.success(request, "Obra aberta com etapas construtivas padrão.")
+            messages.success(request, "Execução aberta com etapas construtivas padrão.")
             return redirect("obra_detalhe", pk=obra.pk)
     else:
         form = ObraForm(user=request.user, projeto=projeto)
     return render(
-        request, "obras/form.html", {"form": form, "titulo": "Abrir obra", "projeto": projeto}
+        request, "obras/form.html", {"form": form, "titulo": "Abrir execução", "projeto": projeto}
     )
 
 
@@ -52,7 +52,7 @@ def editar_obra(request, pk):
             return redirect("obra_detalhe", pk=obra.pk)
     else:
         form = ObraForm(instance=obra, user=request.user)
-    return render(request, "obras/form.html", {"form": form, "titulo": "Editar obra"})
+    return render(request, "obras/form.html", {"form": form, "titulo": "Editar execução"})
 
 
 @login_required

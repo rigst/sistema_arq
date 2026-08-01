@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% load l10n %}
-{% block title %}Obras{% endblock %}
+{% block title %}Execução{% endblock %}
 
 {% block content %}
 <section class="page">
     <header class="page-head page-head--row page-head--foto page-head--obra">
         <div>
-            <span class="ds-kicker">Obras</span>
-            <h1 class="ds-h2 ds-display">Acompanhamento de obra</h1>
+            <span class="ds-kicker">Execução</span>
+            <h1 class="ds-h2 ds-display">Execução</h1>
             <p class="page-sub">Visitas técnicas, cronograma real × previsto e medições que liberam pagamento.</p>
         </div>
         <a class="ds-btn ds-btn--solid" href="{% url 'obra_nova' %}">Abrir obra</a>
@@ -41,7 +41,7 @@
             {% endif %}
         </article>
         {% empty %}
-        <p class="data-empty">Nenhuma obra aberta. Abra a obra de um projeto para acompanhar visitas e medições.</p>
+        <p class="data-empty">Nenhuma execução aberta. Só os projetos marcados como "acompanha a execução" entram aqui — abra a execução pela ficha do projeto.</p>
         {% endfor %}
     </div>
 </section>

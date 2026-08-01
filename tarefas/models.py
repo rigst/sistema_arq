@@ -24,6 +24,11 @@ class Tarefa(EmpresaModel, Rastreavel):
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="tarefas",
         verbose_name="responsável",
     )
+    fornecedor = models.ForeignKey(
+        "fornecedores.Fornecedor",
+        on_delete=models.SET_NULL, null=True, blank=True, related_name="tarefas",
+        help_text="Quando quem faz é de fora do escritório.",
+    )
     criterio_pronto = models.CharField(max_length=200, blank=True, verbose_name="critério de pronto")
     prazo = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="aberta")

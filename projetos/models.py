@@ -7,11 +7,15 @@ from crm.models import Cliente
 
 # Etapas padrão por tipo (base NBR 13532). Usadas para instanciar as etapas de um
 # projeto novo — templates editáveis por empresa ficam para fase futura.
+# Só a fase de projeto. O acompanhamento de obra saiu daqui: nem todo trabalho
+# tem execução, e criar a etapa para todo mundo fazia o cronograma nascer com
+# uma linha que nunca ia ser cumprida. Quando o projeto tem execução, ela vira
+# uma Obra de verdade, com etapas construtivas próprias.
 ETAPAS_PADRAO = {
-    "residencial": ["Levantamento", "Estudo preliminar", "Anteprojeto", "Projeto legal", "Projeto executivo", "Acompanhamento de obra"],
-    "comercial": ["Levantamento", "Estudo preliminar", "Anteprojeto", "Projeto legal", "Projeto executivo", "Acompanhamento de obra"],
-    "corporativo": ["Briefing", "Estudo preliminar", "Anteprojeto", "Detalhamento", "Executivo", "Acompanhamento"],
-    "interiores": ["Briefing", "Conceito", "Layout", "Detalhamento", "Executivo de interiores", "Acompanhamento"],
+    "residencial": ["Levantamento", "Estudo preliminar", "Anteprojeto", "Projeto legal", "Projeto executivo"],
+    "comercial": ["Levantamento", "Estudo preliminar", "Anteprojeto", "Projeto legal", "Projeto executivo"],
+    "corporativo": ["Briefing", "Estudo preliminar", "Anteprojeto", "Detalhamento", "Executivo"],
+    "interiores": ["Briefing", "Conceito", "Layout", "Detalhamento", "Executivo de interiores"],
 }
 
 
@@ -44,6 +48,12 @@ class Projeto(EmpresaModel, Rastreavel):
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name="projetos")
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default="residencial")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="ativo")
+    tem_execucao = models.BooleanField(
+        "acompanha a execução",
+        default=False,
+        help_text="Marque se o escritório também acompanha a obra. Muitos trabalhos "
+                  "terminam no projeto entregue.",
+    )
     valor_contratado = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="valor contratado")
     horas_estimadas = models.DecimalField(
         max_digits=10, decimal_places=2, default=0,
@@ -108,6 +118,11 @@ class Etapa(EmpresaModel):
     ordem = models.PositiveIntegerField(default=0)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pendente")
     data_prevista = models.DateField(null=True, blank=True, verbose_name="data prevista")
+    fornecedor = models.ForeignKey(
+        "fornecedores.Fornecedor",
+        on_delete=models.SET_NULL, null=True, blank=True, related_name="etapas_projeto",
+        help_text="Quem executa esta etapa, quando é terceirizada.",
+    )
     aprovada = models.BooleanField(default=False)
     aprovada_em = models.DateTimeField(null=True, blank=True, verbose_name="aprovada em")
 
@@ -134,6 +149,67 @@ class Pendencia(EmpresaModel):
 
     def __str__(self):
         return self.descricao
+
+
+class Disciplina(EmpresaModel):
+    """Um projeto de arquitetura é vários projetos.
+
+    Arquitetônico, estrutural, hidráulico, elétrico — cada um com seu prazo e,
+    muitas vezes, seu projetista de fora. Tratar tudo como "o projeto" esconde
+    justamente onde as coisas travam: o arquitetônico está pronto e o estrutural
+    nem começou.
+    """
+
+    NOME_CHOICES = [
+        ("arquitetonico", "Arquitetônico"),
+        ("estrutural", "Estrutural"),
+        ("hidraulico", "Hidrossanitário"),
+        ("eletrico", "Elétrico"),
+        ("climatizacao", "Climatização"),
+        ("incendio", "Prevenção de incêndio"),
+        ("luminotecnico", "Luminotécnico"),
+        ("paisagismo", "Paisagismo"),
+        ("interiores", "Interiores"),
+        ("marcenaria", "Detalhamento de marcenaria"),
+        ("outro", "Outro"),
+    ]
+    STATUS_CHOICES = [
+        ("pendente", "Pendente"),
+        ("andamento", "Em andamento"),
+        ("concluida", "Concluída"),
+    ]
+
+    projeto = models.ForeignKey(Projeto, on_delete=models.CASCADE, related_name="disciplinas")
+    nome = models.CharField(max_length=20, choices=NOME_CHOICES, default="arquitetonico")
+    descricao = models.CharField("descrição", max_length=150, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pendente")
+    interna = models.BooleanField(
+        "feita pelo escritório", default=True,
+        help_text="Desmarque quando um projetista de fora assina esta disciplina.",
+    )
+    fornecedor = models.ForeignKey(
+        "fornecedores.Fornecedor",
+        on_delete=models.SET_NULL, null=True, blank=True, related_name="disciplinas",
+        verbose_name="projetista externo",
+    )
+    prazo = models.DateField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["nome"]
+        verbose_name = "disciplina"
+        verbose_name_plural = "disciplinas"
+        constraints = [
+            models.UniqueConstraint(fields=["projeto", "nome"], name="disciplina_unica_por_projeto")
+        ]
+
+    def __str__(self):
+        return f"{self.projeto.nome} — {self.get_nome_display()}"
+
+    @property
+    def responsavel_visivel(self):
+        if self.interna:
+            return "escritório"
+        return self.fornecedor.nome if self.fornecedor_id else "a definir"
 
 
 def criar_etapas_padrao(projeto):

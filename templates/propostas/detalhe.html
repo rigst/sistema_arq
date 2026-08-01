@@ -2,7 +2,8 @@
 {% block title %}{{ proposta.titulo }}{% endblock %}
 
 {% block content %}
-<section class="page">
+<section class="page page--leitura">
+    {% include "core/_voltar.html" with url_voltar_nome="propostas_lista" rotulo_voltar="Propostas" %}
     <header class="page-head page-head--row">
         <div>
             <span class="ds-kicker">Proposta · hora técnica R$ {{ proposta.hora_tecnica_aplicada }}</span>

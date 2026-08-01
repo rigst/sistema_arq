@@ -2,34 +2,70 @@ from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 
 from core.forms import ArqForm
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 from crm.models import Cliente
-from projetos.models import Projeto
+from projetos.models import Projeto, criar_etapas_padrao
+
+
+class SelectCliente(forms.Select):
+    """Carrega os dados do cliente na própria <option>.
+
+    Assim a ficha de conferência é preenchida sem uma segunda ida ao servidor,
+    e a página continua funcionando (com o formulário inteiro visível) se o
+    JavaScript não rodar.
+    """
+
+    def create_option(self, name, value, *args, **kwargs):
+        opcao = super().create_option(name, value, *args, **kwargs)
+        cliente = getattr(value, "instance", None)
+        if cliente is not None:
+            opcao["attrs"].update(
+                {
+                    "data-nome": cliente.nome,
+                    "data-email": cliente.email or "—",
+                    "data-telefone": cliente.telefone or "—",
+                    "data-url": reverse("crm_detalhe", kwargs={"pk": cliente.pk}),
+                }
+            )
+        return opcao
 
 
 class AberturaForm(ArqForm):
-    """Um formulário só para tirar o projeto do papel: cliente (existente ou
-    novo) e o nome do projeto. Todo o resto vem depois, no roteiro."""
+    """Um formulário só para tirar o projeto do papel.
+
+    Os campos aparecem em duas partes: primeiro quem é o cliente, e só depois
+    o projeto. Se o cliente já existe, os dados dele são exibidos para conferir
+    e não para editar — corrigir cadastro é assunto da tela de clientes, e
+    deixar dois lugares editarem a mesma coisa é como um vira cópia velha do
+    outro. Status não se pergunta: projeto novo nasce ativo.
+    """
 
     cliente_existente = forms.ModelChoiceField(
         queryset=Cliente.objects.none(),
         required=False,
-        label="Cliente já cadastrado",
-        empty_label="— cadastrar um novo —",
+        label="Cliente",
+        empty_label="— cadastrar um novo cliente —",
+        widget=SelectCliente,
     )
-    cliente_nome = forms.CharField(label="Nome do novo cliente", max_length=150, required=False)
+    cliente_nome = forms.CharField(label="Nome do cliente", max_length=150, required=False)
     cliente_email = forms.EmailField(label="E-mail", required=False)
     cliente_telefone = forms.CharField(label="Telefone", max_length=40, required=False)
 
     nome = forms.CharField(label="Nome do projeto", max_length=200)
     tipo = forms.ChoiceField(label="Tipo de projeto", choices=Projeto.TIPO_CHOICES)
+    tem_execucao = forms.BooleanField(
+        label="O escritório também acompanha a execução da obra",
+        required=False,
+        help_text="Marque só se o contrato inclui obra. Dá para mudar depois.",
+    )
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["cliente_existente"].queryset = queryset_da_empresa(
-            Cliente.objects.all(), user
+            Cliente.objects.filter(ativo=True), user
         )
 
     def clean(self):
@@ -65,9 +101,16 @@ def abrir(request):
                 cliente=cliente,
                 nome=form.cleaned_data["nome"],
                 tipo=form.cleaned_data["tipo"],
+                tem_execucao=form.cleaned_data["tem_execucao"],
+                status="ativo",
             )
-            messages.success(request, "Projeto aberto. Siga o roteiro no topo da página.")
-            return redirect("projeto_detalhe", pk=projeto.pk)
+            criar_etapas_padrao(projeto)
+            messages.success(
+                request, "Projeto aberto. O próximo passo é o briefing — está aberto abaixo."
+            )
+            # Cai direto no briefing: é o primeiro trabalho real do projeto, e
+            # obrigar a passar pela ficha antes só adiciona um clique.
+            return redirect("briefing_responder", projeto_pk=projeto.pk)
     else:
         form = AberturaForm(user=request.user)
 

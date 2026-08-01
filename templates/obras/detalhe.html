@@ -1,11 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Obra — {{ obra.projeto.nome }}{% endblock %}
+{% block title %}Execução — {{ obra.projeto.nome }}{% endblock %}
 
 {% block content %}
-<section class="page">
+<section class="page page--leitura">
+    {% include "core/_voltar.html" with projeto_voltar=obra.projeto %}
     <header class="page-head page-head--row">
         <div>
-            <span class="ds-kicker">Obra{% if obra.responsavel_tecnico %} · RT {{ obra.responsavel_tecnico }}{% endif %}</span>
+            <span class="ds-kicker">Execução{% if obra.responsavel_tecnico %} · RT {{ obra.responsavel_tecnico }}{% endif %}</span>
             <h1 class="ds-h2 ds-display">{{ obra.projeto.nome }}</h1>
             <p class="page-sub">
                 <a href="{% url 'projeto_detalhe' obra.projeto.pk %}">Ver projeto</a>

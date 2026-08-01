@@ -1,13 +1,15 @@
 from django.contrib import messages
+from django.db import IntegrityError
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 
-from .forms import PendenciaForm, ProjetoForm
-from .models import Etapa, Pendencia, Projeto, criar_etapas_padrao
+from .forms import DisciplinaForm, EtapaFornecedorForm, PendenciaForm, ProjetoForm
+from .models import Disciplina, Etapa, Pendencia, Projeto, criar_etapas_padrao
 
 
 @login_required
@@ -112,6 +114,8 @@ def detalhe_projeto(request, pk):
             "form_pendencia": PendenciaForm(),
             "margem": calcular_margem_projeto(projeto),
             "horas_percent": round(horas_percent, 1),
+            "disciplinas": projeto.disciplinas.select_related("fornecedor"),
+            "form_disciplina": DisciplinaForm(user=request.user),
             "roteiro": roteiro,
             "roteiro_proxima": proxima_etapa(roteiro),
             "roteiro_percent": percentual(roteiro),
@@ -161,3 +165,62 @@ def resolver_pendencia(request, pk):
     pendencia.save()
     pendencia.projeto.tocar()
     return redirect("projeto_detalhe", pk=pendencia.projeto.pk)
+
+
+@require_POST
+@login_required
+def adicionar_disciplina(request, pk):
+    projeto = get_object_or_404(queryset_da_empresa(Projeto.objects.all(), request.user), pk=pk)
+    form = DisciplinaForm(request.POST, user=request.user)
+    if form.is_valid():
+        disciplina = form.save(commit=False)
+        disciplina.projeto = projeto
+        disciplina.empresa = projeto.empresa
+        try:
+            disciplina.save()
+        except IntegrityError:
+            messages.error(request, "Essa disciplina já está no projeto.")
+        else:
+            projeto.tocar()
+            messages.success(request, f"Disciplina “{disciplina.get_nome_display()}” adicionada.")
+    else:
+        messages.error(request, form.errors.as_text())
+    return redirect(reverse("projeto_detalhe", kwargs={"pk": projeto.pk}) + "#elaboracao")
+
+
+@require_POST
+@login_required
+def avancar_disciplina(request, pk):
+    disciplina = get_object_or_404(
+        queryset_da_empresa(Disciplina.objects.all(), request.user), pk=pk
+    )
+    ordem = ["pendente", "andamento", "concluida"]
+    atual = ordem.index(disciplina.status)
+    disciplina.status = ordem[min(atual + 1, len(ordem) - 1)]
+    disciplina.save(update_fields=["status"])
+    disciplina.projeto.tocar()
+    return redirect(
+        reverse("projeto_detalhe", kwargs={"pk": disciplina.projeto.pk}) + "#elaboracao"
+    )
+
+
+@require_POST
+@login_required
+def remover_disciplina(request, pk):
+    disciplina = get_object_or_404(
+        queryset_da_empresa(Disciplina.objects.all(), request.user), pk=pk
+    )
+    projeto_pk = disciplina.projeto_id
+    disciplina.delete()
+    return redirect(reverse("projeto_detalhe", kwargs={"pk": projeto_pk}) + "#elaboracao")
+
+
+@require_POST
+@login_required
+def definir_fornecedor_etapa(request, pk):
+    etapa = get_object_or_404(queryset_da_empresa(Etapa.objects.all(), request.user), pk=pk)
+    form = EtapaFornecedorForm(request.POST, instance=etapa, user=request.user)
+    if form.is_valid():
+        form.save()
+        etapa.projeto.tocar()
+    return redirect(reverse("projeto_detalhe", kwargs={"pk": etapa.projeto.pk}) + "#elaboracao")

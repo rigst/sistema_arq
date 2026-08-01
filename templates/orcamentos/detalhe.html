@@ -2,7 +2,8 @@
 {% block title %}{{ orcamento.titulo }} v{{ orcamento.versao }}{% endblock %}
 
 {% block content %}
-<section class="page">
+<section class="page page--leitura">
+    {% include "core/_voltar.html" with projeto_voltar=orcamento.projeto %}
     <header class="page-head page-head--row">
         <div>
             <span class="ds-kicker">Orçamento v{{ orcamento.versao }} · {{ orcamento.get_status_display }}</span>

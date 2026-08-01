@@ -69,8 +69,11 @@ class RoteiroTests(TestCase):
             },
         )
         projeto = Projeto.objects.get(nome="Apartamento Vila Nova")
-        # O roteiro mora na ficha do projeto: abrir cai direto lá.
-        self.assertRedirects(resposta, f"/projetos/{projeto.pk}/")
+        # Depois de criado, o primeiro trabalho real é o briefing.
+        self.assertRedirects(
+            resposta, f"/briefing/projeto/{projeto.pk}/responder/", target_status_code=302
+        )
+        self.assertEqual(projeto.status, "ativo")
         self.assertEqual(projeto.cliente.nome, "João Pereira")
         self.assertEqual(projeto.empresa, self.grupo)
 
@@ -112,7 +115,26 @@ class RoteiroTests(TestCase):
         resposta = self.client.get(f"/projetos/{self.projeto.pk}/")
         self.assertContains(resposta, "Roteiro do projeto")
         # As etapas que abrem formulário global levam o projeto no contexto.
-        self.assertContains(resposta, f"/obras/nova/?projeto={self.projeto.pk}")
+        self.assertContains(resposta, f"/propostas/nova/?projeto={self.projeto.pk}")
+
+    def test_execucao_so_entra_no_roteiro_quando_o_projeto_tem(self):
+        """Muitos trabalhos terminam no projeto entregue; a obra é exceção."""
+        chaves = [e.chave for e in montar_roteiro(self.projeto)]
+        self.assertNotIn("execucao", chaves)
+
+        self.projeto.tem_execucao = True
+        self.projeto.save(update_fields=["tem_execucao"])
+        etapas = montar_roteiro(self.projeto)
+        self.assertEqual(etapas[-1].chave, "execucao")
+        self.assertIn(f"/obras/nova/?projeto={self.projeto.pk}", etapas[-1].url)
+
+    def test_ordem_do_roteiro_segue_a_pratica(self):
+        self.projeto.tem_execucao = True
+        self.projeto.save(update_fields=["tem_execucao"])
+        self.assertEqual(
+            [e.chave for e in montar_roteiro(self.projeto)],
+            ["cliente", "briefing", "orcamento", "proposta", "contrato", "elaboracao", "execucao"],
+        )
 
     def test_formulario_aberto_do_projeto_ja_vem_preenchido(self):
         """O ganho todo do contexto: não redigitar o que o sistema já sabe."""

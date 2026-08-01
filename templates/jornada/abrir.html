@@ -1,37 +1,70 @@
 {% extends "base.html" %}
-{% block title %}Projeto novo{% endblock %}
+{% block title %}Novo projeto{% endblock %}
 
 {% block content %}
-<section class="page page--narrow">
+<section class="page page--leitura">
+    {% include "core/_voltar.html" with url_voltar_nome="projetos_painel" rotulo_voltar="Projetos" %}
+
     <header class="page-head">
         <span class="ds-kicker">Fluxo guiado</span>
-        <h1 class="ds-h2 ds-display">Começar um projeto</h1>
+        <h1 class="ds-h2 ds-display">Novo projeto</h1>
         <p class="page-sub">
-            Dois campos e o projeto existe. A partir daí o sistema mostra o roteiro —
-            briefing, orçamento, proposta, contrato e obra — na ordem, sem você precisar
-            caçar cada tela no menu.
+            Cliente e nome bastam para começar. Prazo, valor e etapas entram depois —
+            o roteiro pede cada coisa na hora em que ela faz sentido.
         </p>
     </header>
 
-    <form method="post" class="ds-card form-card">
+    <form method="post" class="form-card" data-abertura>
         {% csrf_token %}
         {% if form.non_field_errors %}<p class="auth-error">{{ form.non_field_errors.0 }}</p>{% endif %}
 
-        <h2 class="ds-display">Quem é o cliente</h2>
-        {{ form.cliente_existente.label_tag }}{{ form.cliente_existente }}
-        <p class="ht-hint">Se ainda não está cadastrado, preencha abaixo — criamos junto.</p>
-        <div class="jornada-novo-cliente">
-            <p>{{ form.cliente_nome.label_tag }}{{ form.cliente_nome }}</p>
-            <p>{{ form.cliente_email.label_tag }}{{ form.cliente_email }}</p>
-            <p>{{ form.cliente_telefone.label_tag }}{{ form.cliente_telefone }}</p>
-        </div>
+        <fieldset class="form-passo">
+            <legend class="form-passo-titulo"><span class="form-passo-num num">1</span> Quem é o cliente</legend>
 
-        <h2 class="ds-display">O projeto</h2>
-        <p>{{ form.nome.label_tag }}{{ form.nome }}</p>
-        <p>{{ form.tipo.label_tag }}{{ form.tipo }}</p>
-        <p class="ht-hint">Prazo, valor e etapas entram depois — o roteiro pede cada coisa na hora certa.</p>
+            <p>{{ form.cliente_existente.label_tag }}{{ form.cliente_existente }}</p>
 
-        <button class="ds-btn ds-btn--solid" type="submit">Abrir projeto e ver o roteiro</button>
+            {% comment %}
+            Cliente já cadastrado: os dados aparecem só para conferência. Editar
+            aqui criaria dois lugares mexendo no mesmo registro.
+            {% endcomment %}
+            <div class="cliente-ficha" data-cliente-ficha hidden>
+                <span class="ds-kicker">Dados do cliente</span>
+                <dl class="cliente-ficha-dados">
+                    <div><dt>Nome</dt><dd data-ficha="nome">—</dd></div>
+                    <div><dt>E-mail</dt><dd data-ficha="email">—</dd></div>
+                    <div><dt>Telefone</dt><dd data-ficha="telefone">—</dd></div>
+                </dl>
+                <a class="cliente-ficha-editar" href="#" data-ficha-link>Corrigir na ficha do cliente</a>
+            </div>
+
+            <div class="cliente-novo" data-cliente-novo>
+                <p>{{ form.cliente_nome.label_tag }}{{ form.cliente_nome }}</p>
+                <div class="form-dupla">
+                    <p>{{ form.cliente_email.label_tag }}{{ form.cliente_email }}</p>
+                    <p>{{ form.cliente_telefone.label_tag }}{{ form.cliente_telefone }}</p>
+                </div>
+            </div>
+        </fieldset>
+
+        {% comment %}
+        A segunda parte só abre depois que o cliente está resolvido. Ver os dois
+        blocos de uma vez é o que faz um formulário curto parecer longo.
+        {% endcomment %}
+        <fieldset class="form-passo" data-passo-projeto hidden>
+            <legend class="form-passo-titulo"><span class="form-passo-num num">2</span> O projeto</legend>
+            <p>{{ form.nome.label_tag }}{{ form.nome }}</p>
+            <p>{{ form.tipo.label_tag }}{{ form.tipo }}</p>
+
+            <label class="form-marcar">
+                {{ form.tem_execucao }}
+                <span>
+                    <strong>{{ form.tem_execucao.label }}</strong>
+                    <small>{{ form.tem_execucao.help_text }}</small>
+                </span>
+            </label>
+
+            <button class="ds-btn ds-btn--solid" type="submit">Criar e ir para o briefing</button>
+        </fieldset>
     </form>
 </section>
 {% endblock %}

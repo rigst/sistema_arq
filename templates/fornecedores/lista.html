@@ -2,7 +2,8 @@
 {% block title %}Fornecedores{% endblock %}
 
 {% block content %}
-<section class="page">
+<section class="page page--leitura">
+    {% include "core/_voltar.html" with url_voltar_nome="dashboard" rotulo_voltar="o painel" %}
     <header class="page-head page-head--row page-head--foto page-head--producao">
         <div>
             <span class="ds-kicker">Rede de execução</span>

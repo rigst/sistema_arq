@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Identidade do escritório{% endblock %}
+
+{% block content %}
+<section class="page page--leitura">
+    {% include "core/_voltar.html" with url_voltar_nome="dashboard" rotulo_voltar="o painel" %}
+
+    <header class="page-head">
+        <span class="ds-kicker">Escritório</span>
+        <h1 class="ds-h2 ds-display">Identidade</h1>
+        <p class="page-sub">
+            A marca do escritório e a foto que abre o painel. Use uma obra da casa —
+            é o que faz o sistema parecer seu e não de prateleira.
+        </p>
+    </header>
+
+    <form method="post" enctype="multipart/form-data" class="form-card">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <p>{{ form.nome.label_tag }}{{ form.nome }}</p>
+
+        <div class="identidade-campo">
+            <div class="identidade-previa identidade-previa--logo">
+                {% if empresa.logo %}
+                    <img src="{{ empresa.logo.url }}" alt="Logo atual de {{ empresa.nome }}">
+                {% else %}
+                    <span class="identidade-vazio">sem logo</span>
+                {% endif %}
+            </div>
+            <div class="identidade-controle">
+                <p>{{ form.logo.label_tag }}{{ form.logo }}</p>
+                <p class="ht-hint">{{ form.logo.help_text }}</p>
+                {% if empresa.logo %}
+                <label class="form-marcar form-marcar--simples">{{ form.limpar_logo }}<span>{{ form.limpar_logo.label }}</span></label>
+                {% endif %}
+                {{ form.logo.errors }}
+            </div>
+        </div>
+
+        <div class="identidade-campo">
+            <div class="identidade-previa identidade-previa--fundo">
+                {% if empresa.imagem_fundo %}
+                    <img src="{{ empresa.imagem_fundo.url }}" alt="Imagem de fundo atual do painel">
+                {% else %}
+                    <span class="identidade-vazio">imagem padrão</span>
+                {% endif %}
+            </div>
+            <div class="identidade-controle">
+                <p>{{ form.imagem_fundo.label_tag }}{{ form.imagem_fundo }}</p>
+                <p class="ht-hint">{{ form.imagem_fundo.help_text }}</p>
+                {% if empresa.imagem_fundo %}
+                <label class="form-marcar form-marcar--simples">{{ form.limpar_fundo }}<span>{{ form.limpar_fundo.label }}</span></label>
+                {% endif %}
+                {{ form.imagem_fundo.errors }}
+            </div>
+        </div>
+
+        <details class="abrir-campo">
+            <summary>Cor de destaque</summary>
+            <p>{{ form.cor_primaria.label_tag }}{{ form.cor_primaria }}</p>
+            <p class="ht-hint">Usada em documentos gerados. Deixe em branco para manter o verde do sistema.</p>
+        </details>
+
+        <button class="ds-btn ds-btn--solid" type="submit">Salvar identidade</button>
+    </form>
+</section>
+{% endblock %}

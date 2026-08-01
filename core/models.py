@@ -13,8 +13,15 @@ class Empresa(models.Model):
         related_name="empresa_registro",
     )
     ativa = models.BooleanField(default=True)
-    # Identidade visual usada em propostas/contratos (preenchida em fases futuras).
+    # Identidade visual do escritório: aparece no painel e nos documentos.
     logo = models.ImageField(upload_to="empresas/logos/", blank=True, null=True)
+    imagem_fundo = models.ImageField(
+        "imagem de fundo",
+        upload_to="empresas/fundos/",
+        blank=True,
+        null=True,
+        help_text="Foto larga que abre o painel. Sem ela, entra a imagem padrão.",
+    )
     cor_primaria = models.CharField(max_length=7, blank=True, default="", verbose_name="cor primária")
     criada_em = models.DateTimeField(auto_now_add=True)
     atualizada_em = models.DateTimeField(auto_now=True)
