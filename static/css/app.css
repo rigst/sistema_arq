@@ -1054,228 +1054,353 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 }
 
 /* =================================================================
-   PAPEL VEGETAL — a camada de vidro do A.R.Q.
+   VIDRO — a folha de vidro sobre o pátio
    -----------------------------------------------------------------
-   Vidro aqui não é vidro de iOS: é o papel vegetal que o arquiteto
-   sobrepõe à prancheta para estudar sem tocar no desenho de baixo.
-   Vegetal é translúcido, difunde o que está atrás e mostra o corte
-   como um fio de luz — que é exatamente o que backdrop-filter faz.
+   O A.R.Q. inteiro passa a flutuar sobre uma foto de concreto. Cada
+   painel é uma lâmina de vidro: deixa a cor e a forma passarem,
+   dissolve o que está atrás no desfoque e acende no corte, onde a luz
+   pega a borda.
 
-   O que o vidro refrata é o pochê: a hachura de fundo passa por baixo
-   das superfícies e some sob o desfoque. Sem algo com detalhe atrás,
-   vidro não se lê — por isso a camada ambiente vem primeiro.
-
-   Orçamento de GPU: desfoque real só onde a superfície é única e
-   grande (lateral, cartão de login, faixa de indicadores) ou pequena
-   (botões, chips). Cartões em grade usam só transparência.
+   Três coisas fazem vidro se ler, e nenhuma sozinha basta:
+     1. FUNDO VIVO   — foto com forma e cor. Sobre chapado não há efeito.
+     2. DESFOQUE     — 24 a 40px. Abaixo disso vira só transparência.
+     3. CORTE ACESO  — fio branco no topo, aro interno, sombra externa.
+                       É a borda que diz "isto é uma lâmina".
    ================================================================= */
 
 :root {
-    /* Véus: o branco do vegetal é levemente frio, nunca puro */
-    --vidro-veu: rgba(252, 254, 253, 0.7);
-    --vidro-veu-forte: rgba(252, 254, 253, 0.84);
-    --vidro-veu-leve: rgba(252, 254, 253, 0.55);
+    /* Véus finos: é a transparência que faz o efeito. O contraste do
+       texto é recuperado no painel de conteúdo, não aqui. */
+    --vidro-veu: rgba(255, 255, 255, 0.42);
+    --vidro-veu-forte: rgba(255, 255, 255, 0.58);
+    --vidro-veu-leve: rgba(255, 255, 255, 0.26);
 
-    /* 20px é o meio do caminho entre "sujo" e "sem efeito"; a saturação
-       devolve a cor que o desfoque come. */
-    --vidro-desfoque: blur(16px) saturate(140%);
-    --vidro-desfoque-curto: blur(12px) saturate(130%);
+    --vidro-desfoque: blur(28px) saturate(180%);
+    --vidro-desfoque-forte: blur(40px) saturate(200%);
+    --vidro-desfoque-curto: blur(14px) saturate(160%);
 
-    /* O corte do vegetal: fio de luz no topo + aro interno */
-    --vidro-fio: inset 0 1px 0 rgba(255, 255, 255, 0.85);
-    --vidro-aro: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
-    --vidro-borda: rgba(20, 24, 26, 0.09);
-    --vidro-sombra: 0 6px 24px rgba(20, 24, 26, 0.07);
-    --vidro-sombra-alta: 0 14px 40px rgba(20, 24, 26, 0.12);
+    /* O corte: luz no topo, aro por dentro, sombra por fora */
+    --vidro-fio: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    --vidro-aro: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    --vidro-base: inset 0 -1px 0 rgba(255, 255, 255, 0.32);
+    --vidro-borda: rgba(255, 255, 255, 0.55);
+    --vidro-sombra: 0 8px 32px rgba(18, 32, 28, 0.14);
+    --vidro-sombra-alta: 0 20px 56px rgba(18, 32, 28, 0.22);
+    --vidro-lamina: var(--vidro-fio), var(--vidro-aro), var(--vidro-base), var(--vidro-sombra);
 }
 
-/* --- Camada ambiente: a luz da sala e o pochê que o vidro difunde --- */
+/* --- O pátio: foto de concreto + banhos de cor da marca --------- */
 .app-shell::before {
     content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none;
     background:
-        /* Desfoque destrói textura fina e preserva mancha grande: é a mancha
-           que faz o vidro se ler. Luz entrando em cima à esquerda, verde de
-           tinta pousando embaixo, azul de prancha ao fundo à direita. */
-        radial-gradient(32rem 28rem at 1% -8%, rgba(255, 255, 255, 1), transparent 68%),
-        radial-gradient(28rem 32rem at -8% 98%, rgba(28, 106, 83, 0.28), transparent 70%),
-        var(--ds-bg);
+        linear-gradient(90deg,
+            transparent 0 15rem, rgba(255, 255, 255, 0.34) 26rem, rgba(255, 255, 255, 0.5) 60%),
+        radial-gradient(46rem 40rem at 6% 4%, rgba(52, 168, 133, 0.45), transparent 62%),
+        radial-gradient(40rem 36rem at 96% 12%, rgba(70, 140, 200, 0.38), transparent 60%),
+        radial-gradient(44rem 40rem at 82% 98%, rgba(24, 92, 74, 0.42), transparent 62%),
+        radial-gradient(34rem 30rem at 26% 96%, rgba(196, 132, 84, 0.28), transparent 62%),
+        url("../img/fundo-vidro.jpg") center / cover no-repeat,
+        var(--ds-ink);
 }
-/* A hachura fica forte atrás da lateral e some ao entrar na folha, para não
-   competir com o conteúdo. */
-/* Atrás da lateral vai uma foto de concreto, desbotada quase ao limite. Vidro
-   sobre cor chapada não se lê: o que faz o vegetal aparecer é ter forma por
-   baixo para dissolver. Junto vai a hachura, que sobrevive na margem da folha
-   onde não há véu por cima. */
-.app-shell::after {
-    content: ""; position: fixed; top: 0; bottom: 0; left: 0; width: var(--arq-lateral);
-    z-index: -1; pointer-events: none; opacity: 0.42;
-    background:
-        repeating-linear-gradient(-45deg, rgba(28, 106, 83, 0.22) 0 1px, transparent 1px 14px),
-        url("../img/hero-producao.jpg") left center / cover no-repeat;
-    /* Exatamente a largura da lateral: a foto é o que o vegetal dissolve,
-       não decoração vazando para a folha. */
-}
+.app-shell::after { display: none; }
 .app-shell { background: transparent; }
 
-/* --- Barra lateral: a folha de vegetal sobre a prancheta --- */
-/* O gradiente de cima para baixo é o brilho que uma folha inclinada faz:
-   mais luz onde a marca fica, mais transparência no rodapé. */
+/* --- A folha de conteúdo: a lâmina maior de todas ---------------
+   É aqui que o texto vive, então é a lâmina mais fechada — 0.72. Ainda
+   assim o pátio atravessa: dá para ver a cor e o contorno do concreto
+   se movendo por baixo do texto. */
+.app-main {
+    background: linear-gradient(160deg,
+        rgba(255, 255, 255, 0.54), rgba(255, 255, 255, 0.44) 42%, rgba(255, 255, 255, 0.5));
+    -webkit-backdrop-filter: var(--vidro-desfoque-forte); backdrop-filter: var(--vidro-desfoque-forte);
+    border-left: 1px solid var(--vidro-borda);
+    box-shadow: var(--vidro-fio), var(--vidro-aro), -12px 0 40px rgba(18, 32, 28, 0.14);
+}
+.app-main--public { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
+
+/* --- Barra lateral: a lâmina mais transparente do sistema ------- */
 .app-side {
     background: linear-gradient(180deg,
-        rgba(252, 254, 253, 0.86), rgba(252, 254, 253, 0.74) 55%, rgba(252, 254, 253, 0.8));
-    -webkit-backdrop-filter: blur(16px) saturate(150%); backdrop-filter: blur(16px) saturate(150%);
+        rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.56) 48%, rgba(255, 255, 255, 0.64));
+    -webkit-backdrop-filter: var(--vidro-desfoque); backdrop-filter: var(--vidro-desfoque);
     border-right: 1px solid var(--vidro-borda);
-    box-shadow: var(--vidro-fio), 1px 0 28px rgba(20, 24, 26, 0.06);
+    box-shadow: var(--vidro-fio), var(--vidro-aro), 2px 0 40px rgba(18, 32, 28, 0.18);
 }
-.app-side-foot { border-top-color: var(--vidro-borda); }
-
-/* O ativo do menu ganha vidro tingido em vez de bloco chapado */
+.app-side-foot { border-top-color: rgba(255, 255, 255, 0.45); }
+.app-empresa-info span, .app-sair, .pe-legal a { color: #2f3a37; }
+.nav-link { color: #222b28; }
+.nav-link:hover { background: rgba(255, 255, 255, 0.45); }
 .nav-link.is-active {
-    background: rgba(28, 106, 83, 0.11);
-    box-shadow: inset 0 0 0 1px rgba(28, 106, 83, 0.14);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.6));
+    box-shadow: var(--vidro-fio), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+    color: var(--ds-blue-dark);
 }
-.nav-link:hover { background: rgba(255, 255, 255, 0.6); }
-.nav-link.is-active:hover { background: rgba(28, 106, 83, 0.15); }
+.nav-label { color: #2f3a37; }
+.nav-group--comercial .nav-label { color: #143a5c; }
+.nav-group--producao .nav-label { color: #0d4030; }
+.nav-group--gestao .nav-label { color: #5c3b05; }
 
-/* Botão de destaque: vidro tingido de verde com fio de luz */
+/* Botão de destaque: vidro verde com o corte aceso */
 .nav-destaque {
-    background: linear-gradient(180deg, var(--ds-blue-light), var(--ds-blue));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 4px 14px rgba(28, 106, 83, 0.24);
+    background: linear-gradient(160deg, rgba(52, 168, 133, 0.92), rgba(20, 81, 63, 0.94));
+    -webkit-backdrop-filter: var(--vidro-desfoque-curto); backdrop-filter: var(--vidro-desfoque-curto);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+                0 8px 24px rgba(18, 60, 48, 0.34);
 }
 .nav-destaque:hover {
-    background: linear-gradient(180deg, var(--ds-blue), var(--ds-blue-dark));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 8px 22px rgba(28, 106, 83, 0.3);
+    background: linear-gradient(160deg, rgba(63, 186, 148, 0.96), rgba(24, 94, 73, 0.96));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.26),
+                0 12px 32px rgba(18, 60, 48, 0.42);
 }
 
-/* --- Botões --- */
-/* Secundário vira vegetal: o pochê aparece por baixo e some no desfoque. */
+/* --- O brilho: a faixa de luz que atravessa a lâmina -------------
+   É o que separa "translúcido" de "vidro". Uma faixa clara em diagonal,
+   parada, como o reflexo de uma janela na folha; nos botões ela anda
+   quando o ponteiro passa. */
+.lamina-brilho { position: relative; overflow: hidden; }
+.lamina-brilho::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background: linear-gradient(104deg,
+        transparent 8%, rgba(255, 255, 255, 0.12) 26%, rgba(255, 255, 255, 0.4) 44%,
+        rgba(255, 255, 255, 0.1) 58%, transparent 82%);
+}
+.lamina-brilho > * { position: relative; z-index: 1; }
+
+.kpi-row, .dash-onb, .projeto-card, .obra-card, .kanban-card, .auth-card,
+.alerta-card, .ia-bloco, .timer-card.is-rodando { position: relative; overflow: hidden; }
+.kpi-row::after, .dash-onb::after, .projeto-card::after, .obra-card::after,
+.auth-card::after, .alerta-card::after, .ia-bloco::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background: linear-gradient(106deg,
+        transparent 8%, rgba(255, 255, 255, 0.1) 26%, rgba(255, 255, 255, 0.34) 44%,
+        rgba(255, 255, 255, 0.08) 58%, transparent 82%);
+}
+.kpi-row > *, .dash-onb > *, .projeto-card > *, .obra-card > *,
+.auth-card > *, .alerta-card > *, .ia-bloco > * { position: relative; z-index: 1; }
+
+/* --- Botões: lâminas pequenas, com o brilho andando no hover ----- */
+.ds-btn { position: relative; overflow: hidden; }
 .ds-btn:not(.ds-btn--solid) {
-    background: var(--vidro-veu-forte);
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.42));
+    -webkit-backdrop-filter: var(--vidro-desfoque-curto); backdrop-filter: var(--vidro-desfoque-curto);
     border-color: var(--vidro-borda);
-    box-shadow: var(--vidro-fio);
+    box-shadow: var(--vidro-fio), var(--vidro-aro), 0 4px 14px rgba(18, 32, 28, 0.12);
+    color: #1a2320;
 }
 .ds-btn:not(.ds-btn--solid):hover {
-    background: var(--vidro-veu-forte);
-    border-color: var(--ds-blue-100);
-    box-shadow: var(--vidro-fio), var(--vidro-sombra);
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.62));
+    border-color: rgba(255, 255, 255, 0.8);
+    box-shadow: var(--vidro-fio), var(--vidro-aro), 0 8px 24px rgba(18, 32, 28, 0.18);
+    color: var(--ds-blue-dark);
 }
-/* O principal continua sólido — é o contraste que carrega a ação —, mas
-   ganha o brilho do corte para pertencer à mesma família. */
 .ds-btn--solid {
-    background: linear-gradient(180deg, var(--ds-blue-light), var(--ds-blue));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+    background: linear-gradient(160deg, rgba(46, 152, 120, 0.96), rgba(18, 78, 60, 0.98));
+    border-color: rgba(255, 255, 255, 0.24);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.46), inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+                0 6px 20px rgba(18, 60, 48, 0.3);
 }
 .ds-btn--solid:hover {
-    background: linear-gradient(180deg, var(--ds-blue), var(--ds-blue-dark));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 6px 18px rgba(28, 106, 83, 0.28);
+    background: linear-gradient(160deg, rgba(56, 172, 137, 0.98), rgba(22, 90, 70, 1));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.56), inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+                0 12px 30px rgba(18, 60, 48, 0.38);
 }
+/* O reflexo que atravessa o botão de ponta a ponta */
+.ds-btn::after {
+    content: ""; position: absolute; top: 0; bottom: 0; width: 45%; left: -60%;
+    pointer-events: none; z-index: 0;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+    transform: skewX(-18deg);
+    transition: left 620ms var(--arq-ease);
+}
+.ds-btn:hover::after { left: 115%; }
+.ds-btn > * { position: relative; z-index: 1; }
 
-/* Chips e badges: vegetal fino */
+/* Chips: lâminas mínimas */
 .chip {
-    background: var(--vidro-veu-forte);
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0.4));
+    -webkit-backdrop-filter: var(--vidro-desfoque-curto); backdrop-filter: var(--vidro-desfoque-curto);
     border-color: var(--vidro-borda);
-    box-shadow: var(--vidro-fio);
+    box-shadow: var(--vidro-fio), var(--vidro-aro);
+    color: #1f2a26;
 }
-.chip:hover { background: var(--vidro-veu-forte); border-color: var(--ds-blue-100); }
+.chip:hover { background: rgba(255, 255, 255, 0.82); border-color: rgba(255, 255, 255, 0.85); }
 .chip.is-active {
-    background: var(--ds-ink); border-color: var(--ds-ink); color: #fff;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    background: linear-gradient(160deg, rgba(32, 42, 39, 0.9), rgba(16, 22, 20, 0.94));
+    border-color: rgba(255, 255, 255, 0.22); color: #fff;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.26);
 }
-.ds-badge--info { background: rgba(28, 106, 83, 0.1); border-color: rgba(28, 106, 83, 0.2); }
+.ds-badge--info {
+    background: rgba(255, 255, 255, 0.55); border-color: rgba(255, 255, 255, 0.7);
+    box-shadow: var(--vidro-fio); color: var(--ds-blue-dark);
+}
 
-/* --- Faixa de indicadores: uma folha só, com os filetes por transparência --- */
+/* --- Superfícies de conteúdo ------------------------------------ */
 .kpi-row {
-    background: var(--vidro-borda);
+    background: rgba(255, 255, 255, 0.46);
     border-color: var(--vidro-borda);
     -webkit-backdrop-filter: var(--vidro-desfoque); backdrop-filter: var(--vidro-desfoque);
-    box-shadow: var(--vidro-fio), var(--vidro-sombra);
+    box-shadow: var(--vidro-lamina);
+    gap: 0;
 }
-.kpi { background: var(--vidro-veu-forte); }
-.kpi:hover { background: rgba(255, 255, 255, 0.94); }
+.kpi { background: none; border-left: 1px solid rgba(255, 255, 255, 0.5); }
+.kpi:first-child { border-left: 0; }
+.kpi:hover { background: rgba(255, 255, 255, 0.42); }
 
-/* --- Superfícies em grade: transparência sem desfoque (custo de GPU) --- */
 .projeto-card, .obra-card, .kanban-card {
-    background: var(--vidro-veu-forte);
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0.46));
+    -webkit-backdrop-filter: var(--vidro-desfoque-curto); backdrop-filter: var(--vidro-desfoque-curto);
     border-color: var(--vidro-borda);
-    box-shadow: var(--vidro-fio);
+    box-shadow: var(--vidro-lamina);
 }
 .projeto-card:hover, .obra-card:hover, .kanban-card:hover {
-    border-color: var(--ds-blue-100);
-    box-shadow: var(--vidro-fio), var(--vidro-sombra);
+    border-color: rgba(255, 255, 255, 0.85);
+    box-shadow: var(--vidro-fio), var(--vidro-aro), var(--vidro-sombra-alta);
+    transform: translateY(-2px);
 }
-.kanban-col { background: var(--vidro-veu-leve); }
-.dash-onb { box-shadow: var(--vidro-fio); }
-.alerta-card, .ia-bloco, .timer-card.is-rodando { box-shadow: var(--vidro-fio); }
+.kanban-col { background: rgba(255, 255, 255, 0.24); box-shadow: var(--vidro-aro); }
 
-/* Campos: o preenchido vira vegetal fino sobre o ambiente */
+.dash-onb {
+    background: linear-gradient(160deg, rgba(52, 168, 133, 0.28), rgba(255, 255, 255, 0.5));
+    border-color: rgba(255, 255, 255, 0.7);
+    -webkit-backdrop-filter: var(--vidro-desfoque-curto); backdrop-filter: var(--vidro-desfoque-curto);
+    box-shadow: var(--vidro-lamina);
+}
+.dash-onb:hover { background: linear-gradient(160deg, rgba(52, 168, 133, 0.36), rgba(255, 255, 255, 0.58)); }
+
+.alerta-card {
+    background: linear-gradient(160deg, rgba(214, 158, 62, 0.24), rgba(255, 255, 255, 0.5));
+    border-color: rgba(255, 255, 255, 0.65); box-shadow: var(--vidro-lamina);
+}
+.ia-bloco {
+    background: linear-gradient(160deg, rgba(122, 82, 200, 0.2), rgba(255, 255, 255, 0.52));
+    border-color: rgba(255, 255, 255, 0.65); box-shadow: var(--vidro-lamina);
+}
+.timer-card.is-rodando {
+    background: linear-gradient(160deg, rgba(52, 168, 133, 0.26), rgba(255, 255, 255, 0.5));
+    border-color: rgba(255, 255, 255, 0.7); box-shadow: var(--vidro-lamina);
+}
+.dash-hero, .page-head--foto { box-shadow: var(--vidro-fio), var(--vidro-aro), var(--vidro-sombra); }
+
+/* Campos: lâmina fina, acende ao focar */
 .form-card input, .form-card select, .form-card textarea,
 .form-block input, .form-block select, .form-block textarea,
 .inline-add, .timer-campo input, .timer-campo select,
-.briefing-complemento textarea, .contrato-corpo, .diag-opcao {
-    background: var(--vidro-veu-leve);
-    border-color: var(--vidro-borda);
+.briefing-complemento textarea, .contrato-corpo, .diag-opcao, .briefing-opcao {
+    background: rgba(255, 255, 255, 0.46);
+    /* O aro do campo é mais escuro que o das outras lâminas de propósito:
+       num formulário a borda não é enfeite, é a indicação de onde escrever. */
+    border-color: rgba(96, 116, 110, 0.42);
+    box-shadow: var(--vidro-fio), inset 0 0 0 1px rgba(255, 255, 255, 0.4);
 }
-.inline-add input, .inline-add select { background: var(--vidro-veu-forte); }
+.inline-add input, .inline-add select { background: rgba(255, 255, 255, 0.7); }
 .form-card input:focus, .form-card select:focus, .form-card textarea:focus,
 .form-block input:focus, .form-block select:focus, .form-block textarea:focus,
 .timer-campo input:focus, .timer-campo select:focus,
-.briefing-complemento textarea:focus, .contrato-corpo:focus { background: #fff; }
-
-/* Cabeçalho com foto: o texto ganha um véu para não brigar com a imagem */
-.dash-hero, .page-head--foto { box-shadow: var(--vidro-fio); }
-
-/* --- Login: o vegetal mais espesso, porque atrás dele há uma foto --- */
-/* Aqui o vidro pode ser o mais fino do sistema: a foto atrás é escura e
-   contrastada, então o texto continua com folga mesmo com véu de 0.76.
-   O gradiente diagonal é o brilho da folha inclinada contra a luz. */
-.auth-card {
-    background: linear-gradient(148deg,
-        rgba(255, 255, 255, 0.84), rgba(252, 254, 253, 0.72) 46%, rgba(252, 254, 253, 0.78));
-    -webkit-backdrop-filter: blur(22px) saturate(160%); backdrop-filter: blur(22px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.55);
-    box-shadow: var(--vidro-fio), var(--vidro-aro), 0 24px 60px rgba(0, 0, 0, 0.36);
+.briefing-complemento textarea:focus, .contrato-corpo:focus {
+    background: rgba(255, 255, 255, 0.94);
+    border-color: var(--ds-blue-light);
 }
+.data-table tbody tr:hover { background: rgba(255, 255, 255, 0.42); }
+
+/* --- Login: a lâmina mais fina, porque o pátio atrás é escuro ---- */
+.tela-login .auth-shell::before {
+    background: linear-gradient(to top, rgba(8, 14, 13, 0.82) 6%, rgba(8, 14, 13, 0.4) 46%, rgba(8, 14, 13, 0.28));
+}
+.auth-card {
+    background: linear-gradient(152deg,
+        rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.16) 46%, rgba(255, 255, 255, 0.26));
+    -webkit-backdrop-filter: blur(36px) saturate(190%); backdrop-filter: blur(36px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.42);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.24), 0 28px 70px rgba(0, 0, 0, 0.46);
+    color: #fff;
+}
+/* Sobre lâmina escura o texto inverte: branco com sombra, que é o que
+   mantém a leitura sem fechar o vidro. */
+.auth-card .auth-header h2, .auth-card .aceite-doc-nome { color: #fff; }
+.auth-card .auth-header p, .auth-card .auth-visitor p,
+.auth-card .auth-legal, .auth-card .auth-disclaimer,
+.auth-card .auth-field > span { color: rgba(255, 255, 255, 0.88); }
+.auth-card .auth-legal a { color: #7fe0bd; }
+.auth-card .auth-error { color: #ffb4a8; }
+.auth-card .auth-visitor { border-top-color: rgba(255, 255, 255, 0.28); }
 .auth-card .auth-field input {
-    background: rgba(255, 255, 255, 0.62);
-    border-color: rgba(20, 24, 26, 0.12);
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.34);
+    color: #fff;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+.auth-card .auth-field input::placeholder { color: rgba(255, 255, 255, 0.6); }
+.auth-card .auth-field input:focus {
+    background: rgba(255, 255, 255, 0.26); border-color: #7fe0bd;
+    box-shadow: 0 0 0 3px rgba(127, 224, 189, 0.28);
 }
 .auth-card .ds-btn:not(.ds-btn--solid) {
-    background: rgba(255, 255, 255, 0.6);
-    border-color: rgba(20, 24, 26, 0.14);
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.1));
+    border-color: rgba(255, 255, 255, 0.4); color: #fff;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
-.auth-card .ds-btn:not(.ds-btn--solid):hover { background: rgba(255, 255, 255, 0.82); }
-/* A marca sobre a foto ganha o mesmo vegetal, em versão escura */
-.auth-brand .mk-plate { fill: rgba(255, 255, 255, 0.16); }
+.auth-card .ds-btn:not(.ds-btn--solid):hover {
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.36), rgba(255, 255, 255, 0.18));
+    border-color: rgba(255, 255, 255, 0.6); color: #fff;
+}
 
 /* =================================================================
    QUANDO O VIDRO NÃO PODE EXISTIR
-   Duas saídas obrigatórias: navegador sem backdrop-filter e usuário
-   que pediu menos transparência. Nos dois casos, superfície opaca.
    ================================================================= */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .app-side, .auth-card, .kpi-row, .kpi, .ds-btn:not(.ds-btn--solid), .chip,
+    .app-shell::before { display: none; }
+    .app-shell { background: var(--ds-bg); }
+    .app-main { background: var(--ds-bg); box-shadow: none; }
+    .app-side, .kpi-row, .kpi, .ds-btn:not(.ds-btn--solid), .chip,
     .projeto-card, .obra-card, .kanban-card { background: var(--ds-surface); }
-    .app-shell::after { display: none; }
+    .auth-card { background: rgba(20, 24, 26, 0.88); }
 }
 
 @media (prefers-reduced-transparency: reduce) {
-    .app-shell::after { display: none; }
-    .app-side, .auth-card, .kpi, .ds-btn:not(.ds-btn--solid), .chip,
+    .app-shell::before { display: none; }
+    .app-shell { background: var(--ds-bg); }
+    .app-main, .app-side, .kpi, .ds-btn:not(.ds-btn--solid), .chip,
     .projeto-card, .obra-card, .kanban-card, .inline-add input, .inline-add select {
         background: var(--ds-surface);
         -webkit-backdrop-filter: none; backdrop-filter: none;
     }
-    .kpi-row, .dash-onb { -webkit-backdrop-filter: none; backdrop-filter: none; }
+    .app-main { box-shadow: none; }
+    .kpi-row, .dash-onb { background: var(--ds-surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
+    .kpi-row::after, .dash-onb::after, .projeto-card::after, .obra-card::after,
+    .auth-card::after, .alerta-card::after, .ia-bloco::after, .ds-btn::after,
+    .lamina-brilho::before { display: none; }
     .form-card input, .form-card select, .form-card textarea,
     .form-block input, .form-block select, .form-block textarea,
     .inline-add, .timer-campo input, .timer-campo select,
     .briefing-complemento textarea, .contrato-corpo, .diag-opcao { background: var(--ds-panel); }
-    .auth-card .auth-field input { background: #fff; -webkit-backdrop-filter: none; backdrop-filter: none; }
+    .auth-card { background: rgba(16, 22, 20, 0.94); -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
 
-/* No estreito a lateral é sticky e passa por cima do conteúdo ao rolar:
-   ali o véu precisa ser mais fechado para o texto de baixo não vazar. */
+/* Texto secundário escurece sobre vidro. No papel opaco #5b6a65 passava com
+   folga; sobre a lâmina aberta o fundo sobe e desce conforme o pátio, então o
+   apoio precisa de margem. */
+.app-main {
+    --ds-text-500: #47534e;
+    --ds-text-400: #47534e;
+}
+
+/* As cores de área escurecem sobre vidro: o mesmo azul que passava em AA
+   no papel opaco não passa quando o pátio aparece por baixo. */
+.dash-section--comercial { --sec: #1d4d78; }
+.dash-section--producao { --sec: #12513e; }
+.dash-section--gestao { --sec: #6d460a; }
+.kpi--blue { --sec: #1d4d78; }
+.kpi--green { --sec: #12513e; }
+.kpi--violet { --sec: #4f3878; }
+.kpi--amber { --sec: #6d460a; }
+.kpi--alert { --sec: #8e2a1c; }
+
+/* No estreito a lateral rola por cima do conteúdo: ali a lâmina fecha. */
 @media (max-width: 62rem) {
-    .app-side { background: rgba(252, 254, 253, 0.94); }
-    .app-shell::after { display: none; }
+    .app-side { background: rgba(255, 255, 255, 0.9); }
+    .app-main {
+        background: rgba(255, 255, 255, 0.76); border-left: 0;
+        box-shadow: var(--vidro-fio);
+    }
 }
