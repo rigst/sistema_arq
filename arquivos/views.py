@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from core.contexto import projeto_do_pedido
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 from projetos.models import Projeto
 
@@ -22,7 +23,8 @@ def lista(request):
 
     fluxo = request.GET.get("fluxo", "")
     status = request.GET.get("status", "")
-    projeto_id = request.GET.get("projeto", "")
+    projeto = projeto_do_pedido(request)
+    projeto_id = str(projeto.pk) if projeto else request.GET.get("projeto", "")
     if fluxo:
         arquivos = arquivos.filter(fluxo=fluxo)
     if status:
@@ -55,6 +57,7 @@ def lista(request):
             "fluxo_ativo": fluxo,
             "status_ativo": status,
             "projeto_ativo": projeto_id,
+            "projeto": projeto,
         },
     )
 

@@ -17,7 +17,12 @@ def lista_contratos(request):
     contratos = queryset_da_empresa(
         Contrato.objects.select_related("projeto", "projeto__cliente"), request.user
     )
-    return render(request, "contratos/lista.html", {"contratos": contratos})
+    projeto = projeto_do_pedido(request)
+    if projeto is not None:
+        contratos = contratos.filter(projeto=projeto)
+    return render(
+        request, "contratos/lista.html", {"contratos": contratos, "projeto": projeto}
+    )
 
 
 @login_required

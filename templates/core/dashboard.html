@@ -29,16 +29,6 @@
         {% endfor %}
     </div>
 
-    {% if not onboarding.completo %}
-    <a class="dash-onb ds-card" href="{% url 'onboarding' %}">
-        <div class="dash-onb-info">
-            <span class="ds-kicker">Implantação guiada</span>
-            <strong>Continue os primeiros passos — {{ onboarding.concluidas }} de {{ onboarding.total }} prontos</strong>
-            <div class="ds-progress ds-progress--on-light"><div class="ds-progress-fill" style="width: {{ onboarding.percentual|unlocalize }}%"></div></div>
-        </div>
-        <span class="dash-onb-cta">Retomar</span>
-    </a>
-    {% endif %}
 
     {% comment %}
     Antes aqui estava o menu inteiro repetido em cartão. Agora está o trabalho:

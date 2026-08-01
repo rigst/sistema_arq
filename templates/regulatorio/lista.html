@@ -12,6 +12,9 @@
         <a class="ds-btn ds-btn--solid" href="{% url 'regulatorio_nova' %}">Nova obrigação</a>
     </header>
 
+    {% include "core/_voltar.html" with projeto_voltar=projeto %}
+    {% include "core/_contexto_projeto.html" %}
+
     {% if alertas %}
     <div class="ds-card alerta-card">
         <h2 class="ds-display">Precisam de atenção</h2>

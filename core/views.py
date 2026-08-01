@@ -32,7 +32,6 @@ def dashboard(request):
     from core.tenancy import queryset_da_empresa
     from financeiro.models import Lancamento
     from obras.models import Obra
-    from onboarding.checklist import montar_checklist
     from projetos.models import Projeto
     from regulatorio.models import ObrigacaoTecnica
     from tarefas.models import Tarefa
@@ -56,8 +55,6 @@ def dashboard(request):
         {"label": "A receber (previsto)", "valor": f"R$ {a_receber}", "rodape": "lançamentos previstos", "url": "financeiro_painel", "cor": "green"},
         {"label": "Tarefas abertas", "valor": tarefas_abertas, "rodape": "a fazer", "url": "tarefas_lista", "cor": "violet"},
     ]
-
-    onboarding = montar_checklist(u)
 
     # O painel não repete o menu. A barra lateral já lista os módulos; repetir
     # tudo em cartão não informava nada e ainda dava a impressão de que existem
@@ -89,7 +86,6 @@ def dashboard(request):
         {
             "empresa": empresa,
             "kpis": kpis,
-            "onboarding": onboarding,
             "frentes": frentes,
             "obrig_alerta": obrig_alerta,
         },

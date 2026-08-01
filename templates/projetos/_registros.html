@@ -1,0 +1,44 @@
+{% comment %}
+O que pertence ao projeto mas não é fase: orçamento de execução, propostas,
+contratos, arquivos e obrigações técnicas. Saíram do menu lateral porque menu
+é para o que atravessa projetos; aqui cada link já chega filtrado neste.
+{% endcomment %}
+<section class="secao" id="registros">
+    <h2 class="secao-titulo ds-display">Registros do projeto</h2>
+    <p class="secao-sub">
+        Tudo que é deste projeto e não cabe numa fase só. Cada link abre já recortado nele.
+    </p>
+
+    <ul class="registro-atalhos">
+        <li>
+            <a href="{% url 'arquivos_lista' %}?projeto={{ projeto.pk }}">
+                {% include "core/_ico.html" with ico="arquivos" %}
+                <span><strong>Arquivos</strong><small>Tudo que entrou e saiu, de todas as fases.</small></span>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'orcamentos_lista' %}?projeto={{ projeto.pk }}">
+                {% include "core/_ico.html" with ico="orcamentos" %}
+                <span><strong>Orçamentos</strong><small>Custo de execução item a item.</small></span>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'propostas_lista' %}?projeto={{ projeto.pk }}">
+                {% include "core/_ico.html" with ico="propostas" %}
+                <span><strong>Propostas</strong><small>Honorários calculados da hora técnica.</small></span>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'contratos_lista' %}?projeto={{ projeto.pk }}">
+                {% include "core/_ico.html" with ico="contratos" %}
+                <span><strong>Contratos</strong><small>Minutas, parcelas e aditivos.</small></span>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'regulatorio_lista' %}?projeto={{ projeto.pk }}">
+                {% include "core/_ico.html" with ico="regulatorio" %}
+                <span><strong>Regulatório</strong><small>ART, RRT e prazos de vencimento.</small></span>
+            </a>
+        </li>
+    </ul>
+</section>

@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from core.contexto import projeto_do_pedido
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 from projetos.models import Projeto
 
@@ -16,10 +17,12 @@ def _meus(user):
 
 @login_required
 def lista(request):
+    orcamentos = _meus(request.user).prefetch_related("itens")
+    projeto = projeto_do_pedido(request)
+    if projeto is not None:
+        orcamentos = orcamentos.filter(projeto=projeto)
     return render(
-        request,
-        "orcamentos/lista.html",
-        {"orcamentos": _meus(request.user).prefetch_related("itens")},
+        request, "orcamentos/lista.html", {"orcamentos": orcamentos, "projeto": projeto}
     )
 
 

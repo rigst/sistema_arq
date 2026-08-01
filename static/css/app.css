@@ -2200,3 +2200,160 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
     position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
     overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
 }
+
+/* Lista de modelos do escritório. */
+.modelo-lista { list-style: none; margin: 0 0 1rem; padding: 0; }
+.modelo {
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding: 0.7rem 0; border-top: 1px solid var(--ds-line);
+}
+.modelo:last-child { border-bottom: 1px solid var(--ds-line); }
+.modelo-id { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.modelo-id a { font-weight: 500; color: var(--ds-text-900); text-decoration: none; }
+.modelo-id a:hover { color: var(--ds-blue-dark); text-decoration: underline; }
+.modelo-meta {
+    font-size: 0.8rem; color: var(--ds-text-500);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.modelo-inativo {
+    font-family: var(--arq-font-mono); font-size: 0.68rem;
+    text-transform: uppercase; color: var(--ds-text-500);
+}
+
+/* Atalhos para o que é do projeto e não é fase. */
+.registro-atalhos {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 0.5rem 1.5rem;
+}
+.registro-atalhos a {
+    display: flex; align-items: flex-start; gap: 0.7rem;
+    padding: 0.7rem 0.6rem; border-radius: 0.5rem;
+    text-decoration: none; color: inherit;
+    transition: background var(--arq-fast) ease;
+}
+.registro-atalhos a:hover { background: var(--ds-panel); }
+.registro-atalhos svg { width: 1.15rem; height: 1.15rem; flex-shrink: 0; margin-top: 0.15rem; color: var(--ds-text-500); }
+.registro-atalhos a:hover svg { color: var(--ds-blue); }
+.registro-atalhos span { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.registro-atalhos strong { font-weight: 500; font-size: 0.92rem; }
+.registro-atalhos small { font-size: 0.79rem; color: var(--ds-text-500); }
+
+/* =================================================================
+   VIDRO SEM MOLDURA
+   O cartão de login e os itens da lateral tinham contorno e placa
+   clara. Contorno recorta a lâmina do fundo — o contrário de vidro.
+   Sai a linha; o que separa a superfície do fundo passa a ser a
+   diferença de luz, e a legibilidade vem de escurecer o que está
+   atrás, não de desenhar uma borda em volta.
+   ================================================================= */
+
+/* --- Login ------------------------------------------------------- */
+.auth-card {
+    border: 0;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.34);
+    background: linear-gradient(150deg,
+        rgba(10, 17, 16, 0.44), rgba(10, 17, 16, 0.56) 52%, rgba(10, 17, 16, 0.48));
+}
+/* A foto fecha bem mais do lado do texto: era ali que a leitura
+   dependia de acertar em qual pedaço de concreto a linha caía. */
+.tela-login .auth-shell::before {
+    background:
+        linear-gradient(100deg, rgba(4, 8, 7, 0.94) 0%, rgba(4, 8, 7, 0.86) 26%,
+            rgba(4, 8, 7, 0.46) 52%, rgba(4, 8, 7, 0.42) 100%),
+        linear-gradient(to top, rgba(4, 8, 7, 0.6), transparent 44%);
+}
+.auth-hero h1 { text-shadow: none; }
+.auth-hero .ds-muted { color: rgba(255, 255, 255, 0.82); }
+
+/* --- Barra lateral: mesmo princípio -------------------------------
+   Fora as placas brancas com contorno. O item se destaca por um véu
+   claro sem borda, e o texto se apoia num vidro mais fechado e mais
+   escuro por baixo — que é o que sustenta a leitura. */
+.app-side {
+    background: linear-gradient(180deg,
+        rgba(22, 32, 29, 0.5), rgba(22, 32, 29, 0.62) 48%, rgba(22, 32, 29, 0.56));
+    border-right: 0;
+    box-shadow: 2px 0 40px rgba(8, 14, 12, 0.3);
+}
+.app-side .nav-link {
+    background: transparent; border: 0; box-shadow: none;
+    color: rgba(255, 255, 255, 0.88); font-weight: 450;
+}
+.app-side .nav-link svg { color: rgba(255, 255, 255, 0.62); }
+.app-side .nav-link:hover {
+    background: rgba(255, 255, 255, 0.14); border: 0; color: #fff;
+}
+.app-side .nav-link:hover svg { color: rgba(255, 255, 255, 0.9); }
+.app-side .nav-link.is-active {
+    background: rgba(255, 255, 255, 0.2); border: 0; box-shadow: none;
+    color: #fff; font-weight: 600;
+}
+.app-side .nav-link.is-active svg { color: #7fe0bd; }
+.app-side .nav-link.is-active::before { background: #7fe0bd; }
+
+.nav-label {
+    background: none; padding: 0.35rem 0.6rem 0.25rem; width: auto;
+    color: rgba(255, 255, 255, 0.68); text-shadow: none;
+}
+.nav-group--hoje .nav-label,
+.nav-group--comercial .nav-label,
+.nav-group--producao .nav-label,
+.nav-group--gestao .nav-label,
+.nav-group--escritorio .nav-label { color: rgba(255, 255, 255, 0.68); }
+
+.app-brand-word { color: #fff; text-shadow: none; }
+.app-brand-mark .mk-plate { fill: rgba(255, 255, 255, 0.14); }
+.app-brand-mark .mk-a { stroke: #fff; }
+.app-brand-mark .mk-cota { stroke: #7fe0bd; }
+.app-side-foot {
+    background: none; border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
+.app-empresa-info strong { color: #fff; text-shadow: none; }
+.app-empresa-info span, .app-sair, .pe-legal a { color: rgba(255, 255, 255, 0.72); }
+.app-sair:hover { color: #ff9d8e; }
+.pe-legal a:hover { color: #fff; }
+.app-empresa-ico { color: #7fe0bd; }
+.nav-badge { background: #c9503c; }
+.app-side .ds-btn:not(.ds-btn--solid) {
+    background: rgba(255, 255, 255, 0.14); border: 0; color: #fff;
+}
+.app-nav { scrollbar-color: rgba(255, 255, 255, 0.28) transparent; }
+
+@media (max-width: 62rem) {
+    /* No estreito a lateral cobre o conteúdo: ali ela fecha de vez. */
+    .app-side { background: rgba(20, 29, 26, 0.96); }
+}
+
+/* =================================================================
+   FOCO SEM QUADRADO PRETO
+   O anel escuro em volta do botão lia como defeito de renderização.
+   Some o retângulo: o botão em foco escurece e ganha um fio de luz
+   por dentro — muda o suficiente para se ver, sem virar moldura.
+   ================================================================= */
+.ds-btn--solid:focus-visible {
+    outline: none;
+    background: var(--ds-blue-dark);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.75);
+}
+.ds-btn:not(.ds-btn--solid):focus-visible {
+    outline: none;
+    background: var(--ds-panel);
+    border-color: var(--ds-blue-dark);
+    box-shadow: inset 0 0 0 2px var(--ds-blue-dark);
+}
+.app-side .nav-link:focus-visible,
+.app-side .ds-btn:focus-visible, .app-sair:focus-visible, .pe-legal a:focus-visible {
+    outline: none; background: rgba(255, 255, 255, 0.26);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7);
+}
+.auth-card .ds-btn--solid:focus-visible {
+    outline: none; background: #14513f;
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.85);
+}
+.auth-card .ds-btn:not(.ds-btn--solid):focus-visible {
+    outline: none; background: rgba(255, 255, 255, 0.28);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.85);
+}
+/* Links e campos seguem com traço, que ali não vira moldura de botão. */
+a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
+.app-side a:focus-visible { outline: none; }

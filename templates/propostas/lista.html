@@ -12,6 +12,9 @@
         <a class="ds-btn ds-btn--solid" href="{% url 'proposta_nova' %}">Nova proposta</a>
     </header>
 
+    {% include "core/_voltar.html" with projeto_voltar=projeto %}
+    {% include "core/_contexto_projeto.html" %}
+
     <div class="ds-card">
         <table class="data-table">
             <thead><tr><th>Título</th><th>Cliente</th><th>Status</th><th>Valor</th></tr></thead>

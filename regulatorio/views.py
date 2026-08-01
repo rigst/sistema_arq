@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from core.contexto import projeto_do_pedido
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 
 from .forms import ObrigacaoTecnicaForm
@@ -17,6 +18,9 @@ def lista_obrigacoes(request):
     tipo = request.GET.get("tipo", "")
     if tipo:
         obrigacoes = obrigacoes.filter(tipo=tipo)
+    projeto = projeto_do_pedido(request)
+    if projeto is not None:
+        obrigacoes = obrigacoes.filter(projeto=projeto)
     obrigacoes = list(obrigacoes)
     alertas = [o for o in obrigacoes if o.vencida or o.vencendo or o.pendente_registro]
     return render(
@@ -27,6 +31,7 @@ def lista_obrigacoes(request):
             "alertas": alertas,
             "tipo_ativo": tipo,
             "tipo_choices": ObrigacaoTecnica.TIPO_CHOICES,
+            "projeto": projeto,
         },
     )
 

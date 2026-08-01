@@ -75,13 +75,13 @@ INSTALLED_APPS = [
     "crm",
     # Fase 5 — adoção (públicos/sem dados de negócio persistidos).
     "diagnostico",
-    "onboarding",
     # Fase 6 — cadeia de produção completa.
     "fornecedores",
     "orcamentos",
     "arquivos",
     "jornada",
     "fases",
+    "modelos",
     # Termos, privacidade e registro de aceites.
     "legal",
 ]

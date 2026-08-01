@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Modelos{% endblock %}
+
+{% block content %}
+<section class="page page--leitura">
+    <header class="page-head">
+        <span class="ds-kicker">Escritório</span>
+        <h1 class="ds-h2 ds-display">Modelos</h1>
+        <p class="page-sub">
+            O que o escritório escreve uma vez e reaproveita em todo projeto:
+            roteiros de briefing e minutas de contrato.
+        </p>
+    </header>
+
+    <section class="secao">
+        <h2 class="secao-titulo ds-display">Roteiros de briefing</h2>
+        <p class="secao-sub">
+            Perguntas com respostas objetivas para marcar durante a reunião. O roteiro
+            aberto por padrão é o do tipo do projeto.
+        </p>
+
+        {% if briefings %}
+        <ul class="modelo-lista">
+            {% for t in briefings %}
+            <li class="modelo">
+                <div class="modelo-id">
+                    <a href="{% url 'briefing_template_detalhe' t.pk %}">{{ t.nome }}</a>
+                    <span class="modelo-meta">
+                        {{ t.perguntas.count }} pergunta(s){% if t.tipo_projeto %} · {{ t.get_tipo_projeto_display|default:t.tipo_projeto }}{% else %} · qualquer tipo{% endif %}
+                    </span>
+                </div>
+                {% if not t.ativo %}<span class="modelo-inativo">inativo</span>{% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="data-empty">Nenhum roteiro ainda.</p>
+        {% endif %}
+        <p><a class="ds-btn" href="{% url 'briefing_templates' %}">Criar e editar roteiros</a></p>
+    </section>
+
+    <section class="secao">
+        <h2 class="secao-titulo ds-display">Minutas de contrato</h2>
+        <p class="secao-sub">
+            Texto com marcadores entre chaves duplas, trocados pelos dados do projeto na
+            geração. O que faltar vira [PREENCHER: …] em vez de sumir.
+        </p>
+
+        {% if contratos %}
+        <ul class="modelo-lista">
+            {% for m in contratos %}
+            <li class="modelo">
+                <div class="modelo-id">
+                    <a href="{% url 'contrato_modelo_editar' m.pk %}">{{ m.nome }}</a>
+                    <span class="modelo-meta">{{ m.corpo|truncatechars:90 }}</span>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="data-empty">Nenhuma minuta ainda.</p>
+        {% endif %}
+        <p><a class="ds-btn" href="{% url 'contratos_modelos' %}">Criar e editar minutas</a></p>
+    </section>
+</section>
+{% endblock %}

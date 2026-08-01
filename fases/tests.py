@@ -217,3 +217,39 @@ class ViewsTests(BaseFase):
         montar_fases(alheio)
         fase = alheio.fases.first()
         self.assertEqual(self.client.get(f"/fases/{fase.pk}/").status_code, 404)
+
+
+class NavegacaoPorProjetoTests(BaseFase):
+    """O que é de um projeto abre já recortado nele, sem filtrar à mão."""
+
+    def test_listas_aceitam_o_projeto_pela_url(self):
+        from django.contrib.auth.models import Group
+
+        outro = Group.objects.create(name="Vizinho 3")
+        alheio = Projeto.objects.create(
+            empresa=outro, cliente=self.cliente, nome="Alheio 3", tipo="comercial"
+        )
+        for rota in ["/arquivos/", "/orcamentos/", "/propostas/", "/contratos/", "/regulatorio/"]:
+            with self.subTest(rota=rota):
+                resp = self.client.get(f"{rota}?projeto={self.projeto.pk}")
+                self.assertEqual(resp.status_code, 200)
+                self.assertContains(resp, "Dentro do projeto")
+                # Projeto de outra empresa não vira contexto nem vaza nome.
+                resp2 = self.client.get(f"{rota}?projeto={alheio.pk}")
+                self.assertNotContains(resp2, "Alheio 3")
+
+    def test_ficha_do_projeto_leva_para_os_registros_filtrados(self):
+        resp = self.client.get(f"/projetos/{self.projeto.pk}/")
+        for rota in ["/arquivos/", "/orcamentos/", "/propostas/", "/contratos/", "/regulatorio/"]:
+            self.assertContains(resp, f"{rota}?projeto={self.projeto.pk}")
+
+    def test_menu_nao_repete_o_que_e_de_projeto(self):
+        """Menu é para o que atravessa projetos. Ter os dois caminhos fazia
+        parecer que eram coisas diferentes."""
+        nav = self.client.get("/").content.decode()
+        nav = nav[nav.index('<nav class="app-nav"'):nav.index("</nav>")]
+        for rota in ['href="/arquivos/"', 'href="/orcamentos/"', 'href="/propostas/"',
+                     'href="/contratos/"', 'href="/regulatorio/"']:
+            self.assertNotIn(rota, nav)
+        for rota in ['href="/"', 'href="/projetos/"', 'href="/modelos/"', 'href="/financeiro/"']:
+            self.assertIn(rota, nav)

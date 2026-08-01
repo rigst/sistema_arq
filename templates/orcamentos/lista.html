@@ -15,6 +15,9 @@
         </div>
     </header>
 
+    {% include "core/_voltar.html" with projeto_voltar=projeto %}
+    {% include "core/_contexto_projeto.html" %}
+
     <div class="table-scroll">
     <table class="data-table">
         <thead><tr><th>Orçamento</th><th>Projeto</th><th>Versão</th><th>Status</th><th class="num">Itens</th><th class="num">Total</th></tr></thead>

@@ -30,7 +30,13 @@ def _reprecificar_itens(proposta):
 @login_required
 def lista_propostas(request):
     propostas = queryset_da_empresa(Proposta.objects.select_related("cliente"), request.user)
-    return render(request, "propostas/lista.html", {"propostas": propostas})
+    # Vindo da ficha de um projeto, a lista chega já recortada nele.
+    projeto = projeto_do_pedido(request)
+    if projeto is not None:
+        propostas = propostas.filter(projeto_gerado=projeto)
+    return render(
+        request, "propostas/lista.html", {"propostas": propostas, "projeto": projeto}
+    )
 
 
 @login_required
