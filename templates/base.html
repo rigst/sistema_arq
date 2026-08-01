@@ -4,14 +4,15 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Sistema ARQ{% endblock %} · Sistema ARQ</title>
+    <title>{% block title %}A.R.Q.{% endblock %} · A.R.Q.</title>
 
+    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
     <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
     <link rel="apple-touch-icon" href="{% static 'favicon.png' %}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;450;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{% static 'css/stolben-ui.css' %}">
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
@@ -25,10 +26,17 @@
         <div class="app-bg-rules"><span></span><span></span><span></span><span></span><span></span></div>
     </div>
 
-    <input type="checkbox" id="nav-toggle" class="nav-toggle">
+    <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Abrir menu de navegação">
     <aside class="app-side">
         <div class="app-side-head">
-            <a class="app-brand" href="{% url 'dashboard' %}">Sistema<span>ARQ</span></a>
+            <a class="app-brand" href="{% url 'dashboard' %}" aria-label="A.R.Q. — início">
+                <svg class="app-brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+                    <rect class="mk-plate" width="32" height="32" rx="7.5"/>
+                    <path class="mk-a" d="M8.4 24.3 L16 7.4 L23.6 24.3" fill="none" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path class="mk-cota" d="M11.7 18.7 H20.3" fill="none" stroke-width="2.7" stroke-linecap="round"/>
+                </svg>
+                <span class="app-brand-word">A.R.Q.</span>
+            </a>
             <label for="nav-toggle" class="nav-burger" aria-label="Abrir menu">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
             </label>
@@ -37,11 +45,11 @@
         <nav class="app-nav" aria-label="Navegação principal">
             <div class="nav-group">
                 <a href="{% url 'dashboard' %}" class="nav-link{% if request.path == '/' %} is-active{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+                    {% include "core/_ico.html" with ico="painel" %}
                     <span>Painel</span>
                 </a>
                 <a href="{% url 'onboarding' %}" class="nav-link{% if '/onboarding/' in request.path %} is-active{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polygon points="15.5 8.5 10.5 10.5 8.5 15.5 13.5 13.5"/></svg>
+                    {% include "core/_ico.html" with ico="onboarding" %}
                     <span>Primeiros passos</span>
                 </a>
             </div>
@@ -49,15 +57,15 @@
             <div class="nav-group nav-group--comercial">
                 <span class="nav-label">Comercial</span>
                 <a href="{% url 'crm_lista' %}" class="nav-link{% if '/clientes/' in request.path %} is-active{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    {% include "core/_ico.html" with ico="clientes" %}
                     <span>Clientes</span>
                 </a>
                 <a href="{% url 'propostas_lista' %}" class="nav-link{% if '/propostas/' in request.path %} is-active{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>
+                    {% include "core/_ico.html" with ico="propostas" %}
                     <span>Propostas</span>
                 </a>
                 <a href="{% url 'contratos_lista' %}" class="nav-link{% if '/contratos/' in request.path %} is-active{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg>
+                    {% include "core/_ico.html" with ico="contratos" %}
                     <span>Contratos</span>
                 </a>
             </div>
@@ -65,19 +73,19 @@
             <div class="nav-group nav-group--producao">
                 <span class="nav-label">Produção</span>
                 <a href="{% url 'projetos_painel' %}" class="nav-link{% if '/projetos/' in request.path %} is-active{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                    {% include "core/_ico.html" with ico="projetos" %}
                     <span>Projetos</span>
                 </a>
                 <a href="{% url 'obras_lista' %}" class="nav-link{% if '/obras/' in request.path %} is-active{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20"/><path d="M4 20V8l8-5 8 5v12"/><path d="M9 20v-6h6v6"/></svg>
+                    {% include "core/_ico.html" with ico="obras" %}
                     <span>Obras</span>
                 </a>
                 <a href="{% url 'tarefas_lista' %}" class="nav-link{% if '/tarefas/' in request.path %} is-active{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    {% include "core/_ico.html" with ico="tarefas" %}
                     <span>Tarefas</span>
                 </a>
                 <a href="{% url 'agenda' %}" class="nav-link{% if '/agenda/' in request.path %} is-active{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    {% include "core/_ico.html" with ico="agenda" %}
                     <span>Agenda</span>
                 </a>
             </div>
@@ -85,19 +93,19 @@
             <div class="nav-group nav-group--gestao">
                 <span class="nav-label">Gestão</span>
                 <a href="{% url 'financeiro_painel' %}" class="nav-link{% if '/financeiro/' in request.path %} is-active{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+                    {% include "core/_ico.html" with ico="financeiro" %}
                     <span>Financeiro</span>
                 </a>
                 <a href="{% url 'precificacao' %}" class="nav-link{% if '/precificacao/' in request.path %} is-active{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="11" x2="8" y2="11"/><line x1="12" y1="11" x2="12" y2="11"/><line x1="16" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="8" y2="15"/><line x1="12" y1="15" x2="12" y2="15"/><line x1="16" y1="15" x2="16" y2="18"/></svg>
+                    {% include "core/_ico.html" with ico="precificacao" %}
                     <span>Precificação</span>
                 </a>
                 <a href="{% url 'regulatorio_lista' %}" class="nav-link{% if '/regulatorio/' in request.path %} is-active{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                    {% include "core/_ico.html" with ico="regulatorio" %}
                     <span>Regulatório</span>
                 </a>
                 <a href="{% url 'notificacoes_lista' %}" class="nav-link{% if '/notificacoes/' in request.path %} is-active{% endif %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+                    {% include "core/_ico.html" with ico="notificacoes" %}
                     <span>Notificações</span>
                     {% if notificacoes_nao_lidas %}<span class="nav-badge num">{{ notificacoes_nao_lidas }}</span>{% endif %}
                 </a>
@@ -148,6 +156,7 @@
 
     <script src="{% static 'js/htmx.min.js' %}" nonce="{{ request.csp_nonce }}"></script>
     <script src="{% static 'js/stolben-ui.js' %}" nonce="{{ request.csp_nonce }}"></script>
+    <script src="{% static 'js/arq-ui.js' %}" nonce="{{ request.csp_nonce }}"></script>
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>

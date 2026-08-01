@@ -1,4 +1,4 @@
-# Sistema ARQ
+# A.R.Q.
 
 Sistema de gestão para escritórios de arquitetura e design de interiores.
 Django + HTMX + CSS/HTML/JS puro (design system `stolben-ui`), PostgreSQL e

@@ -1,11 +1,11 @@
 /* =================================================================
-   Sistema ARQ — estilos de layout do app (complementa o stolben-ui).
+   A.R.Q. — estilos de layout do app (complementa o stolben-ui).
    CSS puro, sem framework. Usa os tokens --ds-* do design system.
    ================================================================= */
 
 /* =================================================================
    IDENTIDADE — "Prancheta técnica"
-   O Sistema ARQ reveste o Design System Stölben com o vocabulário da
+   O A.R.Q. reveste o Design System Stölben com o vocabulário da
    prancheta de arquitetura: papel frio + tinta grafite, acento em verde
    de tinta técnica (pinho) e NÚMEROS EM MONOESPAÇADA — cada percentual,
    valor e registro é lido como numa folha de especificação.
@@ -524,101 +524,693 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .modulo-card--ativo:hover .modulo-seta { color: var(--ds-blue); transform: translateX(3px); }
 
 /* =================================================================
-   REVISÃO — mais cor e personalidade, menos "caixa dentro de caixa",
-   espaçamentos calibrados. (Bloco final: vence os anteriores.)
+   A.R.Q. — CAMADA DE IDENTIDADE
+   Vocabulário: prancheta técnica. Dois devices, e só dois:
+     · COTA   — linha de dimensão com ticks, marca hierarquia.
+     · POCHÊ  — hachura a 45°, marca a área/disciplina de cada bloco.
+   Tipografia: Archivo (eixo de largura) para títulos, IBM Plex Sans
+   no corpo, IBM Plex Mono em números e rótulos técnicos.
+   Este bloco é o último do arquivo: vence os anteriores.
    ================================================================= */
 
 :root {
-    /* Paleta por área — dá cor e ajuda a orientação */
-    --arq-blue: #2f6cae;   --arq-blue-soft: #eaf1f9;
-    --arq-green: #1c6a53;  --arq-green-soft: #e6f1ec;
-    --arq-amber: #b0721a;  --arq-amber-soft: #f8efdf;
-    --arq-violet: #7a52c8; --arq-violet-soft: #efeafa;
-    --arq-clay: #c05f3c;   --arq-clay-soft: #f8ebe4;
+    /* ---- Papel e tinta ---- */
+    --ds-bg: #e8ecea;
+    --ds-panel: #f2f5f3;
+    --ds-surface: #ffffff;
+    --ds-ink: #14181a;
+    --ds-ink-soft: #1e2427;
+    --ds-line: #e0e5e2;
+    --ds-line-dash: #c6cdc9;
+
+    /* ---- Cores de camada (por área do escritório) ---- */
+    --arq-blue: #2c6394;
+    --arq-green: #1c6a53;
+    --arq-amber: #9c6511;
+    --arq-violet: #6b4c93;
+    --arq-clay: #b23a2b;
+
+    /* Acento do sistema = verde de tinta técnica */
+    --ds-blue: #1c6a53;
+    --ds-blue-light: #2a8368;
+    --ds-blue-dark: #14513f;
+    --ds-blue-50: #e9f2ee;
+    --ds-blue-100: #c8e0d6;
+    --ds-danger: #b23a2b;
+
+    /* ---- Tipografia ---- */
+    --ds-font-sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    --ds-font-display: "Archivo", "IBM Plex Sans", sans-serif;
+    --arq-font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+
+    /* ---- Movimento ---- */
+    --arq-ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+    --arq-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --arq-fast: 140ms;
+    --arq-mid: 260ms;
+
+    /* ---- Ritmo vertical ---- */
+    --arq-gap: 1.75rem;
+
+    --ds-shadow-soft: 0 1px 2px rgba(20, 24, 26, 0.05), 0 8px 20px rgba(20, 24, 26, 0.05);
+    --ds-focus-ring: 0 0 0 3px rgba(28, 106, 83, 0.26);
 }
 
-/* ---- Densidade: cartões e páginas mais respirados, sem excesso ---- */
-.ds-card { padding: var(--ds-space-6); }
-.page { gap: var(--ds-space-6); }
-.detalhe-grid, .ht-grid { gap: var(--ds-space-6); }
-
-/* ---- Menos caixas: inputs "preenchidos", sem contorno de caixa ---- */
-.form-card input, .form-card select, .form-card textarea,
-.inline-add input, .inline-add select, .inline-add textarea,
-.avanco-form input {
-    background: var(--ds-panel);
-    border: 1px solid transparent;
-    border-radius: 0.6rem;
-}
-.form-card input:focus, .form-card select:focus, .form-card textarea:focus,
-.inline-add input:focus, .inline-add select:focus, .inline-add textarea:focus,
-.avanco-form input:focus {
-    background: var(--ds-surface);
-    border-color: var(--ds-blue-light);
-    box-shadow: var(--ds-focus-ring);
-    outline: none;
-}
-/* a "linha de adicionar" vira uma faixa, não uma fileira de caixinhas */
-.inline-add { background: var(--ds-panel); border-radius: var(--ds-radius-md); padding: 0.5rem; gap: 0.4rem; }
-.inline-add input, .inline-add select { background: var(--ds-surface); }
-
-/* ---- Etapas viram linhas com marca lateral, não caixas ---- */
-.etapa {
-    border: 0; border-left: 3px solid var(--ds-line-dash);
-    border-radius: 0 0.5rem 0.5rem 0; background: var(--ds-panel);
-    padding: 0.55rem 0.8rem;
-}
-.etapa--andamento { border-left-color: var(--arq-blue); background: var(--arq-blue-soft); }
-.etapa--concluida { border-left-color: var(--arq-green); background: var(--arq-green-soft); }
-
-/* ---- Opções do diagnóstico: sem contorno, realce por preenchimento ---- */
-.diag-opcao { border: 1px solid transparent; background: var(--ds-panel); }
-.diag-opcao:hover { border-color: transparent; background: var(--arq-green-soft); }
-.diag-opcao:has(input:checked) { border-color: var(--ds-blue); background: var(--arq-green-soft); }
-
-/* ---- Alertas dentro de cartão: viram avisos com marca lateral ---- */
-.desvio-alerta, .visita-pendencia {
-    border: 0; border-left: 3px solid var(--ds-danger);
-    border-radius: 0 0.5rem 0.5rem 0;
-}
-.visita-pendencia { background: var(--ds-danger-soft); padding: 0.5rem 0.7rem; }
+.ds-root { font-family: var(--ds-font-sans); font-size: 15.5px; }
 
 /* =================================================================
-   COR POR ÁREA — barra lateral, painel e seções
+   TIPOGRAFIA — largura como hierarquia (eixo wdth do Archivo)
    ================================================================= */
-/* Rótulos de grupo na lateral, com ponto colorido */
-.nav-label { display: flex; align-items: center; gap: 0.45rem; }
-.nav-label::before { content: ""; width: 0.45rem; height: 0.45rem; border-radius: 2px; background: var(--ds-text-400); }
+.ds-display { font-family: var(--ds-font-display); font-variation-settings: "wdth" 108, "wght" 600; font-weight: 600; letter-spacing: -0.015em; }
+.ds-h1 { font-family: var(--ds-font-display); font-variation-settings: "wdth" 118, "wght" 600; font-size: clamp(2.2rem, 4.4vw, 3.4rem); line-height: 1.03; letter-spacing: -0.03em; }
+.ds-h2 { font-family: var(--ds-font-display); font-variation-settings: "wdth" 116, "wght" 600; font-size: clamp(1.7rem, 2.4vw, 2.1rem); line-height: 1.1; letter-spacing: -0.022em; }
+
+/* Rótulos técnicos: monoespaçada, caixa alta, tracking largo */
+.ds-kicker, .nav-label, .kpi-label, .data-table th,
+.projeto-metricas dt, .cronograma-linha > span, .margem-strip span, .diag-dim {
+    font-family: var(--arq-font-mono);
+    font-size: 0.68rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+}
+.ds-kicker { color: var(--ds-text-500); }
+
+.num, .ht-valor, .saldo-card strong, .margem-strip strong, .ds-stat-strip strong,
+.timer-ativo strong, .agenda-quando strong, .kpi-value, .cronograma-num strong,
+.onb-progresso-topo strong, .diag-score strong, .onb-num {
+    font-family: var(--arq-font-mono);
+    font-feature-settings: "tnum" 1, "zero" 1;
+    letter-spacing: -0.02em;
+}
+
+/* =================================================================
+   COTA — linha de dimensão sob títulos. Assinatura nº 1.
+   ================================================================= */
+.ds-card > h3.ds-display,
+.dash-section-head {
+    display: flex; align-items: center; gap: 0.85rem;
+    margin: 0 0 1.15rem;
+}
+.ds-card > h3.ds-display { font-size: 1.02rem; }
+.ds-card > h3.ds-display::after,
+.dash-section-head::after {
+    content: ""; flex: 1; height: 7px; align-self: center;
+    --cota: var(--sec, var(--ds-line-dash));
+    background:
+        linear-gradient(var(--cota), var(--cota)) center / 100% 1px no-repeat,
+        linear-gradient(var(--cota), var(--cota)) left center / 1px 7px no-repeat,
+        linear-gradient(var(--cota), var(--cota)) right center / 1px 7px no-repeat;
+    opacity: 0.55;
+}
+
+/* =================================================================
+   POCHÊ — hachura 45°. Assinatura nº 2. Usada só onde marca área.
+   ================================================================= */
+.arq-poche, .kpi::after, .modulo-card--ativo::after {
+    background-image: repeating-linear-gradient(-45deg,
+        var(--sec, var(--ds-text-400)) 0 1px, transparent 1px 7px);
+}
+
+/* =================================================================
+   MARCA — lockup A.R.Q.
+   ================================================================= */
+.app-brand { display: inline-flex; align-items: center; gap: 0.6rem; text-decoration: none; }
+.app-brand-mark { width: 2rem; height: 2rem; flex-shrink: 0; overflow: visible; }
+.app-brand-mark .mk-plate { fill: var(--ds-ink); transition: fill var(--arq-mid) var(--arq-ease); }
+.app-brand-mark .mk-a { stroke: #fff; }
+.app-brand-mark .mk-cota {
+    stroke: #3fa98a; transform-origin: 16px 18.7px;
+    transition: transform 420ms var(--arq-ease-out);
+}
+.app-brand:hover .mk-cota { transform: scaleX(1.28); }
+.app-brand:hover .mk-plate { fill: #0d1416; }
+.app-brand-word {
+    font-family: var(--ds-font-display);
+    font-variation-settings: "wdth" 115, "wght" 700;
+    font-size: 1.16rem; letter-spacing: 0.01em; color: var(--ds-text-900);
+}
+
+/* =================================================================
+   SHELL — barra lateral e folha
+   ================================================================= */
+.app-side { background: var(--ds-surface); border-right: 1px solid var(--ds-line); }
+.app-side-head { padding: 1.15rem 1.15rem 0.9rem; }
+.app-nav { padding: 0.25rem 0.75rem 1.25rem; gap: 1.35rem; }
+/* Rótulo de grupo: quadradinho + cor da área, como uma legenda de camadas */
+.nav-label {
+    display: flex; align-items: center; gap: 0.45rem;
+    color: var(--ds-text-500); padding: 0.5rem 0.6rem 0.35rem;
+}
+.nav-label::before { content: ""; width: 0.45rem; height: 0.45rem; border-radius: 1px; background: currentColor; }
 .nav-group--comercial .nav-label { color: var(--arq-blue); }
-.nav-group--comercial .nav-label::before { background: var(--arq-blue); }
 .nav-group--producao .nav-label { color: var(--arq-green); }
-.nav-group--producao .nav-label::before { background: var(--arq-green); }
 .nav-group--gestao .nav-label { color: var(--arq-amber); }
-.nav-group--gestao .nav-label::before { background: var(--arq-amber); }
 
-/* Hero do painel — bloco escuro com brilho, quebra a monotonia branca */
-.dash-hero { position: relative; overflow: hidden; padding: var(--ds-space-8); border-radius: var(--ds-radius-xl); background: var(--ds-ink); color: var(--ds-on-dark); margin-bottom: var(--ds-space-2); }
-.dash-hero .ds-glow { top: -8rem; right: -6rem; left: auto; background: rgba(28,106,83,0.55); }
+.nav-link {
+    padding: 0.5rem 0.65rem; border-radius: 0.6rem; font-size: 0.9rem;
+    transition: background var(--arq-fast) var(--arq-ease),
+                color var(--arq-fast) var(--arq-ease),
+                padding-left 200ms var(--arq-ease);
+}
+.nav-link svg { transition: color var(--arq-fast) ease, transform 260ms var(--arq-ease-out); }
+.nav-link:hover { background: var(--ds-panel); padding-left: 0.85rem; }
+.nav-link:hover svg { transform: translateX(1px) scale(1.08); }
+.nav-link.is-active { background: var(--ds-blue-50); color: var(--ds-blue-dark); font-weight: 600; }
+.nav-link.is-active::before {
+    left: -0.75rem; top: 0.35rem; bottom: 0.35rem; width: 3px;
+    border-radius: 0 3px 3px 0; background: var(--ds-blue);
+    animation: arq-bar 320ms var(--arq-ease-out) both;
+}
+@keyframes arq-bar { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+.nav-badge { animation: arq-pop 420ms var(--arq-ease-out) both; }
+@keyframes arq-pop { 0% { transform: scale(0.4); opacity: 0; } 60% { transform: scale(1.12); } 100% { transform: scale(1); opacity: 1; } }
+
+/* Carimbo do escritório no pé da lateral */
+.app-side-foot { padding: 0.9rem 1.05rem 1rem; gap: 0.7rem; }
+.app-empresa-ico { border-radius: 0.55rem; font-family: var(--ds-font-display); font-variation-settings: "wdth" 112, "wght" 600; }
+.app-empresa-info span { color: var(--ds-text-500); font-family: var(--arq-font-mono); font-size: 0.7rem; }
+.app-sair { transition: color var(--arq-fast) ease, gap var(--arq-fast) ease; }
+.app-sair:hover { gap: 0.7rem; }
+.app-sair svg { transition: transform 220ms var(--arq-ease-out); }
+.app-sair:hover svg { transform: translateX(2px); }
+
+/* Folha */
+.app-main { padding: 2.6rem 2.5rem 4.5rem; }
+.app-main--public { padding: 3rem 1.5rem; }
+
+/* =================================================================
+   RITMO — espaçamento único para todas as páginas
+   ================================================================= */
+.page { gap: var(--arq-gap); }
+.page-head { margin-bottom: 0; }
+.page-head--row { align-items: flex-start; gap: var(--ds-space-6); }
+/* as ações alinham com a linha do título, não com a base do bloco */
+.page-head--row > :not(:first-child) { padding-top: 1.15rem; flex-shrink: 0; }
+.page-head h1 { margin: 0.3rem 0 0; }
+.page-head .ds-kicker { display: block; }
+.page-sub { margin: 0.6rem 0 0; color: var(--ds-text-500); max-width: 44rem; line-height: 1.55; }
+.page-head-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+
+.ds-card { padding: 1.5rem; border-radius: 1.15rem; border: 1px solid var(--ds-line); box-shadow: 0 1px 1px rgba(20, 24, 26, 0.02); }
+.ds-card:hover { box-shadow: 0 1px 1px rgba(20, 24, 26, 0.02); }
+.detalhe-grid, .ht-grid, .modulo-grid, .projeto-grid, .obra-grid { gap: 1.25rem; }
+/* colunas não se esticam para igualar a mais alta: cada cartão tem a sua altura */
+.detalhe-grid, .ht-grid { align-items: start; }
+.kpi-row { gap: 1rem; }
+.filtro-chips { gap: 0.45rem; }
+.form-actions { margin-top: 0.9rem; }
+
+/* Tabelas encostam nas bordas do cartão: sem "caixa dentro de caixa" */
+.ds-card > .data-table,
+.ds-card > .table-scroll { margin-left: -1.5rem; margin-right: -1.5rem; width: calc(100% + 3rem); }
+.ds-card > .data-table:last-child,
+.ds-card > .table-scroll:last-child { margin-bottom: -1.5rem; }
+.ds-card > .data-table:not(:last-child),
+.ds-card > .table-scroll:not(:last-child) { margin-bottom: 1.25rem; }
+.ds-card > .data-table th:first-child, .ds-card > .data-table td:first-child,
+.ds-card > .table-scroll .data-table th:first-child,
+.ds-card > .table-scroll .data-table td:first-child { padding-left: 1.5rem; }
+.ds-card > .data-table th:last-child, .ds-card > .data-table td:last-child,
+.ds-card > .table-scroll .data-table th:last-child,
+.ds-card > .table-scroll .data-table td:last-child { padding-right: 1.5rem; }
+.ds-card > .table-scroll { width: auto; }
+
+/* rótulos técnicos ficam em text-500: text-400 não passa em contraste AA */
+.data-table th, .data-empty { color: var(--ds-text-500); }
+.data-table th { padding-top: 0.5rem; padding-bottom: 0.55rem; }
+.data-table td { padding: 0.7rem 0.5rem; }
+.data-table tbody tr { transition: background var(--arq-fast) ease; }
+.data-table tbody tr:hover { background: var(--ds-panel); }
+.data-table tbody tr:last-child td { border-bottom: 0; }
+/* ações em linha ("editar · baixar") não quebram por causa do <form> */
+.data-table .app-inline-form { display: inline; }
+.data-table td .app-link-btn { white-space: nowrap; }
+
+/* =================================================================
+   BOTÕES — movimento com peso: sobem no hover, afundam no clique
+   ================================================================= */
+.ds-btn {
+    position: relative; overflow: hidden; white-space: nowrap;
+    font-family: var(--ds-font-sans); font-weight: 500; font-size: 0.92rem;
+    border-radius: 0.7rem;
+    transition: background var(--arq-fast) ease, color var(--arq-fast) ease,
+                border-color var(--arq-fast) ease, transform 180ms var(--arq-ease-out),
+                box-shadow 200ms var(--arq-ease);
+}
+.ds-btn:not(.ds-btn--solid) {
+    background: var(--ds-surface); color: var(--ds-text-900);
+    border: 1px solid var(--ds-line); padding: 0.58rem 1.05rem;
+}
+.ds-btn:not(.ds-btn--solid):hover {
+    background: var(--ds-surface); border-color: var(--ds-blue-100);
+    color: var(--ds-blue-dark); transform: translateY(-1px);
+    box-shadow: var(--ds-shadow-soft);
+}
+.ds-btn--solid {
+    background: var(--ds-blue); color: #fff; border: 1px solid var(--ds-blue-dark);
+    padding: 0.6rem 1.15rem; border-radius: 0.7rem; box-shadow: none;
+}
+.ds-btn--solid:hover {
+    background: var(--ds-blue-dark); transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(28, 106, 83, 0.28);
+}
+/* brilho que atravessa o botão principal no hover */
+.ds-btn--solid::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(100deg, transparent 34%, rgba(255, 255, 255, 0.26) 50%, transparent 66%);
+    transform: translateX(-130%);
+    transition: transform 620ms var(--arq-ease);
+}
+.ds-btn--solid:hover::after { transform: translateX(130%); }
+.ds-btn:active { transform: translateY(1px) scale(0.985); box-shadow: none; }
+.ds-btn:focus-visible { outline: 2px solid var(--ds-blue-light); outline-offset: 2px; }
+
+/* Envio em curso: uma linha percorre a base do botão */
+.ds-btn.is-busy { pointer-events: none; opacity: 0.8; }
+.ds-btn.is-busy::before {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+    background: currentColor; opacity: 0.55; transform-origin: left;
+    animation: arq-busy 900ms var(--arq-ease) infinite;
+}
+@keyframes arq-busy {
+    0% { transform: scaleX(0); transform-origin: left; }
+    50% { transform: scaleX(1); transform-origin: left; }
+    51% { transform: scaleX(1); transform-origin: right; }
+    100% { transform: scaleX(0); transform-origin: right; }
+}
+
+.app-link-btn { transition: color var(--arq-fast) ease; }
+.check-btn { transition: transform 200ms var(--arq-ease-out), color var(--arq-fast) ease; }
+.check-btn:hover { transform: scale(1.25); }
+.check-btn:active { transform: scale(0.9); }
+
+/* Chips de filtro */
+.chip {
+    background: var(--ds-surface); border: 1px solid var(--ds-line);
+    padding: 0.34rem 0.85rem; font-size: 0.85rem;
+    transition: background var(--arq-fast) ease, color var(--arq-fast) ease,
+                border-color var(--arq-fast) ease, transform 180ms var(--arq-ease-out);
+}
+.chip:hover { border-color: var(--ds-blue-100); color: var(--ds-blue-dark); transform: translateY(-1px); }
+.chip.is-active { background: var(--ds-ink); border-color: var(--ds-ink); color: #fff; }
+.chip.is-active:hover { color: #fff; }
+
+/* =================================================================
+   FORMULÁRIOS
+   ================================================================= */
+.form-card p { margin: 0 0 0.85rem; }
+.form-card label { font-family: var(--arq-font-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ds-text-500); font-weight: 500; }
+.form-card input, .form-card select, .form-card textarea,
+.inline-add input, .inline-add select, .inline-add textarea, .avanco-form input {
+    background: var(--ds-panel); border: 1px solid transparent; border-radius: 0.6rem;
+    transition: background var(--arq-fast) ease, border-color var(--arq-fast) ease, box-shadow var(--arq-fast) ease;
+}
+.form-card input:hover, .form-card select:hover, .form-card textarea:hover { border-color: var(--ds-line-dash); }
+.inline-add { background: var(--ds-panel); border-radius: 0.75rem; padding: 0.45rem; gap: 0.4rem; margin-bottom: 1.15rem; }
+.inline-add input, .inline-add select { background: var(--ds-surface); }
+.inline-add input[type="number"], .inline-add input[type="date"] { flex: 0 1 8rem; }
+.ds-card > .inline-add:last-child, .ds-card > form.inline-add:last-child { margin-bottom: 0; }
+
+/* =================================================================
+   PAINEL — hero, KPIs e atalhos por área
+   ================================================================= */
+.dash-hero {
+    position: relative; overflow: hidden; padding: 2.4rem 2.4rem 0;
+    border-radius: 1.4rem; background: var(--ds-ink); color: var(--ds-on-dark);
+}
+/* pochê na diagonal do hero, no lugar do glow genérico */
+.dash-hero::after {
+    content: ""; position: absolute; top: -20%; right: -6%; width: 26rem; height: 26rem;
+    background-image: repeating-linear-gradient(-45deg, rgba(63, 169, 138, 0.5) 0 1px, transparent 1px 9px);
+    -webkit-mask-image: radial-gradient(60% 60% at 70% 30%, #000, transparent 72%);
+    mask-image: radial-gradient(60% 60% at 70% 30%, #000, transparent 72%);
+    pointer-events: none;
+}
+.dash-hero .ds-glow { display: none; }
 .dash-hero-in { position: relative; z-index: 2; }
-.dash-hero .ds-kicker { color: var(--arq-green); }
-.dash-hero h1 { color: #fff; margin: 0.2rem 0 0.4rem; }
-.dash-hero p { color: var(--ds-on-dark-mute); max-width: 40rem; margin: 0; }
+.dash-hero .ds-kicker { color: #3fa98a; display: block; }
+.dash-hero h1 { color: #fff; margin: 0.5rem 0 0.55rem; }
+.dash-hero p { color: var(--ds-on-dark-mute); max-width: 38rem; margin: 0; }
 
-/* KPIs coloridos por tipo — faixa superior + rótulo na cor */
-.kpi { border-top: 3px solid var(--ds-line); }
-.kpi-label::before { content: ""; display: inline-block; width: 0.5rem; height: 0.5rem; border-radius: 2px; margin-right: 0.45rem; vertical-align: middle; background: currentColor; }
-.kpi--blue { border-top-color: var(--arq-blue); } .kpi--blue .kpi-label { color: var(--arq-blue); }
-.kpi--green { border-top-color: var(--arq-green); } .kpi--green .kpi-label { color: var(--arq-green); }
-.kpi--violet { border-top-color: var(--arq-violet); } .kpi--violet .kpi-label { color: var(--arq-violet); }
-.kpi--amber { border-top-color: var(--arq-amber); } .kpi--amber .kpi-label { color: var(--arq-amber); }
-.kpi--alert { border-top-color: var(--ds-danger); } .kpi--alert .kpi-label { color: var(--ds-danger); }
+/* Carimbo: faixa de campos no pé do hero, como o selo de uma prancha */
+.dash-carimbo {
+    position: relative; z-index: 2; display: flex; flex-wrap: wrap; margin: 2rem 0 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.dash-carimbo > div { padding: 0.85rem 1.5rem 0.95rem 0; flex: 0 1 auto; min-width: 0; }
+.dash-carimbo > div + div { padding-left: 1.5rem; border-left: 1px solid rgba(255, 255, 255, 0.12); }
+.dash-carimbo dt {
+    font-family: var(--arq-font-mono); font-size: 0.62rem; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.16em; color: #7c8a86;
+}
+.dash-carimbo dd { margin: 0.25rem 0 0; font-size: 0.88rem; color: #e6ebe9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* Seções do painel + cartões coloridos por área */
+/* --- KPI: número grande em mono + pochê da área no canto --- */
+.kpi {
+    position: relative; overflow: hidden; border: 1px solid var(--ds-line);
+    border-radius: 1.15rem; padding: 1.1rem 1.25rem 1.15rem; gap: 0.3rem;
+    background: var(--ds-surface);
+    transition: transform 220ms var(--arq-ease-out), box-shadow 260ms var(--arq-ease), border-color var(--arq-fast) ease;
+}
+.kpi::after {
+    content: ""; position: absolute; top: 0; right: 0; width: 6rem; height: 6rem;
+    -webkit-mask-image: linear-gradient(225deg, #000 5%, transparent 68%);
+    mask-image: linear-gradient(225deg, #000 5%, transparent 68%);
+    opacity: 0.18; pointer-events: none;
+    transition: opacity var(--arq-mid) ease, transform 420ms var(--arq-ease-out);
+}
+.kpi:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--sec) 32%, var(--ds-line)); box-shadow: 0 10px 26px color-mix(in srgb, var(--sec) 14%, transparent); }
+.kpi:hover::after { opacity: 0.34; transform: translate(-3px, 3px); }
+.kpi-label { color: var(--sec); position: relative; z-index: 1; }
+.kpi-label::before { content: ""; display: inline-block; width: 0.5rem; height: 0.5rem; border-radius: 1px; margin-right: 0.5rem; vertical-align: baseline; background: currentColor; }
+.kpi-value { font-size: 2rem; line-height: 1.05; color: var(--ds-text-900); position: relative; z-index: 1; }
+.kpi-foot { font-size: 0.78rem; color: var(--ds-text-500); }
+.kpi--blue { --sec: var(--arq-blue); }
+.kpi--green { --sec: var(--arq-green); }
+.kpi--violet { --sec: var(--arq-violet); }
+.kpi--amber { --sec: var(--arq-amber); }
+.kpi--alert { --sec: var(--ds-danger); }
+.kpi--alert .kpi-value { color: var(--ds-danger); }
+
+/* --- Faixa de retomada do onboarding: painel inteiro, sem risco lateral --- */
+.dash-onb {
+    display: flex; align-items: center; justify-content: space-between; gap: 1.5rem;
+    padding: 1.25rem 1.4rem; text-decoration: none; border: 0;
+    background: linear-gradient(100deg, var(--ds-blue-50), color-mix(in srgb, var(--ds-blue-50) 35%, var(--ds-surface)));
+    border: 1px solid var(--ds-blue-100);
+    transition: box-shadow 260ms var(--arq-ease), transform 200ms var(--arq-ease-out);
+}
+.dash-onb:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(28, 106, 83, 0.14); }
+.dash-onb-info strong { color: var(--ds-text-900); font-size: 0.98rem; font-weight: 600; }
+.dash-onb .ds-kicker { color: var(--ds-blue-dark); }
+.dash-onb-cta { color: var(--ds-blue-dark); font-weight: 600; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.4rem; }
+.dash-onb-cta::after { content: "→"; transition: transform 240ms var(--arq-ease-out); }
+.dash-onb:hover .dash-onb-cta::after { transform: translateX(4px); }
+
+/* --- Seções e cartões de atalho: placa de ícone no lugar do risco --- */
+.dash-section { gap: 1rem; }
 .dash-section--comercial { --sec: var(--arq-blue); }
 .dash-section--producao { --sec: var(--arq-green); }
 .dash-section--gestao { --sec: var(--arq-amber); }
-.dash-section-head { color: var(--sec, var(--ds-text-700)); }
-.dash-section-head::after { background: linear-gradient(var(--sec), var(--sec)) center / 100% 1px no-repeat, linear-gradient(var(--sec), var(--sec)) right center / 1px 7px no-repeat; opacity: 0.35; }
-.dash-section .modulo-card--ativo { border-left: 3px solid var(--sec); }
-.dash-section .modulo-seta { color: var(--sec); }
-.dash-section .modulo-card--ativo:hover { border-color: var(--sec); box-shadow: 0 12px 30px color-mix(in srgb, var(--sec) 16%, transparent); }
+.dash-section-head { font-size: 0.95rem; color: var(--sec); font-variation-settings: "wdth" 106, "wght" 600; }
+
+.modulo-card { padding: 1.25rem 1.3rem 1.3rem; }
+.dash-section .modulo-card--ativo {
+    position: relative; overflow: hidden; border: 1px solid var(--ds-line); border-left-width: 1px;
+    transition: transform 220ms var(--arq-ease-out), box-shadow 280ms var(--arq-ease), border-color var(--arq-fast) ease;
+}
+.dash-section .modulo-card--ativo::after {
+    content: ""; position: absolute; right: 0; bottom: 0; width: 7rem; height: 7rem;
+    -webkit-mask-image: linear-gradient(315deg, #000 0%, transparent 62%);
+    mask-image: linear-gradient(315deg, #000 0%, transparent 62%);
+    opacity: 0; pointer-events: none;
+    transition: opacity 320ms ease, transform 480ms var(--arq-ease-out);
+    transform: translate(10px, 10px);
+}
+.dash-section .modulo-card--ativo:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--sec) 30%, var(--ds-line));
+    box-shadow: 0 12px 30px color-mix(in srgb, var(--sec) 15%, transparent);
+}
+.dash-section .modulo-card--ativo:hover::after { opacity: 0.2; transform: none; }
+
+.modulo-ico {
+    width: 2.35rem; height: 2.35rem; border-radius: 0.65rem;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: color-mix(in srgb, var(--sec) 11%, #fff);
+    border: 1px solid color-mix(in srgb, var(--sec) 24%, #fff);
+    color: var(--sec); margin-bottom: 0.9rem;
+    transition: background 240ms var(--arq-ease), color 240ms var(--arq-ease),
+                border-color 240ms var(--arq-ease), transform 320ms var(--arq-ease-out);
+}
+.modulo-ico svg { width: 1.2rem; height: 1.2rem; }
+.modulo-card--ativo:hover .modulo-ico {
+    background: var(--sec); border-color: var(--sec); color: #fff;
+    transform: rotate(-5deg) scale(1.07);
+}
+.modulo-head { margin-bottom: 0.35rem; position: relative; z-index: 1; }
+.modulo-head h3 { font-size: 1.02rem; }
+.modulo-card p { position: relative; z-index: 1; font-size: 0.88rem; line-height: 1.5; }
+.modulo-seta { color: var(--sec); font-size: 1.05rem; transition: transform 240ms var(--arq-ease-out); }
+.modulo-card--ativo:hover .modulo-seta { transform: translateX(4px); }
+
+/* =================================================================
+   LEGENDA — glifos de estado no lugar de riscos coloridos
+   (mesma lógica de uma legenda de prancha: cada símbolo = um estado)
+   ================================================================= */
+.arq-glifo {
+    flex-shrink: 0; width: 1.5rem; height: 1.5rem; margin-top: 0.1rem;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 0.45rem; background: color-mix(in srgb, var(--sec) 13%, #fff);
+    color: var(--sec); font-size: 0.72rem; line-height: 1;
+}
+
+/* Notificações */
+.notif-lista { gap: 0.5rem; }
+.notif-item {
+    align-items: flex-start; gap: 0.85rem; padding: 0.85rem 1rem;
+    border: 1px solid var(--ds-line); border-left-width: 1px; border-radius: 0.85rem;
+    transition: border-color var(--arq-fast) ease, background var(--arq-fast) ease, transform 180ms var(--arq-ease-out);
+}
+.notif-item:hover { transform: translateX(2px); border-color: color-mix(in srgb, var(--sec) 34%, var(--ds-line)); }
+.notif-item--info { --sec: var(--arq-blue); }
+.notif-item--alerta { --sec: var(--arq-amber); }
+.notif-item--critico { --sec: var(--ds-danger); }
+.notif-corpo { flex: 1; }
+.notif-corpo strong { font-size: 0.94rem; }
+.notif-item--critico .arq-glifo { background: var(--ds-danger); color: #fff; }
+.notif-item.is-lida { opacity: 0.55; }
+.notif-item.is-lida .arq-glifo { background: var(--ds-panel); color: var(--ds-text-400); }
+.notif-corpo .timeline-data { font-family: var(--arq-font-mono); font-size: 0.7rem; margin-left: 0; }
+
+/* Etapas do projeto: marcador quadrado + fundo, sem risco lateral */
+.etapas { gap: 0.45rem; }
+.etapa {
+    border: 1px solid var(--ds-line); border-left-width: 1px; border-radius: 0.7rem;
+    background: var(--ds-surface); padding: 0.6rem 0.85rem;
+    justify-content: flex-start;
+    transition: background var(--arq-fast) ease, border-color var(--arq-fast) ease;
+}
+.etapa > div:first-of-type { flex: 1; }
+.etapa-status { font-family: var(--arq-font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ds-text-500); margin-top: 0.15rem; }
+.etapa::before {
+    content: ""; flex-shrink: 0; width: 0.55rem; height: 0.55rem; border-radius: 2px;
+    background: var(--ds-line-dash); margin-right: 0.7rem; order: -1;
+}
+.etapa--andamento { border-color: color-mix(in srgb, var(--arq-blue) 30%, var(--ds-line)); background: color-mix(in srgb, var(--arq-blue) 5%, #fff); }
+.etapa--andamento::before { background: var(--arq-blue); box-shadow: 0 0 0 3px color-mix(in srgb, var(--arq-blue) 18%, transparent); }
+.etapa--concluida { border-color: color-mix(in srgb, var(--arq-green) 26%, var(--ds-line)); background: color-mix(in srgb, var(--arq-green) 5%, #fff); }
+.etapa--concluida::before { background: var(--arq-green); }
+
+/* Avisos: painel tingido com glifo, sem risco lateral */
+.desvio-alerta, .visita-pendencia {
+    display: flex; align-items: flex-start; gap: 0.55rem;
+    border: 1px solid color-mix(in srgb, var(--ds-danger) 22%, var(--ds-line));
+    background: color-mix(in srgb, var(--ds-danger) 6%, #fff);
+    color: var(--ds-danger); border-radius: 0.7rem; padding: 0.55rem 0.75rem;
+}
+.desvio-alerta::before, .visita-pendencia::before { content: "▲"; font-size: 0.62rem; line-height: 1.55; flex-shrink: 0; }
+.desvio-ok { color: var(--arq-green); font-size: 0.82rem; margin: 0.4rem 0 0; }
+.desvio-ok::before { content: "■ "; font-size: 0.6rem; vertical-align: middle; }
+.linha-desvio td { background: color-mix(in srgb, var(--ds-danger) 3.5%, #fff); box-shadow: none; }
+.linha-desvio td:first-child { box-shadow: none; }
+/* triângulo de revisão na primeira célula: o alerta é um símbolo, não um fundo */
+.linha-desvio td:first-child::before { content: "▲"; color: var(--ds-danger); font-size: 0.58rem; margin-right: 0.45rem; vertical-align: middle; }
+.alerta-card { border: 1px solid color-mix(in srgb, var(--arq-amber) 28%, var(--ds-line)); background: color-mix(in srgb, var(--arq-amber) 4%, #fff); }
+.alerta-card > h3.ds-display { --sec: var(--arq-amber); color: var(--arq-amber); }
+
+/* Linha do tempo: linha de construção pontilhada com nós */
+.timeline li { position: relative; border-left: 0; padding-left: 1.35rem; }
+.timeline li::before {
+    content: ""; position: absolute; left: 0.28rem; top: 1.1rem; bottom: -0.75rem; width: 0;
+    border-left: 1px dashed var(--ds-line-dash);
+}
+.timeline li:last-child::before { display: none; }
+.timeline li::after {
+    content: ""; position: absolute; left: 0; top: 0.42rem; width: 0.6rem; height: 0.6rem;
+    border-radius: 2px; background: var(--ds-surface); border: 1.5px solid var(--ds-blue);
+}
+/* estado vazio não é um nó da linha do tempo */
+.timeline li.data-empty { padding-left: 0; }
+.timeline li.data-empty::before, .timeline li.data-empty::after { display: none; }
+
+/* listas não terminam com um traço solto */
+.agenda-lista li:last-child { border-bottom: 0; padding-bottom: 0; }
+.agenda-lista li.data-empty { border-bottom: 0; }
+
+/* =================================================================
+   CARTÕES DE PROJETO E OBRA
+   ================================================================= */
+.projeto-card, .obra-card {
+    transition: transform 220ms var(--arq-ease-out), box-shadow 280ms var(--arq-ease), border-color var(--arq-fast) ease;
+}
+.projeto-card:hover, .obra-card:hover {
+    transform: translateY(-3px); border-color: var(--ds-blue-100);
+    box-shadow: 0 12px 28px rgba(20, 24, 26, 0.08);
+}
+.projeto-card-top, .obra-card-top { align-items: flex-start; margin-bottom: 0.1rem; }
+.projeto-nome { font-family: var(--ds-font-display); font-variation-settings: "wdth" 108, "wght" 600; font-size: 1.05rem; }
+.projeto-nome:hover { color: var(--ds-blue-dark); }
+.projeto-cliente { margin: 0.3rem 0 1.1rem; font-size: 0.86rem; }
+.projeto-metricas { gap: 0.9rem 0.6rem; padding-top: 0.9rem; border-top: 1px dashed var(--ds-line-dash); }
+.projeto-metricas dt { color: var(--ds-text-500); }
+.projeto-metricas dd { margin: 0.2rem 0 0; font-weight: 500; font-size: 0.92rem; font-variant-numeric: tabular-nums; }
+
+.cronograma { margin: 1rem 0 0.75rem; gap: 0.55rem; }
+.cronograma-linha > span { color: var(--ds-text-500); }
+.cronograma-linha b { font-size: 0.82rem; }
+.cronograma-real { background: linear-gradient(90deg, #3a4149, #616a73) !important; box-shadow: none !important; }
+
+.ds-progress { height: 8px; }
+.ds-progress--on-light { background: color-mix(in srgb, var(--ds-ink) 7%, transparent); box-shadow: none; }
+.ds-progress-fill { transition: width 900ms var(--arq-ease-out); }
+
+/* Kanban */
+.kanban-col { background: color-mix(in srgb, var(--ds-panel) 70%, transparent); border-radius: 1rem; padding: 0.9rem; }
+.kanban-col-head { font-family: var(--arq-font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.11em; color: var(--ds-text-500); }
+.kanban-card {
+    border-radius: 0.75rem; box-shadow: 0 1px 2px rgba(20, 24, 26, 0.05);
+    transition: transform 180ms var(--arq-ease-out), box-shadow 220ms var(--arq-ease);
+}
+.kanban-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(20, 24, 26, 0.1); }
+.kanban-card.is-dragging { opacity: 0.45; transform: rotate(-1.5deg) scale(0.98); }
+.kanban-drop.is-over { background: var(--ds-blue-50); outline: 1.5px dashed var(--ds-blue-light); outline-offset: 3px; }
+
+/* =================================================================
+   ONBOARDING / DIAGNÓSTICO
+   ================================================================= */
+.onb-etapa {
+    border-radius: 0.9rem; padding: 1rem 1.25rem; gap: 1.1rem;
+    transition: transform 200ms var(--arq-ease-out), box-shadow 240ms var(--arq-ease), border-color var(--arq-fast) ease;
+}
+.onb-etapa:hover { transform: translateX(3px); box-shadow: var(--ds-shadow-soft); }
+.onb-etapa.is-atual { border-color: var(--ds-blue); box-shadow: 0 6px 18px rgba(28, 106, 83, 0.12); }
+.onb-num { border-radius: 0.55rem; font-size: 0.85rem; transition: background 240ms var(--arq-ease), color 240ms var(--arq-ease); }
+.onb-corpo strong { font-size: 0.96rem; }
+.onb-feito { font-family: var(--arq-font-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--arq-green); }
+
+/* O <legend> nativo se posiciona sobre a borda do fieldset e vaza do cartão;
+   flutuá-lo em largura total o traz para dentro do fluxo. */
+.diag-pergunta { padding: 1.5rem; overflow: hidden; }
+.diag-pergunta legend {
+    float: left; width: 100%; padding: 0; margin: 0;
+    font-family: var(--ds-font-display); font-variation-settings: "wdth" 106, "wght" 600;
+    font-size: 1.02rem; line-height: 1.35;
+}
+.diag-opcoes { clear: both; margin-top: 1.15rem; }
+.diag-dim { display: block; color: var(--ds-blue-dark); margin-bottom: 0.5rem; }
+.diag-opcao {
+    border: 1px solid transparent; background: var(--ds-panel); border-radius: 0.7rem;
+    transition: background var(--arq-fast) ease, border-color var(--arq-fast) ease, transform 160ms var(--arq-ease-out);
+}
+.diag-opcao:hover { background: var(--ds-blue-50); transform: translateX(3px); }
+.diag-opcao:has(input:checked) { border-color: var(--ds-blue); background: var(--ds-blue-50); box-shadow: none; }
+
+/* =================================================================
+   BADGES E TAGS
+   ================================================================= */
+.ds-badge { font-family: var(--arq-font-mono); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.24rem 0.6rem; }
+.ds-badge--info { color: var(--ds-blue-dark); background: var(--ds-blue-50); border-color: var(--ds-blue-100); }
+.ds-badge--info .ds-dot { background: var(--ds-blue); }
+.tag-alerta { font-family: var(--arq-font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.12rem 0.42rem; }
+
+/* =================================================================
+   ENTRADA — a folha "monta" ao carregar (escalonado, uma vez só)
+   ================================================================= */
+@keyframes arq-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.page > *, .auth-shell > * { animation: arq-rise 520ms var(--arq-ease-out) both; }
+.page > *:nth-child(1), .auth-shell > *:nth-child(1) { animation-delay: 0ms; }
+.page > *:nth-child(2), .auth-shell > *:nth-child(2) { animation-delay: 60ms; }
+.page > *:nth-child(3) { animation-delay: 120ms; }
+.page > *:nth-child(4) { animation-delay: 180ms; }
+.page > *:nth-child(5) { animation-delay: 240ms; }
+.page > *:nth-child(n + 6) { animation-delay: 280ms; }
+
+.kpi-row .kpi { animation: arq-rise 520ms var(--arq-ease-out) both; }
+.kpi-row .kpi:nth-child(1) { animation-delay: 90ms; }
+.kpi-row .kpi:nth-child(2) { animation-delay: 150ms; }
+.kpi-row .kpi:nth-child(3) { animation-delay: 210ms; }
+.kpi-row .kpi:nth-child(4) { animation-delay: 270ms; }
+
+.app-message { animation: arq-rise 380ms var(--arq-ease-out) both; }
+
+/* =================================================================
+   LOGIN
+   ================================================================= */
+.auth-shell { gap: 2.5rem; align-items: center; }
+.auth-hero {
+    border-radius: 1.4rem; padding: 2.5rem; overflow: hidden;
+    display: flex; align-items: stretch; min-height: 22rem;
+}
+.auth-hero::after {
+    content: ""; position: absolute; inset: auto -12% -25% -12%; height: 24rem;
+    background-image: repeating-linear-gradient(-45deg, rgba(63, 169, 138, 0.55) 0 1px, transparent 1px 9px);
+    -webkit-mask-image: radial-gradient(75% 75% at 28% 92%, #000, transparent 68%);
+    mask-image: radial-gradient(75% 75% at 28% 92%, #000, transparent 68%);
+    pointer-events: none;
+}
+.auth-hero .ds-glow { display: none; }
+.auth-hero-inner { display: flex; flex-direction: column; flex: 1; }
+/* marca no topo, promessa no pé — como a folha e o seu carimbo */
+.auth-hero .ds-kicker { color: #3fa98a; display: block; margin: auto 0 0.9rem; }
+.auth-hero h1 { font-size: clamp(1.9rem, 3.1vw, 2.6rem); margin: 0; }
+.auth-brand { display: inline-flex; align-items: center; gap: 0.65rem; align-self: flex-start; }
+.auth-brand svg { width: 2.4rem; height: 2.4rem; }
+.auth-brand .mk-plate { fill: rgba(255, 255, 255, 0.09); }
+.auth-brand .mk-a { stroke: #fff; }
+.auth-brand .mk-cota { stroke: #3fa98a; }
+.auth-brand-word { font-family: var(--ds-font-display); font-variation-settings: "wdth" 115, "wght" 700; font-size: 1.3rem; color: #fff; }
+.auth-card { padding: 2rem; gap: 1.35rem; }
+.auth-field > span {
+    font-family: var(--arq-font-mono); font-size: 0.7rem; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--ds-text-500); margin-bottom: 0.45rem;
+}
+.auth-field input { background: var(--ds-panel); border-color: transparent; }
+.auth-field input:focus { background: #fff; }
+.auth-submit { justify-content: center; padding: 0.75rem 1rem; }
+.auth-visitor-btn { justify-content: center; width: 100%; }
+
+/* =================================================================
+   RESPONSIVO
+   ================================================================= */
+@media (max-width: 60rem) {
+    .app-main { padding: 1.6rem 1.15rem 3rem; }
+    .page { gap: 1.35rem; }
+    .page-head--row { flex-direction: column; align-items: stretch; gap: 1rem; }
+    .page-head--row > :not(:first-child) { padding-top: 0; }
+    .page-head-actions { flex-wrap: wrap; }
+    .dash-hero { padding: 1.75rem 1.4rem; }
+    .dash-onb { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .ds-card { padding: 1.25rem; }
+    .ds-card > .data-table, .ds-card > .table-scroll { margin-left: -1.25rem; margin-right: -1.25rem; width: calc(100% + 2.5rem); }
+    .ds-card > .data-table:last-child, .ds-card > .table-scroll:last-child { margin-bottom: -1.25rem; }
+    .ds-card > .data-table:not(:last-child), .ds-card > .table-scroll:not(:last-child) { margin-bottom: 1rem; }
+    .ds-card > .data-table th:first-child, .ds-card > .data-table td:first-child,
+    .ds-card > .table-scroll .data-table th:first-child,
+    .ds-card > .table-scroll .data-table td:first-child { padding-left: 1.25rem; }
+    .ds-card > .data-table th:last-child, .ds-card > .data-table td:last-child,
+    .ds-card > .table-scroll .data-table th:last-child,
+    .ds-card > .table-scroll .data-table td:last-child { padding-right: 1.25rem; }
+    .ds-card > .table-scroll { width: auto; }
+    .auth-hero { padding: 2rem 1.5rem; min-height: auto; }
+    .auth-card { padding: 1.5rem; }
+}
+
+/* =================================================================
+   MOVIMENTO REDUZIDO
+   ================================================================= */
+@media (prefers-reduced-motion: reduce) {
+    .page > *, .auth-shell > *, .kpi-row .kpi, .app-message,
+    .nav-link.is-active::before, .nav-badge { animation: none; }
+    .ds-btn, .chip, .kpi, .modulo-card--ativo, .projeto-card, .obra-card,
+    .kanban-card, .onb-etapa, .notif-item, .diag-opcao, .dash-onb {
+        transition-duration: 1ms;
+    }
+    .ds-btn:hover, .chip:hover, .kpi:hover, .projeto-card:hover, .obra-card:hover,
+    .kanban-card:hover, .onb-etapa:hover, .notif-item:hover, .diag-opcao:hover,
+    .dash-onb:hover, .dash-section .modulo-card--ativo:hover { transform: none; }
+    .ds-btn--solid::after { display: none; }
+    .ds-progress-fill { transition: none; }
+}

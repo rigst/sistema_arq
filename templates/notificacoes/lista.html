@@ -20,6 +20,7 @@
     <ul class="notif-lista">
         {% for n in notificacoes %}
         <li class="notif-item notif-item--{{ n.nivel }} {% if n.lida %}is-lida{% endif %}">
+            <span class="arq-glifo" aria-hidden="true">{% if n.nivel == 'info' %}■{% else %}▲{% endif %}</span>
             <div class="notif-corpo">
                 <strong>{{ n.titulo }}</strong>
                 {% if n.mensagem %}<p>{{ n.mensagem }}</p>{% endif %}

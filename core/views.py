@@ -59,22 +59,24 @@ def dashboard(request):
 
     onboarding = montar_checklist(u)
 
+    # (nome, descrição, url_name, ícone) — o ícone repete o da barra lateral,
+    # para que o atalho e o item de menu sejam reconhecidos como a mesma coisa.
     grupos = [
         ("Comercial", "comercial", [
-            ("Clientes", "Contatos, funil e histórico.", "crm_lista"),
-            ("Propostas", "Proposta que vira projeto ao aprovar.", "propostas_lista"),
-            ("Contratos", "Parcelas no financeiro, aditivos e documentos.", "contratos_lista"),
+            ("Clientes", "Contatos, funil e histórico.", "crm_lista", "clientes"),
+            ("Propostas", "Proposta que vira projeto ao aprovar.", "propostas_lista", "propostas"),
+            ("Contratos", "Parcelas no financeiro, aditivos e documentos.", "contratos_lista", "contratos"),
         ]),
         ("Produção", "producao", [
-            ("Projetos", "Painel com etapa, pendências e margem.", "projetos_painel"),
-            ("Obras", "Cronograma real × previsto e medições.", "obras_lista"),
-            ("Tarefas", "Delegação com dono, prazo e timer.", "tarefas_lista"),
-            ("Agenda", "Reuniões, visitas e prazos.", "agenda"),
+            ("Projetos", "Painel com etapa, pendências e margem.", "projetos_painel", "projetos"),
+            ("Obras", "Cronograma real × previsto e medições.", "obras_lista", "obras"),
+            ("Tarefas", "Delegação com dono, prazo e timer.", "tarefas_lista", "tarefas"),
+            ("Agenda", "Reuniões, visitas e prazos.", "agenda", "agenda"),
         ]),
         ("Gestão", "gestao", [
-            ("Financeiro", "Entradas, saídas, saldos e margem.", "financeiro_painel"),
-            ("Precificação", "Hora técnica a partir dos custos.", "precificacao"),
-            ("Regulatório", "ART, RRT e CAU com alerta de vencimento.", "regulatorio_lista"),
+            ("Financeiro", "Entradas, saídas, saldos e margem.", "financeiro_painel", "financeiro"),
+            ("Precificação", "Hora técnica a partir dos custos.", "precificacao", "precificacao"),
+            ("Regulatório", "ART, RRT e CAU com alerta de vencimento.", "regulatorio_lista", "regulatorio"),
         ]),
     ]
 

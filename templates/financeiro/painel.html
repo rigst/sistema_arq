@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load l10n %}
 {% block title %}Financeiro{% endblock %}
 
 {% block content %}
@@ -7,7 +8,7 @@
         <div>
             <span class="ds-kicker">Financeiro</span>
             <h1 class="ds-h2 ds-display">Entradas, saídas e saldos</h1>
-            <p class="page-sub">Fechamento do mês {{ resumo.mes }}/{{ resumo.ano }}: entradas R$ {{ resumo.entradas }} · saídas R$ {{ resumo.saidas }} · saldo <strong>R$ {{ resumo.saldo }}</strong>.</p>
+            <p class="page-sub">Fechamento do mês {{ resumo.mes }}/{{ resumo.ano|unlocalize }}: entradas R$ {{ resumo.entradas }} · saídas R$ {{ resumo.saidas }} · saldo <strong>R$ {{ resumo.saldo }}</strong>.</p>
         </div>
         <div class="page-head-actions">
             <a class="ds-btn" href="{% url 'financeiro_dre' %}">DRE</a>

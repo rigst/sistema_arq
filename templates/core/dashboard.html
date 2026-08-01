@@ -4,13 +4,18 @@
 
 {% block content %}
 <section class="page">
+    {# Carimbo de prancha: o cabeçalho do painel se lê como o selo de uma folha técnica. #}
     <header class="dash-hero">
-        <div class="ds-glow" aria-hidden="true"></div>
         <div class="dash-hero-in">
-            <span class="ds-kicker">Painel · {{ user.nome_empresa }}</span>
+            <span class="ds-kicker">Painel do escritório</span>
             <h1 class="ds-h2 ds-display">Bem-vindo{% if user.nome_exibicao %}, {{ user.nome_exibicao }}{% endif %}</h1>
             <p>Do briefing à obra num só lugar. Comece pelo que precisa de atenção hoje.</p>
         </div>
+        <dl class="dash-carimbo">
+            <div><dt>Escritório</dt><dd>{{ user.nome_empresa|default:"—" }}</dd></div>
+            <div><dt>Responsável</dt><dd>{{ user.nome_exibicao|default:user.get_username }}</dd></div>
+            <div><dt>Data</dt><dd class="num">{% now "d/m/Y" %}</dd></div>
+        </dl>
     </header>
 
     <div class="kpi-row">
@@ -30,7 +35,7 @@
             <strong>Continue os primeiros passos — {{ onboarding.concluidas }} de {{ onboarding.total }} prontos</strong>
             <div class="ds-progress ds-progress--on-light"><div class="ds-progress-fill" style="width: {{ onboarding.percentual|unlocalize }}%"></div></div>
         </div>
-        <span class="dash-onb-cta">Retomar →</span>
+        <span class="dash-onb-cta">Retomar</span>
     </a>
     {% endif %}
 
@@ -38,8 +43,9 @@
     <div class="dash-section dash-section--{{ cor }}">
         <h2 class="dash-section-head ds-display">{{ titulo }}</h2>
         <div class="modulo-grid">
-            {% for nome, descricao, url_name in itens %}
+            {% for nome, descricao, url_name, simbolo in itens %}
             <a class="modulo-card ds-card modulo-card--ativo" href="{% url url_name %}">
+                <span class="modulo-ico">{% include "core/_ico.html" with ico=simbolo %}</span>
                 <div class="modulo-head">
                     <h3 class="ds-display">{{ nome }}</h3>
                     <span class="modulo-seta" aria-hidden="true">→</span>

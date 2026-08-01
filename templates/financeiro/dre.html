@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load l10n %}
 {% block title %}DRE{% endblock %}
 
 {% block content %}
@@ -6,12 +7,12 @@
     <header class="page-head page-head--row">
         <div>
             <span class="ds-kicker">Financeiro</span>
-            <h1 class="ds-h2 ds-display">DRE — {{ mes }}/{{ ano }}</h1>
+            <h1 class="ds-h2 ds-display">DRE — {{ mes }}/{{ ano|unlocalize }}</h1>
             <p class="page-sub">Demonstração de resultado do mês (realizado, por categoria).</p>
         </div>
         <div class="page-head-actions">
             <a class="ds-btn" href="{% url 'financeiro_painel' %}">Voltar</a>
-            <a class="ds-btn ds-btn--solid" href="{% url 'financeiro_dre_csv' %}?ano={{ ano }}&mes={{ mes }}">Exportar CSV</a>
+            <a class="ds-btn ds-btn--solid" href="{% url 'financeiro_dre_csv' %}?ano={{ ano|unlocalize }}&amp;mes={{ mes }}">Exportar CSV</a>
         </div>
     </header>
 

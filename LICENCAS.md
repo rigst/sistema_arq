@@ -1,4 +1,4 @@
-# Licenças — Sistema ARQ
+# Licenças — A.R.Q.
 
 Resumo das licenças das dependências e recomendação de licença para o app.
 
@@ -50,7 +50,7 @@ Resumo das licenças das dependências e recomendação de licença para o app.
   Pyphen só é usado para hifenização na geração de PDF (WeasyPrint).
 
 **Conclusão:** nenhuma dependência força o app a ser open source. Você pode licenciar o
-código do Sistema ARQ como quiser.
+código do A.R.Q. como quiser.
 
 ## Recomendação de licença do app
 
