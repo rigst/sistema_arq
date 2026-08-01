@@ -19,6 +19,23 @@
         </div>
     </header>
 
+    {% comment %}
+    O orçamento é o custo de executar, item a item: assunto da obra, não do
+    projeto. Estava numa lista global e depois nos registros do projeto — nos
+    dois casos longe de quem precisa dele, que é quem toca a execução.
+    {% endcomment %}
+    <section class="secao" id="orcamento">
+        <h2 class="secao-titulo ds-display">Orçamento de execução</h2>
+        <p class="secao-sub">
+            Quanto custa executar, item a item, com fornecedor por item e BDI. O valor
+            realizado entra quando o item é contratado.
+        </p>
+        <p class="fase-atalhos">
+            <a class="ds-btn" href="{% url 'orcamentos_lista' %}?projeto={{ obra.projeto.pk }}">Ver orçamentos</a>
+            <a class="ds-btn" href="{% url 'orcamento_novo' obra.projeto.pk %}">Novo orçamento</a>
+        </p>
+    </section>
+
     <div class="ds-card cronograma-resumo">
         <div class="cronograma-num">
             <span class="ds-kicker">Previsto</span>

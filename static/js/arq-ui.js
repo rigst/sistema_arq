@@ -117,7 +117,35 @@
         pintar();
     }
 
-    function iniciar() { contarNumeros(); preencherBarras(); marcarEnvio(); aberturaEmPassos(); }
+    /* Avisos do canto: fecham no clique e somem sozinhos.
+       Erro NÃO some sozinho — quem precisa reler o que deu errado não deve
+       correr contra um cronômetro. */
+    function avisos() {
+        var caixa = document.querySelector("[data-avisos]");
+        if (!caixa) return;
+
+        function fechar(aviso) {
+            aviso.classList.add("is-saindo");
+            window.setTimeout(function () {
+                aviso.remove();
+                if (!caixa.querySelector(".ds-aviso")) caixa.remove();
+            }, 260);
+        }
+
+        Array.prototype.forEach.call(caixa.querySelectorAll(".ds-aviso"), function (aviso, i) {
+            var botao = aviso.querySelector(".ds-aviso-fechar");
+            if (botao) botao.addEventListener("click", function () { fechar(aviso); });
+
+            if (aviso.classList.contains("ds-aviso--error")) return;
+            var prazo = 5000 + i * 600;
+            var relogio = window.setTimeout(function () { fechar(aviso); }, prazo);
+            /* Com o ponteiro em cima, o aviso espera: quem está lendo não
+               quer ver o texto sumir no meio da frase. */
+            aviso.addEventListener("mouseenter", function () { window.clearTimeout(relogio); });
+        });
+    }
+
+    function iniciar() { contarNumeros(); preencherBarras(); marcarEnvio(); aberturaEmPassos(); avisos(); }
 
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", iniciar);

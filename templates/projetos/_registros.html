@@ -17,12 +17,6 @@ contratos, arquivos e obrigações técnicas. Saíram do menu lateral porque men
             </a>
         </li>
         <li>
-            <a href="{% url 'orcamentos_lista' %}?projeto={{ projeto.pk }}">
-                {% include "core/_ico.html" with ico="orcamentos" %}
-                <span><strong>Orçamentos</strong><small>Custo de execução item a item.</small></span>
-            </a>
-        </li>
-        <li>
             <a href="{% url 'propostas_lista' %}?projeto={{ projeto.pk }}">
                 {% include "core/_ico.html" with ico="propostas" %}
                 <span><strong>Propostas</strong><small>Honorários calculados da hora técnica.</small></span>

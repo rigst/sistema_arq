@@ -240,8 +240,24 @@ class NavegacaoPorProjetoTests(BaseFase):
 
     def test_ficha_do_projeto_leva_para_os_registros_filtrados(self):
         resp = self.client.get(f"/projetos/{self.projeto.pk}/")
-        for rota in ["/arquivos/", "/orcamentos/", "/propostas/", "/contratos/", "/regulatorio/"]:
+        for rota in ["/arquivos/", "/propostas/", "/contratos/", "/regulatorio/"]:
             self.assertContains(resp, f"{rota}?projeto={self.projeto.pk}")
+
+    def test_orcamento_e_assunto_da_execucao_e_nao_do_projeto(self):
+        """Orçamento é o custo de executar: quem precisa dele é quem toca a
+        obra, não quem está desenhando."""
+        from obras.models import Obra
+
+        self.assertNotContains(
+            self.client.get(f"/projetos/{self.projeto.pk}/"),
+            f"/orcamentos/?projeto={self.projeto.pk}",
+        )
+        obra = Obra.objects.create(
+            empresa=self.grupo, projeto=self.projeto, endereco="Rua A, 100"
+        )
+        self.assertContains(
+            self.client.get(f"/obras/{obra.pk}/"), f"/orcamentos/?projeto={self.projeto.pk}"
+        )
 
     def test_menu_nao_repete_o_que_e_de_projeto(self):
         """Menu é para o que atravessa projetos. Ter os dois caminhos fazia

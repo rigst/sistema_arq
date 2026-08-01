@@ -55,6 +55,18 @@
             <p>{{ form.nome.label_tag }}{{ form.nome }}</p>
             <p>{{ form.tipo.label_tag }}{{ form.tipo }}</p>
 
+            <div class="form-dupla">
+                <p>{{ form.cidade.label_tag }}{{ form.cidade }}</p>
+                <p>{{ form.uf.label_tag }}{{ form.uf }}</p>
+            </div>
+            <p>{{ form.endereco.label_tag }}{{ form.endereco }}</p>
+
+            <fieldset class="escolha-multipla">
+                <legend>{{ form.complementares.label }}</legend>
+                <p class="ht-hint">{{ form.complementares.help_text }}</p>
+                {{ form.complementares }}
+            </fieldset>
+
             <label class="form-marcar">
                 {{ form.tem_execucao }}
                 <span>
@@ -63,7 +75,7 @@
                 </span>
             </label>
 
-            <button class="ds-btn ds-btn--solid" type="submit">Criar e ir para o briefing</button>
+            <button class="ds-btn--acao" type="submit"><span>Criar e ir para o briefing</span><span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span></button>
         </fieldset>
     </form>
 </section>

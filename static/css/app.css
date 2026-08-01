@@ -1154,17 +1154,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .nav-group--escritorio .nav-label { color: #3f4a46; }
 
 /* Botão de destaque: vidro verde com o corte aceso */
-.nav-destaque {
-    background: linear-gradient(160deg, rgba(52, 168, 133, 0.92), rgba(20, 81, 63, 0.94));
-    -webkit-backdrop-filter: var(--vidro-desfoque-curto); backdrop-filter: var(--vidro-desfoque-curto);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.2),
-                0 8px 24px rgba(18, 60, 48, 0.34);
-}
-.nav-destaque:hover {
-    background: linear-gradient(160deg, rgba(63, 186, 148, 0.96), rgba(24, 94, 73, 0.96));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.26),
-                0 12px 32px rgba(18, 60, 48, 0.42);
-}
+
 
 /* --- O brilho: a faixa de luz que atravessa a lâmina -------------
    É o que separa "translúcido" de "vidro". Uma faixa clara em diagonal,
@@ -2357,3 +2347,160 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 /* Links e campos seguem com traço, que ali não vira moldura de botão. */
 a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
 .app-side a:focus-visible { outline: none; }
+
+/* =================================================================
+   BOTÃO DE AÇÃO — o molde do DS Stolben
+   Pílula com um disco de ícone na ponta. O disco é o que dá caráter
+   sem virar enfeite: ele indica direção (segue, cria, entra) e é a
+   única parte que se move no hover. Discreto porque a cor é chapada,
+   sem brilho nem gradiente — o que chama é a forma, não o efeito.
+   ================================================================= */
+.ds-btn--acao {
+    display: inline-flex; align-items: center; justify-content: space-between;
+    gap: 1.1rem;
+    padding: 0.4rem 0.4rem 0.4rem 1.3rem;
+    border-radius: 999px; border: 0;
+    font-family: var(--ds-font-sans); font-size: 0.95rem; font-weight: 500;
+    line-height: 1.2; text-decoration: none; cursor: pointer;
+    background: var(--ds-blue); color: #fff;
+    transition: background var(--arq-mid) var(--arq-ease);
+}
+.ds-btn--acao:hover { background: var(--ds-blue-dark); color: #fff; }
+.ds-btn--acao .ds-btn-ico {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.85rem; height: 1.85rem; flex-shrink: 0;
+    border-radius: 50%; background: rgba(255, 255, 255, 0.18);
+    transition: background var(--arq-mid) var(--arq-ease),
+                transform var(--arq-mid) var(--arq-ease-out);
+}
+.ds-btn--acao .ds-btn-ico svg { width: 0.95rem; height: 0.95rem; }
+.ds-btn--acao:hover .ds-btn-ico { background: rgba(255, 255, 255, 0.3); transform: translateX(2px); }
+.ds-btn--acao:active { transform: translateY(1px); }
+.ds-btn--acao:focus-visible {
+    outline: none; background: var(--ds-blue-dark);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.8);
+}
+/* Botão largo: o rótulo à esquerda, o disco encostado na direita. */
+.ds-btn--acao.is-larga { width: 100%; box-sizing: border-box; }
+
+/* Sobre vidro escuro (login e barra lateral) o mesmo molde inverte:
+   pílula clara, disco verde. Continua sendo a peça mais visível da
+   tela, e é a única com fundo sólido — que é o que a faz ser achada. */
+.auth-card .ds-btn--acao,
+.app-side .ds-btn--acao {
+    background: #f4f7f5; color: var(--ds-ink);
+}
+.auth-card .ds-btn--acao:hover,
+.app-side .ds-btn--acao:hover { background: #fff; color: var(--ds-ink); }
+.auth-card .ds-btn--acao .ds-btn-ico,
+.app-side .ds-btn--acao .ds-btn-ico { background: var(--ds-blue); color: #fff; }
+.auth-card .ds-btn--acao:hover .ds-btn-ico,
+.app-side .ds-btn--acao:hover .ds-btn-ico { background: var(--ds-blue-dark); }
+.auth-card .ds-btn--acao:focus-visible,
+.app-side .ds-btn--acao:focus-visible {
+    background: #fff; box-shadow: inset 0 0 0 2px var(--ds-blue-dark);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ds-btn--acao, .ds-btn--acao .ds-btn-ico { transition-duration: 1ms; }
+    .ds-btn--acao:hover .ds-btn-ico { transform: none; }
+}
+
+/* O destaque da lateral usa o molde de ação; aqui ficam só as medidas
+   de posição, para a forma vir de um lugar só. */
+.nav-destaque {
+    margin: 0 0.75rem 0.5rem; padding: 0.4rem 0.4rem 0.4rem 1.1rem;
+    border-radius: 999px; font-weight: 500; font-size: 0.95rem;
+    box-shadow: none;
+}
+.nav-destaque:hover { box-shadow: none; }
+/* Duas classes para vencer .ds-btn--acao.is-larga: na lateral a largura sai da
+   margem, e 100% somaria a margem por fora, estourando a barra. */
+.nav-destaque.is-larga { display: flex; width: auto; }
+.nav-destaque svg { width: 0.95rem; height: 0.95rem; }
+
+/* Escolha múltipla como lista de caixas, não como select de arrastar.
+   Complementar é decisão de sim/não item a item; select múltiplo esconde
+   as opções e ninguém descobre que existem. */
+.escolha-multipla { border: 0; padding: 0; margin: 0 0 1.25rem; }
+.escolha-multipla > legend {
+    padding: 0; margin-bottom: 0.3rem;
+    font-family: var(--arq-font-mono); font-size: 0.68rem; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.12em; color: var(--ds-text-500);
+}
+.escolha-multipla .ht-hint { margin: 0 0 0.7rem; }
+.escolha-multipla ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
+.escolha-multipla li { margin: 0; }
+.escolha-multipla label {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.55rem 0.85rem; border-radius: 0.5rem;
+    border: 1px solid var(--ds-line); background: var(--ds-surface);
+    font-family: var(--ds-font-sans); font-size: 0.9rem; font-weight: 400;
+    text-transform: none; letter-spacing: normal; color: var(--ds-text-900);
+    cursor: pointer;
+    transition: border-color var(--arq-fast) ease, background var(--arq-fast) ease;
+}
+.escolha-multipla label:hover { border-color: var(--ds-blue-light); background: var(--ds-panel); }
+.escolha-multipla input { width: auto; flex: 0 0 auto; margin: 0; }
+.escolha-multipla input:checked + span,
+.escolha-multipla label:has(input:checked) { border-color: var(--ds-blue); }
+@media (min-width: 34rem) {
+    .escolha-multipla ul { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* =================================================================
+   AVISOS — card no canto, como no DS Stolben
+   No topo do conteúdo, cada aviso empurrava a página para baixo e
+   sumia junto com o scroll. Aqui ele fica sobre tudo, no canto de
+   baixo à direita, perto de onde a mão está.
+   ================================================================= */
+.ds-avisos {
+    position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 60;
+    display: flex; flex-direction: column-reverse; gap: 0.6rem;
+    width: min(24rem, calc(100vw - 2.5rem));
+    pointer-events: none;
+}
+.ds-aviso {
+    pointer-events: auto;
+    display: grid; grid-template-columns: 0.35rem minmax(0, 1fr) auto;
+    align-items: start; gap: 0.85rem;
+    padding: 0.85rem 0.9rem 0.85rem 0;
+    border-radius: 0.65rem; overflow: hidden;
+    background: var(--ds-surface);
+    border: 1px solid var(--ds-line);
+    box-shadow: 0 2px 6px rgba(15, 17, 21, 0.06), 0 18px 40px rgba(15, 17, 21, 0.16);
+    animation: aviso-entra 320ms var(--arq-ease-out) both;
+}
+.ds-aviso p { margin: 0; padding: 0.05rem 0; font-size: 0.9rem; color: var(--ds-text-900); }
+/* A cor mora numa barra na borda, e não no fundo: fundo colorido em
+   cima do conteúdo compete com ele; barra só classifica. */
+.ds-aviso-marca { align-self: stretch; background: var(--ds-text-400); }
+.ds-aviso--success .ds-aviso-marca { background: var(--ds-blue); }
+.ds-aviso--error .ds-aviso-marca { background: var(--ds-danger); }
+.ds-aviso--warning .ds-aviso-marca, .ds-aviso--info .ds-aviso-marca { background: var(--arq-amber); }
+.ds-aviso-fechar {
+    background: none; border: 0; padding: 0.2rem; cursor: pointer;
+    color: var(--ds-text-400); line-height: 0; border-radius: 0.3rem;
+    transition: color var(--arq-fast) ease, background var(--arq-fast) ease;
+}
+.ds-aviso-fechar svg { width: 0.85rem; height: 0.85rem; }
+.ds-aviso-fechar:hover { color: var(--ds-text-900); background: var(--ds-panel); }
+.ds-aviso-fechar:focus-visible {
+    outline: none; color: var(--ds-text-900); box-shadow: inset 0 0 0 2px var(--ds-blue-dark);
+}
+.ds-aviso.is-saindo { animation: aviso-sai 260ms var(--arq-ease) both; }
+
+@keyframes aviso-entra {
+    from { opacity: 0; transform: translateY(0.8rem) scale(0.98); }
+    to { opacity: 1; transform: none; }
+}
+@keyframes aviso-sai {
+    from { opacity: 1; transform: none; }
+    to { opacity: 0; transform: translateX(1rem); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ds-aviso, .ds-aviso.is-saindo { animation: none; }
+}
+@media (max-width: 40rem) {
+    .ds-avisos { right: 0.75rem; left: 0.75rem; bottom: 0.75rem; width: auto; }
+}

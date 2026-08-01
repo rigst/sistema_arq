@@ -36,16 +36,16 @@
         <div class="fase-acoes">
             {% if fase.status == "nao_iniciada" %}
             <form method="post" action="{% url 'fase_iniciar' fase.pk %}" class="app-inline-form">
-                {% csrf_token %}<button class="ds-btn ds-btn--solid" type="submit">Começar a fase</button>
+                {% csrf_token %}<button class="ds-btn--acao" type="submit"><span>Começar a fase</span><span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span></button>
             </form>
             {% elif fase.status == "em_elaboracao" or fase.status == "ajustes" %}
                 {% if fase.exige_aprovacao %}
                 <form method="post" action="{% url 'fase_enviar' fase.pk %}" class="app-inline-form">
-                    {% csrf_token %}<button class="ds-btn ds-btn--solid" type="submit">Enviar ao cliente</button>
+                    {% csrf_token %}<button class="ds-btn--acao" type="submit"><span>Enviar ao cliente</span><span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span></button>
                 </form>
                 {% else %}
                 <form method="post" action="{% url 'fase_concluir' fase.pk %}" class="app-inline-form">
-                    {% csrf_token %}<button class="ds-btn ds-btn--solid" type="submit">Concluir fase</button>
+                    {% csrf_token %}<button class="ds-btn--acao" type="submit"><span>Concluir fase</span><span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span></button>
                 </form>
                 {% endif %}
             {% endif %}

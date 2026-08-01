@@ -49,7 +49,10 @@
                 <span>Senha</span>
                 {{ form.password }}
             </label>
-            <button class="ds-btn ds-btn--solid auth-submit" type="submit">Entrar</button>
+            <button class="ds-btn--acao is-larga auth-submit" type="submit">
+                <span>Entrar</span>
+                <span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span>
+            </button>
         </form>
 
         <div class="auth-visitor">

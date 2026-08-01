@@ -13,9 +13,36 @@ class SemDoisPontosMixin:
         super().__init__(*args, **kwargs)
 
 
-class ArqModelForm(SemDoisPontosMixin, forms.ModelForm):
+class NomeAcessivelMixin:
+    """Todo campo carrega o próprio rótulo em aria-label.
+
+    Vários formulários do sistema aparecem em linha — adicionar pendência,
+    lançar custo, gerar parcelas — e ali o rótulo visível seria ruído: a coluna
+    já diz o que é. Só que sem rótulo o campo fica mudo para quem usa leitor de
+    tela. Escrever isso à mão em cada template é o tipo de coisa que se esquece
+    no template seguinte, então nasce com o formulário.
+
+    Onde o rótulo visível existe, o `for`/`id` continua valendo e o aria-label
+    apenas repete o mesmo texto, sem conflito.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for campo in self.fields.values():
+            rotulo = campo.label
+            if not rotulo or "aria-label" in campo.widget.attrs:
+                continue
+            if isinstance(campo.widget, (forms.CheckboxInput, forms.RadioSelect,
+                                         forms.CheckboxSelectMultiple)):
+                # Marcações vêm sempre com rótulo visível ao lado; repetir aqui
+                # faria o leitor de tela anunciar o texto duas vezes.
+                continue
+            campo.widget.attrs["aria-label"] = str(rotulo)
+
+
+class ArqModelForm(NomeAcessivelMixin, SemDoisPontosMixin, forms.ModelForm):
     pass
 
 
-class ArqForm(SemDoisPontosMixin, forms.Form):
+class ArqForm(NomeAcessivelMixin, SemDoisPontosMixin, forms.Form):
     pass
