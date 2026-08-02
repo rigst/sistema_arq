@@ -230,6 +230,11 @@ a { color: var(--ds-blue-dark); }
     padding: 2.6rem 3rem 5rem; box-sizing: border-box;
     border-left: 1px solid var(--ds-line);
     min-height: 100vh;
+    /* Tabela larga rola dentro do .table-scroll, mas a página ainda ganhava
+       barra horizontal no estreito: o conteúdo do scroller escapava para o
+       documento. `clip` corta sem virar scroller — `hidden` viraria, e aí o
+       botão de salvar do briefing perderia o sticky. */
+    overflow-x: clip;
 }
 .app-main--public { max-width: 64rem; border-left: 0; min-height: auto; padding: 3rem 1.5rem 4rem; }
 
@@ -1011,6 +1016,10 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .briefing-opcoes-preview { display: block; margin-top: 0.2rem; font-size: 0.82rem; color: var(--ds-text-500); }
 
 .briefing-respostas { display: flex; flex-direction: column; gap: 2rem; }
+/* O csrf é um input hidden, e alguma regra de input o tirava do display:none
+   do navegador: virava item de flex e abria um vão de 2rem antes da primeira
+   pergunta, logo abaixo da linha do roteiro. */
+.briefing-respostas > input[type="hidden"] { display: none; }
 .briefing-pergunta { border: 0; margin: 0 0 1.75rem; padding: 0; overflow: hidden; }
 .briefing-pergunta:last-of-type { margin-bottom: 0; }
 .briefing-pergunta legend {
@@ -2681,8 +2690,10 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
     background: var(--ds-surface);
 }
 .cal-dia.is-fds { background: var(--ds-panel); }
-.cal-dia.is-fora { background: transparent; }
-.cal-dia.is-fora .cal-num { color: var(--ds-text-400); }
+/* Dia de outro mês: quem o afasta é a falta de fundo e de moldura, não um
+   cinza mais claro. Clarear o número o levava a 3,3:1 — a data é conteúdo,
+   e data ilegível não vale a hierarquia que se ganha. */
+.cal-dia.is-fora { background: transparent; border-color: transparent; }
 .cal-num { font-family: var(--arq-font-mono); font-size: 0.74rem; color: var(--ds-text-500); }
 .cal-dia.is-hoje { border-color: var(--ds-blue); box-shadow: inset 0 0 0 1px var(--ds-blue); }
 .cal-dia.is-hoje .cal-num {
@@ -3165,3 +3176,110 @@ a.projeto-card:focus-visible {
 .abrir-campo--fino > summary { font-size: 0.8rem; padding: 0.3rem 0.7rem; }
 .briefing-salvar { position: sticky; bottom: 1rem; justify-content: flex-end; }
 .fase-selo { display: inline-flex; align-items: center; gap: 0.35rem; }
+
+/* Ícone de ação numa linha de lista: aparece de leve, acende no hover. */
+.linha-ico {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.6rem; height: 1.6rem; padding: 0;
+    background: none; border: 0; border-radius: 0.3rem; cursor: pointer;
+    color: var(--ds-text-400);
+    transition: color var(--arq-fast) ease, background var(--arq-fast) ease;
+}
+.linha-ico svg { width: 0.9rem; height: 0.9rem; }
+.linha-ico:hover { color: var(--ds-blue-dark); background: var(--ds-panel); }
+.linha-ico--risco:hover { color: var(--ds-danger); background: rgba(168, 54, 38, 0.1); }
+.linha-ico:focus-visible {
+    outline: none; color: var(--ds-text-900); box-shadow: inset 0 0 0 2px var(--ds-blue-dark);
+}
+.agenda-acoes { display: flex; align-items: center; gap: 0.2rem; }
+.agenda-lista li:hover .linha-ico { color: var(--ds-text-500); }
+
+/* =================================================================
+   PROGRAMA DE NECESSIDADES
+   A linha de adicionar era .inline-add, que tem fundo e borda próprios:
+   dentro da folha virava caixa dentro de caixa, e os três campos ainda
+   tinham cada um o seu contorno. Aqui os campos dividem uma régua só.
+   ================================================================= */
+.programa-add {
+    display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+    margin-top: 0.9rem; padding: 0; background: none; border: 0;
+}
+.programa-add input {
+    background: none; border: 0; border-bottom: 1px solid var(--ds-line-dash);
+    border-radius: 0; padding: 0.45rem 0.2rem; box-shadow: none;
+    font: inherit; font-size: 0.9rem; color: var(--ds-text-900);
+}
+.programa-add input:focus {
+    outline: none; border-bottom-color: var(--ds-blue); box-shadow: none;
+    background: none;
+}
+.programa-add input::placeholder { color: var(--ds-text-400); }
+.programa-add input[name="nome"] { flex: 1 1 12rem; }
+.programa-add input[name="area_aprox"] { flex: 0 1 5rem; }
+.programa-add input[name="uso"] { flex: 1 1 10rem; }
+.programa-add .ds-btn { flex-shrink: 0; }
+
+/* =================================================================
+   SELETOR DE ROTEIRO
+   Rótulo, campo e botão numa régua só, com o campo levando o peso.
+   Antes era uma barra cinza com um select de contorno próprio dentro —
+   duas molduras para uma escolha.
+   ================================================================= */
+.troca-roteiro {
+    display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap;
+    margin: 0 0 2.5rem; padding: 0 0 0.9rem;
+    border-bottom: 1px solid var(--ds-line);
+}
+.troca-roteiro label { flex-shrink: 0; }
+.troca-roteiro select {
+    flex: 1; min-width: 12rem;
+    background: none; border: 0; border-radius: 0;
+    padding: 0.2rem 0; box-shadow: none;
+    font-family: var(--ds-font-display);
+    font-variation-settings: "wdth" 106, "wght" 500;
+    font-size: 1.05rem; color: var(--ds-text-900);
+}
+.troca-roteiro select:focus {
+    outline: none; box-shadow: none; background: none;
+    text-decoration: underline; text-underline-offset: 5px;
+    text-decoration-color: var(--ds-blue);
+}
+.troca-roteiro .ds-btn { flex-shrink: 0; padding: 0.32rem 0.8rem; font-size: 0.82rem; }
+
+/* =================================================================
+   PASSO A PASSO
+   Numeração vertical com fio ligando os passos. Aqui a numeração não é
+   enfeite: a ordem carrega informação real — o valor do contrato sai da
+   proposta, e o arquivo que se envia é o PDF das duas.
+   ================================================================= */
+.passos { list-style: none; margin: 0; padding: 0; }
+.passo {
+    position: relative;
+    display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 1.1rem;
+    padding: 0 0 2.25rem;
+}
+/* O fio desce do número até o passo seguinte. */
+.passo:not(:last-child)::before {
+    content: ""; position: absolute; left: 0.97rem; top: 2.4rem; bottom: 0.5rem;
+    width: 1px; background: var(--ds-line-dash);
+}
+.passo-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 2rem; height: 2rem; border-radius: 50%; flex-shrink: 0;
+    background: var(--ds-surface); border: 1px solid var(--ds-line-dash);
+    font-size: 0.82rem; font-weight: 600; color: var(--ds-text-500);
+    position: relative; z-index: 1;
+}
+.passo.is-feito .passo-num {
+    background: var(--ds-blue); border-color: var(--ds-blue); color: #fff;
+}
+.passo.is-esperando { opacity: 0.75; }
+.passo-corpo { min-width: 0; padding-top: 0.15rem; }
+.passo-titulo { margin: 0 0 0.2rem; font-size: 1.05rem; }
+.passo-sub { margin: 0 0 0.9rem; font-size: 0.88rem; color: var(--ds-text-500); max-width: 42rem; }
+.passo--final .passo-num { border-style: dashed; }
+.passo--final.is-feito .passo-num { border-style: solid; }
+/* O vazio de tela cheia (1,5rem de respiro) abre um buraco dentro do passo,
+   onde ele é só uma linha de contexto antes do botão. */
+.passo-corpo .data-empty { margin: 0 0 0.9rem; padding: 0 !important; text-align: left; }
+.escolha-multipla label small { color: var(--ds-text-500); font-size: 0.75rem; margin-left: 0.35rem; }

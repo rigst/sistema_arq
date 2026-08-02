@@ -67,7 +67,7 @@
         <h2 class="secao-titulo ds-display">{{ titulo_mes|capfirst }}</h2>
         <p class="secao-sub">Os compromissos do mês, em lista, com o que o calendário não cabe.</p>
         <ul class="agenda-lista">
-            {% for c in do_mes %}
+            {% for c, form_edicao in do_mes %}
             <li>
                 <div class="agenda-quando">
                     <strong>{{ c.inicio|date:"d/m" }}</strong>
@@ -82,10 +82,48 @@
                         {% if c.local %} · {{ c.local }}{% endif %}
                     </p>
                 </div>
-                <form method="post" action="{% url 'agenda_remover' c.pk %}" class="app-inline-form">
-                    {% csrf_token %}
-                    <button class="app-link-btn" type="submit">remover</button>
-                </form>
+
+                {% comment %}
+                Editar e excluir na própria linha, em ícone. A ação mora onde o
+                compromisso está — procurar numa tela de gerenciamento à parte
+                custa mais do que a mudança em si.
+                {% endcomment %}
+                <div class="agenda-acoes">
+                    <button class="linha-ico" type="button" data-abre="modal-compromisso-{{ c.pk }}"
+                            title="Editar" aria-label="Editar {{ c.titulo }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+                    </button>
+                    <form method="post" action="{% url 'agenda_remover' c.pk %}" class="app-inline-form">
+                        {% csrf_token %}
+                        <button class="linha-ico linha-ico--risco" type="submit"
+                                title="Excluir" aria-label="Excluir {{ c.titulo }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M6 7l1 13h10l1-13"/></svg>
+                        </button>
+                    </form>
+                </div>
+
+                <dialog class="ds-modal" id="modal-compromisso-{{ c.pk }}" aria-labelledby="modal-compromisso-{{ c.pk }}-titulo">
+                    <form method="dialog" class="ds-modal-fechar-form">
+                        <button class="ds-modal-fechar" aria-label="Fechar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                        </button>
+                    </form>
+                    <h2 class="ds-modal-titulo ds-display" id="modal-compromisso-{{ c.pk }}-titulo">Editar compromisso</h2>
+                    <p class="ds-modal-sub">{{ c.inicio|date:"d/m/Y às H:i" }}</p>
+                    <div class="ds-modal-corpo">
+                        <form method="post" action="{% url 'agenda_editar' c.pk %}" class="form-card">
+                            {% csrf_token %}
+                            {{ form_edicao.as_p }}
+                            <div class="form-actions">
+                                <button class="ds-btn" type="submit" formmethod="dialog" formnovalidate>Cancelar</button>
+                                <button class="ds-btn--acao" type="submit">
+                                    <span>Salvar</span>
+                                    {% include "core/_ico.html" with ico="seta" %}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </dialog>
             </li>
             {% empty %}
             <li class="data-empty">Nenhum compromisso neste mês.</li>

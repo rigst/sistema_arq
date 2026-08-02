@@ -61,10 +61,18 @@
     }
 
     /* --- Botão de envio mostra que já foi clicado (e não aceita dois cliques) --- */
+    /* Trava de duplo envio: o segundo clique no mesmo botão não repete o POST.
+       Formulário method="dialog" fica de fora — ele não envia nada, só fecha o
+       modal, e travá-lo fazia o X parar de funcionar depois do primeiro uso.
+       Modal preso aberto deixa o resto da página inerte, e era isso que
+       parecia "a roda do mouse não rola". */
     function marcarEnvio() {
         document.addEventListener("submit", function (e) {
             var form = e.target;
-            if (!(form instanceof HTMLFormElement) || form.hasAttribute("data-sem-espera")) return;
+            if (!(form instanceof HTMLFormElement)) return;
+            if (form.method === "dialog" || form.hasAttribute("data-sem-espera")) return;
+            /* Botão com formmethod="dialog" (o Cancelar) também só fecha. */
+            if (e.submitter && e.submitter.formMethod === "dialog") return;
             if (form.dataset.enviando === "1") { e.preventDefault(); return; }
             form.dataset.enviando = "1";
             var botao = form.querySelector('button[type="submit"], button:not([type])');
@@ -166,6 +174,16 @@
         /* Clique fora fecha: o backdrop é o próprio <dialog>, então basta
            conferir se o ponto do clique caiu fora da caixa. */
         document.querySelectorAll("dialog.ds-modal").forEach(function (dlg) {
+            /* Fechar sem enviar destrava o formulário: senão, reabrir o modal
+               e tentar de novo esbarraria na marca do envio anterior. */
+            dlg.addEventListener("close", function () {
+                dlg.querySelectorAll("form").forEach(function (f) {
+                    delete f.dataset.enviando;
+                    f.querySelectorAll(".is-busy").forEach(function (b) {
+                        b.classList.remove("is-busy");
+                    });
+                });
+            });
             dlg.addEventListener("click", function (e) {
                 if (e.target !== dlg) return;
                 var r = dlg.getBoundingClientRect();

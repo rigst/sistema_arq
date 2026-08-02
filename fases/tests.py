@@ -583,13 +583,29 @@ class BriefingUnicoTests(BaseFase):
         self.assertTrue(resposta.context["editando"])
         self.assertContains(resposta, "Salvar briefing")
 
+    def test_a_pagina_toda_envia_por_um_formulario_so(self):
+        """O texto do botão sobrevive mesmo sem a tag <form>; ele não basta.
+
+        Roteiro, blocos NBR e botão de salvar são um POST só, e o que
+        costura os três é o atributo form="briefing" nos campos que ficam
+        fora da tag. Sem isso a página parece certa e não salva nada.
+        """
+        resposta = self.client.get(f"/briefing/projeto/{self.projeto.pk}/responder/")
+        html = resposta.content.decode()
+        self.assertIn('id="briefing"', html)
+        self.assertIn('form="briefing"', html)
+        # O programa fica no meio, com formulário próprio de adicionar.
+        self.assertIn('id="programa-bloco"', html)
+        self.assertIn("programa-add", html)
+
     def test_fase_de_proposta_tem_tela_propria(self):
         proposta = self.liberar_ate("proposta")
         proposta.abrir(self.user)
         resposta = self.client.get(f"/fases/{proposta.pk}/")
-        self.assertContains(resposta, "Proposta de honorários")
-        self.assertContains(resposta, "Contrato")
-        # Sem tarefas nem prazo: a fase é só as duas peças.
+        # Passo a passo, na ordem em que as peças dependem umas das outras.
+        for passo in ["Montar a proposta", "Criar o contrato",
+                      "Anexar os arquivos", "Enviar ao cliente"]:
+            self.assertContains(resposta, passo)
         self.assertNotContains(resposta, "Tarefas desta fase")
         self.assertNotContains(resposta, "Prazo e responsável")
 

@@ -39,7 +39,7 @@ material tem e o que fazer agora — e é o link para a área de trabalho da fas
                     <span class="fase-resumo">{{ f.resumo }}</span>
                 </span>
                 <span class="fase-situacao">
-                    <span class="fase-selo fase-selo--{{ f.status }}">{{ f.get_status_display }}</span>
+                    <span class="fase-selo fase-selo--{{ f.status }}">{{ f.rotulo_status }}</span>
                     <span class="fase-num-arquivos num">
                         {{ f.arquivos.count }} arq.{% if f.prazo %} · {{ f.prazo|date:"d/m/y" }}{% endif %}
                     </span>

@@ -35,6 +35,21 @@ def editar_briefing(request, projeto_pk):
     return redirect("briefing_responder", projeto_pk=projeto.pk)
 
 
+def _programa(request, projeto, briefing):
+    """O bloco do programa, para trocar no lugar sem recarregar a página."""
+    ambientes = list(briefing.ambientes.all())
+    return render(
+        request,
+        "briefing/_programa.html",
+        {
+            "projeto": projeto,
+            "ambientes": ambientes,
+            "area_programa": sum(a.area_aprox or 0 for a in ambientes) or None,
+            "editando": True,
+        },
+    )
+
+
 @require_POST
 @login_required
 def adicionar_ambiente(request, projeto_pk):
@@ -45,8 +60,9 @@ def adicionar_ambiente(request, projeto_pk):
         ambiente.briefing = briefing
         ambiente.empresa = projeto.empresa
         ambiente.save()
-        messages.success(request, "Ambiente adicionado ao programa de necessidades.")
-    return redirect("briefing_projeto", projeto_pk=projeto.pk)
+    if request.headers.get("HX-Request"):
+        return _programa(request, projeto, briefing)
+    return redirect("briefing_responder", projeto_pk=projeto.pk)
 
 
 @require_POST
@@ -55,9 +71,11 @@ def remover_ambiente(request, pk):
     ambiente = get_object_or_404(
         queryset_da_empresa(AmbientePrograma.objects.all(), request.user), pk=pk
     )
-    projeto_pk = ambiente.briefing.projeto_id
+    briefing = ambiente.briefing
     ambiente.delete()
-    return redirect("briefing_projeto", projeto_pk=projeto_pk)
+    if request.headers.get("HX-Request"):
+        return _programa(request, briefing.projeto, briefing)
+    return redirect("briefing_responder", projeto_pk=briefing.projeto_id)
 
 
 # =====================================================================

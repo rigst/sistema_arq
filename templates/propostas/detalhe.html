@@ -53,20 +53,45 @@
     <div class="ds-card">
         <h2 class="ds-display">Ambientes / etapas</h2>
         <p class="page-sub">Precificados com a hora técnica desta proposta: <strong>R$ {{ proposta.hora_tecnica_aplicada }}</strong>.</p>
-        <form method="post" action="{% url 'proposta_add_item' proposta.pk %}" class="inline-add">
-            {% csrf_token %}
-            {{ form_item.descricao }}
-            {{ form_item.horas_estimadas }}
-            <button class="ds-btn ds-btn--solid" type="submit">Precificar e adicionar</button>
-        </form>
+        {% comment %}
+        Itens prontos. O que trava a proposta não é o cálculo: é a folha em
+        branco às dez da noite. As horas são um ponto de partida redondo, para
+        serem ajustadas — precisão falsa num padrão convence a não conferir.
+        {% endcomment %}
+        <details class="abrir-campo">
+            <summary>Adicionar itens prontos</summary>
+            <form method="post" action="{% url 'proposta_add_prontos' proposta.pk %}" class="form-card">
+                {% csrf_token %}
+                {% for grupo, itens in prontos %}
+                <fieldset class="escolha-multipla">
+                    <legend>{{ grupo }}</legend>
+                    <div class="caixas"><div>
+                    {% for descricao, horas in itens %}
+                        <label>
+                            <input type="checkbox" name="prontos" value="{{ descricao }}">
+                            <span>{{ descricao }} <small class="num">{{ horas }} h</small></span>
+                        </label>
+                    {% endfor %}
+                    </div></div>
+                </fieldset>
+                {% endfor %}
+                <div class="form-actions">
+                    <button class="ds-btn--acao" type="submit">
+                        <span>Adicionar e precificar</span>
+                        {% include "core/_ico.html" with ico="seta" %}
+                    </button>
+                </div>
+            </form>
+        </details>
+
         <table class="data-table">
-            <thead><tr><th>Descrição</th><th>Horas</th><th>Valor</th><th></th></tr></thead>
+            <thead><tr><th scope="col">Descrição</th><th scope="col" class="num">Horas</th><th scope="col" class="num">Valor</th><th scope="col"><span class="ds-oculto">Ações</span></th></tr></thead>
             <tbody>
             {% for item in itens %}
                 <tr>
                     <td>{{ item.descricao }}</td>
-                    <td>{{ item.horas_estimadas }}</td>
-                    <td>R$ {{ item.valor }}</td>
+                    <td class="num">{{ item.horas_estimadas }}</td>
+                    <td class="num">R$ {{ item.valor }}</td>
                     <td>
                         <form method="post" action="{% url 'proposta_remove_item' item.pk %}">
                             {% csrf_token %}
@@ -78,8 +103,20 @@
                 <tr><td colspan="4" class="data-empty">Adicione ambientes para compor o valor.</td></tr>
             {% endfor %}
             </tbody>
-            <tfoot><tr><th colspan="2">Total</th><th colspan="2">R$ {{ proposta.valor_total }}</th></tr></tfoot>
+            <tfoot><tr><th scope="row" colspan="2">Total</th><td class="num">R$ {{ proposta.valor_total }}</td><td></td></tr></tfoot>
         </table>
+
+        {% comment %}
+        A linha de adicionar fica depois da tabela, como no programa de
+        necessidades: o que se escreve à mão é a exceção que sobra depois dos
+        prontos, e antes da tabela ela separava o cabeçalho do conteúdo.
+        {% endcomment %}
+        <form method="post" action="{% url 'proposta_add_item' proposta.pk %}" class="programa-add">
+            {% csrf_token %}
+            {{ form_item.descricao }}
+            {{ form_item.horas_estimadas }}
+            <button class="ds-btn" type="submit">Precificar e adicionar</button>
+        </form>
     </div>
 </section>
 {% endblock %}

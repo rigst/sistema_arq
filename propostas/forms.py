@@ -40,6 +40,22 @@ class PropostaForm(ArqModelForm):
 
 
 class ItemPropostaForm(ArqModelForm):
+    """Uma linha só, no rodapé da tabela — daí o rótulo virar placeholder.
+
+    Sem ele os dois campos ficam sem contorno e sem nome, e a linha lê como
+    duas lacunas soltas com um zero no meio.
+    """
+
     class Meta:
         model = ItemProposta
         fields = ["descricao", "horas_estimadas"]
+        widgets = {
+            "descricao": forms.TextInput(attrs={"placeholder": "Ambiente ou etapa"}),
+            "horas_estimadas": forms.NumberInput(attrs={"placeholder": "Horas", "step": "0.5"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # O default 0 do modelo virava valor inicial e escondia o placeholder:
+        # o campo mostrava um zero solto no lugar de dizer o que se escreve ali.
+        self.fields["horas_estimadas"].initial = None

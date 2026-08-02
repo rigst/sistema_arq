@@ -56,6 +56,8 @@ def montar_roteiro(projeto):
         resumo = _RESUMO_POR_STATUS.get(fase.status, fase.status)
         if n_arquivos:
             resumo = f"{resumo} · {n_arquivos} arq."
+        if fase.status == "aprovada" and not fase.exige_aprovacao:
+            resumo = "concluída"
         etapas.append(
             Etapa(
                 chave=fase.chave,

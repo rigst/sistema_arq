@@ -138,42 +138,7 @@
         <h2 class="secao-titulo ds-display">Programa de necessidades</h2>
         <p class="secao-sub">Os ambientes com metragem e uso — a base de tudo que vem depois.</p>
 
-        <div class="table-scroll">
-        <table class="data-table">
-            <thead><tr><th scope="col">Ambiente</th><th scope="col" class="num">m²</th><th scope="col">Uso</th>{% if editando %}<th scope="col"><span class="ds-oculto">Ações</span></th>{% endif %}</tr></thead>
-            <tbody>
-            {% for a in ambientes %}
-                <tr>
-                    <td>{{ a.nome }}</td>
-                    <td class="num">{{ a.area_aprox|default:"—" }}</td>
-                    <td>{{ a.uso|default:"—" }}</td>
-                    {% if editando %}
-                    <td>
-                        <form method="post" action="{% url 'briefing_remove_ambiente' a.pk %}" class="app-inline-form">
-                            {% csrf_token %}<button class="app-link-btn" type="submit">remover</button>
-                        </form>
-                    </td>
-                    {% endif %}
-                </tr>
-            {% empty %}
-                <tr><td colspan="4" class="data-empty">Nenhum ambiente listado.</td></tr>
-            {% endfor %}
-            </tbody>
-            {% if area_programa %}
-            <tfoot><tr><th scope="row">Área do programa</th><td class="num">{{ area_programa }} m²</td><td colspan="{% if editando %}2{% else %}1{% endif %}"></td></tr></tfoot>
-            {% endif %}
-        </table>
-        </div>
-
-        {% if editando %}
-        <form method="post" action="{% url 'briefing_add_ambiente' projeto.pk %}" class="inline-add">
-            {% csrf_token %}
-            {{ form_ambiente.nome }}
-            {{ form_ambiente.area_aprox }}
-            {{ form_ambiente.uso }}
-            <button class="ds-btn" type="submit">Adicionar</button>
-        </form>
-        {% endif %}
+        {% include "briefing/_programa.html" %}
     </section>
 
     <section class="secao" id="blocos">

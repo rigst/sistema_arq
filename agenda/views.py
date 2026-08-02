@@ -41,7 +41,8 @@ def agenda(request):
             if projeto is not None and compromisso.projeto_id is None:
                 compromisso.projeto = projeto
             compromisso.save()
-            messages.success(request, f"{compromisso.get_tipo_display()} “{compromisso.titulo}” agendada para {compromisso.inicio:%d/%m às %H:%M}.")
+            quando = timezone.localtime(compromisso.inicio)
+            messages.success(request, f"{compromisso.get_tipo_display()} “{compromisso.titulo}” agendada para {quando:%d/%m às %H:%M}.")
             return redirect(f"{reverse('agenda')}?ano={ano}&mes={mes}")
         messages.error(request, "Confira os campos do compromisso.")
     else:
@@ -75,11 +76,37 @@ def agenda(request):
             "seguinte": {"ano": seguinte[0], "mes": seguinte[1]},
             "eh_mes_corrente": (ano, mes) == (hoje.year, hoje.month),
             "do_mes": [
-                c for c in do_periodo if c.inicio.date().month == mes
+                (c, CompromissoForm(instance=c, user=request.user))
+                for c in do_periodo
+                if calendario.dia_local(c).month == mes
             ],
             "proximos": base.filter(inicio__gte=timezone.now())[:8],
         },
     )
+
+
+@require_POST
+@login_required
+def editar_compromisso(request, pk):
+    """Edição pelo modal da própria linha: sair da agenda para mudar um horário
+    e voltar custa mais do que a mudança."""
+    compromisso = get_object_or_404(
+        queryset_da_empresa(Compromisso.objects.all(), request.user), pk=pk
+    )
+    form = CompromissoForm(request.POST, instance=compromisso, user=request.user)
+    if form.is_valid():
+        form.save()
+        quando = timezone.localtime(compromisso.inicio)
+        messages.success(
+            request,
+            f"Compromisso “{compromisso.titulo}” atualizado para "
+            f"{quando:%d/%m às %H:%M}.",
+        )
+    else:
+        messages.error(request, "Confira os campos do compromisso.")
+    # Volta para o mês em que o compromisso aparece na grade, que é o local.
+    quando = timezone.localtime(compromisso.inicio)
+    return redirect(f"{reverse('agenda')}?ano={quando.year}&mes={quando.month}")
 
 
 @require_POST

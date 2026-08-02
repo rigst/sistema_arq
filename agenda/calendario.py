@@ -9,6 +9,8 @@ import calendar
 from dataclasses import dataclass, field
 from datetime import date
 
+from django.utils import timezone
+
 MESES = [
     "janeiro", "fevereiro", "março", "abril", "maio", "junho",
     "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
@@ -27,6 +29,17 @@ class Dia:
     @property
     def fim_de_semana(self):
         return self.data.weekday() >= 5
+
+
+def dia_local(compromisso):
+    """O dia em que o compromisso acontece para quem está olhando a agenda.
+
+    `inicio` é guardado em UTC, e `inicio.date()` devolvia o dia de lá: uma
+    reunião das 22h25 de segunda caía na terça da grade, enquanto a lista
+    logo abaixo — que o template converte para o fuso local — mostrava a
+    segunda. Dois dias diferentes para o mesmo compromisso, na mesma tela.
+    """
+    return timezone.localtime(compromisso.inicio).date()
 
 
 def nome_do_mes(ano, mes):
@@ -50,7 +63,7 @@ def montar_mes(ano, mes, compromissos, hoje=None):
 
     por_dia = {}
     for c in compromissos:
-        por_dia.setdefault(c.inicio.date(), []).append(c)
+        por_dia.setdefault(dia_local(c), []).append(c)
 
     semanas = []
     for semana in calendar.Calendar(firstweekday=0).monthdatescalendar(ano, mes):

@@ -13,6 +13,7 @@ from precificacao.models import FatorPrecificacao
 from precificacao.services import aplicar_fatores, hora_tecnica_base, precificar_etapa
 from projetos.models import Projeto
 
+from . import itens_prontos
 from .forms import ItemPropostaForm, PropostaForm
 from .models import ItemProposta, Proposta
 
@@ -78,6 +79,7 @@ def detalhe_proposta(request, pk):
             "proposta": proposta,
             "itens": proposta.itens.all(),
             "form_item": ItemPropostaForm(),
+            "prontos": itens_prontos.por_grupo(),
             "base": hora_tecnica_base(proposta.empresa),
             "fatores": fatores,
             "fatores_selecionados": selecionados,
@@ -118,6 +120,41 @@ def definir_hora_tecnica(request, pk):
     messages.success(
         request, f"Hora técnica desta proposta: R$ {proposta.hora_tecnica_aplicada}."
     )
+    return redirect("proposta_detalhe", pk=proposta.pk)
+
+
+@require_POST
+@login_required
+def adicionar_prontos(request, pk):
+    """Joga na proposta um conjunto de linhas prontas, já precificadas.
+
+    O que trava a proposta não é o cálculo: é a folha em branco às dez da noite.
+    """
+    proposta = get_object_or_404(queryset_da_empresa(Proposta.objects.all(), request.user), pk=pk)
+    escolhidos = set(request.POST.getlist("prontos"))
+    if not escolhidos:
+        messages.error(request, "Marque ao menos um item.")
+        return redirect("proposta_detalhe", pk=proposta.pk)
+
+    ja_tem = {i.descricao for i in proposta.itens.all()}
+    ordem = proposta.itens.count()
+    criados = 0
+    for _, itens in itens_prontos.por_grupo():
+        for descricao, horas in itens:
+            if descricao not in escolhidos or descricao in ja_tem:
+                continue
+            calc = precificar_etapa(
+                proposta.empresa, horas, hora_tecnica=proposta.hora_tecnica_aplicada
+            )
+            ItemProposta.objects.create(
+                empresa=proposta.empresa, proposta=proposta, descricao=descricao,
+                horas_estimadas=horas, valor=calc["total"], ordem=ordem + criados,
+            )
+            criados += 1
+    if criados:
+        messages.success(request, f"{criados} item(ns) adicionados e precificados. Ajuste as horas.")
+    else:
+        messages.info(request, "Esses itens já estavam na proposta.")
     return redirect("proposta_detalhe", pk=proposta.pk)
 
 

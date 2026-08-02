@@ -116,6 +116,17 @@ class Fase(EmpresaModel, Rastreavel):
         return self.status == self.APROVADA
 
     @property
+    def rotulo_status(self):
+        """Fase que não passa pelo cliente fecha como "Concluída".
+
+        Chamar de "aprovada" sugeriria que alguém de fora deu o aval — e no
+        briefing ninguém deu: ele é insumo interno.
+        """
+        if self.status == self.APROVADA and not self.exige_aprovacao:
+            return "Concluída"
+        return self.get_status_display()
+
+    @property
     def em_andamento(self):
         return self.status in self.ABERTAS
 

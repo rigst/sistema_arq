@@ -1,0 +1,62 @@
+{% comment %}
+Programa de necessidades. Trocado no lugar por htmx: adicionar um ambiente
+recarregando a página apagaria tudo que já foi marcado no roteiro acima —
+o briefing é preenchido durante a reunião, e perder isso é perder a conversa.
+{% endcomment %}
+<div id="programa-bloco">
+    <div class="table-scroll">
+    <table class="data-table">
+        <thead><tr>
+            <th scope="col">Ambiente</th>
+            <th scope="col" class="num">m²</th>
+            <th scope="col">Uso</th>
+            {% if editando %}<th scope="col"><span class="ds-oculto">Ações</span></th>{% endif %}
+        </tr></thead>
+        <tbody>
+        {% for a in ambientes %}
+            <tr>
+                <td>{{ a.nome }}</td>
+                <td class="num">{{ a.area_aprox|default:"—" }}</td>
+                <td>{{ a.uso|default:"—" }}</td>
+                {% if editando %}
+                <td>
+                    <button class="linha-ico linha-ico--risco" type="button"
+                            title="Remover" aria-label="Remover {{ a.nome }}"
+                            hx-post="{% url 'briefing_remove_ambiente' a.pk %}"
+                            hx-target="#programa-bloco" hx-swap="outerHTML"
+                            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M6 7l1 13h10l1-13"/></svg>
+                    </button>
+                </td>
+                {% endif %}
+            </tr>
+        {% empty %}
+            <tr><td colspan="4" class="data-empty">Nenhum ambiente listado.</td></tr>
+        {% endfor %}
+        </tbody>
+        {% if area_programa %}
+        <tfoot><tr>
+            <th scope="row">Área do programa</th>
+            <td class="num">{{ area_programa }} m²</td>
+            <td colspan="{% if editando %}2{% else %}1{% endif %}"></td>
+        </tr></tfoot>
+        {% endif %}
+    </table>
+    </div>
+
+    {% if editando %}
+    <form class="programa-add"
+          hx-post="{% url 'briefing_add_ambiente' projeto.pk %}"
+          hx-target="#programa-bloco" hx-swap="outerHTML"
+          hx-on::after-request="if(event.detail.successful) this.reset()">
+        {% csrf_token %}
+        <label class="ds-oculto" for="amb-nome">Ambiente</label>
+        <input type="text" name="nome" id="amb-nome" placeholder="Ambiente" maxlength="100" required>
+        <label class="ds-oculto" for="amb-area">Área em m²</label>
+        <input type="number" name="area_aprox" id="amb-area" step="0.01" placeholder="m²">
+        <label class="ds-oculto" for="amb-uso">Uso</label>
+        <input type="text" name="uso" id="amb-uso" placeholder="Uso" maxlength="200">
+        <button class="ds-btn" type="submit">Adicionar</button>
+    </form>
+    {% endif %}
+</div>

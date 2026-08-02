@@ -6,7 +6,7 @@ sozinha quando a anterior é aprovada, e um botão com uma resposta possível s�
 {% endcomment %}
 <div class="fase-estado fase-estado--{{ fase.status }}">
     <div class="fase-estado-topo">
-        <span class="fase-selo fase-selo--{{ fase.status }}">{{ fase.get_status_display }}</span>
+        <span class="fase-selo fase-selo--{{ fase.status }}">{{ fase.rotulo_status }}</span>
         {% if fase.prazo %}<span class="fase-prazo{% if fase.atrasada %} is-atrasada{% endif %}">entrega {{ fase.prazo|date:"d/m/Y" }}</span>{% endif %}
         {% if fase.fornecedor %}<span class="fase-quem">{{ fase.fornecedor.nome }}</span>{% endif %}
     </div>
@@ -18,14 +18,21 @@ sozinha quando a anterior é aprovada, e um botão com uma resposta possível s�
         Enviada em {{ fase.enviada_em|date:"d/m/Y" }}. Registre a resposta abaixo quando ela chegar.
         {% elif fase.status == "ajustes" %}
         O cliente pediu ajustes{% if fase.parecer %}: “{{ fase.parecer }}”{% endif %} Refaça o material e envie de novo.
+        {% elif fase.status == "aprovada" and fase.exige_aprovacao %}
+        Aprovada pelo cliente em {{ fase.respondida_em|date:"d/m/Y" }}{% if fase.parecer %} — “{{ fase.parecer }}”{% endif %}
         {% elif fase.status == "aprovada" %}
-        Aprovada em {{ fase.respondida_em|date:"d/m/Y" }}{% if fase.parecer %} — “{{ fase.parecer }}”{% endif %}
+        Concluída em {{ fase.respondida_em|date:"d/m/Y" }}.
         {% else %}
         {{ fase_instrucao|default:"Em elaboração. Anexe o material e envie ao cliente quando estiver pronto." }}
         {% endif %}
     </p>
 
-    {% if fase.status == "em_elaboracao" or fase.status == "ajustes" %}
+    {% comment %}
+    `sem_acao` para telas em passo a passo: lá o envio é o último passo, e
+    repeti-lo aqui em cima deixa dois botões idênticos disputando a mesma ação.
+    O cartão continua sendo onde se registra a resposta do cliente.
+    {% endcomment %}
+    {% if not sem_acao and fase.status == "em_elaboracao" or not sem_acao and fase.status == "ajustes" %}
         {% if fase.exige_aprovacao %}
         <form method="post" action="{% url 'fase_enviar' fase.pk %}" class="app-inline-form">
             {% csrf_token %}
