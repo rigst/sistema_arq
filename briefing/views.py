@@ -250,7 +250,10 @@ def responder(request, projeto_pk):
             fase.concluir_sem_aprovacao(request.user)
         proposta = projeto.fases.filter(chave="proposta").first()
         if proposta is not None:
-            return redirect("fase_detalhe", pk=proposta.pk)
+            from propostas.views import criar_proposta_do_projeto
+
+            rascunho = criar_proposta_do_projeto(projeto, request.user)
+            return redirect("proposta_detalhe", pk=rascunho.pk)
         return redirect("projeto_detalhe", pk=projeto.pk)
 
     respostas = {r.pergunta_id: r for r in briefing.respostas.prefetch_related("opcoes")}
@@ -293,6 +296,36 @@ def responder(request, projeto_pk):
     )
 
 
+@login_required
+def briefing_pdf(request, projeto_pk):
+    from core.pdf import render_pdf
+
+    projeto = get_object_or_404(
+        queryset_da_empresa(Projeto.objects.select_related("cliente"), request.user),
+        pk=projeto_pk,
+    )
+    briefing = get_object_or_404(Briefing.objects.all(), projeto=projeto)
+    blocos = []
+    por_nome = {}
+    for resposta in briefing.respostas.select_related("pergunta").prefetch_related("opcoes"):
+        nome = resposta.pergunta.bloco or "Geral"
+        if nome not in por_nome:
+            por_nome[nome] = {"nome": nome, "respostas": []}
+            blocos.append(por_nome[nome])
+        por_nome[nome]["respostas"].append(resposta)
+    return render_pdf(
+        "pdf/briefing.html",
+        {
+            "projeto": projeto,
+            "briefing": briefing,
+            "blocos": blocos,
+            "ambientes": briefing.ambientes.all(),
+            "empresa_nome": request.user.nome_empresa,
+        },
+        filename=f"briefing-{projeto.pk}.pdf",
+    )
+
+
 def _salvar_respostas(request, briefing, template):
     for pergunta in template.perguntas.all():
         marcadas = request.POST.getlist(f"p{pergunta.pk}")
@@ -307,5 +340,4 @@ def _salvar_respostas(request, briefing, template):
         )
         opcoes = pergunta.opcoes.filter(pk__in=[m for m in marcadas if m.isdigit()])
         resposta.opcoes.set(opcoes)
-
 

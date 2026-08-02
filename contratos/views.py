@@ -1,37 +1,49 @@
+from decimal import Decimal
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Max
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from core.contexto import projeto_do_pedido
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 from financeiro.models import ContaBancaria
 
-from .forms import AlteracaoEscopoForm, ContratoForm, DocumentoForm, GerarParcelasForm
-from .models import Contrato, Parcela
-from .services import gerar_parcelas, lancar_parcelas_no_financeiro
-
-
-@login_required
-def lista_contratos(request):
-    contratos = queryset_da_empresa(
-        Contrato.objects.select_related("projeto", "projeto__cliente"), request.user
-    )
-    projeto = projeto_do_pedido(request)
-    if projeto is not None:
-        contratos = contratos.filter(projeto=projeto)
-    return render(
-        request, "contratos/lista.html", {"contratos": contratos, "projeto": projeto}
-    )
+from .forms import (
+    AlteracaoEscopoForm,
+    ContratoForm,
+    DocumentoEdicaoForm,
+    DocumentoForm,
+    GerarParcelasForm,
+    ParcelaForm,
+)
+from .models import AlteracaoEscopo, Contrato, Documento, Parcela
+from .services import (
+    contexto_do_contrato,
+    garantir_modelos_padrao,
+    gerar_parcelas,
+    lancar_parcelas_no_financeiro,
+)
 
 
 @login_required
 def novo_contrato(request):
     projeto = projeto_do_pedido(request)
+    if projeto is not None:
+        fase = projeto.fases.filter(chave="contrato").first()
+        if fase is not None and fase.bloqueada:
+            messages.error(request, "A aprovação da proposta é necessária antes de criar o contrato.")
+            return redirect("fase_detalhe", pk=fase.pk)
     if request.method == "POST":
         form = ContratoForm(request.POST, user=request.user, projeto=projeto)
         if form.is_valid():
             contrato = form.save(commit=False)
+            fase = contrato.projeto.fases.filter(chave="contrato").first()
+            if fase is not None and fase.bloqueada:
+                messages.error(request, "A aprovação da proposta é necessária antes de criar o contrato.")
+                return redirect("fase_detalhe", pk=fase.pk)
             contrato.empresa = obter_grupo_empresa_ou_erro(request.user)
             contrato.criado_por = request.user
             contrato.save()
@@ -47,39 +59,63 @@ def novo_contrato(request):
 
 
 @login_required
-def editar_contrato(request, pk):
-    contrato = get_object_or_404(queryset_da_empresa(Contrato.objects.all(), request.user), pk=pk)
-    if request.method == "POST":
-        form = ContratoForm(request.POST, instance=contrato, user=request.user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Contrato atualizado.")
-            return redirect("contrato_detalhe", pk=contrato.pk)
-    else:
-        form = ContratoForm(instance=contrato, user=request.user)
-    return render(
-        request, "contratos/form.html", {"form": form, "titulo": f"Editar {contrato.titulo}"}
-    )
-
-
-@login_required
 def detalhe_contrato(request, pk):
     contrato = get_object_or_404(
         queryset_da_empresa(Contrato.objects.select_related("projeto", "projeto__cliente"), request.user),
         pk=pk,
     )
+    modelos = garantir_modelos_padrao(contrato.empresa, request.user)
+    modelo_padrao = modelos.filter(padrao=True).first() or modelos.first()
+    proposta_origem = None
+    if contrato.origem_tipo == "proposta" and contrato.origem_id:
+        from propostas.models import Proposta
+
+        proposta_origem = Proposta.objects.filter(
+            pk=contrato.origem_id, empresa=contrato.empresa
+        ).first()
+    fases_entrega = list(
+        contrato.projeto.fases.exclude(
+            chave__in=("briefing", "proposta", "contrato")
+        ).order_by("ordem", "id")
+    )
+    form = None
+    if contrato.editavel:
+        if request.method == "POST":
+            form = ContratoForm(request.POST, instance=contrato, user=request.user)
+            if form.is_valid():
+                form.save()
+                if request.POST.get("acao") == "aplicar_modelo":
+                    modelo = get_object_or_404(modelos, pk=request.POST.get("modelo"))
+                    contrato.corpo = modelo.gerar(contexto_do_contrato(contrato))
+                    contrato.save(update_fields=["corpo"])
+                    messages.success(request, f"Modelo “{modelo.nome}” aplicado à minuta.")
+                    return redirect(f"/contratos/{contrato.pk}/#minuta")
+                messages.success(request, "Contrato salvo.")
+                return redirect("contrato_detalhe", pk=contrato.pk)
+        else:
+            form = ContratoForm(instance=contrato, user=request.user)
+    alteracoes = list(contrato.alteracoes.all())
+    impacto_alteracoes = sum((a.valor_delta for a in alteracoes), Decimal("0"))
     return render(
         request,
         "contratos/detalhe.html",
         {
             "contrato": contrato,
+            "form": form,
             "parcelas": contrato.parcelas.all(),
-            "alteracoes": contrato.alteracoes.all(),
+            "alteracoes": alteracoes,
+            "impacto_alteracoes": impacto_alteracoes,
+            "valor_atualizado": contrato.valor_total + impacto_alteracoes,
             "documentos": contrato.documentos.all(),
             "form_parcelas": GerarParcelasForm(),
+            "form_parcela": ParcelaForm(),
             "form_alteracao": AlteracaoEscopoForm(),
             "form_documento": DocumentoForm(),
             "tem_conta": queryset_da_empresa(ContaBancaria.objects.all(), request.user).exists(),
+            "modelos": modelos,
+            "modelo_padrao": modelo_padrao,
+            "proposta_origem": proposta_origem,
+            "fases_entrega": fases_entrega,
         },
     )
 
@@ -94,12 +130,15 @@ def contrato_pdf(request, pk):
         queryset_da_empresa(Contrato.objects.select_related("projeto", "projeto__cliente"), request.user),
         pk=pk,
     )
+    alteracoes = list(contrato.alteracoes.all())
+    impacto = sum((a.valor_delta for a in alteracoes), Decimal("0"))
     return render_pdf(
         "pdf/contrato.html",
         {
             "contrato": contrato,
             "parcelas": contrato.parcelas.all(),
-            "alteracoes": contrato.alteracoes.all(),
+            "alteracoes": alteracoes,
+            "valor_atualizado": contrato.valor_total + impacto,
             "empresa_nome": request.user.nome_empresa,
             "hoje": timezone.now(),
         },
@@ -113,25 +152,151 @@ def gerar_parcelas_view(request, pk):
     contrato = get_object_or_404(queryset_da_empresa(Contrato.objects.all(), request.user), pk=pk)
     if contrato.parcelas_lancadas:
         messages.info(request, "As parcelas já foram lançadas no financeiro; refaça criando outro contrato.")
-        return redirect("contrato_detalhe", pk=contrato.pk)
+        return _parcelas_ou_redirect(request, contrato)
     form = GerarParcelasForm(request.POST)
     if form.is_valid():
         gerar_parcelas(
             contrato,
             form.cleaned_data["quantidade"],
             form.cleaned_data["primeira_data"],
-            form.cleaned_data["intervalo_dias"],
         )
         messages.success(request, "Parcelas geradas.")
     else:
         messages.error(request, "Verifique os dados das parcelas.")
+    return _parcelas_ou_redirect(request, contrato)
+
+
+def _parcelas_ou_redirect(request, contrato, form_parcela=None):
+    if request.headers.get("HX-Request"):
+        return render(
+            request,
+            "contratos/_parcelas.html",
+            {
+                "contrato": contrato,
+                "parcelas": contrato.parcelas.all(),
+                "form_parcelas": GerarParcelasForm(),
+                "form_parcela": form_parcela or ParcelaForm(),
+                "tem_conta": queryset_da_empresa(
+                    ContaBancaria.objects.all(), request.user
+                ).exists(),
+            },
+        )
     return redirect("contrato_detalhe", pk=contrato.pk)
+
+
+@require_POST
+@login_required
+def adicionar_parcela(request, pk):
+    contrato = get_object_or_404(queryset_da_empresa(Contrato.objects.all(), request.user), pk=pk)
+    form = ParcelaForm(request.POST)
+    if form.is_valid():
+        parcela = form.save(commit=False)
+        parcela.empresa = contrato.empresa
+        parcela.contrato = contrato
+        parcela.numero = (contrato.parcelas.aggregate(maior=Max("numero"))["maior"] or 0) + 1
+        parcela.save()
+        _criar_lancamento_se_necessario(parcela)
+        messages.success(request, "Parcela adicionada.")
+        return _parcelas_ou_redirect(request, contrato)
+    messages.error(request, "Confira descrição, valor e vencimento da parcela.")
+    return _parcelas_ou_redirect(request, contrato, form)
+
+
+@login_required
+def editar_parcela(request, pk):
+    parcela = get_object_or_404(
+        queryset_da_empresa(Parcela.objects.select_related("contrato"), request.user), pk=pk
+    )
+    if request.method == "POST":
+        form = ParcelaForm(request.POST, instance=parcela)
+        if form.is_valid():
+            form.save()
+            _sincronizar_lancamento(parcela)
+            messages.success(request, "Parcela atualizada.")
+            return _parcelas_ou_redirect(request, parcela.contrato)
+        return render(
+            request,
+            "contratos/_parcela_linha.html",
+            {"contrato": parcela.contrato, "parcela": parcela, "form_edicao": form},
+        )
+    return render(
+        request,
+        "contratos/_parcela_linha.html",
+        {"contrato": parcela.contrato, "parcela": parcela, "form_edicao": ParcelaForm(instance=parcela)},
+    )
+
+
+@login_required
+def linha_parcela(request, pk):
+    parcela = get_object_or_404(
+        queryset_da_empresa(Parcela.objects.select_related("contrato"), request.user), pk=pk
+    )
+    return render(
+        request, "contratos/_parcela_linha.html", {"contrato": parcela.contrato, "parcela": parcela}
+    )
+
+
+@require_POST
+@login_required
+def remover_parcela(request, pk):
+    parcela = get_object_or_404(
+        queryset_da_empresa(Parcela.objects.select_related("contrato", "lancamento"), request.user), pk=pk
+    )
+    contrato = parcela.contrato
+    if parcela.lancamento_id:
+        parcela.lancamento.delete()
+    parcela.delete()
+    messages.success(request, "Parcela excluída.")
+    return _parcelas_ou_redirect(request, contrato)
+
+
+def _sincronizar_lancamento(parcela):
+    if parcela.lancamento_id:
+        parcela.lancamento.descricao = (
+            parcela.descricao or f"{parcela.contrato.titulo} — parcela {parcela.numero}"
+        )
+        parcela.lancamento.valor = parcela.valor
+        parcela.lancamento.data = parcela.vencimento
+        parcela.lancamento.save(update_fields=["descricao", "valor", "data"])
+
+
+def _criar_lancamento_se_necessario(parcela):
+    contrato = parcela.contrato
+    if not contrato.parcelas_lancadas:
+        return
+    conta = (
+        contrato.parcelas.exclude(lancamento__isnull=True)
+        .select_related("lancamento__conta")
+        .values_list("lancamento__conta_id", flat=True)
+        .first()
+    )
+    if conta is None:
+        return
+    from financeiro.models import Lancamento
+
+    lancamento = Lancamento.objects.create(
+        empresa=contrato.empresa,
+        conta_id=conta,
+        tipo="entrada",
+        projeto=contrato.projeto,
+        descricao=parcela.descricao or f"{contrato.titulo} — parcela {parcela.numero}",
+        valor=parcela.valor,
+        data=parcela.vencimento,
+        status="previsto",
+        origem_tipo="parcela",
+        origem_id=parcela.pk,
+    )
+    parcela.lancamento = lancamento
+    parcela.save(update_fields=["lancamento"])
 
 
 @require_POST
 @login_required
 def lancar_financeiro(request, pk):
     contrato = get_object_or_404(queryset_da_empresa(Contrato.objects.all(), request.user), pk=pk)
+    if contrato.status not in {"aprovado", "ativo"}:
+        messages.info(request, "Aguarde a aprovação do cliente antes de lançar no financeiro.")
+        return redirect("contrato_detalhe", pk=contrato.pk)
     conta = queryset_da_empresa(ContaBancaria.objects.all(), request.user).first()
     if conta is None:
         messages.error(request, "Crie uma conta no Financeiro antes de lançar as parcelas.")
@@ -140,7 +305,7 @@ def lancar_financeiro(request, pk):
         messages.error(request, "Gere as parcelas primeiro.")
         return redirect("contrato_detalhe", pk=contrato.pk)
     criados = lancar_parcelas_no_financeiro(contrato, conta)
-    if contrato.status == "rascunho":
+    if contrato.status == "aprovado":
         contrato.status = "ativo"
         contrato.save(update_fields=["status"])
     messages.success(request, f"{criados} parcela(s) lançada(s) no contas a receber.")
@@ -152,14 +317,82 @@ def lancar_financeiro(request, pk):
 def registrar_alteracao(request, pk):
     contrato = get_object_or_404(queryset_da_empresa(Contrato.objects.all(), request.user), pk=pk)
     form = AlteracaoEscopoForm(request.POST)
-    if form.is_valid():
+    formulario_valido = form.is_valid()
+    if formulario_valido:
         alteracao = form.save(commit=False)
         alteracao.contrato = contrato
         alteracao.empresa = contrato.empresa
         alteracao.registrado_por = request.user
         alteracao.save()
-        messages.success(request, "Alteração de escopo registrada.")
+        if alteracao.valor_delta:
+            messages.success(request, "Alteração contratual registrada com impacto financeiro.")
+        else:
+            messages.success(request, "Alteração contratual registrada sem impacto financeiro.")
+    else:
+        messages.error(request, "Confira o tipo, a descrição e o impacto financeiro.")
+    return _alteracoes_ou_redirect(request, contrato, None if formulario_valido else form)
+
+
+def _alteracoes_ou_redirect(request, contrato, form=None):
+    if request.headers.get("HX-Request"):
+        alteracoes = list(contrato.alteracoes.all())
+        impacto = sum((a.valor_delta for a in alteracoes), Decimal("0"))
+        return render(
+            request,
+            "contratos/_alteracoes.html",
+            {
+                "contrato": contrato,
+                "alteracoes": alteracoes,
+                "impacto_alteracoes": impacto,
+                "valor_atualizado": contrato.valor_total + impacto,
+                "form_alteracao": form or AlteracaoEscopoForm(),
+            },
+        )
     return redirect("contrato_detalhe", pk=contrato.pk)
+
+
+@login_required
+def editar_alteracao(request, pk):
+    alteracao = get_object_or_404(
+        queryset_da_empresa(AlteracaoEscopo.objects.select_related("contrato"), request.user), pk=pk
+    )
+    if request.method == "POST":
+        form = AlteracaoEscopoForm(request.POST, instance=alteracao)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Alteração contratual atualizada.")
+            return _alteracoes_ou_redirect(request, alteracao.contrato)
+    else:
+        form = AlteracaoEscopoForm(instance=alteracao)
+    return render(
+        request,
+        "contratos/_alteracao_linha.html",
+        {"contrato": alteracao.contrato, "alteracao": alteracao, "form_edicao": form},
+    )
+
+
+@login_required
+def linha_alteracao(request, pk):
+    alteracao = get_object_or_404(
+        queryset_da_empresa(AlteracaoEscopo.objects.select_related("contrato"), request.user), pk=pk
+    )
+    return render(
+        request,
+        "contratos/_alteracao_linha.html",
+        {"contrato": alteracao.contrato, "alteracao": alteracao},
+    )
+
+
+@require_POST
+@login_required
+def remover_alteracao(request, pk):
+    alteracao = get_object_or_404(
+        queryset_da_empresa(AlteracaoEscopo.objects.select_related("contrato"), request.user), pk=pk
+    )
+    contrato = alteracao.contrato
+    alteracao.delete()
+    messages.success(request, "Alteração contratual excluída.")
+    return _alteracoes_ou_redirect(request, contrato)
 
 
 @require_POST
@@ -167,7 +400,8 @@ def registrar_alteracao(request, pk):
 def enviar_documento(request, pk):
     contrato = get_object_or_404(queryset_da_empresa(Contrato.objects.all(), request.user), pk=pk)
     form = DocumentoForm(request.POST, request.FILES)
-    if form.is_valid():
+    formulario_valido = form.is_valid()
+    if formulario_valido:
         doc = form.save(commit=False)
         doc.contrato = contrato
         doc.projeto = contrato.projeto
@@ -176,7 +410,73 @@ def enviar_documento(request, pk):
         messages.success(request, "Documento anexado.")
     else:
         messages.error(request, "Selecione um arquivo e um título.")
+    return _documentos_ou_redirect(request, contrato, None if formulario_valido else form)
+
+
+def _documentos_ou_redirect(request, contrato, form=None):
+    if request.headers.get("HX-Request"):
+        return render(
+            request,
+            "contratos/_documentos.html",
+            {
+                "contrato": contrato,
+                "documentos": contrato.documentos.all(),
+                "form_documento": form or DocumentoForm(),
+            },
+        )
     return redirect("contrato_detalhe", pk=contrato.pk)
+
+
+@login_required
+def editar_documento(request, pk):
+    documento = get_object_or_404(
+        queryset_da_empresa(Documento.objects.select_related("contrato"), request.user), pk=pk
+    )
+    arquivo_antigo = documento.arquivo.name
+    if request.method == "POST":
+        form = DocumentoEdicaoForm(request.POST, request.FILES, instance=documento)
+        if form.is_valid():
+            form.save()
+            if request.FILES.get("arquivo") and arquivo_antigo != documento.arquivo.name:
+                documento.arquivo.storage.delete(arquivo_antigo)
+            messages.success(request, "Documento atualizado.")
+            return _documentos_ou_redirect(request, documento.contrato)
+    else:
+        form = DocumentoEdicaoForm(instance=documento)
+    return render(
+        request,
+        "contratos/_documento_linha.html",
+        {"contrato": documento.contrato, "documento": documento, "form_edicao": form},
+    )
+
+
+@login_required
+def linha_documento(request, pk):
+    documento = get_object_or_404(
+        queryset_da_empresa(Documento.objects.select_related("contrato"), request.user), pk=pk
+    )
+    return render(
+        request,
+        "contratos/_documento_linha.html",
+        {"contrato": documento.contrato, "documento": documento},
+    )
+
+
+@require_POST
+@login_required
+def remover_documento(request, pk):
+    documento = get_object_or_404(
+        queryset_da_empresa(Documento.objects.select_related("contrato"), request.user),
+        pk=pk,
+    )
+    contrato_pk = documento.contrato_id
+    documento.arquivo.delete(save=False)
+    documento.delete()
+    messages.success(request, "Documento removido do contrato.")
+    contrato = get_object_or_404(
+        queryset_da_empresa(Contrato.objects.all(), request.user), pk=contrato_pk
+    )
+    return _documentos_ou_redirect(request, contrato)
 
 
 @require_POST
@@ -189,7 +489,57 @@ def alternar_parcela(request, pk):
     if parcela.lancamento_id:
         parcela.lancamento.status = "realizado" if parcela.paga else "previsto"
         parcela.lancamento.save(update_fields=["status"])
-    return redirect("contrato_detalhe", pk=parcela.contrato_id)
+    return _parcelas_ou_redirect(request, parcela.contrato)
+
+
+@require_POST
+@login_required
+def enviar_contrato(request, pk):
+    contrato = get_object_or_404(queryset_da_empresa(Contrato.objects.all(), request.user), pk=pk)
+    if not contrato.editavel:
+        messages.info(request, "Este contrato já foi enviado ao cliente.")
+    elif not contrato.pronto_para_envio:
+        messages.error(request, "Inclua o texto do contrato e um valor total antes de enviar.")
+    else:
+        contrato.status = "enviado"
+        contrato.save(update_fields=["status"])
+        messages.success(request, "Contrato enviado ao cliente. A edição foi bloqueada até um retorno.")
+    return redirect("contrato_detalhe", pk=contrato.pk)
+
+
+@require_POST
+@login_required
+def retornar_para_ajustes(request, pk):
+    contrato = get_object_or_404(queryset_da_empresa(Contrato.objects.all(), request.user), pk=pk)
+    if contrato.status != "enviado":
+        messages.info(request, "Somente contratos enviados podem retornar para alterações.")
+    else:
+        contrato.status = "ajustes"
+        contrato.save(update_fields=["status"])
+        messages.success(request, "Contrato retornado para alterações. Revise e envie novamente.")
+    return redirect("contrato_detalhe", pk=contrato.pk)
+
+
+@require_POST
+@login_required
+def aprovar_contrato(request, pk):
+    contrato = get_object_or_404(queryset_da_empresa(Contrato.objects.all(), request.user), pk=pk)
+    if contrato.status != "enviado":
+        messages.info(request, "Registre a aprovação somente depois do envio ao cliente.")
+    else:
+        contrato.status = "aprovado"
+        contrato.save(update_fields=["status"])
+        from fases.models import Fase
+
+        fase = contrato.projeto.fases.filter(chave="contrato").first()
+        if fase and fase.status != Fase.APROVADA:
+            fase.status = Fase.APROVADA
+            fase.respondida_em = timezone.now()
+            fase.save(update_fields=["status", "respondida_em"])
+            fase._abrir_seguintes(request.user)
+            fase.projeto.tocar()
+        messages.success(request, "Contrato aprovado. Agora você pode gerar parcelas e lançar no financeiro.")
+    return redirect("contrato_detalhe", pk=contrato.pk)
 
 
 # =====================================================================
@@ -204,26 +554,6 @@ from .modelos_padrao import MODELOS_PADRAO  # noqa: E402
 
 def _meus_modelos(user):
     return queryset_da_empresa(ModeloContrato.objects.all(), user)
-
-
-def _contexto_do_contrato(contrato):
-    """Os dados do projeto que preenchem os marcadores da minuta."""
-    from django.utils import timezone
-
-    projeto = contrato.projeto
-    cliente = projeto.cliente
-    obra = getattr(projeto, "obra", None)
-    return {
-        "cliente": cliente.nome,
-        "cliente_documento": getattr(cliente, "documento", "") or "",
-        "projeto": projeto.nome,
-        "tipo_projeto": projeto.get_tipo_display(),
-        "escritorio": contrato.empresa.name,
-        "valor": f"R$ {contrato.valor_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
-        "data": timezone.localdate().strftime("%d/%m/%Y"),
-        "prazo": projeto.data_prevista.strftime("%d/%m/%Y") if projeto.data_prevista else "",
-        "endereco": getattr(obra, "endereco", "") or "",
-    }
 
 
 @login_required
@@ -287,38 +617,3 @@ def modelo_remover(request, pk):
     modelo.delete()
     messages.success(request, "Modelo removido.")
     return redirect("contratos_modelos")
-
-
-@login_required
-def redigir(request, pk):
-    """Tela onde o contrato ganha texto: gera a partir de um modelo, pede uma
-    minuta de um modelo salvo ou escreve à mão. O texto fica sempre editável."""
-    contrato = get_object_or_404(
-        queryset_da_empresa(Contrato.objects.select_related("projeto__cliente"), request.user),
-        pk=pk,
-    )
-
-    if request.method == "POST":
-        acao = request.POST.get("acao")
-        if acao == "gerar":
-            modelo = _meus_modelos(request.user).filter(pk=request.POST.get("modelo")).first()
-            if modelo is None:
-                messages.error(request, "Escolha um modelo.")
-            else:
-                contrato.corpo = modelo.gerar(_contexto_do_contrato(contrato))
-                contrato.save(update_fields=["corpo"])
-                messages.success(request, f"Texto gerado a partir de “{modelo.nome}”. Revise.")
-        else:
-            contrato.corpo = request.POST.get("corpo", "")
-            contrato.save(update_fields=["corpo"])
-            messages.success(request, "Texto do contrato salvo.")
-        return redirect("contrato_redigir", pk=contrato.pk)
-
-    return render(
-        request,
-        "contratos/redigir.html",
-        {
-            "contrato": contrato,
-            "modelos": _meus_modelos(request.user).filter(ativo=True),
-        },
-    )

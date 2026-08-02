@@ -13,7 +13,10 @@ from django.utils import timezone
 from agenda import calendario
 from agenda.models import Compromisso
 from core.tenancy import obter_grupo_empresa_padrao
+from crm.models import Cliente
+from fases.models import montar_fases
 from legal.testing import aceitar_documentos
+from projetos.models import Projeto
 from usuarios.models import Usuario
 
 
@@ -45,3 +48,20 @@ class DiaLocalTests(TestCase):
         resposta = self.client.get("/agenda/?ano=2026&mes=8")
         titulos = [c.titulo for c, _form in resposta.context["do_mes"]]
         self.assertEqual(titulos, ["Reunião de briefing"])
+
+    def test_tarefas_das_fases_aparecem_na_grade_e_na_lista(self):
+        cliente = Cliente.objects.create(empresa=self.grupo, nome="Cliente agenda")
+        projeto = Projeto.objects.create(
+            empresa=self.grupo, cliente=cliente, nome="Casa calendário"
+        )
+        montar_fases(projeto)
+        fase = projeto.fases.get(chave="estudo_preliminar")
+        fase.prazo = datetime(2026, 8, 19).date()
+        fase.save(update_fields=["prazo"])
+
+        resposta = self.client.get("/agenda/?ano=2026&mes=8")
+
+        self.assertEqual(len(resposta.context["tarefas_do_mes"]), 3)
+        self.assertContains(resposta, "Apresentação de conceito e referências")
+        self.assertContains(resposta, "cal-marca--tarefa")
+        self.assertContains(resposta, f"/fases/{fase.pk}/#tarefas-fase")

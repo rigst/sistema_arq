@@ -1,4 +1,5 @@
 from decimal import Decimal
+from datetime import date
 
 from django.test import Client, TestCase
 
@@ -6,7 +7,10 @@ from core.factories import criar_empresa_e_usuario
 from core.models import Empresa
 from core.visitante_cleanup import limpar_dados_negocio
 from crm.models import Cliente
+from briefing.models import TemplateBriefing
+from contratos.models import ModeloContrato
 from notificacoes.models import Notificacao
+from financeiro.models import ContaBancaria, Lancamento
 from obras.models import EtapaObra, Obra
 from projetos.models import Projeto
 from regulatorio.models import ObrigacaoTecnica
@@ -37,6 +41,40 @@ class DashboardTests(TestCase):
         self.assertContains(resp, "Projetos ativos")
         self.assertContains(resp, "Aguardando cliente")
         self.assertContains(resp, "app-side")
+
+    def test_primeiro_acesso_instala_modelos_sem_duplicar(self):
+        self.assertFalse(TemplateBriefing.objects.filter(empresa=self.grupo).exists())
+        self.assertFalse(ModeloContrato.objects.filter(empresa=self.grupo).exists())
+
+        self.client.get("/")
+        quantidade_briefings = TemplateBriefing.objects.filter(empresa=self.grupo).count()
+        quantidade_contratos = ModeloContrato.objects.filter(empresa=self.grupo).count()
+        self.assertGreaterEqual(quantidade_briefings, 2)
+        self.assertGreaterEqual(quantidade_contratos, 2)
+
+        self.client.get("/")
+        self.assertEqual(
+            TemplateBriefing.objects.filter(empresa=self.grupo).count(), quantidade_briefings
+        )
+        self.assertEqual(
+            ModeloContrato.objects.filter(empresa=self.grupo).count(), quantidade_contratos
+        )
+
+    def test_valor_a_receber_usa_decimal_em_portugues(self):
+        conta = ContaBancaria.objects.create(empresa=self.grupo, nome="Principal")
+        Lancamento.objects.create(
+            empresa=self.grupo,
+            conta=conta,
+            tipo="entrada",
+            descricao="Parcela",
+            valor=Decimal("950.40"),
+            data=date(2026, 8, 5),
+            status="previsto",
+        )
+
+        resposta = self.client.get("/")
+        self.assertContains(resposta, "R$ 950,40")
+        self.assertNotContains(resposta, "R$ 950.40")
 
 
 class LimpezaVisitanteFase4Tests(TestCase):

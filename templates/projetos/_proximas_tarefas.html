@@ -1,0 +1,70 @@
+{% load l10n %}
+<section class="secao projeto-tarefas" id="tarefas">
+    <header class="projeto-tarefas-head">
+        <div>
+            <h2 class="secao-titulo ds-display">Próximas tarefas</h2>
+            <p class="secao-sub">O que precisa ser feito nas fases deste projeto.</p>
+        </div>
+        <div class="projeto-tarefas-acoes">
+            <a class="secao-add" href="{% url 'agenda' %}?projeto={{ projeto.pk }}" title="Ver tarefas no calendário" aria-label="Ver tarefas no calendário">
+                {% include "core/_ico.html" with ico="calendario" %}
+            </a>
+            <button class="secao-add" type="button" data-abre="modal-planejamento" hidden title="Editar horas e entregas" aria-label="Editar horas previstas e datas de entrega">
+                {% include "core/_ico.html" with ico="editar" %}
+            </button>
+        </div>
+    </header>
+
+    {% if tarefa_feedback %}
+    <div class="projeto-tarefas-feedback{% if not tarefa_foi_concluida %} is-reaberta{% endif %}" role="status" aria-live="polite">
+        {% include "core/_ico.html" with ico="ok" %}
+        <span><strong>{% if tarefa_foi_concluida %}Tarefa concluída{% else %}Tarefa reaberta{% endif %}</strong>{{ tarefa_feedback }}</span>
+    </div>
+    {% endif %}
+
+    <dl class="projeto-tarefas-resumo">
+        <div><dt>Total</dt><dd class="num">{{ tarefas_total }}</dd></div>
+        <div><dt>Feitas</dt><dd class="num">{{ tarefas_concluidas }}</dd></div>
+        <div><dt>Pendentes</dt><dd class="num">{{ tarefas_pendentes }}</dd></div>
+        <div><dt>Horas previstas</dt><dd class="num">{{ tarefas_horas|floatformat:"0" }} h</dd></div>
+    </dl>
+    <div class="projeto-tarefas-progresso">
+        <div class="ds-progress ds-progress--on-light"><div class="ds-progress-fill" style="width: {{ tarefas_percent|unlocalize }}%"></div></div>
+        <span class="num">{{ tarefas_percent|floatformat:"0" }}% concluído</span>
+    </div>
+
+    <ul class="projeto-tarefas-lista">
+        {% for tarefa in proximas_tarefas %}
+        <li>
+            <button class="fase-check" type="button" title="Marcar como feita" aria-label="Marcar como feita: {{ tarefa.titulo }}"
+                    hx-post="{% url 'projeto_tarefa_alternar' tarefa.pk %}" hx-target="#tarefas" hx-swap="outerHTML"
+                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+            </button>
+            <div class="projeto-tarefa-id">
+                <strong>{{ tarefa.titulo }}</strong>
+                <span>{{ tarefa.fase.nome }}</span>
+            </div>
+            <span class="projeto-tarefa-prazo{% if tarefa.atrasada %} is-atrasada{% endif %}">{% if tarefa.prazo %}{{ tarefa.prazo|date:"d/m/Y" }}{% else %}sem data{% endif %}</span>
+            <span class="projeto-tarefa-horas num">{{ tarefa.horas_previstas|floatformat:"0" }} h</span>
+            <a class="linha-ico" href="{% url 'fase_detalhe' tarefa.fase_id %}#tarefas-fase" title="Abrir fase" aria-label="Abrir {{ tarefa.fase.nome }}">
+                {% include "core/_ico.html" with ico="seta" %}
+            </a>
+        </li>
+        {% empty %}
+        <li class="data-empty">Todas as tarefas planejadas foram concluídas.</li>
+        {% endfor %}
+    </ul>
+
+    <dialog class="ds-modal" id="modal-planejamento" aria-labelledby="modal-planejamento-titulo">
+        <form method="dialog" class="ds-modal-fechar-form"><button class="ds-modal-fechar" aria-label="Fechar">{% include "core/_ico.html" with ico="fechar" %}</button></form>
+        <h2 class="ds-modal-titulo ds-display" id="modal-planejamento-titulo">Planejamento interno</h2>
+        <p class="ds-modal-sub">As horas previstas são internas e não precisam aparecer na proposta enviada ao cliente.</p>
+        <form method="post" action="{% url 'projeto_planejamento' projeto.pk %}" class="form-card">
+            {% csrf_token %}
+            <p>{{ form_planejamento.horas_estimadas.label_tag }}{{ form_planejamento.horas_estimadas }}</p>
+            <p>{{ form_planejamento.data_inicio.label_tag }}{{ form_planejamento.data_inicio }}</p>
+            <p>{{ form_planejamento.data_prevista.label_tag }}{{ form_planejamento.data_prevista }}</p>
+            <div class="form-actions"><button class="ds-btn--acao" type="submit"><span>Salvar planejamento</span>{% include "core/_ico.html" with ico="seta" %}</button></div>
+        </form>
+    </dialog>
+</section>

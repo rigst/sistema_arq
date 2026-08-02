@@ -9,7 +9,7 @@
     {% if contrato.data_assinatura %}· Assinatura: {{ contrato.data_assinatura|date:"d/m/Y" }}{% endif %}
 </p>
 
-<div class="bloco"><h3>Valor</h3><p>R$ {{ contrato.valor_total }}</p></div>
+<div class="bloco"><h3>Valor</h3><p>Original: R$ {{ contrato.valor_total }}{% if alteracoes %}<br>Atualizado por alterações contratuais: R$ {{ valor_atualizado }}{% endif %}</p></div>
 
 {% if parcelas %}
 <div class="bloco"><h3>Parcelas</h3></div>
@@ -27,8 +27,12 @@
 <div class="bloco"><h3>Cláusulas / observações</h3><p>{{ contrato.observacoes|linebreaksbr }}</p></div>
 {% endif %}
 
+{% if contrato.corpo %}
+<div class="bloco"><h3>Contrato</h3><p>{{ contrato.corpo|linebreaksbr }}</p></div>
+{% endif %}
+
 {% if alteracoes %}
-<div class="bloco"><h3>Alterações de escopo registradas</h3>
+<div class="bloco"><h3>Alterações contratuais registradas</h3>
 <ul>
 {% for a in alteracoes %}<li>{{ a.criado_em|date:"d/m/Y" }} — {{ a.get_tipo_display }}: {{ a.descricao }}{% if a.valor_delta %} (R$ {{ a.valor_delta }}){% endif %}</li>{% endfor %}
 </ul>

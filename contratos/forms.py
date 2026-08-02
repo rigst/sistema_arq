@@ -3,16 +3,17 @@ from django import forms
 from core.tenancy import queryset_da_empresa
 from projetos.models import Projeto
 
-from .models import AlteracaoEscopo, Contrato, Documento, ModeloContrato
+from .models import AlteracaoEscopo, Contrato, Documento, ModeloContrato, Parcela
 from core.forms import ArqForm, ArqModelForm
 
 
 class ContratoForm(ArqModelForm):
     class Meta:
         model = Contrato
-        fields = ["projeto", "titulo", "numero", "valor_total", "data_assinatura", "status", "observacoes"]
+        fields = ["projeto", "titulo", "numero", "valor_total", "data_assinatura", "corpo", "observacoes"]
         widgets = {
             "data_assinatura": forms.DateInput(attrs={"type": "date"}),
+            "corpo": forms.Textarea(attrs={"rows": 24, "class": "contrato-corpo", "spellcheck": "true"}),
             "observacoes": forms.Textarea(attrs={"rows": 2}),
         }
 
@@ -20,6 +21,9 @@ class ContratoForm(ArqModelForm):
         super().__init__(*args, **kwargs)
         if user is not None:
             self.fields["projeto"].queryset = queryset_da_empresa(Projeto.objects.all(), user)
+        if self.instance and self.instance.pk:
+            # Um contrato não troca de projeto durante a revisão da minuta.
+            self.fields["projeto"].disabled = True
         if projeto is not None:
             self.fields["projeto"].initial = projeto.pk
             self.fields["projeto"].disabled = True
@@ -33,17 +37,50 @@ class GerarParcelasForm(ArqForm):
     primeira_data = forms.DateField(
         label="1º vencimento", widget=forms.DateInput(attrs={"type": "date"})
     )
-    intervalo_dias = forms.IntegerField(min_value=1, initial=30, label="Intervalo (dias)")
+
+
+class ParcelaForm(ArqModelForm):
+    class Meta:
+        model = Parcela
+        fields = ["descricao", "valor", "vencimento"]
+        widgets = {
+            "descricao": forms.TextInput(attrs={"placeholder": "Descrição da parcela"}),
+            "valor": forms.NumberInput(attrs={"step": "0.01", "placeholder": "0,00"}),
+            "vencimento": forms.DateInput(attrs={"type": "date"}),
+        }
 
 
 class AlteracaoEscopoForm(ArqModelForm):
     class Meta:
         model = AlteracaoEscopo
         fields = ["tipo", "descricao", "valor_delta"]
-        widgets = {"descricao": forms.Textarea(attrs={"rows": 2})}
+        widgets = {
+            "descricao": forms.Textarea(
+                attrs={"rows": 1, "placeholder": "Descreva o que mudou e o que foi acordado"}
+            ),
+            "valor_delta": forms.NumberInput(
+                attrs={"step": "0.01", "placeholder": "0,00"}
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["valor_delta"].label = "Impacto financeiro"
+        self.fields["valor_delta"].help_text = (
+            "Use 0,00 quando não houver impacto; valor positivo aumenta e negativo reduz."
+        )
 
 
 class DocumentoForm(ArqModelForm):
+    class Meta:
+        model = Documento
+        fields = ["titulo", "arquivo"]
+        widgets = {"titulo": forms.TextInput(attrs={"placeholder": "Ex.: Aditivo assinado"})}
+
+
+class DocumentoEdicaoForm(ArqModelForm):
+    arquivo = forms.FileField(required=False, label="Substituir arquivo")
+
     class Meta:
         model = Documento
         fields = ["titulo", "arquivo"]

@@ -1,0 +1,22 @@
+{% load l10n %}
+{% if form_edicao %}
+<tr id="fase-tarefa-{{ tarefa.pk }}" class="is-editando">
+    <td><span class="fase-check is-vazio" aria-hidden="true"></span></td>
+    <td>{{ form_edicao.titulo }}</td><td>{{ form_edicao.prazo }}</td><td class="num">{{ form_edicao.horas_previstas }}</td>
+    <td><div class="agenda-acoes">
+        <form id="editar-tarefa-{{ tarefa.pk }}" method="post" hx-post="{% url 'fase_tarefa_editar' tarefa.pk %}" hx-target="#tarefas-fase" hx-swap="outerHTML">{% csrf_token %}<button class="linha-ico linha-ico--mais" type="submit" title="Salvar" aria-label="Salvar tarefa">{% include "core/_ico.html" with ico="ok" %}</button></form>
+        <button class="linha-ico" type="button" title="Cancelar" aria-label="Cancelar edição" hx-get="{% url 'fase_tarefa_linha' tarefa.pk %}" hx-target="#fase-tarefa-{{ tarefa.pk }}" hx-swap="outerHTML">{% include "core/_ico.html" with ico="fechar" %}</button>
+    </div></td>
+</tr>
+{% else %}
+<tr id="fase-tarefa-{{ tarefa.pk }}"{% if tarefa.status == "concluida" %} class="is-done"{% endif %}>
+    <td><button class="fase-check{% if tarefa.status == 'concluida' %} is-feito{% endif %}" type="button" title="{% if tarefa.status == 'concluida' %}Reabrir{% else %}Marcar como feita{% endif %}" aria-label="{% if tarefa.status == 'concluida' %}Reabrir{% else %}Marcar como feita{% endif %}: {{ tarefa.titulo }}" hx-post="{% url 'fase_tarefa_alternar' tarefa.pk %}" hx-target="#tarefas-fase" hx-swap="outerHTML" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% if tarefa.status == "concluida" %}{% include "core/_ico.html" with ico="ok" %}{% endif %}</button></td>
+    <td><strong>{{ tarefa.titulo }}</strong></td>
+    <td>{% if tarefa.prazo %}<time datetime="{{ tarefa.prazo|date:'Y-m-d' }}">{{ tarefa.prazo|date:"d/m/Y" }}</time>{% else %}<span class="texto-vazio">A definir</span>{% endif %}</td>
+    <td class="num">{{ tarefa.horas_previstas|floatformat:"0" }} h</td>
+    <td><div class="agenda-acoes">
+        <button class="linha-ico" type="button" title="Editar" aria-label="Editar {{ tarefa.titulo }}" hx-get="{% url 'fase_tarefa_editar' tarefa.pk %}" hx-target="#fase-tarefa-{{ tarefa.pk }}" hx-swap="outerHTML">{% include "core/_ico.html" with ico="editar" %}</button>
+        <button class="linha-ico linha-ico--risco" type="button" title="Excluir" aria-label="Excluir {{ tarefa.titulo }}" data-confirmar-exclusao hx-post="{% url 'fase_tarefa_remover' tarefa.pk %}" hx-target="#tarefas-fase" hx-swap="outerHTML" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% include "core/_ico.html" with ico="excluir" %}</button>
+    </div></td>
+</tr>
+{% endif %}

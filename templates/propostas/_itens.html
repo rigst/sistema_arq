@@ -8,7 +8,8 @@ uma <tr>, "Descrição" e "Horas" caem exatamente sob as colunas que os nomeiam.
 {% endcomment %}
 <div id="itens-bloco">
     <div class="table-scroll">
-    <table class="data-table">
+    <table class="data-table proposta-itens-tabela">
+        <colgroup><col><col class="col-horas"><col class="col-valor"><col class="col-acoes"></colgroup>
         <thead><tr>
             <th scope="col">Descrição</th>
             <th scope="col" class="num">Horas</th>
@@ -32,7 +33,7 @@ uma <tr>, "Descrição" e "Horas" caem exatamente sob as colunas que os nomeiam.
             <td>
                 <button class="linha-ico linha-ico--mais" type="submit" form="add-item"
                         title="Precificar e adicionar" aria-label="Precificar e adicionar item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                    {% include "core/_ico.html" with ico="novo" %}
                 </button>
             </td>
         </tr>
@@ -45,18 +46,25 @@ uma <tr>, "Descrição" e "Horas" caem exatamente sob as colunas que os nomeiam.
             {% endif %}
         {% endfor %}
         </tbody>
+        <tfoot>
+            <tr class="proposta-somatorio">
+                <th scope="row">Total</th>
+                <th class="num">{{ proposta.horas_totais|floatformat:"0" }} h</th>
+                <th class="num">
+                    <strong>R$ {{ proposta.valor_total }}</strong>
+                    <small>hora técnica: R$ {{ proposta.hora_tecnica_aplicada }}/h</small>
+                </th>
+                <th></th>
+            </tr>
+        </tfoot>
     </table>
     </div>
 
     {% if proposta.editavel %}
     {# Fora da tabela: os campos da linha chegam nele pelo atributo form. #}
-    <form method="post" action="{% url 'proposta_add_item' proposta.pk %}" id="add-item">{% csrf_token %}</form>
+    <form method="post" action="{% url 'proposta_add_item' proposta.pk %}" id="add-item"
+          hx-post="{% url 'proposta_add_item' proposta.pk %}"
+          hx-target="#itens-bloco" hx-swap="outerHTML">{% csrf_token %}</form>
     {% endif %}
 
-    {# O total é o que o cliente lê primeiro; no rodapé da tabela ele era mais uma linha. #}
-    <div class="proposta-total">
-        <span class="ds-kicker">Total da proposta</span>
-        <strong class="proposta-total-valor num">R$ {{ proposta.valor_total }}</strong>
-        <span class="proposta-total-horas num">{{ proposta.horas_totais }} h · R$ {{ proposta.hora_tecnica_aplicada }}/h</span>
-    </div>
 </div>

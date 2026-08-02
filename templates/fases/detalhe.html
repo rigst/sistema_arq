@@ -13,65 +13,10 @@
 
     {% include "fases/_estado.html" %}
 
-    <section class="secao">
-        <h2 class="secao-titulo ds-display">O que sai desta fase</h2>
-        <p class="secao-sub">Entra aqui: {{ fase.consome|lower }}</p>
-        <ul class="fase-entrega">
-            {% for item in fase.entrega %}<li>{{ item }}</li>{% endfor %}
-        </ul>
-        {% if fase.chave == "briefing" %}
-        <p><a class="ds-btn" href="{% url 'briefing_responder' projeto.pk %}">Abrir o roteiro de briefing</a></p>
-        {% elif fase.chave == "proposta" %}
-        <p class="fase-atalhos">
-            <a class="ds-btn" href="{% url 'proposta_nova' %}?projeto={{ projeto.pk }}">Montar proposta</a>
-            <a class="ds-btn" href="{% url 'contrato_novo' %}?projeto={{ projeto.pk }}">Redigir contrato</a>
-        </p>
-        {% endif %}
-    </section>
+    {% include "fases/_tarefas.html" %}
 
     {% comment %}Arquivos da fase. Cada fase tem os seus: é o que permite saber
     qual versão o cliente aprovou.{% endcomment %}
-    {% if insumos %}
-    <section class="secao insumos" id="insumos">
-        <h2 class="secao-titulo ds-display">Do briefing</h2>
-        <p class="secao-sub">
-            O que o cliente pediu, à mão, para desenhar em cima disso — e não de memória.
-        </p>
-
-        {% if insumos.ambientes %}
-        <table class="data-table programa">
-            <thead><tr><th scope="col">Ambiente</th><th scope="col">Uso</th><th scope="col" class="num">m²</th></tr></thead>
-            <tbody>
-                {% for a in insumos.ambientes %}
-                <tr>
-                    <td>{{ a.nome }}</td>
-                    <td>{{ a.uso|default:"—" }}</td>
-                    <td class="num">{{ a.area_aprox|default:"—" }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-            {% if insumos.area_total %}
-            <tfoot><tr><th scope="row" colspan="2">Área do programa</th><td class="num">{{ insumos.area_total }} m²</td></tr></tfoot>
-            {% endif %}
-        </table>
-        {% else %}
-        <p class="data-empty">
-            O programa de necessidades ainda está vazio.
-            <a href="{% url 'briefing_projeto' projeto.pk %}">Preencher no briefing</a>.
-        </p>
-        {% endif %}
-
-        {% if insumos.referencias or insumos.estilo or insumos.restricoes %}
-        <dl class="insumo-notas">
-            {% if insumos.estilo %}<div><dt>Estilo</dt><dd>{{ insumos.estilo }}</dd></div>{% endif %}
-            {% if insumos.referencias %}<div><dt>Referências</dt><dd>{{ insumos.referencias }}</dd></div>{% endif %}
-            {% if insumos.restricoes %}<div><dt>Restrições</dt><dd>{{ insumos.restricoes }}</dd></div>{% endif %}
-        </dl>
-        {% endif %}
-        <p><a class="ds-btn" href="{% url 'briefing_projeto' projeto.pk %}">Abrir o briefing completo</a></p>
-    </section>
-    {% endif %}
-
     <section class="secao" id="arquivos">
         <h2 class="secao-titulo ds-display">Arquivos desta fase</h2>
         <p class="secao-sub">Pranchas, PDFs, imagens e referências. O que o navegador abre, abre aqui mesmo.</p>
@@ -92,23 +37,7 @@
         {% if arquivos %}
         <ul class="arquivo-lista">
             {% for a in arquivos %}
-            <li class="arquivo">
-                <span class="arquivo-tipo num">{{ a.extensao|default:"—" }}</span>
-                <div class="arquivo-id">
-                    <a href="{% url 'fase_arquivo_ver' a.pk %}" {% if a.visualizavel %}target="_blank" rel="noopener"{% endif %}>{{ a.titulo }}</a>
-                    <span class="arquivo-meta">
-                        {{ a.get_categoria_display }} · {{ a.criado_em|date:"d/m/y H:i" }}
-                        {% if a.criado_por %} · {{ a.criado_por.get_username }}{% endif %}
-                        {% if a.tamanho_legivel %} · {{ a.tamanho_legivel }}{% endif %}
-                    </span>
-                </div>
-                <div class="arquivo-acoes">
-                    <a class="app-link-btn" href="{% url 'fase_arquivo_editar' a.pk %}">editar</a>
-                    <form method="post" action="{% url 'fase_arquivo_remover' a.pk %}" class="app-inline-form">
-                        {% csrf_token %}<button class="app-link-btn" type="submit">remover</button>
-                    </form>
-                </div>
-            </li>
+            {% include "fases/_arquivo_linha.html" %}
             {% endfor %}
         </ul>
         {% else %}
@@ -133,7 +62,7 @@
 
     {% if fase.complementar %}
     <div class="fases-rodape">
-        <form method="post" action="{% url 'fase_remover' fase.pk %}" class="app-inline-form">
+        <form method="post" action="{% url 'fase_remover' fase.pk %}" class="app-inline-form" data-confirmar-exclusao>
             {% csrf_token %}
             <button class="link-discreto" type="submit">Remover este complementar do projeto</button>
         </form>

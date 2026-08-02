@@ -1,0 +1,36 @@
+{% extends "pdf/base_pdf.html" %}
+{% block tipo %}Briefing{% endblock %}
+
+{% block conteudo %}
+<h1>{{ projeto.nome }}</h1>
+<p class="muted">Cliente: {{ projeto.cliente.nome }}</p>
+
+{% for bloco in blocos %}
+<div class="bloco"><h3>{{ bloco.nome }}</h3></div>
+{% for resposta in bloco.respostas %}
+<p><strong>{{ resposta.pergunta.texto }}</strong><br>
+{% for opcao in resposta.opcoes.all %}{{ opcao.texto }}{% if not forloop.last %}, {% endif %}{% endfor %}
+{% if resposta.texto %}{% if resposta.opcoes.all %}<br>{% endif %}{{ resposta.texto|linebreaksbr }}{% endif %}
+</p>
+{% endfor %}
+{% endfor %}
+
+{% if ambientes %}
+<div class="bloco"><h3>Programa de necessidades</h3></div>
+<table>
+    <thead><tr><th>Ambiente</th><th>Uso</th><th class="total">Área</th></tr></thead>
+    <tbody>{% for ambiente in ambientes %}<tr><td>{{ ambiente.nome }}</td><td>{{ ambiente.uso|default:"—" }}</td><td class="total">{{ ambiente.area_aprox|default:"—" }} m²</td></tr>{% endfor %}</tbody>
+</table>
+{% endif %}
+
+{% if briefing.perfil_usuarios or briefing.orcamento_previsto or briefing.prazo_desejado or briefing.restricoes or briefing.referencias or briefing.estilo %}
+<div class="bloco"><h3>Perfil, orçamento e restrições</h3>
+{% if briefing.perfil_usuarios %}<p><strong>Perfil e rotina</strong><br>{{ briefing.perfil_usuarios|linebreaksbr }}</p>{% endif %}
+{% if briefing.orcamento_previsto %}<p><strong>Orçamento previsto</strong><br>R$ {{ briefing.orcamento_previsto }}</p>{% endif %}
+{% if briefing.prazo_desejado %}<p><strong>Prazo desejado</strong><br>{{ briefing.prazo_desejado|date:"d/m/Y" }}</p>{% endif %}
+{% if briefing.restricoes %}<p><strong>Restrições</strong><br>{{ briefing.restricoes|linebreaksbr }}</p>{% endif %}
+{% if briefing.referencias %}<p><strong>Referências</strong><br>{{ briefing.referencias|linebreaksbr }}</p>{% endif %}
+{% if briefing.estilo %}<p><strong>Estilo e prioridades</strong><br>{{ briefing.estilo|linebreaksbr }}</p>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

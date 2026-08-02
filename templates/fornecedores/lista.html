@@ -14,7 +14,7 @@
                 como foi trabalhar com ele da última vez.
             </p>
         </div>
-        <a class="ds-btn--novo" href="{% url 'fornecedor_novo' %}">{% include "core/_ico.html" with ico="novo" %}<span>Novo fornecedor</span></a>
+        <button class="ds-btn--novo" type="button" data-abre="modal-fornecedor-novo">{% include "core/_ico.html" with ico="novo" %}<span>Novo fornecedor</span></button>
     </header>
 
     {% if categorias %}
@@ -32,12 +32,12 @@
         <tbody>
         {% for f in fornecedores %}
             <tr {% if not f.ativo %}class="is-done"{% endif %}>
-                <td><a href="{% url 'fornecedor_editar' f.pk %}">{{ f.nome }}</a></td>
+                <td>{{ f.nome }}</td>
                 <td>{{ f.get_categoria_display }}</td>
                 <td>{{ f.contato|default:"—" }}{% if f.telefone %} · {{ f.telefone }}{% endif %}</td>
                 <td>{{ f.cidade|default:"—" }}</td>
                 <td>{% if f.avaliacao %}{{ f.get_avaliacao_display }}{% else %}—{% endif %}</td>
-                <td><a href="{% url 'fornecedor_editar' f.pk %}">editar</a></td>
+                <td class="cadastro-acoes"><button class="linha-ico" type="button" data-abre="modal-fornecedor-{{ f.pk }}" title="Editar" aria-label="Editar {{ f.nome }}">{% include "core/_ico.html" with ico="editar" %}</button><form method="post" action="{% url 'fornecedor_remover' f.pk %}" data-confirmar-exclusao>{% csrf_token %}<button class="linha-ico linha-ico--risco" type="submit" title="Excluir" aria-label="Excluir {{ f.nome }}">{% include "core/_ico.html" with ico="excluir" %}</button></form></td>
             </tr>
         {% empty %}
             <tr><td colspan="6" class="data-empty">Nenhum fornecedor cadastrado. Comece pelos que você já usa em toda obra.</td></tr>
@@ -45,5 +45,19 @@
         </tbody>
     </table>
     </div>
+
+    <dialog class="ds-modal ds-modal--amplo" id="modal-fornecedor-novo" aria-labelledby="modal-fornecedor-novo-titulo">
+        <form method="dialog" class="ds-modal-fechar-form"><button class="ds-modal-fechar" aria-label="Fechar">{% include "core/_ico.html" with ico="fechar" %}</button></form>
+        <h2 class="ds-modal-titulo ds-display" id="modal-fornecedor-novo-titulo">Novo fornecedor</h2><p class="ds-modal-sub">Contato, especialidade e dados de contratação.</p>
+        <div class="ds-modal-corpo"><form method="post" action="{% url 'fornecedor_novo' %}" class="form-card form-card--duas-colunas">{% csrf_token %}{{ form_fornecedor.as_p }}<div class="form-actions"><button class="ds-btn" type="submit" formmethod="dialog" formnovalidate>Cancelar</button><button class="ds-btn ds-btn--solid" type="submit">Criar fornecedor</button></div></form></div>
+    </dialog>
+
+    {% for fornecedor, form_edicao in fornecedores_com_form %}
+    <dialog class="ds-modal ds-modal--amplo" id="modal-fornecedor-{{ fornecedor.pk }}" aria-labelledby="modal-fornecedor-{{ fornecedor.pk }}-titulo">
+        <form method="dialog" class="ds-modal-fechar-form"><button class="ds-modal-fechar" aria-label="Fechar">{% include "core/_ico.html" with ico="fechar" %}</button></form>
+        <h2 class="ds-modal-titulo ds-display" id="modal-fornecedor-{{ fornecedor.pk }}-titulo">Editar fornecedor</h2><p class="ds-modal-sub">{{ fornecedor.nome }}</p>
+        <div class="ds-modal-corpo"><form method="post" action="{% url 'fornecedor_editar' fornecedor.pk %}" class="form-card form-card--duas-colunas">{% csrf_token %}{{ form_edicao.as_p }}<div class="form-actions"><button class="ds-btn" type="submit" formmethod="dialog" formnovalidate>Cancelar</button><button class="ds-btn ds-btn--solid" type="submit">Salvar</button></div></form></div>
+    </dialog>
+    {% endfor %}
 </section>
 {% endblock %}

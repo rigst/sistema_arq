@@ -17,6 +17,7 @@ urlpatterns = [
     # Briefing de um projeto.
     path("projeto/<int:projeto_pk>/", views.editar_briefing, name="briefing_projeto"),
     path("projeto/<int:projeto_pk>/responder/", views.responder, name="briefing_responder"),
+    path("projeto/<int:projeto_pk>/pdf/", views.briefing_pdf, name="briefing_pdf"),
     path(
         "projeto/<int:projeto_pk>/roteiro/",
         views.aplicar_template,

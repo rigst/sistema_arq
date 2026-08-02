@@ -27,12 +27,12 @@ lugar na troca.
         <div class="agenda-acoes">
             <button class="linha-ico linha-ico--mais" type="submit" form="edita-item-{{ item.pk }}"
                     title="Salvar" aria-label="Salvar “{{ item.descricao }}”">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+                {% include "core/_ico.html" with ico="ok" %}
             </button>
             <button class="linha-ico" type="button" title="Cancelar" aria-label="Cancelar a edição"
                     hx-get="{% url 'proposta_item_linha' item.pk %}"
                     hx-target="#item-{{ item.pk }}" hx-swap="outerHTML">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                {% include "core/_ico.html" with ico="fechar" %}
             </button>
         </div>
     </td>
@@ -49,14 +49,15 @@ lugar na troca.
                     aria-label="Editar “{{ item.descricao }}”"
                     hx-get="{% url 'proposta_item_editar' item.pk %}"
                     hx-target="#item-{{ item.pk }}" hx-swap="outerHTML">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4l10-10-4-4L4 16z"/><path d="M14 6l4 4"/></svg>
+                {% include "core/_ico.html" with ico="editar" %}
             </button>
             <button class="linha-ico linha-ico--risco" type="button" title="Excluir"
                     aria-label="Excluir “{{ item.descricao }}”"
+                    data-confirmar-exclusao
                     hx-post="{% url 'proposta_remove_item' item.pk %}"
                     hx-target="#itens-bloco" hx-swap="outerHTML"
                     hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M6 7l1 13h10l1-13"/></svg>
+                {% include "core/_ico.html" with ico="excluir" %}
             </button>
         </div>
         {% endif %}

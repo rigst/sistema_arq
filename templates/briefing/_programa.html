@@ -39,7 +39,7 @@ colunas. Os campos moram fora da tag <form> (não se põe <form> dentro de
                             hx-post="{% url 'briefing_remove_ambiente' a.pk %}"
                             hx-target="#programa-bloco" hx-swap="outerHTML"
                             hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M6 7l1 13h10l1-13"/></svg>
+                        {% include "core/_ico.html" with ico="excluir" %}
                     </button>
                 </td>
                 {% endif %}
@@ -70,7 +70,7 @@ colunas. Os campos moram fora da tag <form> (não se põe <form> dentro de
             <td>
                 <button class="linha-ico linha-ico--mais" type="submit" form="programa-add"
                         title="Adicionar ambiente" aria-label="Adicionar ambiente">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                    {% include "core/_ico.html" with ico="novo" %}
                 </button>
             </td>
         </tr>

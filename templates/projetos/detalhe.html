@@ -18,33 +18,26 @@
             </p>
         </div>
         <div class="page-head-actions">
-            <a class="ds-btn" href="{% url 'projeto_editar' projeto.pk %}">Editar</a>
+            <a class="secao-add" href="{% url 'projeto_editar' projeto.pk %}" title="Editar projeto" aria-label="Editar projeto">
+                {% include "core/_ico.html" with ico="editar" %}
+            </a>
         </div>
     </header>
 
-    {% if roteiro_proxima %}
-    <a class="proximo-passo" href="{{ roteiro_proxima.url }}">
-        <span class="ds-kicker">Próximo passo</span>
-        <strong>{{ roteiro_proxima.titulo }}</strong>
-        <span class="proximo-passo-desc">{{ roteiro_proxima.descricao }}</span>
-        <span class="proximo-passo-cta">{{ roteiro_proxima.cta }} →</span>
-    </a>
-    {% endif %}
-
-    <div class="margem-strip">
-        <div><span>Contratado</span><strong>R$ {{ projeto.valor_contratado }}</strong></div>
-        <div><span>Custo de horas</span><strong>R$ {{ margem.custo_horas }}</strong></div>
-        <div><span>Despesas</span><strong>R$ {{ margem.despesas }}</strong></div>
-        <div class="margem-final"><span>Margem</span><strong>R$ {{ margem.margem }} ({{ margem.margem_percent }}%)</strong></div>
+    <div class="quantitativos-projeto">
+        <div class="quantitativo quantitativo--valor"><span>Valor do contrato</span><strong>R$ {{ valor_contrato }}</strong></div>
+        <div class="quantitativo quantitativo--horas"><span>Horas do projeto</span><strong>{{ projeto.horas_estimadas|floatformat:"0" }} h</strong><small>{{ projeto.horas_trabalhadas|floatformat:"0" }} h trabalhadas</small></div>
+        <div class="quantitativo quantitativo--inicio"><span>Início</span><strong>{{ projeto.data_inicio|date:"d/m/Y"|default:"—" }}</strong></div>
+        <div class="quantitativo quantitativo--entrega"><span>Entrega prevista</span><strong>{{ projeto.data_prevista|date:"d/m/Y"|default:"—" }}</strong></div>
     </div>
 
-    {% include "projetos/_horas.html" %}
+    {% include "projetos/_proximas_tarefas.html" %}
 
     {% include "fases/_lembretes.html" %}
 
     {% include "projetos/_fases.html" %}
 
-    {% include "projetos/_registros.html" %}
+    {% include "projetos/_arquivos_principais.html" %}
 
 </section>
 {% endblock %}

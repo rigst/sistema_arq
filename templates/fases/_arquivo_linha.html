@@ -1,0 +1,33 @@
+<li class="arquivo" id="arquivo-fase-{{ a.pk }}">
+    <span class="arquivo-tipo num">{{ a.extensao|default:"—" }}</span>
+    <div class="arquivo-id">
+        <a href="{% url 'fase_arquivo_ver' a.pk %}" {% if a.visualizavel %}target="_blank" rel="noopener"{% endif %}>{{ a.titulo }}</a>
+        <span class="arquivo-meta">
+            {{ a.get_categoria_display }} · {{ a.criado_em|date:"d/m/y H:i" }}
+            {% if a.criado_por %} · {{ a.criado_por.get_username }}{% endif %}
+            {% if a.tamanho_legivel %} · {{ a.tamanho_legivel }}{% endif %}
+        </span>
+    </div>
+    <div class="arquivo-acoes">
+        <form method="post" action="{% url 'fase_arquivo_favorito' a.pk %}"
+              hx-post="{% url 'fase_arquivo_favorito' a.pk %}"
+              hx-target="#arquivo-fase-{{ a.pk }}" hx-swap="outerHTML">
+            {% csrf_token %}
+            <button class="linha-ico arquivo-favorito{% if a.favorito %} is-active{% endif %}"
+                    type="submit" aria-pressed="{{ a.favorito|yesno:'true,false' }}"
+                    title="{% if a.favorito %}Remover dos arquivos principais{% else %}Adicionar aos arquivos principais{% endif %}"
+                    aria-label="{% if a.favorito %}Remover {{ a.titulo }} dos arquivos principais{% else %}Adicionar {{ a.titulo }} aos arquivos principais{% endif %}">
+                {% if a.favorito %}{% include "core/_ico.html" with ico="estrela_cheia" %}{% else %}{% include "core/_ico.html" with ico="estrela" %}{% endif %}
+            </button>
+        </form>
+        <a class="linha-ico" href="{% url 'fase_arquivo_editar' a.pk %}" title="Editar" aria-label="Editar {{ a.titulo }}">
+            {% include "core/_ico.html" with ico="editar" %}
+        </a>
+        <form method="post" action="{% url 'fase_arquivo_remover' a.pk %}" data-confirmar-exclusao>
+            {% csrf_token %}
+            <button class="linha-ico linha-ico--risco" type="submit" title="Excluir" aria-label="Excluir {{ a.titulo }}">
+                {% include "core/_ico.html" with ico="excluir" %}
+            </button>
+        </form>
+    </div>
+</li>

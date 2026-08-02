@@ -1,4 +1,5 @@
 import io
+from datetime import date
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
@@ -11,6 +12,7 @@ from fases import catalogo
 from fases.models import Fase, montar_fases
 from legal.testing import aceitar_documentos
 from projetos.models import Projeto
+from tarefas.models import Tarefa
 from usuarios.models import Usuario
 
 
@@ -47,10 +49,10 @@ class BaseFase(TestCase):
 
 
 class MontagemTests(BaseFase):
-    def test_projeto_novo_nasce_com_as_cinco_principais(self):
+    def test_projeto_novo_nasce_com_proposta_e_contrato_separados(self):
         self.assertEqual(
             list(self.projeto.fases.values_list("chave", flat=True)),
-            ["briefing", "proposta", "estudo_preliminar", "anteprojeto", "executivo"],
+            ["briefing", "proposta", "contrato", "estudo_preliminar", "anteprojeto", "executivo"],
         )
 
     def test_complementares_nao_entram_sozinhos(self):
@@ -67,7 +69,7 @@ class FluxoTests(BaseFase):
     def test_so_a_primeira_fase_comeca_liberada(self):
         self.assertTrue(self.fase("briefing").liberada)
         self.assertFalse(self.fase("estudo_preliminar").liberada)
-        self.assertIn("Proposta e contrato", self.fase("estudo_preliminar").impedimento)
+        self.assertIn("Contrato", self.fase("estudo_preliminar").impedimento)
 
     def test_aprovar_uma_fase_libera_a_seguinte(self):
         proposta = self.liberar_ate("proposta")
@@ -78,7 +80,8 @@ class FluxoTests(BaseFase):
         )
         proposta.enviar_ao_cliente(self.user)
         proposta.registrar_resposta(True, "Pode seguir", self.user)
-        self.assertTrue(self.fase("estudo_preliminar").liberada)
+        self.assertTrue(self.fase("contrato").liberada)
+        self.assertFalse(self.fase("estudo_preliminar").liberada)
 
     def test_ajustes_nao_liberam_a_seguinte(self):
         proposta = self.liberar_ate("proposta")
@@ -86,7 +89,7 @@ class FluxoTests(BaseFase):
         proposta.enviar_ao_cliente(self.user)
         proposta.registrar_resposta(False, "Rever o prazo", self.user)
         self.assertEqual(proposta.status, Fase.AJUSTES)
-        self.assertFalse(self.fase("estudo_preliminar").liberada)
+        self.assertFalse(self.fase("contrato").liberada)
 
     def test_briefing_fecha_sem_aprovacao_do_cliente(self):
         """Briefing é insumo interno; não se manda o cliente aprovar o próprio
@@ -137,7 +140,7 @@ class FluxoTests(BaseFase):
         )
         proposta.enviar_ao_cliente(self.user)
         proposta.registrar_resposta(True, "", self.user)
-        self.assertEqual(self.fase("estudo_preliminar").status, Fase.EM_ELABORACAO)
+        self.assertEqual(self.fase("contrato").status, Fase.EM_ELABORACAO)
         proposta.arquivos.first().arquivo.delete(save=False)
 
     def test_briefing_abre_direto_no_briefing(self):
@@ -146,11 +149,44 @@ class FluxoTests(BaseFase):
         self.assertRedirects(
             self.client.get(f"/fases/{fase.pk}/"),
             f"/briefing/projeto/{self.projeto.pk}/responder/",
-            target_status_code=302,
         )
 
 
 class ViewsTests(BaseFase):
+    def test_planejamento_atualiza_horas_e_datas_do_projeto(self):
+        resposta = self.client.post(
+            f"/projetos/{self.projeto.pk}/planejamento/",
+            {"horas_estimadas": "96", "data_inicio": "2026-08-02", "data_prevista": "2026-10-15"},
+        )
+        self.assertRedirects(resposta, f"/projetos/{self.projeto.pk}/")
+        self.projeto.refresh_from_db()
+        self.assertEqual(str(self.projeto.horas_estimadas), "96.00")
+        self.assertEqual(str(self.projeto.data_prevista), "2026-10-15")
+
+    def test_fase_contrato_abre_o_contrato_diretamente(self):
+        from contratos.models import Contrato
+
+        fase = self.liberar_ate("contrato")
+        fase.abrir(self.user)
+        contrato = Contrato.objects.create(
+            empresa=self.grupo,
+            projeto=self.projeto,
+            titulo="Contrato Casa Ipê",
+            valor_total=1000,
+            corpo="Texto do contrato.",
+        )
+        self.assertRedirects(
+            self.client.get(f"/fases/{fase.pk}/"),
+            f"/contratos/{contrato.pk}/",
+        )
+
+    def test_documentos_comerciais_nao_usam_envio_generico_da_fase(self):
+        fase = self.liberar_ate("proposta")
+        fase.abrir(self.user)
+        self.client.post(f"/fases/{fase.pk}/enviar/")
+        fase.refresh_from_db()
+        self.assertEqual(fase.status, Fase.EM_ELABORACAO)
+
     def test_nao_envia_fase_vazia_ao_cliente(self):
         """Enviar sem material é pedir aprovação de nada."""
         fase = self.liberar_ate("proposta")
@@ -209,6 +245,51 @@ class ViewsTests(BaseFase):
         self.assertEqual(arquivo.titulo, "Planta pavimento térreo")
         arquivo.arquivo.delete(save=False)
 
+    def test_favorito_da_fase_aparece_nos_arquivos_principais(self):
+        fase = self.fase("estudo_preliminar")
+        arquivo = Arquivo.objects.create(
+            empresa=self.grupo,
+            projeto=self.projeto,
+            fase=fase,
+            titulo="Planta aprovada",
+            arquivo=_png("aprovada.png"),
+            categoria="projeto",
+        )
+
+        resposta = self.client.post(
+            f"/fases/arquivo/{arquivo.pk}/favorito/",
+            HTTP_HX_REQUEST="true",
+            HTTP_HX_TARGET=f"arquivo-fase-{arquivo.pk}",
+        )
+        arquivo.refresh_from_db()
+        self.assertTrue(arquivo.favorito)
+        self.assertContains(resposta, 'aria-pressed="true"')
+        self.assertContains(
+            self.client.get(f"/projetos/{self.projeto.pk}/"), "Planta aprovada"
+        )
+
+        resposta = self.client.post(
+            f"/fases/arquivo/{arquivo.pk}/favorito/",
+            HTTP_HX_REQUEST="true",
+            HTTP_HX_TARGET="arquivos-principais",
+        )
+        arquivo.refresh_from_db()
+        self.assertFalse(arquivo.favorito)
+        self.assertContains(resposta, 'id="arquivos-principais"')
+        self.assertNotContains(resposta, "Planta aprovada")
+        arquivo.arquivo.delete(save=False)
+
+    def test_arquivo_sem_fase_nao_pode_ser_marcado_como_principal(self):
+        arquivo = Arquivo.objects.create(
+            empresa=self.grupo,
+            projeto=self.projeto,
+            titulo="Arquivo antigo",
+            arquivo=_png("antigo.png"),
+        )
+        resposta = self.client.post(f"/fases/arquivo/{arquivo.pk}/favorito/")
+        self.assertEqual(resposta.status_code, 404)
+        arquivo.arquivo.delete(save=False)
+
     def test_ligar_e_desligar_complementar(self):
         self.client.post(
             f"/fases/projeto/{self.projeto.pk}/complementar/", {"chave": "comp_hidraulica"}
@@ -224,7 +305,7 @@ class ViewsTests(BaseFase):
         self.client.post(f"/fases/{fase.pk}/remover/")
         self.assertTrue(self.projeto.fases.filter(chave="executivo").exists())
 
-    def test_resposta_do_cliente_pela_tela(self):
+    def test_fase_proposta_nao_aceita_resposta_por_rota_generica(self):
         fase = self.liberar_ate("proposta")
         fase.abrir(self.user)
         Arquivo.objects.create(
@@ -236,8 +317,8 @@ class ViewsTests(BaseFase):
             f"/fases/{fase.pk}/responder/", {"decisao": "aprovar", "parecer": "Fechado."}
         )
         fase.refresh_from_db()
-        self.assertEqual(fase.status, Fase.APROVADA)
-        self.assertEqual(fase.parecer, "Fechado.")
+        self.assertEqual(fase.status, Fase.EM_ELABORACAO)
+        self.assertEqual(fase.parecer, "")
         fase.arquivos.first().arquivo.delete(save=False)
 
     def test_fase_de_outra_empresa_da_404(self):
@@ -252,17 +333,167 @@ class ViewsTests(BaseFase):
         self.assertEqual(self.client.get(f"/fases/{fase.pk}/").status_code, 404)
 
 
-class NavegacaoPorProjetoTests(BaseFase):
-    """O que é de um projeto abre já recortado nele, sem filtrar à mão."""
+class TarefasDaFaseTests(BaseFase):
+    def abrir_fase(self, chave="estudo_preliminar"):
+        fase = self.liberar_ate(chave)
+        fase.abrir(self.user)
+        return fase
 
-    def test_listas_aceitam_o_projeto_pela_url(self):
+    def test_fase_semeia_entregaveis_usuais_uma_unica_vez(self):
+        fase = self.abrir_fase()
+        fase.prazo = date(2026, 9, 15)
+        fase.save(update_fields=["prazo"])
+
+        resposta = self.client.get(f"/fases/{fase.pk}/")
+
+        self.assertContains(resposta, "Tarefas desta fase")
+        self.assertContains(resposta, "3 tarefas · 28 h")
+        self.assertNotContains(resposta, "Do briefing")
+        self.assertEqual(
+            list(fase.tarefas.values_list("titulo", flat=True)), list(fase.entrega)
+        )
+        self.assertTrue(fase.tarefas.filter(prazo=date(2026, 9, 15)).exists())
+        self.assertFalse(fase.tarefas.filter(horas_previstas=0).exists())
+
+        self.client.get(f"/fases/{fase.pk}/")
+        self.assertEqual(fase.tarefas.count(), len(fase.entrega))
+
+    def test_complementar_tambem_recebe_tarefas_usuais(self):
+        montar_fases(self.projeto, complementares=["comp_eletrica"])
+        fase = self.abrir_fase("comp_eletrica")
+
+        self.client.get(f"/fases/{fase.pk}/")
+
+        self.assertEqual(
+            list(fase.tarefas.values_list("titulo", flat=True)), list(fase.entrega)
+        )
+
+    def test_crud_e_check_da_tarefa_funcionam_inline(self):
+        fase = self.abrir_fase()
+        self.client.get(f"/fases/{fase.pk}/")
+        cabecalho_htmx = {"HTTP_HX_REQUEST": "true"}
+
+        resposta = self.client.post(
+            f"/fases/{fase.pk}/tarefa/",
+            {
+                "titulo": "Compatibilizar implantação",
+                "prazo": "2026-09-20",
+                "horas_previstas": "6",
+            },
+            **cabecalho_htmx,
+        )
+        tarefa = fase.tarefas.get(titulo="Compatibilizar implantação")
+        self.assertEqual(resposta.status_code, 200)
+        self.assertContains(resposta, 'id="tarefas-fase"')
+        self.assertEqual(tarefa.projeto, self.projeto)
+        self.assertEqual(tarefa.fase, fase)
+
+        resposta = self.client.get(f"/fases/tarefa/{tarefa.pk}/editar/")
+        self.assertContains(resposta, 'value="2026-09-20"')
+
+        resposta = self.client.post(
+            f"/fases/tarefa/{tarefa.pk}/editar/",
+            {
+                "titulo": "Compatibilizar implantação e acessos",
+                "prazo": "2026-09-22",
+                "horas_previstas": "8",
+            },
+            **cabecalho_htmx,
+        )
+        tarefa.refresh_from_db()
+        self.assertContains(resposta, "Compatibilizar implantação e acessos")
+        self.assertEqual(tarefa.horas_previstas, 8)
+
+        self.client.post(
+            f"/fases/tarefa/{tarefa.pk}/alternar/", **cabecalho_htmx
+        )
+        tarefa.refresh_from_db()
+        self.assertEqual(tarefa.status, "concluida")
+
+        resposta = self.client.post(
+            f"/fases/tarefa/{tarefa.pk}/remover/", **cabecalho_htmx
+        )
+        self.assertEqual(resposta.status_code, 200)
+        self.assertFalse(Tarefa.objects.filter(pk=tarefa.pk).exists())
+
+    def test_tarefa_excluida_nao_e_recriada_ao_reabrir(self):
+        fase = self.abrir_fase()
+        self.client.get(f"/fases/{fase.pk}/")
+        removida = fase.tarefas.first()
+        titulo = removida.titulo
+        removida.delete()
+
+        self.client.get(f"/fases/{fase.pk}/")
+
+        self.assertFalse(fase.tarefas.filter(titulo=titulo).exists())
+
+    def test_aprovacao_abre_diretamente_a_proxima_fase(self):
+        fase = self.abrir_fase()
+        Arquivo.objects.create(
+            empresa=self.grupo,
+            projeto=self.projeto,
+            fase=fase,
+            titulo="Estudo preliminar",
+            arquivo=_png("estudo.png"),
+        )
+        self.client.post(f"/fases/{fase.pk}/enviar/")
+
+        proxima = self.fase("anteprojeto")
+        resposta = self.client.post(
+            f"/fases/{fase.pk}/responder/",
+            {"decisao": "aprovar", "parecer": "Aprovado."},
+        )
+
+        self.assertRedirects(resposta, f"/fases/{proxima.pk}/")
+        proxima.refresh_from_db()
+        self.assertEqual(proxima.status, Fase.EM_ELABORACAO)
+        fase.arquivos.first().arquivo.delete(save=False)
+
+    def test_ficha_do_projeto_resume_e_lista_as_tarefas_tecnicas(self):
+        fase = self.fase("estudo_preliminar")
+        fase.prazo = date(2026, 9, 15)
+        fase.save(update_fields=["prazo"])
+
+        resposta = self.client.get(f"/projetos/{self.projeto.pk}/")
+
+        self.assertEqual(resposta.context["tarefas_total"], 9)
+        self.assertEqual(resposta.context["tarefas_concluidas"], 0)
+        self.assertEqual(resposta.context["tarefas_pendentes"], 9)
+        self.assertEqual(len(resposta.context["proximas_tarefas"]), 5)
+        self.assertContains(resposta, "Próximas tarefas")
+        self.assertNotContains(resposta, "Horas projetadas × trabalhadas")
+        self.assertContains(resposta, "Apresentação de conceito e referências")
+        estudo = next(f for f in resposta.context["fases"] if f.chave == "estudo_preliminar")
+        self.assertEqual(estudo.horas_tarefas, 28)
+
+    def test_check_no_projeto_atualiza_contadores_inline(self):
+        self.client.get(f"/projetos/{self.projeto.pk}/")
+        tarefa = self.projeto.tarefas.filter(fase__isnull=False).first()
+
+        resposta = self.client.post(
+            f"/projetos/tarefa/{tarefa.pk}/alternar/", HTTP_HX_REQUEST="true"
+        )
+
+        tarefa.refresh_from_db()
+        self.assertEqual(tarefa.status, "concluida")
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(resposta.context["tarefas_concluidas"], 1)
+        self.assertContains(resposta, 'id="tarefas"')
+        self.assertContains(resposta, "Tarefa concluída")
+        self.assertContains(resposta, tarefa.titulo)
+
+
+class NavegacaoPorProjetoTests(BaseFase):
+    """O projeto reúne o que é central sem depender de listagens globais."""
+
+    def test_listas_operacionais_aceitam_o_projeto_pela_url(self):
         from django.contrib.auth.models import Group
 
         outro = Group.objects.create(name="Vizinho 3")
         alheio = Projeto.objects.create(
             empresa=outro, cliente=self.cliente, nome="Alheio 3", tipo="comercial"
         )
-        for rota in ["/arquivos/", "/orcamentos/", "/propostas/", "/contratos/", "/regulatorio/"]:
+        for rota in ["/orcamentos/", "/regulatorio/"]:
             with self.subTest(rota=rota):
                 resp = self.client.get(f"{rota}?projeto={self.projeto.pk}")
                 self.assertEqual(resp.status_code, 200)
@@ -271,10 +502,56 @@ class NavegacaoPorProjetoTests(BaseFase):
                 resp2 = self.client.get(f"{rota}?projeto={alheio.pk}")
                 self.assertNotContains(resp2, "Alheio 3")
 
-    def test_ficha_do_projeto_leva_para_os_registros_filtrados(self):
-        resp = self.client.get(f"/projetos/{self.projeto.pk}/")
-        for rota in ["/arquivos/", "/propostas/", "/contratos/", "/regulatorio/"]:
-            self.assertContains(resp, f"{rota}?projeto={self.projeto.pk}")
+    def test_ficha_reune_documentos_gerados_e_anexos_do_contrato(self):
+        from briefing.models import Briefing
+        from contratos.models import Contrato, Documento
+        from propostas.models import Proposta
+
+        Briefing.objects.create(empresa=self.grupo, projeto=self.projeto)
+        proposta = Proposta.objects.create(
+            empresa=self.grupo,
+            cliente=self.cliente,
+            projeto_gerado=self.projeto,
+            titulo="Proposta Casa Ipê",
+        )
+        contrato = Contrato.objects.create(
+            empresa=self.grupo,
+            projeto=self.projeto,
+            titulo="Contrato Casa Ipê",
+            corpo="Minuta principal",
+        )
+        documento = Documento.objects.create(
+            empresa=self.grupo,
+            projeto=self.projeto,
+            contrato=contrato,
+            titulo="Contrato assinado",
+            arquivo=_png("contrato-assinado.png"),
+        )
+
+        resposta = self.client.get(f"/projetos/{self.projeto.pk}/")
+        self.assertContains(resposta, "Arquivos principais")
+        self.assertContains(resposta, f"/briefing/projeto/{self.projeto.pk}/pdf/")
+        self.assertContains(resposta, f"/propostas/{proposta.pk}/pdf/")
+        self.assertContains(resposta, f"/contratos/{contrato.pk}/pdf/")
+        self.assertContains(resposta, "Contrato assinado")
+        self.assertNotContains(resposta, "Registros do projeto")
+        documento.arquivo.delete(save=False)
+
+    def test_paginas_antigas_nao_fazem_mais_parte_do_fluxo(self):
+        rotas = [
+            "/arquivos/",
+            "/propostas/",
+            "/propostas/nova/",
+            "/contratos/",
+            "/projetos/kanban/",
+            "/projetos/novo/",
+            f"/projeto-novo/{self.projeto.pk}/",
+        ]
+        for rota in rotas:
+            with self.subTest(rota=rota):
+                self.assertEqual(self.client.get(rota).status_code, 404)
+        self.assertEqual(self.client.get("/clientes/novo/").status_code, 405)
+        self.assertEqual(self.client.get("/fornecedores/novo/").status_code, 405)
 
     def test_orcamento_e_assunto_da_execucao_e_nao_do_projeto(self):
         """Orçamento é o custo de executar: quem precisa dele é quem toca a
@@ -365,8 +642,7 @@ class TelasQueRespondemTests(BaseFase):
             "/", "/agenda/", "/notificacoes/", "/modelos/",
             "/projetos/", "/clientes/", "/fornecedores/",
             "/financeiro/", "/precificacao/", "/escritorio/identidade/",
-            "/arquivos/", "/orcamentos/", "/propostas/", "/contratos/",
-            "/regulatorio/", "/projeto-novo/novo/",
+            "/orcamentos/", "/regulatorio/", "/projeto-novo/novo/",
             f"/projetos/{self.projeto.pk}/", f"/fases/{fase.pk}/",
             f"/briefing/projeto/{self.projeto.pk}/responder/",
         ]
@@ -470,8 +746,8 @@ class ComplementaresEmLoteTests(BaseFase):
         self.assertIn("comp_estrutural", chaves)
         self.assertNotIn("comp_eletrica", chaves)
 
-    def test_nao_desliga_complementar_com_trabalho_dentro(self):
-        """Desmarcar num modal não pode apagar arquivo por engano."""
+    def test_desliga_complementar_com_trabalho_dentro(self):
+        """A interface confirma antes de remover; o backend remove fase e arquivos."""
         self.client.post(
             f"/fases/projeto/{self.projeto.pk}/complementares/",
             {"complementares": ["comp_estrutural"]},
@@ -484,8 +760,7 @@ class ComplementaresEmLoteTests(BaseFase):
         self.client.post(
             f"/fases/projeto/{self.projeto.pk}/complementares/", {"complementares": []}
         )
-        self.assertTrue(self.projeto.fases.filter(chave="comp_estrutural").exists())
-        fase.arquivos.first().arquivo.delete(save=False)
+        self.assertFalse(self.projeto.fases.filter(chave="comp_estrutural").exists())
 
     def test_texto_livre_acrescenta_sem_apagar_os_marcados(self):
         self.client.post(
@@ -495,6 +770,25 @@ class ComplementaresEmLoteTests(BaseFase):
         chaves = list(self.projeto.fases.values_list("chave", flat=True))
         self.assertIn("comp_paisagismo", chaves)
         self.assertIn("comp_outro", chaves)
+
+    def test_complementar_livre_e_mantido_ou_removido_pelo_mesmo_formulario(self):
+        self.client.post(
+            f"/fases/projeto/{self.projeto.pk}/complementares/",
+            {"complementar_outro": "Acústico"},
+        )
+        livre = self.projeto.fases.get(chave="comp_outro")
+
+        self.client.post(
+            f"/fases/projeto/{self.projeto.pk}/complementares/",
+            {"complementares_livres": [str(livre.pk)]},
+        )
+        self.assertTrue(self.projeto.fases.filter(pk=livre.pk).exists())
+
+        self.client.post(
+            f"/fases/projeto/{self.projeto.pk}/complementares/",
+            {},
+        )
+        self.assertFalse(self.projeto.fases.filter(pk=livre.pk).exists())
 
 
 class AvisoDetalhadoTests(BaseFase):
@@ -560,8 +854,8 @@ class BriefingUnicoTests(BaseFase):
                 "referencias": "", "estilo": "", "orcamento_previsto": "", "prazo_desejado": "",
             },
         )
-        proposta = self.projeto.fases.get(chave="proposta")
-        self.assertRedirects(resposta, f"/fases/{proposta.pk}/")
+        proposta = self.projeto.proposta_origem
+        self.assertRedirects(resposta, f"/propostas/{proposta.pk}/")
 
         self.projeto.briefing.refresh_from_db()
         self.assertEqual(self.projeto.briefing.perfil_usuarios, "Trabalham em casa duas tardes.")
@@ -598,16 +892,29 @@ class BriefingUnicoTests(BaseFase):
         self.assertIn('id="programa-bloco"', html)
         self.assertIn("programa-add", html)
 
-    def test_fase_de_proposta_tem_tela_propria(self):
-        proposta = self.liberar_ate("proposta")
-        proposta.abrir(self.user)
-        resposta = self.client.get(f"/fases/{proposta.pk}/")
-        # Passo a passo, na ordem em que as peças dependem umas das outras.
-        for passo in ["Montar a proposta", "Criar o contrato",
-                      "Anexar os arquivos", "Enviar ao cliente"]:
-            self.assertContains(resposta, passo)
-        self.assertNotContains(resposta, "Tarefas desta fase")
-        self.assertNotContains(resposta, "Prazo e responsável")
+    def test_fase_de_proposta_abre_rascunho_completo_diretamente(self):
+        fase = self.liberar_ate("proposta")
+        fase.abrir(self.user)
+        resposta = self.client.get(f"/fases/{fase.pk}/")
+        proposta = self.projeto.proposta_origem
+        self.assertRedirects(resposta, f"/propostas/{proposta.pk}/")
+        detalhe = self.client.get(f"/propostas/{proposta.pk}/")
+        self.assertContains(detalhe, "Termos da proposta")
+        self.assertContains(detalhe, "Ambientes / etapas")
+
+    def test_briefing_respondido_pode_ser_gerado_em_pdf(self):
+        pergunta = self.template.perguntas.first()
+        self.client.post(
+            f"/briefing/projeto/{self.projeto.pk}/responder/",
+            {f"t{pergunta.pk}": "Resposta para o PDF"},
+        )
+        resposta = self.client.get(f"/briefing/projeto/{self.projeto.pk}/pdf/")
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(resposta["Content-Type"], "application/pdf")
+        self.assertIn(
+            f'filename="briefing-{self.projeto.pk}.pdf"',
+            resposta["Content-Disposition"],
+        )
 
     def test_area_do_programa_soma_os_ambientes(self):
         from briefing.models import AmbientePrograma, Briefing

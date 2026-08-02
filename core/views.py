@@ -41,6 +41,9 @@ def dashboard(request):
     a_receber = queryset_da_empresa(Lancamento.objects.all(), u).filter(
         tipo="entrada", status="previsto"
     ).aggregate(s=Sum("valor"))["s"] or Decimal("0")
+    a_receber_formatado = (
+        f"{a_receber:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    )
     obrigacoes = queryset_da_empresa(ObrigacaoTecnica.objects.all(), u).exclude(status="baixada")
     obrig_alerta = sum(1 for o in obrigacoes if o.vencida or o.vencendo or o.pendente_registro)
 
@@ -63,7 +66,7 @@ def dashboard(request):
         {"label": "Fases em elaboração", "valor": em_elaboracao, "rodape": "sendo desenhadas agora", "url": "projetos_painel", "cor": "green", "aceso": bool(em_elaboracao)},
         {"label": "Aguardando cliente", "valor": com_cliente, "rodape": "enviadas, sem resposta", "url": "projetos_painel", "cor": "amber", "aceso": bool(com_cliente)},
         {"label": "Ajustes pedidos", "valor": com_ajustes, "rodape": "cliente devolveu", "url": "projetos_painel", "cor": "alert", "aceso": bool(com_ajustes)},
-        {"label": "A receber (previsto)", "valor": f"R$ {a_receber}", "rodape": "lançamentos previstos", "url": "financeiro_painel", "cor": "violet", "aceso": a_receber > 0},
+        {"label": "A receber (previsto)", "valor": f"R$ {a_receber_formatado}", "rodape": "lançamentos previstos", "url": "financeiro_painel", "cor": "violet", "aceso": a_receber > 0},
     ]
 
     # O painel não repete o menu. A barra lateral já lista os módulos; repetir

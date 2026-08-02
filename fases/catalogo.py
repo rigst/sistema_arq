@@ -26,7 +26,7 @@ class Passo:
 
 
 # --- O caminho principal ------------------------------------------------
-# Todo projeto passa por estas cinco, na ordem.
+# Todo projeto passa por estas seis, na ordem.
 PRINCIPAIS = (
     Passo(
         chave="briefing",
@@ -42,14 +42,22 @@ PRINCIPAIS = (
     ),
     Passo(
         chave="proposta",
-        nome="Proposta e contrato",
-        resumo="Honorários, prazos e escopo por fase — o que será entregue e quando.",
+        nome="Proposta",
+        resumo="Honorários, escopo e prazo apresentados para aprovação do cliente.",
         entrega=(
             "Proposta de honorários com datas por fase",
+        ),
+        consome="O programa de necessidades, que define o tamanho do trabalho.",
+    ),
+    Passo(
+        chave="contrato",
+        nome="Contrato",
+        resumo="Minuta, condições comerciais e aprovação formal do escopo contratado.",
+        entrega=(
             "Minuta de contrato",
             "Assinatura registrada",
         ),
-        consome="O programa de necessidades, que define o tamanho do trabalho.",
+        consome="A proposta aprovada pelo cliente.",
     ),
     Passo(
         chave="estudo_preliminar",

@@ -1,0 +1,53 @@
+<section class="secao contrato-parcelas" id="parcelas-bloco">
+    <header class="contrato-secao-head">
+        <div>
+            <h2 class="secao-titulo ds-display">Parcelas</h2>
+            <p class="secao-sub">Vencimentos e valores que compõem o contas a receber deste contrato.</p>
+        </div>
+    </header>
+
+    <form method="post" action="{% url 'contrato_parcela_adicionar' contrato.pk %}" class="contrato-parcela-form"
+          hx-post="{% url 'contrato_parcela_adicionar' contrato.pk %}" hx-target="#parcelas-bloco" hx-swap="outerHTML">
+        {% csrf_token %}
+        <div class="contrato-campo">{{ form_parcela.descricao.label_tag }}{{ form_parcela.descricao }}</div>
+        <div class="contrato-campo">{{ form_parcela.vencimento.label_tag }}{{ form_parcela.vencimento }}</div>
+        <div class="contrato-campo">{{ form_parcela.valor.label_tag }}{{ form_parcela.valor }}</div>
+        <button class="linha-ico linha-ico--mais" type="submit" title="Adicionar parcela" aria-label="Adicionar parcela">
+            {% include "core/_ico.html" with ico="novo" %}
+        </button>
+    </form>
+
+    {% if not parcelas %}
+    <details class="abrir-campo abrir-campo--fino contrato-dividir">
+        <summary>Dividir o valor automaticamente</summary>
+        <form method="post" action="{% url 'contrato_gerar_parcelas' contrato.pk %}" class="contrato-dividir-form"
+              hx-post="{% url 'contrato_gerar_parcelas' contrato.pk %}" hx-target="#parcelas-bloco" hx-swap="outerHTML">
+            {% csrf_token %}
+            <div class="contrato-campo">{{ form_parcelas.quantidade.label_tag }}{{ form_parcelas.quantidade }}</div>
+            <div class="contrato-campo">{{ form_parcelas.primeira_data.label_tag }}{{ form_parcelas.primeira_data }}</div>
+            <button class="ds-btn" type="submit">Gerar parcelamento</button>
+        </form>
+        <p class="ht-hint">Os próximos vencimentos mantêm o dia do primeiro vencimento.</p>
+    </details>
+    {% endif %}
+
+    {% if parcelas %}
+    <div class="table-scroll">
+        <table class="data-table contrato-parcelas-tabela">
+            <thead><tr><th>#</th><th>Descrição</th><th>Vencimento</th><th class="num">Valor</th><th>Status</th><th><span class="ds-oculto">Ações</span></th></tr></thead>
+            <tbody>
+            {% for parcela in parcelas %}{% include "contratos/_parcela_linha.html" %}{% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if not contrato.parcelas_lancadas %}
+    <form method="post" action="{% url 'contrato_lancar' contrato.pk %}" class="contrato-lancar-form">
+        {% csrf_token %}
+        <button class="ds-btn ds-btn--solid" type="submit">Lançar no contas a receber</button>
+        {% if not tem_conta %}<span class="ht-hint">Crie uma conta no Financeiro antes.</span>{% endif %}
+    </form>
+    {% else %}
+    <p class="ht-hint">Parcelas sincronizadas com o contas a receber.</p>
+    {% endif %}
+    {% endif %}
+</section>

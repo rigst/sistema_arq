@@ -2,6 +2,7 @@ from django import forms
 
 from core.forms import ArqForm, ArqModelForm
 from core.tenancy import queryset_da_empresa
+from tarefas.models import Tarefa
 
 from .models import Fase, Lembrete
 
@@ -44,6 +45,25 @@ class RespostaClienteForm(ArqForm):
         widget=forms.Textarea(attrs={"rows": 3}),
         help_text="Fica no histórico da fase e explica a decisão para quem vier depois.",
     )
+
+
+class FaseTarefaForm(ArqModelForm):
+    class Meta:
+        model = Tarefa
+        fields = ["titulo", "prazo", "horas_previstas"]
+        widgets = {
+            "titulo": forms.TextInput(attrs={"placeholder": "Nova tarefa ou entregável"}),
+            "prazo": forms.DateInput(format="%Y-%m-%d", attrs={"type": "date"}),
+            "horas_previstas": forms.NumberInput(
+                attrs={"step": "0.5", "min": "0", "placeholder": "0"}
+            ),
+        }
+
+    def __init__(self, *args, form_id=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if form_id:
+            for field in self.fields.values():
+                field.widget.attrs["form"] = form_id
 
 
 class ArquivoDaFaseForm(ArqModelForm):

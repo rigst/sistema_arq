@@ -1,0 +1,84 @@
+<section class="secao arquivos-principais" id="arquivos-principais">
+    <header class="secao-head-inline">
+        <div>
+            <h2 class="secao-titulo ds-display">Arquivos principais</h2>
+            <p class="secao-sub">Documentos centrais do projeto e arquivos destacados com estrela nas fases.</p>
+        </div>
+    </header>
+
+    <ul class="arquivo-lista arquivo-principal-lista">
+        {% if briefing_principal %}
+        <li class="arquivo arquivo-principal">
+            <span class="arquivo-tipo num">PDF</span>
+            <div class="arquivo-id">
+                <a href="{% url 'briefing_pdf' projeto.pk %}" target="_blank" rel="noopener">Briefing</a>
+                <span class="arquivo-meta">Documento gerado · atualizado em {{ briefing_principal.atualizado_em|date:"d/m/y H:i" }}</span>
+            </div>
+            <a class="linha-ico" href="{% url 'briefing_pdf' projeto.pk %}" target="_blank" rel="noopener" title="Abrir PDF" aria-label="Abrir briefing em PDF">
+                {% include "core/_ico.html" with ico="pdf" %}
+            </a>
+        </li>
+        {% endif %}
+
+        {% if proposta_principal %}
+        <li class="arquivo arquivo-principal">
+            <span class="arquivo-tipo num">PDF</span>
+            <div class="arquivo-id">
+                <a href="{% url 'proposta_pdf' proposta_principal.pk %}" target="_blank" rel="noopener">{{ proposta_principal.titulo }}</a>
+                <span class="arquivo-meta">Proposta · {{ proposta_principal.get_status_display }}</span>
+            </div>
+            <a class="linha-ico" href="{% url 'proposta_pdf' proposta_principal.pk %}" target="_blank" rel="noopener" title="Abrir PDF" aria-label="Abrir proposta em PDF">
+                {% include "core/_ico.html" with ico="pdf" %}
+            </a>
+        </li>
+        {% endif %}
+
+        {% if contrato_principal and contrato_principal.corpo %}
+        <li class="arquivo arquivo-principal">
+            <span class="arquivo-tipo num">PDF</span>
+            <div class="arquivo-id">
+                <a href="{% url 'contrato_pdf' contrato_principal.pk %}" target="_blank" rel="noopener">{{ contrato_principal.titulo }}</a>
+                <span class="arquivo-meta">Contrato · {{ contrato_principal.get_status_display }}</span>
+            </div>
+            <a class="linha-ico" href="{% url 'contrato_pdf' contrato_principal.pk %}" target="_blank" rel="noopener" title="Abrir PDF" aria-label="Abrir contrato em PDF">
+                {% include "core/_ico.html" with ico="pdf" %}
+            </a>
+        </li>
+        {% endif %}
+
+        {% for documento in documentos_contrato %}
+        <li class="arquivo arquivo-principal">
+            <span class="arquivo-tipo num">{{ documento.extensao }}</span>
+            <div class="arquivo-id">
+                <a href="{{ documento.arquivo.url }}" target="_blank" rel="noopener">{{ documento.titulo }}</a>
+                <span class="arquivo-meta">Documento do contrato · {{ documento.criado_em|date:"d/m/y H:i" }}</span>
+            </div>
+            <a class="linha-ico" href="{{ documento.arquivo.url }}" target="_blank" rel="noopener" title="Abrir arquivo" aria-label="Abrir {{ documento.titulo }}">
+                {% include "core/_ico.html" with ico="baixar" %}
+            </a>
+        </li>
+        {% endfor %}
+
+        {% for a in arquivos_favoritos %}
+        <li class="arquivo arquivo-principal" id="arquivo-principal-{{ a.pk }}">
+            <span class="arquivo-tipo num">{{ a.extensao|default:"—" }}</span>
+            <div class="arquivo-id">
+                <a href="{% url 'fase_arquivo_ver' a.pk %}" {% if a.visualizavel %}target="_blank" rel="noopener"{% endif %}>{{ a.titulo }}</a>
+                <span class="arquivo-meta">{{ a.fase.nome }} · {{ a.get_categoria_display }} · {{ a.criado_em|date:"d/m/y" }}</span>
+            </div>
+            <form method="post" action="{% url 'fase_arquivo_favorito' a.pk %}"
+                  hx-post="{% url 'fase_arquivo_favorito' a.pk %}"
+                  hx-target="#arquivos-principais" hx-swap="outerHTML">
+                {% csrf_token %}
+                <button class="linha-ico arquivo-favorito is-active" type="submit" aria-pressed="true"
+                        title="Remover dos arquivos principais" aria-label="Remover {{ a.titulo }} dos arquivos principais">
+                    {% include "core/_ico.html" with ico="estrela_cheia" %}
+                </button>
+            </form>
+        </li>
+        {% endfor %}
+        {% if not tem_arquivos_principais %}
+        <li class="data-empty">Marque com estrela os arquivos importantes de cada fase.</li>
+        {% endif %}
+    </ul>
+</section>

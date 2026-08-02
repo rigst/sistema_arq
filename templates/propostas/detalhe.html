@@ -10,13 +10,19 @@
     {% if proposta.projeto_gerado %}
     {% include "core/_voltar.html" with projeto_voltar=proposta.projeto_gerado %}
     {% else %}
-    {% include "core/_voltar.html" with url_voltar_nome="propostas_lista" rotulo_voltar="Propostas" %}
+    {% include "core/_voltar.html" with url_voltar_nome="projetos_painel" rotulo_voltar="Projetos" %}
     {% endif %}
 
-    <header class="page-head">
-        <span class="ds-kicker">Proposta · hora técnica R$ {{ proposta.hora_tecnica_aplicada }}</span>
-        <h1 class="ds-h2 ds-display">{{ proposta.titulo }}</h1>
-        <p class="page-sub">{{ proposta.cliente.nome }} · <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ proposta.get_status_display }}</span></p>
+    <header class="page-head page-head--row">
+        <div>
+            <span class="ds-kicker">Proposta · hora técnica R$ {{ proposta.hora_tecnica_aplicada }}</span>
+            <h1 class="ds-h2 ds-display">{{ proposta.titulo }}</h1>
+            <p class="page-sub">{{ proposta.cliente.nome }} · <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ proposta.get_status_display }}</span></p>
+        </div>
+        <a class="ds-btn proposta-pdf-topo" href="{% url 'proposta_pdf' proposta.pk %}" target="_blank">
+            {% include "core/_ico.html" with ico="pdf" %}
+            <span>Gerar PDF</span>
+        </a>
     </header>
 
     {% comment %}
@@ -42,9 +48,43 @@
         </p>
     </div>
 
+    <section class="secao proposta-termos">
+        <h2 class="secao-titulo ds-display">Termos da proposta</h2>
+        {% if proposta.editavel %}
+        <form method="post" class="form-card" id="proposta-termos-form">
+            {% csrf_token %}
+            <div class="form-dupla">
+                <p>{{ form_termos.titulo.label_tag }}{{ form_termos.titulo }}</p>
+                {% if proposta.projeto_gerado %}
+                <div class="termo-fixo">
+                    <span>Cliente</span>
+                    <strong>{{ proposta.cliente.nome }}</strong>
+                </div>
+                <div class="termo-fixo">
+                    <span>Tipo de projeto</span>
+                    <strong>{{ proposta.tipo_projeto|capfirst }}</strong>
+                </div>
+                {% else %}
+                <p>{{ form_termos.cliente.label_tag }}{{ form_termos.cliente }}</p>
+                <p>{{ form_termos.tipo_projeto.label_tag }}{{ form_termos.tipo_projeto }}</p>
+                {% endif %}
+                <p>{{ form_termos.validade.label_tag }}{{ form_termos.validade }}</p>
+            </div>
+            <p>{{ form_termos.observacoes.label_tag }}{{ form_termos.observacoes }}</p>
+        </form>
+        {% else %}
+        <dl class="peca-resumo">
+            <div><dt>Cliente</dt><dd>{{ proposta.cliente.nome }}</dd></div>
+            <div><dt>Tipo</dt><dd>{{ proposta.tipo_projeto }}</dd></div>
+            <div><dt>Validade</dt><dd>{{ proposta.validade|date:"d/m/Y"|default:"—" }}</dd></div>
+            {% if proposta.observacoes %}<div><dt>Observações</dt><dd>{{ proposta.observacoes|linebreaksbr }}</dd></div>{% endif %}
+        </dl>
+        {% endif %}
+    </section>
+
     {% if proposta.editavel %}
-    <div class="ds-card">
-        <h2 class="ds-display">Hora técnica desta proposta</h2>
+    <section class="secao proposta-hora">
+        <h2 class="secao-titulo ds-display">Hora técnica desta proposta</h2>
         <p class="page-sub">Hora-base do escritório: <strong>R$ {{ base }}</strong>. Escolha um valor manual ou aplique os fatores do projeto.</p>
         <form method="post" action="{% url 'proposta_hora_tecnica' proposta.pk %}" class="ht-proposta-form">
             {% csrf_token %}
@@ -66,7 +106,7 @@
                 <button class="ds-btn ds-btn--solid" type="submit">Aplicar hora técnica</button>
             </div>
         </form>
-    </div>
+    </section>
     {% endif %}
 
     <section class="secao">
@@ -81,7 +121,10 @@
         {% endcomment %}
         <details class="abrir-campo">
             <summary>Adicionar itens prontos</summary>
-            <form method="post" action="{% url 'proposta_add_prontos' proposta.pk %}" class="form-card">
+            <form method="post" action="{% url 'proposta_add_prontos' proposta.pk %}" class="form-card"
+                  hx-post="{% url 'proposta_add_prontos' proposta.pk %}"
+                  hx-target="#itens-bloco" hx-swap="outerHTML"
+                  hx-on::after-request="if(event.detail.successful) this.reset()">
                 {% csrf_token %}
                 {% for grupo, itens_grupo in prontos %}
                 <fieldset class="escolha-multipla">
@@ -109,6 +152,32 @@
         {% include "propostas/_itens.html" %}
     </section>
 
+    {% if fases_entrega %}
+    <section class="secao proposta-cronograma">
+        <h2 class="secao-titulo ds-display">Datas previstas de entrega</h2>
+        <p class="secao-sub">Cronograma das fases e dos projetos complementares incluídos.</p>
+        <div class="cronograma-proposta">
+            {% for fase in fases_entrega %}
+            <div class="cronograma-proposta-linha{% if fase.complementar %} is-complementar{% endif %}">
+                <div>
+                    <strong>{{ fase.nome }}</strong>
+                    <span>{% if fase.complementar %}Projeto complementar{% else %}Fase do projeto{% endif %}</span>
+                </div>
+                {% if proposta.editavel %}
+                <label>
+                    <span class="ds-oculto">Data prevista de {{ fase.nome }}</span>
+                    <input type="date" name="prazo_fase_{{ fase.pk }}"
+                           value="{{ fase.prazo|date:'Y-m-d' }}" form="proposta-termos-form">
+                </label>
+                {% else %}
+                <time{% if fase.prazo %} datetime="{{ fase.prazo|date:'Y-m-d' }}"{% endif %}>{{ fase.prazo|date:"d/m/Y"|default:"A definir" }}</time>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
     {% comment %}
     Fechamento. Um caminho por estado, e nunca dois botões oferecendo o mesmo
     passo: finalizar e enviar; depois, aprovar ou devolver para edição.
@@ -118,22 +187,20 @@
 
         {% if proposta.status == "rascunho" %}
         <p class="secao-sub">Confira o total antes de mandar — depois de enviada, a proposta trava.</p>
+        <p class="proposta-salvar-aviso">Salve a proposta antes de enviar para garantir que a versão revisada seja a enviada ao cliente.</p>
         <div class="fecho-acoes">
-            {% if itens %}<a class="ds-btn" href="{% url 'proposta_pdf' proposta.pk %}" target="_blank">Ver o PDF</a>{% endif %}
-            <form method="post" action="{% url 'proposta_finalizar' proposta.pk %}" class="app-inline-form">
-                {% csrf_token %}
-                <button class="ds-btn--acao" type="submit" {% if not itens %}disabled{% endif %}>
-                    <span>Finalizar e enviar ao cliente</span>
-                    {% include "core/_ico.html" with ico="seta" %}
-                </button>
-            </form>
+            <button class="ds-btn" type="submit" name="acao" value="salvar" form="proposta-termos-form">Salvar</button>
+            <button class="ds-btn--acao" type="submit" name="acao" value="enviar"
+                    form="proposta-termos-form" {% if not itens %}disabled{% endif %}>
+                <span>Enviar ao cliente</span>
+                {% include "core/_ico.html" with ico="seta" %}
+            </button>
         </div>
         {% if not itens %}<p class="ht-hint">Adicione ao menos um item para poder enviar.</p>{% endif %}
 
         {% elif proposta.status == "enviada" %}
         <p class="secao-sub">Registre o que o cliente respondeu.</p>
         <div class="fecho-acoes">
-            <a class="ds-btn" href="{% url 'proposta_pdf' proposta.pk %}" target="_blank">Ver o PDF</a>
             <form method="post" action="{% url 'proposta_aprovar' proposta.pk %}" class="app-inline-form">
                 {% csrf_token %}
                 <button class="ds-btn--acao" type="submit">
@@ -143,15 +210,12 @@
             </form>
             <form method="post" action="{% url 'proposta_reabrir' proposta.pk %}" class="app-inline-form">
                 {% csrf_token %}
-                <button class="ds-btn" type="submit">Não aprovou — voltar para edição</button>
+                <button class="ds-btn ds-btn--danger" type="submit">Cliente não aprovou</button>
             </form>
         </div>
 
         {% elif proposta.status == "aprovada" %}
         <p class="secao-sub">Nada mais a fazer aqui: siga para o contrato, na fase do projeto.</p>
-        <div class="fecho-acoes">
-            <a class="ds-btn" href="{% url 'proposta_pdf' proposta.pk %}" target="_blank">Ver o PDF</a>
-        </div>
 
         {% else %}
         <div class="fecho-acoes">

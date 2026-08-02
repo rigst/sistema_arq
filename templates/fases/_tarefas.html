@@ -1,0 +1,28 @@
+{% load l10n %}
+<section class="secao fase-tarefas" id="tarefas-fase">
+    <header class="contrato-secao-head">
+        <div>
+            <h2 class="secao-titulo ds-display">Tarefas desta fase</h2>
+            <p class="secao-sub">Entregáveis usuais, prazo e esforço previsto. Marque cada item quando estiver pronto.</p>
+        </div>
+        <span class="fase-tarefas-contagem num">{{ tarefas|length }} tarefa{{ tarefas|length|pluralize }} · {{ tarefas_horas|floatformat:"0" }} h</span>
+    </header>
+    <div class="table-scroll">
+        <table class="data-table fase-tarefas-tabela">
+            <colgroup><col class="col-check"><col><col class="col-data"><col class="col-horas"><col class="col-acoes"></colgroup>
+            <thead><tr><th><span class="ds-oculto">Feita</span></th><th>Tarefa / entregável</th><th>Data prevista</th><th class="num">Horas previstas</th><th><span class="ds-oculto">Ações</span></th></tr></thead>
+            <tbody>
+                {% for tarefa in tarefas %}{% include "fases/_tarefa_linha.html" %}{% endfor %}
+                <tr class="linha-add fase-tarefa-nova">
+                    <td><span class="fase-check is-vazio" aria-hidden="true"></span></td>
+                    <td>{{ form_tarefa.titulo }}</td>
+                    <td>{{ form_tarefa.prazo }}</td>
+                    <td class="num">{{ form_tarefa.horas_previstas }}</td>
+                    <td><button class="linha-ico linha-ico--mais" type="submit" form="nova-tarefa-{{ fase.pk }}" title="Adicionar tarefa" aria-label="Adicionar tarefa">{% include "core/_ico.html" with ico="novo" %}</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <form method="post" action="{% url 'fase_tarefa_adicionar' fase.pk %}" id="nova-tarefa-{{ fase.pk }}"
+          hx-post="{% url 'fase_tarefa_adicionar' fase.pk %}" hx-target="#tarefas-fase" hx-swap="outerHTML">{% csrf_token %}</form>
+</section>

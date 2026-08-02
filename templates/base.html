@@ -15,7 +15,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;450;500;600;700&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="{% static 'css/stolben-ui.css' %}">
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
     {% if empresa_ativa.imagem_fundo %}
     <style nonce="{{ request.csp_nonce }}">
@@ -50,7 +49,7 @@
                 {% endif %}
             </a>
             <label for="nav-toggle" class="nav-burger" aria-label="Abrir menu">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+                {% include "core/_ico.html" with ico="menu" %}
             </label>
         </div>
 
@@ -139,7 +138,7 @@
                     {% csrf_token %}
                     <button type="submit" class="app-sair">
                         Sair
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        {% include "core/_ico.html" with ico="sair" %}
                     </button>
                 </form>
             </div>
@@ -177,7 +176,7 @@
             </span>
             <p>{{ message }}</p>
             <button type="button" class="ds-aviso-fechar" aria-label="Dispensar aviso">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                {% include "core/_ico.html" with ico="fechar" %}
             </button>
         </div>
         {% endfor %}
@@ -208,9 +207,9 @@
                         title="{% if cronometro.pausado %}Retomar{% else %}Pausar{% endif %}"
                         aria-label="{% if cronometro.pausado %}Retomar cronômetro{% else %}Pausar cronômetro{% endif %}">
                     {% if cronometro.pausado %}
-                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                    {% include "core/_ico.html" with ico="play" %}
                     {% else %}
-                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h3v14H7zM14 5h3v14h-3z"/></svg>
+                    {% include "core/_ico.html" with ico="pausa" %}
                     {% endif %}
                 </button>
             </form>
@@ -223,7 +222,6 @@
     {% endif %}
 
     <script src="{% static 'js/htmx.min.js' %}" nonce="{{ request.csp_nonce }}"></script>
-    <script src="{% static 'js/stolben-ui.js' %}" nonce="{{ request.csp_nonce }}"></script>
     <script src="{% static 'js/arq-ui.js' %}" nonce="{{ request.csp_nonce }}"></script>
     {% block extra_scripts %}{% endblock %}
 </body>

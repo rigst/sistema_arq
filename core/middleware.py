@@ -23,5 +23,14 @@ class EmpresaAtivaMiddleware:
 
             if empresa_id_ativa is not None:
                 user._empresa_ativa_id = int(empresa_id_ativa)
+                chave_modelos = f"modelos_iniciais_{empresa_id_ativa}"
+                if not request.session.get(chave_modelos):
+                    empresa = empresas.get(pk=empresa_id_ativa)
+                    from briefing.services import semear_templates_padrao
+                    from contratos.services import garantir_modelos_padrao
+
+                    semear_templates_padrao(empresa.grupo, user)
+                    garantir_modelos_padrao(empresa.grupo, user)
+                    request.session[chave_modelos] = True
 
         return self.get_response(request)

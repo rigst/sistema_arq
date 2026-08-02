@@ -1,0 +1,7 @@
+<section class="secao contrato-documentos" id="documentos-bloco">
+    <header class="contrato-secao-head"><div><h2 class="secao-titulo ds-display">Documentos do contrato</h2><p class="secao-sub">Minutas assinadas, aditivos, aprovações e demais arquivos vinculados a este contrato.</p></div><span class="contrato-documentos-contagem">{{ documentos|length }} arquivo{{ documentos|length|pluralize }}</span></header>
+    <form method="post" action="{% url 'contrato_documento' contrato.pk %}" enctype="multipart/form-data" class="contrato-documento-form" hx-post="{% url 'contrato_documento' contrato.pk %}" hx-target="#documentos-bloco" hx-swap="outerHTML" hx-encoding="multipart/form-data">
+        {% csrf_token %}<div class="contrato-campo">{{ form_documento.titulo.label_tag }}{{ form_documento.titulo }}</div><div class="contrato-campo contrato-campo--arquivo">{{ form_documento.arquivo.label_tag }}{{ form_documento.arquivo }}</div><button class="linha-ico linha-ico--mais" type="submit" title="Anexar documento" aria-label="Anexar documento">{% include "core/_ico.html" with ico="novo" %}</button>
+    </form>
+    <ul class="contrato-documentos-lista">{% for documento in documentos %}{% include "contratos/_documento_linha.html" %}{% empty %}<li class="data-empty">Nenhum documento anexado.</li>{% endfor %}</ul>
+</section>

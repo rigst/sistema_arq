@@ -1,19 +1,4 @@
-/* =================================================================
-   A.R.Q. — folha de trabalho
-   -----------------------------------------------------------------
-   Premissa: a PÁGINA é a folha. O conteúdo é impresso sobre ela e
-   organizado por filetes, não empilhado em caixas. Só ganha superfície
-   branca o que é objeto repetido numa grade (projeto, obra, cartão do
-   painel visual) — onde a borda separa uma coisa da outra.
-
-   Dois devices, e só dois, herdados do desenho técnico:
-     · COTA   — linha de dimensão com ticks; abre seção.
-     · POCHÊ  — hachura a 45°; marca área/disciplina.
-
-   Tipografia: Archivo (eixo de largura) nos títulos, IBM Plex Sans no
-   corpo, IBM Plex Mono em números e rótulos técnicos.
-   Complementa o stolben-ui.css, carregado antes deste arquivo.
-   ================================================================= */
+/* A.R.Q. — sistema visual da aplicação. */
 
 :root {
     /* ---- Papel e tinta ---- */
@@ -61,15 +46,21 @@
     /* ---- Ritmo ---- */
     --arq-gap: 2.5rem;
     --arq-lateral: 250px;
+    --arq-icon-btn: 1.75rem;
+    --arq-control-radius: 0.55rem;
+    --arq-control-y: 0.62rem;
+    --arq-control-x: 1.15rem;
 
     --ds-focus-ring: 0 0 0 3px rgba(28, 106, 83, 0.26);
     --ds-shadow-soft: 0 1px 2px rgba(20, 24, 26, 0.05), 0 8px 20px rgba(20, 24, 26, 0.05);
 }
 
-/* =================================================================
-   BASE
-   ================================================================= */
-.ds-root { font-family: var(--ds-font-sans); font-size: 15.5px; color: var(--ds-text-900); background: var(--ds-bg); }
+/* BASE */
+.ds-root {
+    font-family: var(--ds-font-sans); font-size: 15.5px; line-height: 1.6;
+    color: var(--ds-text-900); background: var(--ds-bg);
+    -webkit-font-smoothing: antialiased;
+}
 
 body { margin: 0; background: var(--ds-bg); min-height: 100vh; display: flex; flex-direction: column; }
 
@@ -79,9 +70,17 @@ body { margin: 0; background: var(--ds-bg); min-height: 100vh; display: flex; fl
 .ds-muted { color: var(--ds-text-400); }
 
 /* Rótulos técnicos */
-.ds-kicker, .nav-label, .kpi-label, .data-table th, .projeto-metricas dt,
-.cronograma-linha > span, .margem-strip span, .diag-dim, .def-list dt,
-.saldo-card .ds-kicker, .onb-feito, .aceite-doc-versao {
+.ds-kicker,
+.nav-label,
+.kpi-label,
+.data-table th,
+.projeto-metricas dt,
+.cronograma-linha > span,
+.margem-strip span,
+.diag-dim,
+.def-list dt,
+.saldo-card .ds-kicker,
+.aceite-doc-versao{
     font-family: var(--arq-font-mono);
     font-size: 0.68rem;
     font-weight: 500;
@@ -91,9 +90,15 @@ body { margin: 0; background: var(--ds-bg); min-height: 100vh; display: flex; fl
 }
 
 /* Números */
-.num, .ht-valor, .saldo-card strong, .margem-strip strong, .ds-stat-strip strong,
-.timer-ativo strong, .agenda-quando strong, .kpi-value, .cronograma-num strong,
-.onb-progresso-topo strong, .diag-score strong, .onb-num, .projeto-metricas dd {
+.num,
+.ht-valor,
+.saldo-card strong,
+.margem-strip strong,
+.agenda-quando strong,
+.kpi-value,
+.cronograma-num strong,
+.diag-score strong,
+.projeto-metricas dd{
     font-family: var(--arq-font-mono);
     font-feature-settings: "tnum" 1, "zero" 1;
     letter-spacing: -0.02em;
@@ -101,9 +106,7 @@ body { margin: 0; background: var(--ds-bg); min-height: 100vh; display: flex; fl
 
 a { color: var(--ds-blue-dark); }
 
-/* =================================================================
-   COTA — abre seção. Assinatura nº 1.
-   ================================================================= */
+/* COTA — abre seção. Assinatura nº 1. */
 .ds-card > h2.ds-display,
 .ds-card > h3.ds-display,
 .dash-section-head,
@@ -128,32 +131,21 @@ a { color: var(--ds-blue-dark); }
     opacity: 0.6;
 }
 
-/* =================================================================
-   POCHÊ — hachura a 45°. Assinatura nº 2.
-   ================================================================= */
-.arq-poche {
-    background-image: repeating-linear-gradient(-45deg,
-        var(--sec, var(--ds-text-400)) 0 1px, transparent 1px 7px);
-}
+/* POCHÊ — hachura a 45°. Assinatura nº 2. */
 
-/* =================================================================
-   MARCA
-   ================================================================= */
+/* MARCA */
 .app-brand { display: inline-flex; align-items: center; gap: 0.6rem; text-decoration: none; }
 .app-brand-mark { width: 2rem; height: 2rem; flex-shrink: 0; }
-.app-brand-mark .mk-plate { fill: var(--ds-ink); transition: fill var(--arq-mid) var(--arq-ease); }
-.app-brand-mark .mk-a { stroke: #fff; }
-.app-brand-mark .mk-cota { stroke: #3fa98a; transform-origin: 16px 18.7px; transition: transform 380ms var(--arq-ease-out); }
+.app-brand-mark .mk-plate { transition: fill var(--arq-mid) var(--arq-ease); }
+.app-brand-mark .mk-cota { transform-origin: 16px 18.7px; transition: transform 380ms var(--arq-ease-out); }
 .app-brand:hover .mk-cota { transform: scaleX(1.24); }
 .app-brand-word {
     font-family: var(--ds-font-display);
     font-variation-settings: "wdth" 115, "wght" 700;
-    font-size: 1.16rem; letter-spacing: 0.01em; color: var(--ds-text-900);
+    font-size: 1.16rem; letter-spacing: 0.01em;
 }
 
-/* =================================================================
-   SHELL — barra lateral + folha com uma única régua vertical
-   ================================================================= */
+/* SHELL — barra lateral + folha com uma única régua vertical */
 .app-shell { display: block; }
 
 .nav-toggle { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
@@ -161,31 +153,23 @@ a { color: var(--ds-blue-dark); }
 .app-side {
     position: fixed; top: 0; left: 0; bottom: 0; width: var(--arq-lateral); z-index: 20;
     display: flex; flex-direction: column;
-    background: var(--ds-surface); border-right: 1px solid var(--ds-line);
 }
 .app-side-head { display: flex; align-items: center; justify-content: space-between; padding: 1.15rem 1.15rem 0.9rem; }
 .nav-burger { display: none; }
 
 .app-nav { flex: 1; overflow-y: auto; padding: 0.25rem 0.75rem 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
 .nav-group { display: flex; flex-direction: column; gap: 0.1rem; }
-.nav-label { display: flex; align-items: center; gap: 0.45rem; padding: 0.35rem 0.6rem 0.25rem; }
+.nav-label { display: flex; align-items: center; gap: 0.45rem; }
 .nav-label::before { content: ""; width: 0.45rem; height: 0.45rem; border-radius: 1px; background: currentColor; }
-.nav-group--comercial .nav-label { color: var(--arq-blue); }
-.nav-group--producao .nav-label { color: var(--arq-green); }
-.nav-group--gestao .nav-label { color: var(--arq-amber); }
-.nav-group--hoje .nav-label { color: var(--arq-clay); }
-.nav-group--escritorio .nav-label { color: var(--ds-text-500); }
 
 .nav-link {
     position: relative; display: flex; align-items: center; gap: 0.7rem;
-    padding: 0.42rem 0.65rem; border-radius: 0.55rem; text-decoration: none;
-    color: var(--ds-text-700); font-size: 0.9rem;
+    padding: 0.42rem 0.65rem; border-radius: 0.55rem; text-decoration: none; font-size: 0.9rem;
     transition: background var(--arq-fast) ease, color var(--arq-fast) ease;
 }
 .nav-link svg { width: 1.15rem; height: 1.15rem; flex-shrink: 0; color: var(--ds-text-400); transition: color var(--arq-fast) ease; }
-.nav-link:hover { background: var(--ds-panel); color: var(--ds-text-900); }
 .nav-link:hover svg { color: var(--ds-text-700); }
-.nav-link.is-active { background: var(--ds-blue-50); color: var(--ds-blue-dark); font-weight: 600; }
+.nav-link.is-active { font-weight: 600; }
 .nav-link.is-active svg { color: var(--ds-blue); }
 .nav-link.is-active::before {
     content: ""; position: absolute; left: -0.75rem; top: 0.35rem; bottom: 0.35rem;
@@ -194,16 +178,15 @@ a { color: var(--ds-blue-dark); }
 .nav-badge {
     margin-left: auto; min-width: 1.2rem; height: 1.2rem; padding: 0 0.32rem; box-sizing: border-box;
     display: inline-flex; align-items: center; justify-content: center;
-    font-size: 0.66rem; font-weight: 600; color: #fff; background: var(--ds-danger); border-radius: 999px;
+    font-size: 0.66rem; font-weight: 600; color: #fff; border-radius: 999px;
 }
 
 /* Pé da lateral: monograma sem caixa */
-.app-side-foot { border-top: 1px solid var(--ds-line); padding: 0.9rem 1.05rem 1rem; display: flex; flex-direction: column; gap: 0.7rem; }
+.app-side-foot { padding: 0.9rem 1.05rem 1rem; display: flex; flex-direction: column; gap: 0.7rem; }
 .app-empresa { display: flex; align-items: baseline; gap: 0.55rem; }
 .app-empresa-ico {
     flex-shrink: 0; font-family: var(--ds-font-display);
-    font-variation-settings: "wdth" 115, "wght" 700; font-size: 1.05rem;
-    color: var(--ds-blue); text-transform: uppercase; line-height: 1;
+    font-variation-settings: "wdth" 115, "wght" 700; font-size: 1.05rem; text-transform: uppercase; line-height: 1;
 }
 .app-empresa-info { display: flex; flex-direction: column; line-height: 1.3; overflow: hidden; }
 .app-empresa-info strong { font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -214,7 +197,6 @@ a { color: var(--ds-blue-dark); }
     transition: color var(--arq-fast) ease;
 }
 .app-sair svg { width: 0.9rem; height: 0.9rem; }
-.app-sair:hover { color: var(--ds-danger); }
 .app-inline-form { margin: 0; }
 /* Sair e os links legais dividem a última linha da lateral */
 .app-side-rodape { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
@@ -226,14 +208,9 @@ a { color: var(--ds-blue-dark); }
 .app-frame { position: relative; margin-left: var(--arq-lateral); min-height: 100vh; }
 .app-main {
     position: relative;
-    width: 100%; max-width: 88rem; margin: 0 auto;
-    padding: 2.6rem 3rem 5rem; box-sizing: border-box;
-    border-left: 1px solid var(--ds-line);
+    width: 100%; margin: 0 auto; box-sizing: border-box;
     min-height: 100vh;
-    /* Tabela larga rola dentro do .table-scroll, mas a página ainda ganhava
-       barra horizontal no estreito: o conteúdo do scroller escapava para o
-       documento. `clip` corta sem virar scroller — `hidden` viraria, e aí o
-       botão de salvar do briefing perderia o sticky. */
+    /* Tabela larga rola dentro do .table-scroll, mas a página ainda ganhava */
     overflow-x: clip;
 }
 .app-main--public { max-width: 64rem; border-left: 0; min-height: auto; padding: 3rem 1.5rem 4rem; }
@@ -245,19 +222,16 @@ a { color: var(--ds-blue-dark); }
 .app-message--error { color: var(--ds-danger); background: color-mix(in srgb, var(--ds-danger) 7%, #fff); border-color: color-mix(in srgb, var(--ds-danger) 24%, var(--ds-line)); }
 .app-message--info, .app-message--warning { color: var(--arq-amber); background: color-mix(in srgb, var(--arq-amber) 7%, #fff); border-color: color-mix(in srgb, var(--arq-amber) 26%, var(--ds-line)); }
 
-/* =================================================================
-   RITMO — a página e suas seções
-   ================================================================= */
+/* RITMO — a página e suas seções */
 .page { display: flex; flex-direction: column; gap: var(--arq-gap); }
 /* telas de conteúdo curto ficam centradas na folha, não coladas à esquerda */
-.page--narrow { max-width: 42rem; margin: 0 auto; width: 100%; }
-.page--leitura { max-width: 44rem; margin: 0 auto; width: 100%; }
+.page--narrow { margin: 0 auto; width: 100%; }
+.page--leitura { margin: 0 auto; width: 100%; }
 .doc-voltar { align-self: flex-start; }
 
 .page-head { margin-bottom: 0; }
 .page-head--row { display: flex; align-items: flex-start; justify-content: space-between; gap: 1.5rem; }
-/* desloca as ações para a linha do título — com margem, não com padding:
-   padding aqui deformaria o próprio botão quando ele é filho direto */
+/* desloca as ações para a linha do título — com margem, não com padding: */
 .page-head--row > :not(:first-child) { margin-top: 1.15rem; flex-shrink: 0; }
 .page-head .ds-kicker { display: block; }
 .page-head h1 { margin: 0.3rem 0 0; }
@@ -280,30 +254,23 @@ a { color: var(--ds-blue-dark); }
 }
 
 /* --- Superfície de verdade: só para objeto repetido numa grade --- */
-.projeto-card, .obra-card, .kanban-card, .auth-card {
+.projeto-card, .obra-card, .auth-card {
     background: var(--ds-surface); border: 1px solid var(--ds-line); border-radius: 0.9rem;
 }
 
-/* =================================================================
-   BOTÕES — movimento contido
-   ================================================================= */
-.ds-btn {
-    position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+/* BOTÕES — movimento contido */
+.ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
     white-space: nowrap; cursor: pointer; text-decoration: none;
-    font-family: var(--ds-font-sans); font-weight: 500; font-size: 0.92rem;
-    border-radius: 0.55rem; padding: 0.56rem 1.05rem;
+    font-family: var(--ds-font-sans); font-weight: 500; font-size: 0.9rem; line-height: 1.2;
+    border-radius: var(--arq-control-radius);
+    padding: var(--arq-control-y) var(--arq-control-x);
     background: var(--ds-surface); color: var(--ds-text-900); border: 1px solid var(--ds-line);
-    transition: background var(--arq-fast) ease, color var(--arq-fast) ease,
-                border-color var(--arq-fast) ease, box-shadow var(--arq-mid) var(--arq-ease);
 }
 .ds-btn svg { width: 1rem; height: 1rem; }
 .ds-btn:hover { border-color: var(--ds-blue-100); color: var(--ds-blue-dark); box-shadow: var(--ds-shadow-soft); }
-.ds-btn--solid {
-    background: var(--ds-blue); color: #fff; border-color: var(--ds-blue-dark);
-    padding: 0.58rem 1.15rem;
-}
-.ds-btn--solid:hover { background: var(--ds-blue-dark); color: #fff; box-shadow: 0 4px 14px rgba(28, 106, 83, 0.24); }
-.ds-btn:active { transform: translateY(1px); box-shadow: none; }
+.ds-btn--solid { color: #fff; }
+.ds-btn--solid:hover { color: #fff; }
+.ds-btn:active { box-shadow: none; }
 .ds-btn:focus-visible { outline: 2px solid var(--ds-blue-light); outline-offset: 2px; }
 .ds-btn[disabled] { opacity: 0.5; pointer-events: none; }
 
@@ -321,26 +288,193 @@ a { color: var(--ds-blue-dark); }
     100% { transform: scaleX(0); transform-origin: right; }
 }
 
-.check-btn { background: none; border: 0; font-size: 1.05rem; cursor: pointer; color: var(--ds-blue); padding: 0; transition: color var(--arq-fast) ease; }
-.check-btn:hover { color: var(--ds-blue-dark); }
-
 .form-actions { display: flex; gap: 0.6rem; justify-content: flex-end; margin-top: 1rem; }
 
 /* Chips de filtro */
 .filtro-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .chip {
-    font-size: 0.85rem; text-decoration: none; color: var(--ds-text-700);
-    background: var(--ds-surface); border: 1px solid var(--ds-line);
+    font-size: 0.85rem; text-decoration: none;
     padding: 0.32rem 0.85rem; border-radius: 999px;
     transition: background var(--arq-fast) ease, color var(--arq-fast) ease, border-color var(--arq-fast) ease;
 }
-.chip:hover { border-color: var(--ds-blue-100); color: var(--ds-blue-dark); }
-.chip.is-active { background: var(--ds-ink); border-color: var(--ds-ink); color: #fff; }
+.chip:hover { color: var(--ds-blue-dark); }
 
-/* =================================================================
-   FORMULÁRIOS — campos preenchidos, sem contorno de caixa
-   ================================================================= */
+/* FORMULÁRIOS — campos preenchidos, sem contorno de caixa */
 .form-card { display: flex; flex-direction: column; }
+.contrato-editor { max-width: 74rem; }
+.contrato-editor .contrato-corpo { min-height: 34rem; }
+.contrato-leitura { max-width: 74rem; }
+.contrato-texto { max-width: 74rem; white-space: normal; line-height: 1.7; }
+.contrato-origem-resumo {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1px; margin: 0; background: var(--ds-line);
+}
+.contrato-origem-resumo > div { padding: 0.75rem 0.85rem; background: var(--ds-panel); }
+.contrato-origem-resumo dt {
+    font-family: var(--arq-font-mono); font-size: 0.66rem;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--ds-text-500);
+}
+.contrato-origem-resumo dd { margin: 0.25rem 0 0; font-weight: 500; }
+.contrato-cronograma-origem {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    border-bottom: 1px solid var(--ds-line);
+}
+.contrato-cronograma-origem > span {
+    display: flex; justify-content: space-between; gap: 0.75rem;
+    padding: 0.6rem 0.75rem; border-top: 1px solid var(--ds-line);
+    font-size: 0.78rem;
+}
+.contrato-cronograma-origem strong { font-weight: 500; }
+.contrato-cronograma-origem time { color: var(--ds-text-500); white-space: nowrap; }
+.contrato-modelo {
+    display: flex; align-items: end; justify-content: space-between; gap: 1rem;
+    margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--ds-line);
+}
+.contrato-modelo .secao-sub { margin-bottom: 0; }
+.contrato-modelo-controles { display: flex; align-items: center; gap: 0.5rem; min-width: min(100%, 30rem); }
+.contrato-modelo-controles select {
+    flex: 1; min-width: 12rem; padding: 0.6rem 0.8rem;
+    border: 1px solid var(--ds-line-dash); border-radius: 0.5rem;
+    background: var(--ds-surface); color: var(--ds-text-900); font: inherit;
+}
+@media (max-width: 48rem) {
+    .contrato-origem-resumo { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .contrato-modelo { align-items: stretch; flex-direction: column; }
+    .contrato-modelo-controles { min-width: 0; flex-wrap: wrap; }
+    .contrato-modelo-controles select { flex-basis: 100%; }
+}
+.contrato-parcelas, .contrato-alteracoes, .contrato-documentos {
+    padding-top: 1.75rem; border-top: 1px solid var(--ds-line);
+}
+.contrato-secao-head {
+    display: flex; align-items: start; justify-content: space-between;
+    gap: 1rem; margin-bottom: 1rem;
+}
+.contrato-secao-head .secao-sub { max-width: 50rem; margin: 0.3rem 0 0; line-height: 1.5; }
+.contrato-valores {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1px; margin: 0 0 1.25rem; background: var(--ds-line);
+    border-top: 1px solid var(--ds-line); border-bottom: 1px solid var(--ds-line);
+}
+.contrato-valores > div { padding: 0.8rem 0.9rem; background: var(--ds-panel); }
+.contrato-valores dt {
+    font-family: var(--arq-font-mono); font-size: 0.64rem; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.1em; color: var(--ds-text-500);
+}
+.contrato-valores dd { margin: 0.25rem 0 0; font-size: 1.05rem; font-weight: 600; }
+.contrato-alteracao-form {
+    display: grid; grid-template-columns: 12rem minmax(18rem, 1fr) 12rem auto;
+    align-items: start; gap: 0.8rem; padding: 0.9rem 0 1.2rem;
+    border-bottom: 1px solid var(--ds-line);
+}
+.contrato-campo { display: flex; min-width: 0; flex-direction: column; gap: 0.35rem; }
+.contrato-campo label {
+    font-family: var(--arq-font-mono); font-size: 0.66rem; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.1em; color: var(--ds-text-500);
+}
+.contrato-campo input, .contrato-campo select, .contrato-campo textarea {
+    width: 100%; min-height: 2.65rem; box-sizing: border-box; padding: 0.6rem 0.75rem;
+    border: 1px solid var(--ds-line-dash); border-radius: 0.5rem;
+    background: var(--ds-surface); color: var(--ds-text-900); font: inherit;
+}
+.contrato-campo textarea { min-height: 2.65rem; height: 2.65rem; resize: vertical; }
+.contrato-campo input:focus, .contrato-campo select:focus, .contrato-campo textarea:focus {
+    outline: none; border-color: var(--ds-blue-light); box-shadow: var(--ds-focus-ring);
+}
+.contrato-campo small { font-size: 0.7rem; line-height: 1.35; color: var(--ds-text-500); }
+.contrato-alteracao-form .linha-ico { margin-top: 1.35rem; }
+.contrato-parcela-form {
+    display: grid; grid-template-columns: minmax(15rem, 1fr) 12rem 12rem auto;
+    align-items: end; gap: 0.8rem; padding-bottom: 1.1rem;
+    border-bottom: 1px solid var(--ds-line);
+}
+.contrato-dividir-form {
+    display: grid; grid-template-columns: repeat(2, minmax(9rem, 1fr)) auto;
+    align-items: end; gap: 0.8rem; padding: 0.9rem 0;
+}
+.contrato-lancar-form {
+    display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+    padding-top: 1rem;
+}
+.contrato-parcelas-tabela .is-editando input {
+    width: 100%; min-width: 7rem; box-sizing: border-box; padding: 0.5rem 0.6rem;
+    border: 1px solid var(--ds-blue-light); border-radius: 0.4rem;
+    background: var(--ds-surface); color: var(--ds-text-900); font: inherit;
+}
+.contrato-alteracao-edicao form {
+    display: grid; grid-template-columns: 13rem minmax(16rem, 1fr) 13rem auto;
+    align-items: end; gap: 0.8rem;
+}
+.contrato-documento-edicao form {
+    display: grid; grid-template-columns: minmax(12rem, 1fr) minmax(15rem, 1.3fr) auto;
+    align-items: end; gap: 0.8rem;
+}
+
+.contrato-alteracoes-lista { list-style: none; margin: 0; padding: 0; }
+.contrato-alteracoes-lista > li {
+    padding: 0.9rem 0; border-bottom: 1px solid var(--ds-line);
+}
+.contrato-alteracoes-lista > li.data-empty { border-bottom: 0; }
+.contrato-alteracao-topo { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.contrato-alteracao-tipo {
+    font-family: var(--arq-font-mono); font-size: 0.64rem; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.06em; color: var(--ds-blue-dark);
+}
+.contrato-alteracao-tipo--aditivo { color: var(--arq-violet); }
+.contrato-alteracao-tipo--prazo { color: var(--arq-amber); }
+.contrato-alteracao-tipo--condicoes { color: var(--ds-text-700); }
+.contrato-alteracao-topo time {
+    font-family: var(--arq-font-mono); font-size: 0.66rem; color: var(--ds-text-500);
+}
+.contrato-impacto { margin-left: auto; font-size: 0.8rem; white-space: nowrap; }
+.contrato-impacto.is-neutro { color: var(--ds-text-500); font-weight: 400; }
+.contrato-alteracoes-lista p { max-width: 54rem; margin: 0.45rem 0 0; font-size: 0.9rem; line-height: 1.5; }
+.contrato-documentos-contagem {
+    flex-shrink: 0; font-family: var(--arq-font-mono); font-size: 0.68rem;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--ds-text-500);
+}
+.contrato-documento-form {
+    display: grid; grid-template-columns: minmax(13rem, 1fr) minmax(17rem, 1.4fr) auto;
+    align-items: end; gap: 0.8rem; padding-bottom: 1.1rem;
+    border-bottom: 1px solid var(--ds-line);
+}
+.contrato-documento-form .ds-btn { min-height: 2.65rem; }
+.contrato-campo--arquivo input[type="file"] { padding: 0.38rem; }
+.contrato-campo--arquivo input[type="file"]::file-selector-button {
+    margin-right: 0.65rem; padding: 0.38rem 0.65rem;
+    border: 0; border-radius: 0.35rem; background: var(--ds-panel);
+    color: var(--ds-text-700); cursor: pointer;
+}
+.contrato-documentos-lista { list-style: none; margin: 0; padding: 0; }
+.contrato-documentos-lista > li {
+    display: grid; grid-template-columns: 3rem minmax(0, 1fr) auto;
+    align-items: center; gap: 0.9rem; padding: 0.75rem 0;
+    border-bottom: 1px solid var(--ds-line);
+}
+.contrato-documentos-lista > li.data-empty { display: block; }
+.contrato-documentos-lista .arquivo-acoes form { margin: 0; }
+@media (max-width: 62rem) {
+    .contrato-alteracao-form, .contrato-alteracao-edicao form { grid-template-columns: 1fr 1fr; }
+    .contrato-campo--descricao { grid-column: 1 / -1; grid-row: 1; }
+    .contrato-documento-form, .contrato-documento-edicao form { grid-template-columns: 1fr 1fr; }
+    .contrato-documento-form .ds-btn { justify-self: start; }
+    .contrato-parcela-form { grid-template-columns: 1fr 1fr; }
+    .contrato-parcela-form .contrato-campo:first-child { grid-column: 1 / -1; }
+    .contrato-dividir-form { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 40rem) {
+    .contrato-valores { grid-template-columns: 1fr; }
+    .contrato-parcela-form, .contrato-dividir-form,
+    .contrato-alteracao-form, .contrato-alteracao-edicao form,
+    .contrato-documento-form, .contrato-documento-edicao form { grid-template-columns: 1fr; }
+    .contrato-parcela-form .contrato-campo:first-child { grid-column: auto; }
+    .contrato-campo--descricao { grid-column: auto; grid-row: auto; }
+    .contrato-secao-head { flex-direction: column; }
+    .contrato-impacto { width: 100%; margin-left: 0; }
+    .contrato-documentos-lista > li { grid-template-columns: 2.5rem minmax(0, 1fr); }
+    .contrato-documentos-lista .arquivo-acoes { grid-column: 2; }
+    .contrato-alteracao-form .ds-btn { width: 100%; margin-top: 0; }
+}
 .form-card p, .form-block { margin: 0 0 1rem; display: flex; flex-direction: column; gap: 0.35rem; }
 .form-card label, .form-block, .auth-field > span {
     font-family: var(--arq-font-mono); font-size: 0.68rem; font-weight: 500;
@@ -373,13 +507,11 @@ a { color: var(--ds-blue-dark); }
     display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;
     background: var(--ds-panel); border-radius: 0.6rem; padding: 0.4rem; margin: 0 0 1.25rem;
 }
-.inline-add input, .inline-add select { width: auto; flex: 1; min-width: 8rem; background: var(--ds-surface); }
+.inline-add input, .inline-add select { width: auto; flex: 1; min-width: 8rem; }
 .inline-add input[type="number"], .inline-add input[type="date"] { flex: 0 1 8rem; }
 .ds-card > .inline-add:last-child { margin-bottom: 0; }
 
-/* =================================================================
-   TABELAS — impressas na folha
-   ================================================================= */
+/* TABELAS — impressas na folha */
 .data-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 .data-table th, .data-table td { text-align: left; padding: 0.7rem 0.75rem; border-bottom: 1px solid var(--ds-line); }
 .data-table th:first-child, .data-table td:first-child { padding-left: 0; }
@@ -389,7 +521,6 @@ a { color: var(--ds-blue-dark); }
 .data-table a { color: var(--ds-blue-dark); text-decoration: none; font-weight: 500; }
 .data-table a:hover { text-decoration: underline; }
 .data-table tbody tr { transition: background var(--arq-fast) ease; }
-.data-table tbody tr:hover { background: var(--ds-panel); }
 .data-table tfoot th { border-top: 1px solid var(--ds-line-dash); border-bottom: 0; padding-top: 0.7rem; }
 .data-table .app-inline-form { display: inline; }
 .data-table td .app-link-btn { white-space: nowrap; }
@@ -404,16 +535,14 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .def-list { display: grid; grid-template-columns: auto 1fr; gap: 0.5rem 1.25rem; margin: 0; }
 .def-list dd { margin: 0; }
 
-/* =================================================================
-   BADGES E TAGS
-   ================================================================= */
+/* BADGES E TAGS */
 .ds-badge {
     display: inline-flex; align-items: center; gap: 0.4rem;
     font-family: var(--arq-font-mono); font-size: 0.66rem; text-transform: uppercase;
     letter-spacing: 0.08em; padding: 0.2rem 0.55rem; border-radius: 999px;
 }
 .ds-badge .ds-dot { width: 0.35rem; height: 0.35rem; border-radius: 50%; }
-.ds-badge--info { color: var(--ds-blue-dark); background: var(--ds-blue-50); border: 1px solid var(--ds-blue-100); }
+.ds-badge--info { border: 1px solid var(--ds-blue-100); }
 .ds-badge--info .ds-dot { background: var(--ds-blue); }
 .tag-alerta {
     font-family: var(--arq-font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.06em;
@@ -421,20 +550,12 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
     border: 1px solid color-mix(in srgb, var(--ds-danger) 25%, var(--ds-line));
     padding: 0.1rem 0.4rem; border-radius: 999px;
 }
-.horas-ok {
-    font-family: var(--arq-font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.06em;
-    color: var(--ds-blue-dark); background: var(--ds-blue-50);
-    border: 1px solid var(--ds-blue-100); padding: 0.1rem 0.4rem; border-radius: 999px;
-}
 
 /* Glifo de legenda, sem caixa */
 .arq-glifo { flex-shrink: 0; color: var(--sec, var(--ds-text-500)); font-size: 0.6rem; line-height: 1.9; }
 
-/* =================================================================
-   PAINEL — hero claro com foto, faixa de indicadores e índice
-   ================================================================= */
-/* --- Cabeçalho com foto: sangra até as bordas da folha e encosta no topo.
-   A imagem entra pela direita e some no papel; o texto fica sobre o papel. --- */
+/* PAINEL — hero claro com foto, faixa de indicadores e índice */
+/* --- Cabeçalho com foto: sangra até as bordas da folha e encosta no topo. */
 .dash-hero, .page-head--foto {
     position: relative; overflow: hidden;
     margin: -2.6rem -3rem 0; padding: 3.1rem 3rem 2.3rem;
@@ -477,78 +598,32 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .dash-carimbo dd { margin: 0.25rem 0 0; font-size: 0.88rem; color: var(--ds-text-900); }
 
 /* --- Indicadores: uma faixa dividida por filetes, não quatro caixas --- */
-/* Faixa única: o gap de 1px deixa a cor do fundo aparecer como filete,
-   então a divisória funciona em qualquer número de colunas ou quebras. */
+/* Faixa única: o gap de 1px deixa a cor do fundo aparecer como filete, */
 .kpi-row {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-    gap: 1px; background: var(--ds-line);
-    border: 1px solid var(--ds-line); border-radius: 0.9rem; overflow: hidden;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); border-radius: 0.9rem; overflow: hidden;
 }
 .kpi {
     position: relative; display: flex; flex-direction: column; gap: 0.3rem;
     padding: 1.15rem 1.3rem 1.2rem; text-decoration: none;
-    background: var(--ds-surface);
     transition: background var(--arq-fast) ease;
 }
-.kpi:hover { background: var(--ds-panel); }
 .kpi::after {
     content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
     background: var(--sec); transform: scaleX(0); transform-origin: left;
     transition: transform var(--arq-mid) var(--arq-ease);
 }
 .kpi:hover::after { transform: scaleX(1); }
-.kpi-label { color: var(--sec); }
 .kpi-value { font-size: 1.95rem; line-height: 1.05; color: var(--ds-text-900); }
 .kpi-foot { font-size: 0.78rem; color: var(--ds-text-500); }
-.kpi--blue { --sec: var(--arq-blue); }
-.kpi--green { --sec: var(--arq-green); }
-.kpi--violet { --sec: var(--arq-violet); }
-.kpi--amber { --sec: var(--arq-amber); }
-.kpi--alert { --sec: var(--ds-danger); }
 .kpi--alert .kpi-value { color: var(--ds-danger); }
 
 /* --- Retomada do onboarding: faixa tingida --- */
-.dash-onb {
-    display: flex; align-items: center; justify-content: space-between; gap: 1.5rem;
-    padding: 1.15rem 1.3rem; text-decoration: none; border-radius: 0.9rem;
-    background: var(--ds-blue-50); border: 1px solid var(--ds-blue-100);
-    transition: background var(--arq-fast) ease;
-}
-.dash-onb:hover { background: color-mix(in srgb, var(--ds-blue-50) 70%, var(--ds-blue-100)); }
-.dash-onb-info { flex: 1; display: flex; flex-direction: column; gap: 0.45rem; }
-.dash-onb-info strong { color: var(--ds-text-900); font-size: 0.98rem; }
-.dash-onb .ds-kicker { color: var(--ds-blue-dark); }
-.dash-onb-info .ds-progress { max-width: 30rem; }
-.dash-onb-cta { color: var(--ds-blue-dark); font-weight: 600; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.4rem; }
-.dash-onb-cta::after { content: "→"; transition: transform var(--arq-mid) var(--arq-ease-out); }
-.dash-onb:hover .dash-onb-cta::after { transform: translateX(3px); }
 
 /* --- Atalhos: índice da folha, linhas separadas por filete --- */
 .dash-section { display: flex; flex-direction: column; gap: 0.25rem; }
-.dash-section--comercial { --sec: var(--arq-blue); }
-.dash-section--producao { --sec: var(--arq-green); }
-.dash-section--gestao { --sec: var(--arq-amber); }
 .dash-section-head { color: var(--sec); }
 
-.modulo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 0 2.5rem; }
-.modulo-card {
-    display: grid; grid-template-columns: 1.35rem 1fr auto; align-items: baseline; gap: 0 0.85rem;
-    padding: 0.7rem 0.6rem; margin-left: -0.6rem; border-radius: 0.5rem;
-    text-decoration: none; color: inherit;
-    transition: background var(--arq-fast) ease;
-}
-.modulo-card:hover { background: var(--ds-surface); }
-.modulo-ico { color: var(--sec); display: flex; grid-row: span 2; align-self: start; padding-top: 0.1rem; }
-.modulo-ico svg { width: 1.2rem; height: 1.2rem; }
-.modulo-head { display: contents; }
-.modulo-head h3 { margin: 0; font-size: 0.98rem; font-family: var(--ds-font-display); font-variation-settings: "wdth" 106, "wght" 600; }
-.modulo-seta { color: var(--sec); font-size: 1rem; opacity: 0; transition: opacity var(--arq-fast) ease, transform var(--arq-mid) var(--arq-ease-out); transform: translateX(-3px); }
-.modulo-card:hover .modulo-seta { opacity: 1; transform: none; }
-.modulo-card p { grid-column: 2 / -1; margin: 0.15rem 0 0; font-size: 0.85rem; color: var(--ds-text-500); line-height: 1.45; }
-
-/* =================================================================
-   PROJETOS E OBRAS — objetos numa grade, aqui a superfície faz sentido
-   ================================================================= */
+/* PROJETOS E OBRAS — objetos numa grade, aqui a superfície faz sentido */
 /* align-items: start impede que um card alto estique os vizinhos da linha */
 .projeto-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr)); align-items: start; }
 .obra-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr)); align-items: start; }
@@ -610,7 +685,7 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .etapa--andamento::before { background: var(--arq-blue); box-shadow: 0 0 0 3px color-mix(in srgb, var(--arq-blue) 16%, transparent); }
 .etapa--concluida::before { background: var(--arq-green); }
 .etapa--concluida strong { color: var(--ds-text-500); }
-.etapa-status { display: block; margin-top: 0.15rem; font-family: var(--arq-font-mono); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ds-text-500); }
+
 .pendencias li { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; font-size: 0.9rem; padding: 0.6rem 0.35rem; border-bottom: 1px solid var(--ds-line); }
 .pendencias .is-resolvida { color: var(--ds-text-400); text-decoration: line-through; }
 .pendencias li.data-empty { justify-content: flex-start; border-bottom: 0; }
@@ -622,24 +697,18 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .margem-strip { display: flex; flex-wrap: wrap; gap: 2.5rem; padding: 1.15rem 0; border-top: 1px solid var(--ds-line-dash); border-bottom: 1px solid var(--ds-line-dash); }
 .margem-strip > div { display: flex; flex-direction: column; gap: 0.25rem; }
 .margem-strip strong { font-size: 1.25rem; }
+.quantitativos-projeto { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; margin: 1.1rem 0 0; padding: 1px; border-radius: 0.7rem; background: var(--ds-line); overflow: hidden; box-shadow: 0 10px 30px rgba(18, 32, 28, 0.06); }
+.quantitativo { --metrica: var(--arq-green); position: relative; display: flex; min-width: 0; min-height: 5.4rem; flex-direction: column; justify-content: center; gap: 0.3rem; padding: 1.05rem 1.15rem; background: color-mix(in srgb, var(--metrica) 9%, var(--ds-surface)); }
+.quantitativo span { color: color-mix(in srgb, var(--metrica) 62%, var(--ds-text-700)); font-family: var(--arq-font-mono); font-size: 0.66rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+.quantitativo strong { color: color-mix(in srgb, var(--metrica) 72%, var(--ds-ink)); font-family: var(--arq-font-mono); font-size: 1.18rem; overflow-wrap: anywhere; }
+.quantitativo small { color: var(--ds-text-500); font-size: 0.7rem; }
+.quantitativo--horas { --metrica: var(--arq-blue); }
+.quantitativo--inicio { --metrica: var(--arq-violet); }
+.quantitativo--entrega { --metrica: var(--arq-amber); }
+@media (max-width: 48rem) { .quantitativos-projeto { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .margem-final strong { color: var(--ds-blue-dark); }
 
-/* Kanban */
-.kanban { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(15rem, 1fr); gap: 1rem; overflow-x: auto; padding-bottom: 0.5rem; }
-.kanban-col { background: color-mix(in srgb, var(--ds-panel) 70%, transparent); border-radius: 0.8rem; padding: 0.85rem; display: flex; flex-direction: column; }
-.kanban-col-head { display: flex; justify-content: space-between; margin: 0 0 0.75rem; font-family: var(--arq-font-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.11em; color: var(--ds-text-500); }
-.kanban-drop { display: flex; flex-direction: column; gap: 0.5rem; min-height: 4rem; flex: 1; border-radius: 0.5rem; transition: background var(--arq-fast) ease; }
-.kanban-drop.is-over { background: var(--ds-blue-50); outline: 1.5px dashed var(--ds-blue-light); outline-offset: 3px; }
-.kanban-card { padding: 0.7rem 0.8rem; cursor: grab; transition: border-color var(--arq-fast) ease, box-shadow var(--arq-mid) var(--arq-ease); }
-.kanban-card:hover { border-color: var(--ds-blue-100); box-shadow: var(--ds-shadow-soft); }
-.kanban-card.is-dragging { opacity: 0.45; }
-.kanban-card-nome { font-weight: 600; color: var(--ds-text-900); text-decoration: none; display: block; }
-.kanban-card-cli { margin: 0.2rem 0; font-size: 0.8rem; color: var(--ds-text-500); }
-.kanban-card-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: var(--ds-text-500); }
-
-/* =================================================================
-   FINANCEIRO E PRECIFICAÇÃO
-   ================================================================= */
+/* FINANCEIRO E PRECIFICAÇÃO */
 .saldo-strip { display: flex; flex-wrap: wrap; gap: 0; border-top: 1px solid var(--ds-line-dash); border-bottom: 1px solid var(--ds-line-dash); }
 .saldo-card { min-width: 11rem; padding: 1.05rem 1.75rem 1.1rem 0; }
 .saldo-card + .saldo-card { padding-left: 1.75rem; border-left: 1px solid var(--ds-line); }
@@ -654,38 +723,50 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .fator-check { display: inline-flex; align-items: center; gap: 0.4rem; border: 1px solid var(--ds-line); border-radius: 999px; padding: 0.32rem 0.75rem; font-size: 0.85rem; cursor: pointer; }
 .fator-check input { accent-color: var(--ds-blue); }
 .fator-check em { color: var(--ds-blue-dark); font-style: normal; font-weight: 600; }
-.ht-proposta-form .inline-add { margin-bottom: 0; }
-
-/* =================================================================
-   TAREFAS, AGENDA E LINHA DO TEMPO
-   ================================================================= */
-/* --- Apontamento de horas --- */
-.timer-explica { margin: 0 0 1.15rem; color: var(--ds-text-500); font-size: 0.88rem; max-width: 46rem; line-height: 1.55; }
-.timer-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.85rem; }
-.timer-campo { display: flex; flex-direction: column; gap: 0.35rem; min-width: 13rem; }
-.timer-campo--cresce { flex: 1; min-width: 16rem; }
-.timer-campo > span {
+.ht-proposta-form .inline-add {
+    margin-bottom: 0; padding: 0; border: 0; border-radius: 0;
+    background: none; box-shadow: none;
+}
+.termo-fixo {
+    display: flex; min-width: 0; flex-direction: column; gap: 0.25rem;
+    margin: 0 0 1rem;
+}
+.termo-fixo span {
     font-family: var(--arq-font-mono); font-size: 0.68rem; font-weight: 500;
     text-transform: uppercase; letter-spacing: 0.12em; color: var(--ds-text-500);
 }
-.timer-campo input, .timer-campo select {
-    width: 100%; box-sizing: border-box; padding: 0.6rem 0.8rem; font: inherit;
-    color: var(--ds-text-900); background: var(--ds-panel);
-    border: 1px solid transparent; border-radius: 0.5rem;
-    transition: background var(--arq-fast) ease, border-color var(--arq-fast) ease, box-shadow var(--arq-fast) ease;
+.termo-fixo strong {
+    display: flex; align-items: center; min-height: 2.65rem; box-sizing: border-box;
+    padding: 0.6rem 0.8rem; border-radius: 0.5rem;
+    background: var(--ds-panel); color: var(--ds-text-700);
+    font-size: 0.94rem; font-weight: 500;
 }
-.timer-campo input:focus, .timer-campo select:focus {
-    outline: none; background: var(--ds-surface);
-    border-color: var(--ds-blue-light); box-shadow: var(--ds-focus-ring);
+.cronograma-proposta { border-top: 1px solid var(--ds-line); }
+.cronograma-proposta-linha {
+    display: grid; grid-template-columns: minmax(0, 1fr) 11rem;
+    align-items: center; gap: 1rem; padding: 0.75rem 0;
+    border-bottom: 1px solid var(--ds-line);
+}
+.cronograma-proposta-linha > div { display: flex; flex-direction: column; gap: 0.12rem; }
+.cronograma-proposta-linha strong { font-size: 0.92rem; font-weight: 500; }
+.cronograma-proposta-linha > div span {
+    font-family: var(--arq-font-mono); font-size: 0.66rem;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--ds-text-500);
+}
+.cronograma-proposta-linha.is-complementar strong { color: var(--ds-blue-dark); }
+.cronograma-proposta-linha input {
+    width: 100%; box-sizing: border-box; padding: 0.5rem 0.65rem;
+    border: 1px solid var(--ds-line-dash); border-radius: 0.45rem;
+    background: var(--ds-surface); color: var(--ds-text-900); font: inherit;
+}
+.cronograma-proposta-linha time { text-align: right; font-family: var(--arq-font-mono); font-size: 0.82rem; }
+@media (max-width: 36rem) {
+    .cronograma-proposta-linha { grid-template-columns: 1fr; gap: 0.5rem; }
+    .cronograma-proposta-linha time { text-align: left; }
 }
 
-.timer-card.is-rodando { padding: 1.15rem 1.3rem 1.25rem; border-radius: 0.8rem; background: var(--ds-blue-50); border: 1px solid var(--ds-blue-100); }
-.timer-card.is-rodando > h2.ds-display, .timer-card.is-rodando > h3.ds-display { --sec: var(--ds-blue-light); color: var(--ds-blue-dark); }
-.timer-ativo { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem 1.75rem; }
-.timer-relogio { display: flex; flex-direction: column; gap: 0.1rem; }
-.timer-relogio .ds-kicker { color: var(--ds-blue-dark); }
-.timer-ativo strong { font-size: 1.9rem; line-height: 1.1; letter-spacing: 0.01em; color: var(--ds-text-900); }
-.timer-alvo { flex: 1; min-width: 12rem; margin: 0; color: var(--ds-text-700); }
+/* TAREFAS, AGENDA E LINHA DO TEMPO */
+/* --- Apontamento de horas --- */
 
 .agenda-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .agenda-lista li { display: flex; gap: 1.15rem; align-items: flex-start; padding: 0.85rem 0.35rem; border-bottom: 1px solid var(--ds-line); }
@@ -712,9 +793,7 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .visitas-timeline, .medicoes-lista { margin-top: 1.15rem; }
 .visita-acao { color: var(--ds-blue-dark); font-size: 0.85rem; font-weight: 500; }
 
-/* =================================================================
-   NOTIFICAÇÕES E REGULATÓRIO
-   ================================================================= */
+/* NOTIFICAÇÕES E REGULATÓRIO */
 .notif-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .notif-item {
     display: flex; align-items: flex-start; justify-content: space-between; gap: 0.85rem;
@@ -731,7 +810,6 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .notif-item.is-lida { opacity: 0.5; }
 
 .alerta-card {
-    background: color-mix(in srgb, var(--arq-amber) 6%, #fff);
     border: 1px solid color-mix(in srgb, var(--arq-amber) 26%, var(--ds-line));
     border-radius: 0.8rem; padding: 1.15rem 1.3rem;
 }
@@ -739,28 +817,7 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .alerta-card .pendencias li { border-bottom-color: color-mix(in srgb, var(--arq-amber) 18%, var(--ds-line)); }
 .alerta-card .pendencias li:last-child { border-bottom: 0; padding-bottom: 0; }
 
-/* =================================================================
-   ONBOARDING E DIAGNÓSTICO
-   ================================================================= */
-.onb-progresso-topo { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.7rem; }
-.onb-progresso-topo strong { font-size: 1.4rem; }
-.onb-progresso-topo span { color: var(--ds-text-500); font-size: 0.9rem; }
-.onb-etapas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
-.onb-etapa {
-    display: flex; align-items: center; gap: 1.15rem;
-    padding: 1.05rem 0.35rem; border-bottom: 1px solid var(--ds-line);
-    transition: background var(--arq-fast) ease;
-}
-.onb-etapa:hover { background: var(--ds-panel); }
-.onb-etapa.is-atual { background: var(--ds-blue-50); }
-.onb-etapa.is-feita .onb-corpo strong { color: var(--ds-text-500); }
-.onb-num { flex-shrink: 0; width: 1.5rem; text-align: center; font-size: 0.95rem; color: var(--ds-text-400); }
-.onb-etapa.is-atual .onb-num { color: var(--ds-blue); font-weight: 600; }
-.onb-etapa.is-feita .onb-num { color: var(--ds-blue-dark); }
-.onb-corpo { flex: 1; }
-.onb-corpo strong { display: block; font-size: 0.96rem; }
-.onb-corpo p { margin: 0.15rem 0 0; font-size: 0.88rem; color: var(--ds-text-500); }
-.onb-feito { color: var(--ds-blue-dark); }
+/* ONBOARDING E DIAGNÓSTICO */
 
 .diagnostico .page-head { text-align: center; }
 .diagnostico .page-sub { margin-left: auto; margin-right: auto; }
@@ -789,9 +846,7 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .diag-faixa { margin: 0.2rem 0 0; }
 .diag-resultado p { max-width: 34rem; color: var(--ds-text-700); }
 
-/* =================================================================
-   TERMOS, PRIVACIDADE E ACEITE
-   ================================================================= */
+/* TERMOS, PRIVACIDADE E ACEITE */
 .prosa { max-width: 40rem; }
 .prosa h2 { margin: 2.25rem 0 0.85rem; }
 .prosa h2:first-child { margin-top: 0; }
@@ -815,12 +870,10 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 /* Rodapé público com os links legais */
 .pe-legal { margin-top: 3rem; padding-top: 1.15rem; border-top: 1px solid var(--ds-line); display: flex; flex-wrap: wrap; gap: 1.25rem; font-size: 0.82rem; }
 .pe-legal a { color: var(--ds-text-500); text-decoration: none; }
-.pe-legal a:hover { color: var(--ds-blue-dark); text-decoration: underline; }
+.pe-legal a:hover { text-decoration: underline; }
 .pe-legal--lateral { margin: 0; padding: 0.55rem 0 0; border-top: 0; gap: 0.9rem; font-size: 0.76rem; }
 
-/* =================================================================
-   LOGIN — foto ocupando a tela, texto solto sobre ela
-   ================================================================= */
+/* LOGIN — foto ocupando a tela, texto solto sobre ela */
 .tela-login { min-height: 100vh; }
 .tela-login .app-main--public { max-width: none; padding: 0; flex: 1; display: flex; }
 .tela-login .auth-shell { flex: 1; }
@@ -835,9 +888,7 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
             rgba(10, 14, 15, 0.26) 58%, rgba(10, 14, 15, 0.46) 100%),
         linear-gradient(to top, rgba(10, 14, 15, 0.55), transparent 38%);
 }
-/* A foto sangra na tela inteira, mas o conteúdo obedece a uma largura de
-   trabalho e fica centrado: o cartão sai da beirada direita e o texto sobe
-   do canto para o corpo da imagem. */
+/* A foto sangra na tela inteira, mas o conteúdo obedece a uma largura de */
 .auth-quadro {
     position: relative; z-index: 2; min-height: 100vh;
     display: grid; grid-template-columns: 1fr; gap: 2.5rem; align-items: center;
@@ -858,28 +909,15 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .auth-brand .mk-a { stroke: #fff; }
 .auth-brand .mk-cota { stroke: #3fa98a; }
 .auth-brand-word { font-family: var(--ds-font-display); font-variation-settings: "wdth" 115, "wght" 700; font-size: 1.3rem; color: #fff; }
-.auth-hero .ds-kicker { color: #63c4a5; display: block; }
-.auth-hero h1 { margin: 0; color: #fff; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35); }
-.auth-hero .ds-muted { color: rgba(255, 255, 255, 0.62); }
+.auth-hero .ds-kicker { display: block; }
+.auth-hero h1 { margin: 0; color: #fff; }
 
-/* Formulário: vidro sobre a foto. O véu de branco a 78% deixa o concreto
-   aparecer e ainda mantém o texto acima de 9:1 de contraste. */
+/* Formulário: vidro sobre a foto. O véu de branco a 78% deixa o concreto */
 .auth-card {
     position: relative; z-index: 2; display: flex; flex-direction: column; gap: 1.15rem;
     padding: 1.75rem; border-radius: 0.9rem;
 }
-/* sobre o vidro o texto secundário sobe um degrau: a foto atrás rouba contraste */
-.auth-card .auth-header p, .auth-card .auth-visitor p,
-.auth-card .auth-legal, .auth-card .auth-disclaimer,
-.auth-card .auth-field > span { color: var(--ds-text-700); }
 .auth-card .auth-disclaimer { font-size: 0.76rem; }
-.auth-card .auth-field input {
-    background: rgba(255, 255, 255, 0.6);
-    border-color: rgba(20, 24, 26, 0.09);
-}
-.auth-card .auth-field input:focus { background: #fff; border-color: var(--ds-blue-light); }
-.auth-card .ds-btn:not(.ds-btn--solid) { background: rgba(255, 255, 255, 0.65); border-color: rgba(20, 24, 26, 0.12); }
-.auth-card .ds-btn:not(.ds-btn--solid):hover { background: #fff; }
 .auth-visitor { border-top-color: rgba(20, 24, 26, 0.1); }
 .auth-header h2 { margin: 0 0 0.2rem; font-size: 1.35rem; }
 .auth-header p { margin: 0; color: var(--ds-text-500); font-size: 0.9rem; }
@@ -895,9 +933,7 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .auth-legal { font-size: 0.78rem; color: var(--ds-text-500); margin: 0; line-height: 1.5; }
 .auth-legal a { color: var(--ds-blue-dark); }
 
-/* =================================================================
-   ENTRADA — a folha monta ao carregar
-   ================================================================= */
+/* ENTRADA — a folha monta ao carregar */
 @keyframes arq-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 .page > * { animation: arq-rise 460ms var(--arq-ease-out) both; }
 .page > *:nth-child(1) { animation-delay: 0ms; }
@@ -907,9 +943,7 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .page > *:nth-child(n + 5) { animation-delay: 210ms; }
 .app-message { animation: arq-rise 340ms var(--arq-ease-out) both; }
 
-/* =================================================================
-   RESPONSIVO
-   ================================================================= */
+/* RESPONSIVO */
 @media (max-width: 62rem) {
     .app-side {
         position: sticky; top: 0; width: auto; height: auto;
@@ -919,20 +953,19 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
     .nav-burger {
         display: inline-flex; align-items: center; justify-content: center;
         width: 2.5rem; height: 2.5rem; border: 1px solid var(--ds-line); border-radius: 0.5rem;
-        background: var(--ds-surface); color: var(--ds-text-700); cursor: pointer;
+        background: var(--ds-surface); cursor: pointer;
     }
     .nav-burger svg { width: 1.35rem; height: 1.35rem; }
     .app-nav, .app-side-foot { display: none; }
     .nav-toggle:checked ~ .app-side .app-nav,
     .nav-toggle:checked ~ .app-side .app-side-foot { display: flex; }
     .app-frame { margin-left: 0; }
-    .app-main { border-left: 0; padding: 1.6rem 1.15rem 3.5rem; min-height: auto; }
+    .app-main { padding: 1.6rem 1.15rem 3.5rem; min-height: auto; }
     .page { gap: 1.85rem; }
     .page-head--row { flex-direction: column; align-items: stretch; gap: 1rem; }
     .page-head--row > :not(:first-child) { margin-top: 0; }
     .page-head-actions { flex-wrap: wrap; }
-    /* No estreito a foto vira faixa no topo e o texto desce para o papel:
-       sobrepor texto na imagem aqui destruiria a legibilidade. */
+    /* No estreito a foto vira faixa no topo e o texto desce para o papel: */
     .dash-hero, .page-head--foto {
         margin: -1.6rem -1.15rem 0; padding: 6.5rem 1.15rem 1.4rem;
         min-height: 0; flex-direction: column; align-items: stretch; gap: 1rem;
@@ -945,56 +978,36 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
     }
     .dash-hero-in, .page-head--foto > div:first-child { max-width: none; }
     .page-head--foto > :not(:first-child) { margin-top: 0; }
-    .dash-onb { flex-direction: column; align-items: flex-start; gap: 1rem; }
+
     .detalhe-grid, .ht-grid { gap: 1.85rem; }
-    .modulo-grid { gap: 0; }
+
     .saldo-card + .saldo-card { padding-left: 0; border-left: 0; }
     .dash-carimbo > div + div { padding-left: 0; border-left: 0; }
     .auth-quadro { align-items: stretch; align-content: center; }
 }
 
-/* =================================================================
-   MOVIMENTO REDUZIDO
-   ================================================================= */
+/* MOVIMENTO REDUZIDO */
 @media (prefers-reduced-motion: reduce) {
     .page > *, .app-message { animation: none; }
-    .ds-btn, .chip, .kpi, .modulo-card, .projeto-card, .obra-card, .kanban-card,
-    .onb-etapa, .notif-item, .diag-opcao, .dash-onb, .ds-progress-fill,
-    .modulo-seta, .dash-onb-cta::after, .app-brand-mark .mk-cota { transition-duration: 1ms; }
+    .ds-btn,
+    .chip,
+    .kpi,
+    .projeto-card,
+    .obra-card,
+    .notif-item,
+    .diag-opcao,
+    .ds-progress-fill,
+    .app-brand-mark .mk-cota { transition-duration: 1ms; }
     .ds-btn:active { transform: none; }
-    .modulo-card:hover { padding-left: 0.35rem; }
+
     .ds-btn.is-busy::before { animation: none; transform: scaleX(1); }
 }
 
-/* =================================================================
-   ACESSIBILIDADE
-   ================================================================= */
+/* ACESSIBILIDADE */
 .ds-root :focus-visible, a:focus-visible, button:focus-visible,
 input:focus-visible, select:focus-visible, textarea:focus-visible {
     outline: 2px solid var(--ds-blue-light); outline-offset: 2px;
 }
-
-/* =================================================================
-   FASE 6 — projeto novo, briefings, fornecedores, orçamento, arquivos
-   ================================================================= */
-
-/* Botão de destaque na lateral: a ação que abre o fluxo linear */
-.nav-destaque {
-    display: flex; align-items: center; gap: 0.6rem;
-    margin: 0 0.75rem 0.35rem; padding: 0.62rem 0.8rem;
-    border-radius: 0.6rem; text-decoration: none;
-    background: var(--ds-blue); color: #fff; font-weight: 600; font-size: 0.9rem;
-    transition: background var(--arq-fast) ease, box-shadow var(--arq-mid) var(--arq-ease);
-}
-.nav-destaque svg { width: 1.05rem; height: 1.05rem; flex-shrink: 0; }
-.nav-destaque:hover { background: var(--ds-blue-dark); box-shadow: 0 4px 14px rgba(28, 106, 83, 0.26); }
-
-/* --- Roteiro do projeto --- */
-.roteiro-progresso { max-width: 32rem; }
-.roteiro-etapas .onb-corpo { flex: 1; }
-.roteiro-resumo { display: block; margin-top: 0.3rem; font-size: 0.78rem; color: var(--ds-text-500); }
-.jornada-novo-cliente { display: grid; gap: 0 1rem; grid-template-columns: 1fr; }
-@media (min-width: 42rem) { .jornada-novo-cliente { grid-template-columns: 1fr 1fr; } }
 
 /* --- Briefings --- */
 .briefing-roteiro {
@@ -1016,9 +1029,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .briefing-opcoes-preview { display: block; margin-top: 0.2rem; font-size: 0.82rem; color: var(--ds-text-500); }
 
 .briefing-respostas { display: flex; flex-direction: column; gap: 2rem; }
-/* O csrf é um input hidden, e alguma regra de input o tirava do display:none
-   do navegador: virava item de flex e abria um vão de 2rem antes da primeira
-   pergunta, logo abaixo da linha do roteiro. */
+/* O csrf é um input hidden, e alguma regra de input o tirava do display:none */
 .briefing-respostas > input[type="hidden"] { display: none; }
 .briefing-pergunta { border: 0; margin: 0 0 1.75rem; padding: 0; overflow: hidden; }
 .briefing-pergunta:last-of-type { margin-bottom: 0; }
@@ -1052,16 +1063,6 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 }
 
 /* --- Apoio de IA: sempre marcado como rascunho, nunca como resultado final --- */
-.ia-bloco { background: color-mix(in srgb, var(--arq-violet) 4%, #fff); border: 1px solid color-mix(in srgb, var(--arq-violet) 20%, var(--ds-line)); border-radius: 0.8rem; padding: 1.15rem 1.3rem; }
-.ia-bloco > h2.ds-display, .ia-bloco > h3.ds-display { --sec: var(--arq-violet); color: var(--arq-violet); }
-.ia-rascunho {
-    border-left: 3px solid var(--arq-violet);
-    background: color-mix(in srgb, var(--arq-violet) 5%, #fff);
-    border-radius: 0 0.7rem 0.7rem 0; padding: 1rem 1.2rem;
-}
-.ia-rascunho .ds-kicker { color: var(--arq-violet); display: block; margin-bottom: 0.4rem; }
-.ia-rascunho p { margin: 0 0 0.6rem; line-height: 1.6; }
-.ia-rascunho p:last-child { margin-bottom: 0; }
 
 /* --- Contrato: o corpo é para ler, então monoespaçada e linha larga --- */
 .contrato-corpo {
@@ -1075,43 +1076,8 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
     border-color: var(--ds-blue-light); box-shadow: var(--ds-focus-ring);
 }
 
-/* =================================================================
-   VIDRO — a folha de vidro sobre o pátio
-   -----------------------------------------------------------------
-   O A.R.Q. inteiro passa a flutuar sobre uma foto de concreto. Cada
-   painel é uma lâmina de vidro: deixa a cor e a forma passarem,
-   dissolve o que está atrás no desfoque e acende no corte, onde a luz
-   pega a borda.
-
-   Três coisas fazem vidro se ler, e nenhuma sozinha basta:
-     1. FUNDO VIVO   — foto com forma e cor. Sobre chapado não há efeito.
-     2. DESFOQUE     — 24 a 40px. Abaixo disso vira só transparência.
-     3. CORTE ACESO  — fio branco no topo, aro interno, sombra externa.
-                       É a borda que diz "isto é uma lâmina".
-   ================================================================= */
-
-:root {
-    /* Véus finos: é a transparência que faz o efeito. O contraste do
-       texto é recuperado no painel de conteúdo, não aqui. */
-    --vidro-veu: rgba(255, 255, 255, 0.42);
-    --vidro-veu-forte: rgba(255, 255, 255, 0.58);
-    --vidro-veu-leve: rgba(255, 255, 255, 0.26);
-
-    --vidro-desfoque: blur(28px) saturate(180%);
-    --vidro-desfoque-forte: blur(40px) saturate(200%);
-    --vidro-desfoque-curto: blur(14px) saturate(160%);
-
-    /* O corte: luz no topo, aro por dentro, sombra por fora */
-    --vidro-fio: inset 0 1px 0 rgba(255, 255, 255, 0.95);
-    --vidro-aro: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-    --vidro-base: inset 0 -1px 0 rgba(255, 255, 255, 0.32);
-    --vidro-borda: rgba(255, 255, 255, 0.55);
-    --vidro-sombra: 0 8px 32px rgba(18, 32, 28, 0.14);
-    --vidro-sombra-alta: 0 20px 56px rgba(18, 32, 28, 0.22);
-    --vidro-lamina: var(--vidro-fio), var(--vidro-aro), var(--vidro-base), var(--vidro-sombra);
-}
-
-/* --- O pátio: foto de concreto + banhos de cor da marca --------- */
+/* FUNDO E SUPERFÍCIES */
+.app-shell { background: transparent; }
 .app-shell::before {
     content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none;
     background:
@@ -1124,208 +1090,56 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
         var(--fundo-escritorio, url("../img/fundo-vidro.jpg")) center / cover no-repeat,
         var(--ds-ink);
 }
-.app-shell::after { display: none; }
-.app-shell { background: transparent; }
-
-/* --- A folha de conteúdo: a lâmina maior de todas ---------------
-   É aqui que o texto vive, então é a lâmina mais fechada — 0.72. Ainda
-   assim o pátio atravessa: dá para ver a cor e o contorno do concreto
-   se movendo por baixo do texto. */
 .app-main {
-    background: var(--ds-bg);
-    border-left: 1px solid var(--ds-line);
-    box-shadow: 0 0 0 1px rgba(18, 32, 28, 0.06), 0 18px 60px rgba(18, 32, 28, 0.22);
+    --ds-text-500: #5b6a65; --ds-text-400: #78857f;
+    background: var(--ds-bg); border-left: 1px solid var(--ds-line);
 }
-.app-main--public { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
-
-/* --- Barra lateral: a lâmina mais transparente do sistema ------- */
+.app-main--public { background: none; box-shadow: none; }
+.app-frame { background: transparent; }
 .app-side {
-    background: linear-gradient(180deg,
-        rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.38) 48%, rgba(255, 255, 255, 0.46));
-    -webkit-backdrop-filter: var(--vidro-desfoque-forte); backdrop-filter: var(--vidro-desfoque-forte);
-    border-right: 1px solid var(--vidro-borda);
-    box-shadow: var(--vidro-fio), var(--vidro-aro), 2px 0 40px rgba(18, 32, 28, 0.18);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    backdrop-filter: blur(40px) saturate(200%);
 }
-.app-side-foot { border-top-color: rgba(255, 255, 255, 0.45); }
-.app-empresa-info span, .app-sair, .pe-legal a { color: #2a3532; }
-.nav-link { color: #16201d; font-weight: 500; }
-.nav-link:hover { background: rgba(255, 255, 255, 0.8); color: #0d1614; }
-.nav-link.is-active {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.6));
-    box-shadow: var(--vidro-fio), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
-    color: var(--ds-blue-dark);
-}
-.nav-label { color: #2a3532; }
-.nav-group--comercial .nav-label { color: #17456e; }
-.nav-group--producao .nav-label { color: #10493a; }
-.nav-group--gestao .nav-label { color: #6a4406; }
-.nav-group--hoje .nav-label { color: #8d2d1e; }
-.nav-group--escritorio .nav-label { color: #3f4a46; }
 
-/* Botão de destaque: vidro verde com o corte aceso */
-
-
-/* --- O brilho: a faixa de luz que atravessa a lâmina -------------
-   É o que separa "translúcido" de "vidro". Uma faixa clara em diagonal,
-   parada, como o reflexo de uma janela na folha; nos botões ela anda
-   quando o ponteiro passa. */
-.lamina-brilho { position: relative; overflow: hidden; }
-.lamina-brilho::before {
-    content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
-    background: linear-gradient(104deg,
-        transparent 8%, rgba(255, 255, 255, 0.12) 26%, rgba(255, 255, 255, 0.4) 44%,
-        rgba(255, 255, 255, 0.1) 58%, transparent 82%);
+/* Elementos compartilhados usam os mesmos estados de movimento. */
+.ds-btn {
+    position: relative; overflow: hidden;
+    transition: background var(--arq-fast) ease, color var(--arq-fast) ease,
+        border-color var(--arq-fast) ease, box-shadow var(--arq-mid) var(--arq-ease),
+        transform var(--arq-fast) var(--arq-ease-out);
 }
-.lamina-brilho > * { position: relative; z-index: 1; }
-
-.kpi-row, .dash-onb, .projeto-card, .obra-card, .kanban-card, .auth-card,
-.alerta-card, .ia-bloco, .timer-card.is-rodando { position: relative; overflow: hidden; }
-.kpi-row::after, .dash-onb::after, .projeto-card::after, .obra-card::after,
-.auth-card::after, .alerta-card::after, .ia-bloco::after {
-    content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
-    background: linear-gradient(106deg,
-        transparent 8%, rgba(255, 255, 255, 0.1) 26%, rgba(255, 255, 255, 0.34) 44%,
-        rgba(255, 255, 255, 0.08) 58%, transparent 82%);
-}
-.kpi-row > *, .dash-onb > *, .projeto-card > *, .obra-card > *,
-.auth-card > *, .alerta-card > *, .ia-bloco > * { position: relative; z-index: 1; }
-
-/* --- Botões: lâminas pequenas, com o brilho andando no hover ----- */
-.ds-btn { position: relative; overflow: hidden; }
-.ds-btn:not(.ds-btn--solid) {
-    background: linear-gradient(160deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.42));
-    -webkit-backdrop-filter: var(--vidro-desfoque-curto); backdrop-filter: var(--vidro-desfoque-curto);
-    border-color: var(--vidro-borda);
-    box-shadow: var(--vidro-fio), var(--vidro-aro), 0 4px 14px rgba(18, 32, 28, 0.12);
-    color: #1a2320;
-}
-.ds-btn:not(.ds-btn--solid):hover {
-    background: linear-gradient(160deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.62));
-    border-color: rgba(255, 255, 255, 0.8);
-    box-shadow: var(--vidro-fio), var(--vidro-aro), 0 8px 24px rgba(18, 32, 28, 0.18);
-    color: var(--ds-blue-dark);
-}
-.ds-btn--solid {
-    background: linear-gradient(160deg, rgba(46, 152, 120, 0.96), rgba(18, 78, 60, 0.98));
-    border-color: rgba(255, 255, 255, 0.24);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.46), inset 0 0 0 1px rgba(255, 255, 255, 0.16),
-                0 6px 20px rgba(18, 60, 48, 0.3);
-}
-.ds-btn--solid:hover {
-    background: linear-gradient(160deg, rgba(56, 172, 137, 0.98), rgba(22, 90, 70, 1));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.56), inset 0 0 0 1px rgba(255, 255, 255, 0.22),
-                0 12px 30px rgba(18, 60, 48, 0.38);
-}
-/* Sem reflexo correndo por dentro. O botão responde como peça física: sobe
-   um fio no hover, afunda ao ser apertado. */
-.ds-btn { transition: background var(--arq-fast) ease, border-color var(--arq-fast) ease,
-                      box-shadow var(--arq-mid) var(--arq-ease), transform var(--arq-fast) var(--arq-ease-out); }
 .ds-btn:hover { transform: translateY(-1px); }
 .ds-btn:active { transform: translateY(1px); transition-duration: 60ms; }
 .ds-btn > * { position: relative; z-index: 1; }
 
-/* Chips: lâminas mínimas */
-.chip {
-    background: linear-gradient(160deg, rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0.4));
-    -webkit-backdrop-filter: var(--vidro-desfoque-curto); backdrop-filter: var(--vidro-desfoque-curto);
-    border-color: var(--vidro-borda);
-    box-shadow: var(--vidro-fio), var(--vidro-aro);
-    color: #1f2a26;
-}
-.chip:hover { background: rgba(255, 255, 255, 0.82); border-color: rgba(255, 255, 255, 0.85); }
-.chip.is-active {
-    background: linear-gradient(160deg, rgba(32, 42, 39, 0.9), rgba(16, 22, 20, 0.94));
-    border-color: rgba(255, 255, 255, 0.22); color: #fff;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.26);
-}
-.ds-badge--info {
-    background: rgba(255, 255, 255, 0.55); border-color: rgba(255, 255, 255, 0.7);
-    box-shadow: var(--vidro-fio); color: var(--ds-blue-dark);
-}
-
-/* --- Superfícies de conteúdo ------------------------------------ */
 .kpi-row {
-    background: rgba(255, 255, 255, 0.46);
-    border-color: var(--vidro-borda);
-    -webkit-backdrop-filter: var(--vidro-desfoque); backdrop-filter: var(--vidro-desfoque);
-    box-shadow: var(--vidro-lamina);
-    gap: 0;
+    position: relative; gap: 0; background: var(--ds-surface);
+    border-color: var(--ds-line); box-shadow: var(--ds-shadow-soft);
 }
-.kpi { background: none; border-left: 1px solid rgba(255, 255, 255, 0.5); }
+.kpi { background: none; }
 .kpi:first-child { border-left: 0; }
-.kpi:hover { background: rgba(255, 255, 255, 0.42); }
+.kpi:hover { background: var(--ds-panel); }
+.projeto-card, .obra-card {
+    position: relative; overflow: hidden; background: var(--ds-surface);
+    border-color: var(--ds-line);
+}
+.chip {
+    background: var(--ds-surface); border-color: var(--ds-line-dash);
+    color: var(--ds-text-700); box-shadow: none;
+}
+.chip:hover { background: var(--ds-panel); border-color: var(--ds-blue-light); }
+.chip.is-active { background: var(--ds-ink); border-color: var(--ds-ink); color: #fff; }
+.ds-badge--info { background: var(--ds-blue-50); border-color: var(--ds-blue-100); color: var(--ds-blue-dark); }
 
-.projeto-card, .obra-card, .kanban-card {
-    background: linear-gradient(160deg, rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0.46));
-    -webkit-backdrop-filter: var(--vidro-desfoque-curto); backdrop-filter: var(--vidro-desfoque-curto);
-    border-color: var(--vidro-borda);
-    box-shadow: var(--vidro-lamina);
-}
-.projeto-card:hover, .obra-card:hover, .kanban-card:hover {
-    border-color: rgba(255, 255, 255, 0.85);
-    box-shadow: var(--vidro-fio), var(--vidro-aro), var(--vidro-sombra-alta);
-    transform: translateY(-2px);
-}
-.kanban-col { background: rgba(255, 255, 255, 0.24); box-shadow: var(--vidro-aro); }
-
-.dash-onb {
-    background: linear-gradient(160deg, rgba(52, 168, 133, 0.28), rgba(255, 255, 255, 0.5));
-    border-color: rgba(255, 255, 255, 0.7);
-    -webkit-backdrop-filter: var(--vidro-desfoque-curto); backdrop-filter: var(--vidro-desfoque-curto);
-    box-shadow: var(--vidro-lamina);
-}
-.dash-onb:hover { background: linear-gradient(160deg, rgba(52, 168, 133, 0.36), rgba(255, 255, 255, 0.58)); }
-
-.alerta-card {
-    background: linear-gradient(160deg, rgba(214, 158, 62, 0.24), rgba(255, 255, 255, 0.5));
-    border-color: rgba(255, 255, 255, 0.65); box-shadow: var(--vidro-lamina);
-}
-.ia-bloco {
-    background: linear-gradient(160deg, rgba(122, 82, 200, 0.2), rgba(255, 255, 255, 0.52));
-    border-color: rgba(255, 255, 255, 0.65); box-shadow: var(--vidro-lamina);
-}
-.timer-card.is-rodando {
-    background: linear-gradient(160deg, rgba(52, 168, 133, 0.26), rgba(255, 255, 255, 0.5));
-    border-color: rgba(255, 255, 255, 0.7); box-shadow: var(--vidro-lamina);
-}
-.dash-hero, .page-head--foto { box-shadow: var(--vidro-fio), var(--vidro-aro), var(--vidro-sombra); }
-
-/* Campos: lâmina fina, acende ao focar */
 .form-card input, .form-card select, .form-card textarea,
 .form-block input, .form-block select, .form-block textarea,
-.inline-add, .timer-campo input, .timer-campo select,
+.inline-add, .inline-add input, .inline-add select,
 .briefing-complemento textarea, .contrato-corpo, .diag-opcao, .briefing-opcao {
-    background: rgba(255, 255, 255, 0.46);
-    /* O aro do campo é mais escuro que o das outras lâminas de propósito:
-       num formulário a borda não é enfeite, é a indicação de onde escrever. */
-    border-color: rgba(96, 116, 110, 0.42);
-    box-shadow: var(--vidro-fio), inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+    background: var(--ds-surface); border-color: var(--ds-line-dash); box-shadow: none;
 }
-.inline-add input, .inline-add select { background: rgba(255, 255, 255, 0.7); }
-.form-card input:focus, .form-card select:focus, .form-card textarea:focus,
-.form-block input:focus, .form-block select:focus, .form-block textarea:focus,
-.timer-campo input:focus, .timer-campo select:focus,
-.briefing-complemento textarea:focus, .contrato-corpo:focus {
-    background: rgba(255, 255, 255, 0.94);
-    border-color: var(--ds-blue-light);
-}
-.data-table tbody tr:hover { background: rgba(255, 255, 255, 0.42); }
 
-/* --- Login: a lâmina mais fina, porque o pátio atrás é escuro ---- */
-.tela-login .auth-shell::before {
-    background: linear-gradient(to top, rgba(8, 14, 13, 0.82) 6%, rgba(8, 14, 13, 0.4) 46%, rgba(8, 14, 13, 0.28));
-}
-.auth-card {
-    background: linear-gradient(152deg,
-        rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.16) 46%, rgba(255, 255, 255, 0.26));
-    -webkit-backdrop-filter: blur(36px) saturate(190%); backdrop-filter: blur(36px) saturate(190%);
-    border: 1px solid rgba(255, 255, 255, 0.42);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.16),
-                inset 0 -1px 0 rgba(255, 255, 255, 0.24), 0 28px 70px rgba(0, 0, 0, 0.46);
-    color: #fff;
-}
-/* Sobre lâmina escura o texto inverte: branco com sombra, que é o que
-   mantém a leitura sem fechar o vidro. */
+/* Texto e controles sobre o vidro escuro do acesso público. */
+.auth-card { overflow: hidden; color: #fff; }
 .auth-card .auth-header h2, .auth-card .aceite-doc-nome { color: #fff; }
 .auth-card .auth-header p, .auth-card .auth-visitor p,
 .auth-card .auth-legal, .auth-card .auth-disclaimer,
@@ -1333,157 +1147,26 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .auth-card .auth-legal a { color: #7fe0bd; }
 .auth-card .auth-error { color: #ffb4a8; }
 .auth-card .auth-visitor { border-top-color: rgba(255, 255, 255, 0.28); }
-.auth-card .auth-field input {
-    background: rgba(255, 255, 255, 0.16);
-    border-color: rgba(255, 255, 255, 0.34);
-    color: #fff;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
+.auth-card .auth-field input { color: #fff; }
 .auth-card .auth-field input::placeholder { color: rgba(255, 255, 255, 0.6); }
-.auth-card .auth-field input:focus {
-    background: rgba(255, 255, 255, 0.26); border-color: #7fe0bd;
-    box-shadow: 0 0 0 3px rgba(127, 224, 189, 0.28);
-}
-.auth-card .ds-btn:not(.ds-btn--solid) {
-    background: linear-gradient(160deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.1));
-    border-color: rgba(255, 255, 255, 0.4); color: #fff;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
-}
-.auth-card .ds-btn:not(.ds-btn--solid):hover {
-    background: linear-gradient(160deg, rgba(255, 255, 255, 0.36), rgba(255, 255, 255, 0.18));
-    border-color: rgba(255, 255, 255, 0.6); color: #fff;
-}
+.auth-card .ds-btn:not(.ds-btn--solid),
+.auth-card .ds-btn:not(.ds-btn--solid):hover { color: #fff; }
 
-/* =================================================================
-   QUANDO O VIDRO NÃO PODE EXISTIR
-   ================================================================= */
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .app-shell::before { display: none; }
-    .app-shell { background: var(--ds-bg); }
-    .app-main { background: var(--ds-bg); box-shadow: none; }
-    .app-side, .kpi-row, .kpi, .ds-btn:not(.ds-btn--solid), .chip,
-    .projeto-card, .obra-card, .kanban-card { background: var(--ds-surface); }
-    .auth-card { background: rgba(20, 24, 26, 0.88); }
-}
+.dash-section--comercial { --sec: #1d4d78; }
+.dash-section--producao { --sec: #12513e; }
+.dash-section--gestao { --sec: #6d460a; }
 
 @media (prefers-reduced-transparency: reduce) {
     .app-shell::before { display: none; }
     .app-shell { background: var(--ds-bg); }
-    .app-main, .app-side, .kpi, .ds-btn:not(.ds-btn--solid), .chip,
-    .projeto-card, .obra-card, .kanban-card, .inline-add input, .inline-add select {
-        background: var(--ds-surface);
-        -webkit-backdrop-filter: none; backdrop-filter: none;
-    }
-    .app-main { box-shadow: none; }
-    .kpi-row, .dash-onb { background: var(--ds-surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
-    .kpi-row::after, .dash-onb::after, .projeto-card::after, .obra-card::after,
-    .auth-card::after, .alerta-card::after, .ia-bloco::after, .ds-btn::after,
-    .lamina-brilho::before { display: none; }
-    .form-card input, .form-card select, .form-card textarea,
-    .form-block input, .form-block select, .form-block textarea,
-    .inline-add, .timer-campo input, .timer-campo select,
-    .briefing-complemento textarea, .contrato-corpo, .diag-opcao { background: var(--ds-panel); }
-    .auth-card { background: rgba(16, 22, 20, 0.94); -webkit-backdrop-filter: none; backdrop-filter: none; }
+    .app-side, .auth-card { -webkit-backdrop-filter: none; backdrop-filter: none; }
+    .auth-card { background: rgba(16, 22, 20, 0.94); }
 }
-
-/* Texto secundário escurece sobre vidro. No papel opaco #5b6a65 passava com
-   folga; sobre a lâmina aberta o fundo sobe e desce conforme o pátio, então o
-   apoio precisa de margem. */
-.app-main {
-    --ds-text-500: #47534e;
-    --ds-text-400: #47534e;
-}
-
-/* As cores de área escurecem sobre vidro: o mesmo azul que passava em AA
-   no papel opaco não passa quando o pátio aparece por baixo. */
-.dash-section--comercial { --sec: #1d4d78; }
-.dash-section--producao { --sec: #12513e; }
-.dash-section--gestao { --sec: #6d460a; }
-.kpi--blue { --sec: #1d4d78; }
-.kpi--green { --sec: #12513e; }
-.kpi--violet { --sec: #4f3878; }
-.kpi--amber { --sec: #6d460a; }
-.kpi--alert { --sec: #8e2a1c; }
-
-/* No estreito a lateral rola por cima do conteúdo. */
 @media (max-width: 62rem) {
-    .app-side { background: rgba(255, 255, 255, 0.94); }
     .app-main { border-left: 0; box-shadow: none; }
 }
 
-/* =================================================================
-   A SUPERFÍCIE DE TRABALHO É OPACA
-   O vidro fica onde é acabamento — login e barra lateral. Onde se lê e
-   se digita, o fundo tem de ficar parado: fundo que muda conforme o que
-   passa por baixo é bonito por dez segundos e cansa no resto do dia.
-   ================================================================= */
-.app-main { --ds-text-500: #5b6a65; --ds-text-400: #78857f; }
-
-.kpi-row, .dash-onb, .projeto-card, .obra-card, .kanban-card,
-.alerta-card, .ia-bloco, .timer-card.is-rodando, .kanban-col {
-    -webkit-backdrop-filter: none; backdrop-filter: none;
-}
-.kpi-row::after, .dash-onb::after, .projeto-card::after, .obra-card::after,
-.alerta-card::after, .ia-bloco::after, .lamina-brilho::before { display: none; }
-
-.kpi-row { background: var(--ds-surface); border-color: var(--ds-line); box-shadow: var(--ds-shadow-soft); }
-.kpi:hover { background: var(--ds-panel); }
-.projeto-card, .obra-card, .kanban-card {
-    background: var(--ds-surface); border-color: var(--ds-line); box-shadow: var(--ds-shadow-soft);
-}
-.projeto-card:hover, .obra-card:hover, .kanban-card:hover {
-    border-color: var(--ds-blue-light); box-shadow: 0 2px 4px rgba(20, 24, 26, 0.06), 0 14px 32px rgba(20, 24, 26, 0.1);
-}
-.kanban-col { background: var(--ds-panel); box-shadow: none; }
-.dash-onb { background: var(--ds-blue-50); border-color: var(--ds-blue-100); box-shadow: none; }
-.dash-onb:hover { background: var(--ds-blue-100); }
-.alerta-card { background: #f6efe0; border-color: #e6d3ab; box-shadow: none; }
-.ia-bloco { background: #efecf6; border-color: #d3cae6; box-shadow: none; }
-.timer-card.is-rodando { background: var(--ds-blue-50); border-color: var(--ds-blue-100); }
-
-.ds-btn:not(.ds-btn--solid) {
-    background: var(--ds-surface); border-color: var(--ds-line-dash);
-    -webkit-backdrop-filter: none; backdrop-filter: none;
-    box-shadow: 0 1px 2px rgba(18, 32, 28, 0.06); color: var(--ds-text-900);
-}
-.ds-btn:not(.ds-btn--solid):hover {
-    background: var(--ds-panel); border-color: var(--ds-blue-light);
-    box-shadow: 0 3px 10px rgba(18, 32, 28, 0.12); color: var(--ds-blue-dark);
-}
-.chip {
-    background: var(--ds-surface); border-color: var(--ds-line-dash);
-    -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; color: var(--ds-text-700);
-}
-.chip:hover { background: var(--ds-panel); border-color: var(--ds-blue-light); }
-.chip.is-active { background: var(--ds-ink); border-color: var(--ds-ink); color: #fff; box-shadow: none; }
-.ds-badge--info { background: var(--ds-blue-50); border-color: var(--ds-blue-100); box-shadow: none; }
-
-.form-card input, .form-card select, .form-card textarea,
-.form-block input, .form-block select, .form-block textarea,
-.inline-add, .inline-add input, .inline-add select,
-.timer-campo input, .timer-campo select,
-.briefing-complemento textarea, .contrato-corpo, .diag-opcao, .briefing-opcao {
-    background: var(--ds-surface); border-color: var(--ds-line-dash); box-shadow: none;
-}
-/* A barra lateral é a única lâmina que continua: ali a transparência é
-   moldura, não superfície de leitura demorada. */
-.app-side .ds-btn:not(.ds-btn--solid) { background: rgba(255, 255, 255, 0.7); }
-
-/* No login o brilho vira reflexo de canto: a faixa diagonal cruzava o campo
-   de digitação e sujava a leitura. */
-.auth-card::after {
-    background: radial-gradient(30rem 22rem at 2% -8%, rgba(255, 255, 255, 0.4), transparent 60%);
-}
-
-/* O pátio ocupa a tela toda de novo — inclusive nas margens do conteúdo, que
-   é onde ele aparece como foto e não como fundo desbotado. A folha de trabalho
-   é a única superfície opaca; o resto do quadro é vidro e imagem. */
-.app-shell::before { inset: 0; width: auto; }
-.app-frame { background: transparent; }
-
-/* =================================================================
-   BARRAS DE ROLAGEM — um fio, não um trilho
-   ================================================================= */
+/* BARRAS DE ROLAGEM — um fio, não um trilho */
 * { scrollbar-width: thin; scrollbar-color: rgba(60, 78, 72, 0.32) transparent; }
 ::-webkit-scrollbar { width: 9px; height: 9px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -1496,79 +1179,6 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 ::-webkit-scrollbar-thumb:hover { background: rgba(60, 78, 72, 0.5); background-clip: content-box; }
 ::-webkit-scrollbar-corner { background: transparent; }
 
-/* =================================================================
-   ROTEIRO — a espinha do projeto
-   Seis passos numa linha, dentro da ficha do projeto. Não é decoração
-   de progresso: cada passo é o link para a tela daquela etapa, já com o
-   projeto no contexto, e diz em uma linha o que existe ali hoje.
-   ================================================================= */
-.roteiro { margin: 0 0 2.25rem; }
-.roteiro-topo {
-    display: flex; align-items: baseline; justify-content: space-between;
-    gap: 1.5rem; margin-bottom: 0.9rem;
-}
-.roteiro-topo h2 { margin: 0 0 0.15rem; font-size: 1.05rem; }
-.roteiro-sub { margin: 0; color: var(--ds-text-500); font-size: 0.88rem; }
-.roteiro-sub strong { color: var(--ds-text-900); font-weight: 600; }
-.roteiro-percent {
-    font-family: var(--arq-font-mono); font-size: 1.35rem; font-weight: 600;
-    color: var(--ds-blue-dark); flex-shrink: 0;
-}
-
-.roteiro-trilha {
-    list-style: none; margin: 0; padding: 0;
-    display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
-    border: 1px solid var(--ds-line); border-radius: 0.75rem; overflow: hidden;
-    background: var(--ds-surface);
-}
-.roteiro-passo + .roteiro-passo { border-left: 1px solid var(--ds-line); }
-.roteiro-passo a {
-    display: flex; flex-direction: column; gap: 0.35rem;
-    padding: 0.85rem 0.9rem 0.95rem; height: 100%; box-sizing: border-box;
-    text-decoration: none; color: inherit;
-    transition: background var(--arq-fast) ease;
-}
-.roteiro-passo a:hover { background: var(--ds-panel); }
-.roteiro-marca {
-    width: 1.5rem; height: 1.5rem; border-radius: 50%;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 0.76rem; font-weight: 600;
-    background: var(--ds-panel); color: var(--ds-text-500);
-    border: 1px solid var(--ds-line-dash);
-}
-.roteiro-nome { font-size: 0.86rem; font-weight: 500; line-height: 1.3; }
-.roteiro-estado {
-    font-family: var(--arq-font-mono); font-size: 0.7rem;
-    color: var(--ds-text-500); line-height: 1.35;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-
-/* Feito: a marca vira o verde do sistema. */
-.roteiro-passo.is-feito .roteiro-marca {
-    background: var(--ds-blue-50); border-color: var(--ds-blue-100); color: var(--ds-blue-dark);
-}
-/* Atual: o único passo com peso. É onde a pessoa deve clicar agora. */
-.roteiro-passo.is-atual { background: var(--ds-blue-50); }
-.roteiro-passo.is-atual a:hover { background: var(--ds-blue-100); }
-.roteiro-passo.is-atual .roteiro-marca {
-    background: var(--ds-blue); border-color: var(--ds-blue); color: #fff;
-}
-.roteiro-passo.is-atual .roteiro-nome { font-weight: 600; color: var(--ds-blue-dark); }
-.roteiro-passo.is-atual .roteiro-estado { color: var(--ds-blue-dark); }
-
-@media (max-width: 68rem) {
-    .roteiro-trilha { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .roteiro-passo:nth-child(3n + 1) { border-left: 0; }
-    .roteiro-passo:nth-child(n + 4) { border-top: 1px solid var(--ds-line); }
-}
-@media (max-width: 40rem) {
-    .roteiro-trilha { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .roteiro-passo:nth-child(n) { border-left: 1px solid var(--ds-line); border-top: 1px solid var(--ds-line); }
-    .roteiro-passo:nth-child(odd) { border-left: 0; }
-    .roteiro-passo:nth-child(-n + 2) { border-top: 0; }
-    .roteiro-topo { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
-}
-
 /* A faixa de contexto: de onde esta tela foi aberta. */
 .contexto-projeto {
     display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 0.75rem;
@@ -1579,19 +1189,12 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .contexto-projeto a { font-weight: 600; color: var(--ds-blue-dark); }
 .contexto-cliente { color: var(--ds-text-500); font-size: 0.85rem; }
 
-/* =================================================================
-   FRENTES — o painel mostra trabalho, não menu
-   ================================================================= */
+/* FRENTES — o painel mostra trabalho, não menu */
 .dash-frentes { margin-top: 2.5rem; }
-.dash-frentes-topo {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 1.5rem; margin-bottom: 1rem;
-}
-.dash-frentes-topo .dash-section-head { margin: 0; }
 
 .frente-lista { list-style: none; margin: 0; padding: 0; }
 .frente {
-    display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+    display: grid;
     align-items: center; gap: 1.5rem;
     padding: 0.95rem 0; border-top: 1px solid var(--ds-line);
 }
@@ -1618,21 +1221,16 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 @media (max-width: 52rem) {
     .frente { grid-template-columns: 1fr; gap: 0.7rem; }
     .frente-cta { justify-self: start; }
-    .dash-frentes-topo { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+
 }
 
-/* =================================================================
-   AJUSTE DE LEITURA, VOLTA DO VIDRO NA LATERAL E LOGIN MAIS CALMO
-   ================================================================= */
+/* AJUSTE DE LEITURA, VOLTA DO VIDRO NA LATERAL E LOGIN MAIS CALMO */
 
-/* --- Largura de leitura ------------------------------------------
-   Texto corrido em 88rem obriga a cabeça a varrer a tela de ponta a
-   ponta a cada linha. A folha estreita; tabelas e grades continuam
-   podendo usar a largura toda quando precisam. */
+/* --- Largura de leitura ------------------------------------------ */
 .app-main { max-width: 74rem; padding: 2.4rem 3rem 5rem; }
 .page--leitura { max-width: 58rem; }
 .page--narrow { max-width: 38rem; }
-.page-sub, .secao-sub, .roteiro-sub { max-width: 46rem; }
+.page-sub, .secao-sub { max-width: 46rem; }
 
 /* --- O caminho de volta, sempre no mesmo canto -------------------- */
 .voltar {
@@ -1651,44 +1249,18 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 }
 .voltar span { font-size: 1rem; line-height: 1; }
 
-/* --- A lateral é vidro de novo -----------------------------------
-   Com a lâmina aberta em 0.38–0.5 o pátio atravessa de verdade. O
-   texto não fica solto sobre isso: cada item ganha uma placa própria,
-   quase opaca, e o vidro aparece nos vãos entre as placas. É assim que
-   se lê sobre vidro sem fechar o vidro. */
+/* --- A lateral é vidro de novo ----------------------------------- */
 .app-side .nav-link {
-    background: rgba(255, 255, 255, 0.82);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    color: #101a17; font-weight: 500;
     margin-bottom: 0.14rem;
 }
-.app-side .nav-link:hover {
-    background: #fff; border-color: var(--ds-blue-100); color: var(--ds-blue-dark);
-}
-.app-side .nav-link.is-active {
-    background: #fff; border-color: var(--ds-blue-light);
-    color: var(--ds-blue-dark); font-weight: 600;
-    box-shadow: 0 2px 8px rgba(18, 32, 28, 0.12);
-}
-.app-side .nav-link svg { color: #55625d; }
-.app-side .nav-link.is-active svg { color: var(--ds-blue); }
 
-/* Os rótulos de grupo também precisam de chão: medidos sobre o vidro puro
-   davam 2,8–3,3:1, e sombra de texto não conta para contraste. Ganham uma
-   placa que veste só a palavra — o vidro continua aparecendo em volta, e as
-   cores por área sobrevivem em vez de virarem tudo quase-preto. */
+/* Os rótulos de grupo também precisam de chão: medidos sobre o vidro puro */
 .nav-label {
-    width: fit-content;
-    padding: 0.26rem 0.6rem;
     border-radius: 0.4rem;
-    /* 0.9 e não 0.8: o primeiro rótulo cai na sombra verde do botão de
-       destaque, e a 0.8 o vermelho de "Hoje" chegava a 2,7:1. */
-    background: rgba(255, 255, 255, 0.9);
     font-weight: 700;
 }
 .app-side-head, .app-side-foot { position: relative; }
 .app-side-foot {
-    background: rgba(255, 255, 255, 0.72);
     border-top-color: rgba(255, 255, 255, 0.7);
 }
 .app-brand-word, .app-empresa-info strong {
@@ -1696,64 +1268,33 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 }
 .app-brand-logo { width: 2rem; height: 2rem; object-fit: contain; flex-shrink: 0; }
 
-/* --- Foco discreto -----------------------------------------------
-   O halo branco largo no botão sólido parecia defeito de renderização.
-   Vira um traço fino do próprio verde, colado à borda. */
+/* --- Foco discreto ----------------------------------------------- */
 .ds-root :focus-visible, a:focus-visible, button:focus-visible,
 input:focus-visible, select:focus-visible, textarea:focus-visible,
 .ds-btn:focus-visible {
     outline: 2px solid var(--ds-blue-dark); outline-offset: 1px;
 }
-.ds-btn--solid:focus-visible {
-    outline: 2px solid var(--ds-ink); outline-offset: 2px;
+.ds-btn--solid:focus-visible { outline-offset: 2px;
 }
-.auth-card .ds-btn--solid:focus-visible {
-    outline: 2px solid rgba(255, 255, 255, 0.9); outline-offset: 2px;
+.auth-card .ds-btn--solid:focus-visible { outline-offset: 2px;
 }
 .form-card input:focus, .form-card select:focus, .form-card textarea:focus,
 .form-block input:focus, .form-block select:focus, .form-block textarea:focus {
     box-shadow: none; border-color: var(--ds-blue-light);
     outline: 2px solid var(--ds-blue-light); outline-offset: -2px;
 }
-
-/* =================================================================
-   LOGIN
-   ================================================================= */
-
-/* O texto da esquerda estava sobre concreto claro. Um véu escuro só
-   atrás dele — não na foto inteira — devolve a leitura sem apagar a
-   imagem, que é o motivo de ela estar ali. */
-.tela-login .auth-shell::before {
-    background:
-        linear-gradient(100deg, rgba(6, 11, 10, 0.86) 0%, rgba(6, 11, 10, 0.66) 30%,
-            rgba(6, 11, 10, 0.24) 56%, rgba(6, 11, 10, 0.32) 100%),
-        linear-gradient(to top, rgba(6, 11, 10, 0.5), transparent 42%);
-}
-.auth-hero h1 { text-shadow: 0 2px 18px rgba(0, 0, 0, 0.7), 0 1px 3px rgba(0, 0, 0, 0.5); }
-.auth-hero .ds-muted { color: rgba(255, 255, 255, 0.78); }
 .auth-hero .ds-kicker {
     color: #7fe0bd; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.75);
 }
 .auth-brand-word { text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7); }
 
-/* O cartão: mais vidro, menos leite. Desfoque curto para a foto ainda
-   se reconhecer atrás, e saturação alta para ele PEGAR a cor do fundo
-   em vez de impor um branco por cima. */
-/* O véu é ESCURO, não branco. Vidro branco sobre concreto claro dá cinza
-   médio, e cinza médio não sustenta texto branco: a medição na captura dava
-   2,4:1. Escuro e translúcido mantém a foto atravessando — dá para reconhecer
-   o concreto atrás — e devolve o contraste sem fechar o vidro. */
+/* O cartão: mais vidro, menos leite. Desfoque curto para a foto ainda */
+/* O véu é ESCURO, não branco. Vidro branco sobre concreto claro dá cinza */
 .auth-card {
-    background: linear-gradient(150deg,
-        rgba(10, 17, 16, 0.38), rgba(10, 17, 16, 0.5) 52%, rgba(10, 17, 16, 0.42));
     -webkit-backdrop-filter: blur(12px) saturate(160%);
     backdrop-filter: blur(12px) saturate(160%);
-    border: 1px solid rgba(255, 255, 255, 0.26);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28),
-                0 20px 50px rgba(0, 0, 0, 0.42);
 }
-/* Sem faixa e sem brilho de canto: o cartão reflete o que está atrás,
-   e mais nada. */
+/* Sem faixa e sem brilho de canto: o cartão reflete o que está atrás, */
 .auth-card::after { display: none; }
 .auth-card .auth-field input {
     background: rgba(255, 255, 255, 0.12);
@@ -1778,12 +1319,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
     background: linear-gradient(160deg, rgba(46, 166, 130, 0.96), rgba(20, 88, 68, 0.96));
 }
 
-/* =================================================================
-   FORMULÁRIOS QUE NÃO ASSUSTAM
-   Um formulário longo não incomoda pelo número de campos: incomoda por
-   mostrar todos de uma vez. Aqui: passos numerados, o segundo só abre
-   quando o primeiro está resolvido, e o que é opcional fica fechado.
-   ================================================================= */
+/* FORMULÁRIOS QUE NÃO ASSUSTAM */
 .form-passo { border: 0; padding: 0; margin: 0 0 2rem; }
 .form-passo[hidden] { display: none; }
 .form-passo-titulo {
@@ -1802,8 +1338,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 .form-dupla > p { margin: 0 0 1rem; }
 @media (max-width: 40rem) { .form-dupla { grid-template-columns: 1fr; } }
 
-/* Uma escolha que muda o rumo do trabalho merece linha própria e
-   explicação — não é mais uma caixinha na lista. */
+/* Uma escolha que muda o rumo do trabalho merece linha própria e */
 .form-marcar {
     display: flex; align-items: flex-start; gap: 0.7rem;
     padding: 0.85rem 1rem; margin: 0 0 1.25rem;
@@ -1849,9 +1384,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 .cliente-ficha-dados dd { margin: 0; font-size: 0.92rem; }
 .cliente-ficha-editar { font-size: 0.82rem; color: var(--ds-blue-dark); }
 
-/* =================================================================
-   ELABORAÇÃO — disciplinas e etapas
-   ================================================================= */
+/* ELABORAÇÃO — disciplinas e etapas */
 .secao { display: flex; flex-direction: column; gap: 0.35rem; }
 .secao-titulo { margin: 0; font-size: 1.35rem; }
 .secao-sub { margin: 0 0 1.25rem; color: var(--ds-text-500); font-size: 0.9rem; }
@@ -1862,33 +1395,20 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
     font-weight: 600;
 }
 .disciplinas { margin-bottom: 2.25rem; }
-.disciplina-lista { list-style: none; margin: 0 0 1rem; padding: 0; }
+
 .disciplina {
     display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 8rem auto;
     align-items: center; gap: 1rem;
     padding: 0.8rem 0; border-top: 1px solid var(--ds-line);
 }
 .disciplina:last-child { border-bottom: 1px solid var(--ds-line); }
-.disciplina-id { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
-.disciplina-id strong { font-weight: 500; }
-.disciplina-desc { font-size: 0.8rem; color: var(--ds-text-500); }
-.disciplina-quem { font-size: 0.84rem; color: var(--ds-text-500); }
-.disciplina-status {
-    font-family: var(--arq-font-mono); font-size: 0.7rem;
-    text-transform: uppercase; letter-spacing: 0.06em; color: var(--ds-text-500);
-}
-.disciplina--andamento .disciplina-status { color: var(--ds-blue-dark); }
-.disciplina--concluida .disciplina-status { color: var(--ds-blue); }
-.disciplina--concluida .disciplina-id strong { color: var(--ds-text-500); }
-.disciplina-acoes { display: flex; align-items: center; gap: 0.85rem; justify-self: end; }
+
 @media (max-width: 52rem) {
     .disciplina { grid-template-columns: 1fr; gap: 0.4rem; }
-    .disciplina-acoes { justify-self: start; }
+
 }
 
-/* =================================================================
-   IDENTIDADE DO ESCRITÓRIO
-   ================================================================= */
+/* IDENTIDADE DO ESCRITÓRIO */
 .identidade-campo {
     display: grid; grid-template-columns: 12rem minmax(0, 1fr);
     gap: 1.5rem; align-items: start;
@@ -1911,40 +1431,24 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
     .identidade-campo { grid-template-columns: 1fr; }
 }
 
-/* =================================================================
-   O PÁTIO ATRÁS DA FOLHA
-   A foto volta a aparecer nas margens do conteúdo, mas em segundo
-   plano de verdade: escurecida e fora de foco. Nítida, ela disputa a
-   atenção com o trabalho — e quem perde a disputa é o trabalho.
-   ================================================================= */
+/* O PÁTIO ATRÁS DA FOLHA */
 .app-shell::before { filter: blur(2px) saturate(0.92); transform: scale(1.03); }
 .app-shell::after {
     content: ""; display: block; position: fixed; inset: 0; z-index: -1;
     pointer-events: none;
-    /* Escurece o suficiente para a folha branca virar figura, e de leve
-       o bastante para a foto continuar sendo uma foto. */
+    /* Escurece o suficiente para a folha branca virar figura, e de leve */
     background: linear-gradient(165deg, rgba(16, 26, 23, 0.3), rgba(16, 26, 23, 0.46));
 }
 
-/* --- Lateral: placa sem contorno ---------------------------------
-   Contorno em todo item transformava o menu numa pilha de botões. A
-   placa clara já basta para o texto assentar; a borda fica só no item
-   ativo, que é o único que precisa se destacar dos vizinhos. */
+/* --- Lateral: placa sem contorno --------------------------------- */
 .app-side .nav-link {
-    background: rgba(255, 255, 255, 0.74);
     border-color: transparent;
-    box-shadow: none;
 }
-.app-side .nav-link:hover { background: rgba(255, 255, 255, 0.95); border-color: transparent; }
-.app-side .nav-link.is-active {
-    background: #fff; border-color: var(--ds-blue-light);
-    box-shadow: 0 2px 10px rgba(18, 32, 28, 0.16);
+.app-side .nav-link:hover { border-color: transparent; }
+.app-side .nav-link.is-active { border-color: var(--ds-blue-light);
 }
 .app-side { border-right-color: rgba(255, 255, 255, 0.4); }
-.nav-destaque { margin-bottom: 0.35rem; }
-
-/* A caixa de escolha é um bloco de leitura, não um rótulo de campo: precisa
-   escapar do estilo de label (mono, caixa alta) que vale dentro do formulário. */
+/* A caixa de escolha é um bloco de leitura, não um rótulo de campo: precisa */
 .form-card label.form-marcar, label.form-marcar {
     font-family: var(--ds-font-sans); font-size: 0.92rem; font-weight: 400;
     text-transform: none; letter-spacing: normal; color: var(--ds-text-900);
@@ -1968,24 +1472,21 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
     text-transform: none; letter-spacing: normal;
 }
 
-/* =================================================================
-   SEM CONTORNO BRANCO
-   O aro claro veio do vidro e ficou onde não devia: em cartão e botão
-   sobre folha opaca ele não é reflexo, é só um traço branco que suja a
-   borda. Fica um fio cinza discreto, e o brilho só onde há vidro real —
-   login e barra lateral.
-   ================================================================= */
-.kpi-row, .projeto-card, .obra-card, .kanban-card, .dash-onb,
-.alerta-card, .ia-bloco, .timer-card, .modulo-card, .ds-card {
+/* SEM CONTORNO BRANCO */
+.kpi-row,
+.projeto-card,
+.obra-card,
+.alerta-card,
+.ds-card{
     box-shadow: none;
     border-color: var(--ds-line);
 }
 .kpi-row { border: 1px solid var(--ds-line); }
-.projeto-card, .obra-card, .kanban-card {
+.projeto-card, .obra-card {
     border: 1px solid var(--ds-line);
     box-shadow: none;
 }
-.projeto-card:hover, .obra-card:hover, .kanban-card:hover {
+.projeto-card:hover, .obra-card:hover {
     border-color: var(--ds-line-dash);
     box-shadow: 0 2px 10px rgba(20, 24, 26, 0.07);
     transform: none;
@@ -2004,19 +1505,25 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 }
 .ds-btn--solid:hover { background: var(--ds-blue-dark); border-color: var(--ds-blue-dark); }
 .chip { border: 1px solid var(--ds-line-dash); box-shadow: none; }
-.form-card input, .form-card select, .form-card textarea,
-.form-block input, .form-block select, .form-block textarea,
-.inline-add, .inline-add input, .inline-add select,
-.timer-campo input, .timer-campo select,
-.briefing-complemento textarea, .contrato-corpo, .diag-opcao, .briefing-opcao {
+.form-card input,
+.form-card select,
+.form-card textarea,
+.form-block input,
+.form-block select,
+.form-block textarea,
+.inline-add,
+.inline-add input,
+.inline-add select,
+.briefing-complemento textarea,
+.contrato-corpo,
+.diag-opcao,
+.briefing-opcao{
     box-shadow: none; border: 1px solid var(--ds-line-dash);
 }
 .dash-hero, .page-head--foto { box-shadow: none; }
 .app-main { box-shadow: 0 0 0 1px rgba(18, 32, 28, 0.07); }
 
-/* =================================================================
-   FASES
-   ================================================================= */
+/* FASES */
 .fase-lista { list-style: none; margin: 0 0 1.25rem; padding: 0; }
 .fase-linha { border-top: 1px solid var(--ds-line); }
 .fase-linha:last-child { border-bottom: 1px solid var(--ds-line); }
@@ -2043,8 +1550,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 .fase-situacao { display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem; }
 .fase-num-arquivos { font-family: var(--arq-font-mono); font-size: 0.7rem; color: var(--ds-text-500); }
 
-.fase-selo {
-    display: inline-block; padding: 0.18rem 0.5rem; border-radius: 0.35rem;
+.fase-selo { padding: 0.18rem 0.5rem; border-radius: 0.35rem;
     font-family: var(--arq-font-mono); font-size: 0.68rem;
     text-transform: uppercase; letter-spacing: 0.07em;
     background: var(--ds-panel); color: var(--ds-text-500);
@@ -2062,14 +1568,8 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 .fase-linha--ajustes .fase-id strong { font-weight: 600; color: var(--ds-blue-dark); }
 .fase-linha.is-complementar .fase-num { border-style: dashed; }
 
-.complementar-oferta { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.6rem; }
-.complementar-oferta li { display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap; }
-.complementar-oferta span { font-size: 0.84rem; color: var(--ds-text-500); }
-
 /* --- A área de trabalho da fase ---------------------------------- */
-/* Cartão contido, e não faixa larga: com o selo numa ponta e o botão na
-   outra, o olho tinha de atravessar a tela para juntar duas informações
-   que são a mesma frase. */
+/* Cartão contido, e não faixa larga: com o selo numa ponta e o botão na */
 .fase-estado {
     display: flex; flex-direction: column; align-items: flex-start; gap: 0.7rem;
     max-width: 34rem;
@@ -2080,13 +1580,13 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 .fase-estado--aguardando_cliente { background: #faf5ea; border-color: #e6d3ab; }
 .fase-estado--ajustes { background: #fbf0ed; border-color: #e7c2b9; }
 .fase-estado--aprovada { background: var(--ds-blue-50); border-color: var(--ds-blue-100); }
+.fase-estado--rascunho { background: #f4f6f7; border-color: #d9e0e4; }
+.fase-estado--enviado { background: #faf5ea; border-color: #e6d3ab; }
+.fase-estado--ativo { background: var(--ds-blue-50); border-color: var(--ds-blue-100); }
 .fase-prazo, .fase-quem { font-family: var(--arq-font-mono); font-size: 0.74rem; color: var(--ds-text-500); }
 .fase-prazo.is-atrasada { color: var(--ds-danger); font-weight: 600; }
 .fase-aviso { margin: 0; font-size: 0.88rem; line-height: 1.5; color: var(--ds-text-700); }
 
-
-.fase-entrega { margin: 0 0 1rem; padding-left: 1.1rem; }
-.fase-entrega li { margin-bottom: 0.25rem; }
 .fase-atalhos { display: flex; gap: 0.6rem; flex-wrap: wrap; }
 
 .fase-resposta {
@@ -2095,7 +1595,6 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 }
 .fase-resposta .bloco-titulo { margin-top: 0; }
 .fase-resposta-botoes { display: flex; gap: 0.6rem; margin-top: 0.85rem; flex-wrap: wrap; }
-.fase-remover { margin-top: 0.85rem; }
 
 /* --- Arquivos ------------------------------------------------------ */
 .galeria {
@@ -2131,69 +1630,38 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 .arquivo-id a:hover { color: var(--ds-blue-dark); text-decoration: underline; }
 .arquivo-meta { font-size: 0.76rem; color: var(--ds-text-500); }
 .arquivo-acoes { display: flex; align-items: center; gap: 0.85rem; }
+.arquivo-acoes form,
+.arquivo-principal > form { margin: 0; }
+.arquivo-favorito { color: var(--ds-text-400); }
+.arquivo-favorito.is-active { color: #b7791f; }
+.arquivo-favorito.is-active:hover,
+.arquivo-favorito.is-active:focus-visible {
+    color: #8a570c;
+    background: color-mix(in srgb, #e7ad3c 16%, var(--ds-surface));
+}
+.arquivo-principal-lista { margin-bottom: 0; }
+.arquivo-principal .arquivo-meta {
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 
 /* --- Histórico ---------------------------------------------------- */
-.registro-novo { margin-bottom: 1.5rem; }
-.registro-envio { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
-.registro-envio select { flex: 0 1 16rem; }
 
-.linha-tempo { list-style: none; margin: 0; padding: 0; }
 .registro {
     display: grid; grid-template-columns: 1rem minmax(0, 1fr); gap: 0.85rem;
     padding: 0.7rem 0; border-top: 1px solid var(--ds-line);
 }
 .registro:last-child { border-bottom: 1px solid var(--ds-line); }
-.registro-marca {
-    width: 0.55rem; height: 0.55rem; border-radius: 50%; margin-top: 0.4rem;
-    background: var(--ds-line-dash);
-}
-.registro--cliente .registro-marca { background: var(--arq-amber); }
-.registro--comentario .registro-marca { background: var(--ds-blue); }
-.registro-texto { margin: 0 0 0.15rem; font-size: 0.92rem; white-space: pre-line; }
-.registro--sistema .registro-texto { color: var(--ds-text-500); }
-.registro-meta { font-family: var(--arq-font-mono); font-size: 0.68rem; color: var(--ds-text-500); }
 
 @media (max-width: 46rem) {
     .fase-linha-corpo { grid-template-columns: 2rem minmax(0, 1fr); }
     .fase-situacao { grid-column: 2; align-items: flex-start; }
     .arquivo { grid-template-columns: 3rem minmax(0, 1fr); }
     .arquivo-acoes { grid-column: 2; }
-}
-
-/* O próximo passo, em uma linha e clicável. Substitui a trilha completa na
-   ficha do projeto: a lista de fases logo abaixo já mostra o caminho todo, e
-   ter as duas coisas era dizer o mesmo duas vezes. */
-.proximo-passo {
-    display: grid; grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center; gap: 0.2rem 1.5rem;
-    padding: 0.95rem 1.15rem; margin-bottom: 2rem;
-    border: 1px solid var(--ds-blue-100); border-radius: 0.6rem;
-    background: var(--ds-blue-50); text-decoration: none; color: inherit;
-    transition: border-color var(--arq-fast) ease;
-}
-.proximo-passo:hover { border-color: var(--ds-blue-light); }
-.proximo-passo .ds-kicker { grid-column: 1; margin: 0; color: var(--ds-blue-dark); }
-.proximo-passo strong { grid-column: 1; font-size: 1rem; }
-.proximo-passo-desc { grid-column: 1; font-size: 0.86rem; color: var(--ds-text-500); }
-.proximo-passo-cta {
-    grid-column: 2; grid-row: 1 / -1; white-space: nowrap;
-    font-weight: 600; color: var(--ds-blue-dark);
-}
-@media (max-width: 46rem) {
-    .proximo-passo { grid-template-columns: 1fr; }
-    .proximo-passo-cta { grid-column: 1; grid-row: auto; margin-top: 0.4rem; }
+    .arquivo-principal { grid-template-columns: 3rem minmax(0, 1fr) auto; }
 }
 
 /* O programa de necessidades repetido dentro da fase que o consome. */
-.insumos .programa { margin-bottom: 1.25rem; }
-.insumos .programa tfoot th { font-weight: 600; border-top: 2px solid var(--ds-line-dash); }
-.insumo-notas { display: flex; flex-direction: column; gap: 0.7rem; margin: 0 0 1.25rem; }
-.insumo-notas > div { display: flex; flex-direction: column; gap: 0.15rem; }
-.insumo-notas dt {
-    font-family: var(--arq-font-mono); font-size: 0.68rem;
-    text-transform: uppercase; letter-spacing: 0.07em; color: var(--ds-text-500);
-}
-.insumo-notas dd { margin: 0; font-size: 0.9rem; white-space: pre-line; }
+
 .acoes-linha { display: flex; align-items: center; gap: 0.85rem; white-space: nowrap; }
 
 /* Rótulo que existe para o leitor de tela e não para o olho. */
@@ -2221,32 +1689,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
     text-transform: uppercase; color: var(--ds-text-500);
 }
 
-/* Atalhos para o que é do projeto e não é fase. */
-.registro-atalhos {
-    list-style: none; margin: 0; padding: 0;
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 0.5rem 1.5rem;
-}
-.registro-atalhos a {
-    display: flex; align-items: flex-start; gap: 0.7rem;
-    padding: 0.7rem 0.6rem; border-radius: 0.5rem;
-    text-decoration: none; color: inherit;
-    transition: background var(--arq-fast) ease;
-}
-.registro-atalhos a:hover { background: var(--ds-panel); }
-.registro-atalhos svg { width: 1.15rem; height: 1.15rem; flex-shrink: 0; margin-top: 0.15rem; color: var(--ds-text-500); }
-.registro-atalhos a:hover svg { color: var(--ds-blue); }
-.registro-atalhos span { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
-.registro-atalhos strong { font-weight: 500; font-size: 0.92rem; }
-.registro-atalhos small { font-size: 0.79rem; color: var(--ds-text-500); }
-
-/* =================================================================
-   VIDRO SEM MOLDURA
-   O cartão de login e os itens da lateral tinham contorno e placa
-   clara. Contorno recorta a lâmina do fundo — o contrário de vidro.
-   Sai a linha; o que separa a superfície do fundo passa a ser a
-   diferença de luz, e a legibilidade vem de escurecer o que está
-   atrás, não de desenhar uma borda em volta.
-   ================================================================= */
+/* VIDRO SEM MOLDURA */
 
 /* --- Login ------------------------------------------------------- */
 .auth-card {
@@ -2255,8 +1698,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
     background: linear-gradient(150deg,
         rgba(10, 17, 16, 0.44), rgba(10, 17, 16, 0.56) 52%, rgba(10, 17, 16, 0.48));
 }
-/* A foto fecha bem mais do lado do texto: era ali que a leitura
-   dependia de acertar em qual pedaço de concreto a linha caía. */
+/* A foto fecha bem mais do lado do texto: era ali que a leitura */
 .tela-login .auth-shell::before {
     background:
         linear-gradient(100deg, rgba(4, 8, 7, 0.94) 0%, rgba(4, 8, 7, 0.86) 26%,
@@ -2266,15 +1708,9 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 .auth-hero h1 { text-shadow: none; }
 .auth-hero .ds-muted { color: rgba(255, 255, 255, 0.82); }
 
-/* --- Barra lateral: mesmo princípio -------------------------------
-   Fora as placas brancas com contorno. O item se destaca por um véu
-   claro sem borda, e o texto se apoia num vidro mais fechado e mais
-   escuro por baixo — que é o que sustenta a leitura. */
+/* --- Barra lateral: mesmo princípio ------------------------------- */
 .app-side {
-    background: linear-gradient(180deg,
-        rgba(22, 32, 29, 0.5), rgba(22, 32, 29, 0.62) 48%, rgba(22, 32, 29, 0.56));
     border-right: 0;
-    box-shadow: 2px 0 40px rgba(8, 14, 12, 0.3);
 }
 .app-side .nav-link {
     background: transparent; border: 0; box-shadow: none;
@@ -2321,16 +1757,9 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 .app-nav { scrollbar-color: rgba(255, 255, 255, 0.28) transparent; }
 
 @media (max-width: 62rem) {
-    /* No estreito a lateral cobre o conteúdo: ali ela fecha de vez. */
-    .app-side { background: rgba(20, 29, 26, 0.96); }
 }
 
-/* =================================================================
-   FOCO SEM QUADRADO PRETO
-   O anel escuro em volta do botão lia como defeito de renderização.
-   Some o retângulo: o botão em foco escurece e ganha um fio de luz
-   por dentro — muda o suficiente para se ver, sem virar moldura.
-   ================================================================= */
+/* FOCO SEM QUADRADO PRETO */
 .ds-btn--solid:focus-visible {
     outline: none;
     background: var(--ds-blue-dark);
@@ -2358,81 +1787,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 /* Links e campos seguem com traço, que ali não vira moldura de botão. */
 a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
 .app-side a:focus-visible { outline: none; }
-
-/* =================================================================
-   BOTÃO DE AÇÃO — o molde do DS Stolben
-   Pílula com um disco de ícone na ponta. O disco é o que dá caráter
-   sem virar enfeite: ele indica direção (segue, cria, entra) e é a
-   única parte que se move no hover. Discreto porque a cor é chapada,
-   sem brilho nem gradiente — o que chama é a forma, não o efeito.
-   ================================================================= */
-.ds-btn--acao {
-    display: inline-flex; align-items: center; justify-content: space-between;
-    gap: 1.1rem;
-    padding: 0.4rem 0.4rem 0.4rem 1.3rem;
-    border-radius: 999px; border: 0;
-    font-family: var(--ds-font-sans); font-size: 0.95rem; font-weight: 500;
-    line-height: 1.2; text-decoration: none; cursor: pointer;
-    background: var(--ds-blue); color: #fff;
-    transition: background var(--arq-mid) var(--arq-ease);
-}
-.ds-btn--acao:hover { background: var(--ds-blue-dark); color: #fff; }
-.ds-btn--acao .ds-btn-ico {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 1.85rem; height: 1.85rem; flex-shrink: 0;
-    border-radius: 50%; background: rgba(255, 255, 255, 0.18);
-    transition: background var(--arq-mid) var(--arq-ease),
-                transform var(--arq-mid) var(--arq-ease-out);
-}
-.ds-btn--acao .ds-btn-ico svg { width: 0.95rem; height: 0.95rem; }
-.ds-btn--acao:hover .ds-btn-ico { background: rgba(255, 255, 255, 0.3); transform: translateX(2px); }
-.ds-btn--acao:active { transform: translateY(1px); }
-.ds-btn--acao:focus-visible {
-    outline: none; background: var(--ds-blue-dark);
-    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.8);
-}
-/* Botão largo: o rótulo à esquerda, o disco encostado na direita. */
-.ds-btn--acao.is-larga { width: 100%; box-sizing: border-box; }
-
-/* Sobre vidro escuro (login e barra lateral) o mesmo molde inverte:
-   pílula clara, disco verde. Continua sendo a peça mais visível da
-   tela, e é a única com fundo sólido — que é o que a faz ser achada. */
-.auth-card .ds-btn--acao,
-.app-side .ds-btn--acao {
-    background: #f4f7f5; color: var(--ds-ink);
-}
-.auth-card .ds-btn--acao:hover,
-.app-side .ds-btn--acao:hover { background: #fff; color: var(--ds-ink); }
-.auth-card .ds-btn--acao .ds-btn-ico,
-.app-side .ds-btn--acao .ds-btn-ico { background: var(--ds-blue); color: #fff; }
-.auth-card .ds-btn--acao:hover .ds-btn-ico,
-.app-side .ds-btn--acao:hover .ds-btn-ico { background: var(--ds-blue-dark); }
-.auth-card .ds-btn--acao:focus-visible,
-.app-side .ds-btn--acao:focus-visible {
-    background: #fff; box-shadow: inset 0 0 0 2px var(--ds-blue-dark);
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .ds-btn--acao, .ds-btn--acao .ds-btn-ico { transition-duration: 1ms; }
-    .ds-btn--acao:hover .ds-btn-ico { transform: none; }
-}
-
-/* O destaque da lateral usa o molde de ação; aqui ficam só as medidas
-   de posição, para a forma vir de um lugar só. */
-.nav-destaque {
-    margin: 0 0.75rem 0.5rem; padding: 0.4rem 0.4rem 0.4rem 1.1rem;
-    border-radius: 999px; font-weight: 500; font-size: 0.95rem;
-    box-shadow: none;
-}
-.nav-destaque:hover { box-shadow: none; }
-/* Duas classes para vencer .ds-btn--acao.is-larga: na lateral a largura sai da
-   margem, e 100% somaria a margem por fora, estourando a barra. */
-.nav-destaque.is-larga { display: flex; width: auto; }
-.nav-destaque svg { width: 0.95rem; height: 0.95rem; }
-
-/* Escolha múltipla como lista de caixas, não como select de arrastar.
-   Complementar é decisão de sim/não item a item; select múltiplo esconde
-   as opções e ninguém descobre que existem. */
+/* Escolha múltipla como lista de caixas, não como select de arrastar. */
 .escolha-multipla { border: 0; padding: 0; margin: 0 0 1.25rem; }
 .escolha-multipla > legend {
     padding: 0; margin-bottom: 0.3rem;
@@ -2460,12 +1815,7 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
     .escolha-multipla .caixas > div { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-/* =================================================================
-   AVISOS — card no canto, como no DS Stolben
-   No topo do conteúdo, cada aviso empurrava a página para baixo e
-   sumia junto com o scroll. Aqui ele fica sobre tudo, no canto de
-   baixo à direita, perto de onde a mão está.
-   ================================================================= */
+/* AVISOS — card no canto, como no DS Stolben */
 .ds-avisos {
     position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 60;
     display: flex; flex-direction: column-reverse; gap: 0.6rem;
@@ -2474,32 +1824,12 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
 }
 .ds-aviso {
     pointer-events: auto;
-    display: grid; grid-template-columns: 0.35rem minmax(0, 1fr) auto;
-    align-items: start; gap: 0.85rem;
-    padding: 0.85rem 0.9rem 0.85rem 0;
+    display: grid; gap: 0.85rem;
     border-radius: 0.65rem; overflow: hidden;
-    background: var(--ds-surface);
-    border: 1px solid var(--ds-line);
-    box-shadow: 0 2px 6px rgba(15, 17, 21, 0.06), 0 18px 40px rgba(15, 17, 21, 0.16);
     animation: aviso-entra 320ms var(--arq-ease-out) both;
 }
-.ds-aviso p { margin: 0; padding: 0.05rem 0; font-size: 0.9rem; color: var(--ds-text-900); }
-/* A cor mora numa barra na borda, e não no fundo: fundo colorido em
-   cima do conteúdo compete com ele; barra só classifica. */
-.ds-aviso-marca { align-self: stretch; background: var(--ds-text-400); }
+.ds-aviso p { margin: 0; padding: 0.05rem 0; font-size: 0.9rem; }
 .ds-aviso--success .ds-aviso-marca { background: var(--ds-blue); }
-.ds-aviso--error .ds-aviso-marca { background: var(--ds-danger); }
-.ds-aviso--warning .ds-aviso-marca, .ds-aviso--info .ds-aviso-marca { background: var(--arq-amber); }
-.ds-aviso-fechar {
-    background: none; border: 0; padding: 0.2rem; cursor: pointer;
-    color: var(--ds-text-400); line-height: 0; border-radius: 0.3rem;
-    transition: color var(--arq-fast) ease, background var(--arq-fast) ease;
-}
-.ds-aviso-fechar svg { width: 0.85rem; height: 0.85rem; }
-.ds-aviso-fechar:hover { color: var(--ds-text-900); background: var(--ds-panel); }
-.ds-aviso-fechar:focus-visible {
-    outline: none; color: var(--ds-text-900); box-shadow: inset 0 0 0 2px var(--ds-blue-dark);
-}
 .ds-aviso.is-saindo { animation: aviso-sai 260ms var(--arq-ease) both; }
 
 @keyframes aviso-entra {
@@ -2517,55 +1847,7 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
     .ds-avisos { right: 0.75rem; left: 0.75rem; bottom: 0.75rem; width: auto; }
 }
 
-/* =================================================================
-   FOCO QUE ESPALHA A COR
-   O disco andando de lado era pouco: quem chega pelo teclado precisa
-   ver o botão inteiro mudar. No foco o disco cresce e toma a peça —
-   a mesma cor, o mesmo lugar de origem, só que ocupando tudo.
-   ================================================================= */
-.ds-btn--acao { position: relative; overflow: hidden; isolation: isolate; }
-.ds-btn--acao > * { position: relative; z-index: 1; }
-.ds-btn--acao::before {
-    content: ""; position: absolute; z-index: 0;
-    right: 0.4rem; top: 50%; width: 1.85rem; height: 1.85rem;
-    margin-top: -0.925rem; border-radius: 50%;
-    background: var(--ds-blue-dark);
-    transform: scale(0);
-    transition: transform 420ms var(--arq-ease-out);
-    pointer-events: none;
-}
-.ds-btn--acao:focus-visible::before,
-.ds-btn--acao:active::before { transform: scale(26); }
-.ds-btn--acao:focus-visible {
-    outline: none; box-shadow: none; background: var(--ds-blue);
-}
-/* Com a cor tomando o botão, o disco some para não virar mancha. */
-.ds-btn--acao:focus-visible .ds-btn-ico { background: rgba(255, 255, 255, 0.22); }
-
-/* Na pílula clara a expansão é o verde entrando: o rótulo inverte junto. */
-.auth-card .ds-btn--acao::before,
-.app-side .ds-btn--acao::before { background: var(--ds-blue); }
-.auth-card .ds-btn--acao:focus-visible,
-.app-side .ds-btn--acao:focus-visible { background: #f4f7f5; color: #fff; }
-.auth-card .ds-btn--acao:focus-visible .ds-btn-ico,
-.app-side .ds-btn--acao:focus-visible .ds-btn-ico { background: rgba(255, 255, 255, 0.24); }
-
-@media (prefers-reduced-motion: reduce) {
-    .ds-btn--acao::before { transition: none; }
-}
-
-/* O "Começar" do painel usa o mesmo molde — era o único CTA que tinha
-   ficado com o retângulo sólido e o foco escuro. */
-.frente-cta { padding: 0.35rem 0.35rem 0.35rem 1.1rem; font-size: 0.9rem; }
-.frente-cta .ds-btn-ico { width: 1.65rem; height: 1.65rem; }
-.frente-cta .ds-btn-ico svg { width: 0.85rem; height: 0.85rem; }
-
-/* =================================================================
-   AVISO EM VIDRO, COM ÍCONE
-   O risco na borda classificava sem dizer nada. Vira um disco com
-   ícone — que se lê de relance — sobre a mesma lâmina escura da
-   barra lateral, para o aviso pertencer ao sistema e não à página.
-   ================================================================= */
+/* AVISO EM VIDRO, COM ÍCONE */
 .ds-aviso {
     grid-template-columns: auto minmax(0, 1fr) auto;
     padding: 0.9rem 0.9rem 0.9rem 0.95rem;
@@ -2601,12 +1883,7 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
     }
 }
 
-/* =================================================================
-   MODAL DE CRIAÇÃO
-   Formulário de cadastro sai da página. Numa lista, o formulário fixo
-   no topo empurra o conteúdo e é a primeira coisa que se lê — quando
-   quase sempre a pessoa veio consultar, não cadastrar.
-   ================================================================= */
+/* MODAL DE CRIAÇÃO */
 .ds-modal {
     width: min(34rem, calc(100vw - 2rem));
     padding: 1.6rem 1.6rem 1.75rem;
@@ -2614,6 +1891,10 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
     background: var(--ds-surface); color: var(--ds-text-900);
     box-shadow: 0 30px 70px rgba(15, 17, 21, 0.3);
 }
+.ds-modal--amplo { width: min(52rem, calc(100vw - 2rem)); }
+.ds-modal-corpo { max-height: min(72vh, 46rem); overflow-y: auto; padding-right: 0.2rem; }
+.cadastro-acoes { display: flex; align-items: center; justify-content: flex-end; gap: 0.35rem; white-space: nowrap; }
+.cadastro-acoes form { margin: 0; }
 .ds-modal::backdrop {
     background: rgba(12, 20, 18, 0.5);
     -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
@@ -2624,19 +1905,14 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
     to { opacity: 1; transform: none; }
 }
 .ds-modal-fechar-form { position: absolute; top: 0.85rem; right: 0.9rem; margin: 0; }
-.ds-modal-fechar {
-    background: none; border: 0; padding: 0.3rem; cursor: pointer; line-height: 0;
-    color: var(--ds-text-500); border-radius: 0.35rem;
-    transition: color var(--arq-fast) ease, background var(--arq-fast) ease;
-}
-.ds-modal-fechar svg { width: 1rem; height: 1rem; }
-.ds-modal-fechar:hover { color: var(--ds-text-900); background: var(--ds-panel); }
-.ds-modal-fechar:focus-visible {
-    outline: none; color: var(--ds-text-900); box-shadow: inset 0 0 0 2px var(--ds-blue-dark);
-}
+.ds-modal-fechar { color: var(--ds-text-500); }
 .ds-modal-titulo { margin: 0 2rem 0.25rem 0; font-size: 1.2rem; }
 .ds-modal-sub { margin: 0 0 1.25rem; color: var(--ds-text-500); font-size: 0.88rem; }
 .ds-modal-corpo .form-card { display: flex; flex-direction: column; }
+.ds-modal-corpo .form-card--duas-colunas {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0 1rem;
+}
+.ds-modal-corpo .form-card--duas-colunas .form-actions { grid-column: 1 / -1; }
 .ds-modal-corpo .inline-add {
     display: flex; flex-direction: column; align-items: stretch;
     background: none; padding: 0; margin: 0; gap: 0.75rem;
@@ -2650,26 +1926,19 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
     .ds-modal[open] { animation: none; }
 }
+@media (max-width: 40rem) {
+    .ds-modal { width: calc(100vw - 1rem); padding: 1.25rem; }
+    .ds-modal-corpo .form-card--duas-colunas { grid-template-columns: 1fr; }
+    .ds-modal-corpo .form-card--duas-colunas .form-actions { grid-column: auto; }
+}
 
-/* =================================================================
-   CALENDÁRIO
-   Mês em grade, com o compromisso escrito dentro do dia. Ponto
-   colorido diria "tem algo"; o título diz o que é — e é isso que
-   evita abrir o dia só para descobrir.
-   ================================================================= */
+/* CALENDÁRIO */
 .cal-topo {
     display: flex; align-items: center; gap: 0.75rem;
     margin-bottom: 0.9rem;
 }
 .cal-mes { margin: 0; font-size: 1.15rem; flex: 1; }
-.cal-passo {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 2rem; height: 2rem; flex-shrink: 0;
-    border: 1px solid var(--ds-line-dash); border-radius: 0.45rem;
-    color: var(--ds-text-700); text-decoration: none; font-size: 0.95rem;
-    transition: border-color var(--arq-fast) ease, background var(--arq-fast) ease;
-}
-.cal-passo:hover { background: var(--ds-panel); border-color: var(--ds-blue-light); }
+.cal-passo { color: var(--ds-text-700); text-decoration: none; }
 .cal-hoje {
     font-size: 0.82rem; color: var(--ds-blue-dark); text-decoration: none;
     padding: 0.3rem 0.6rem; border: 1px solid var(--ds-line-dash); border-radius: 0.45rem;
@@ -2690,9 +1959,7 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
     background: var(--ds-surface);
 }
 .cal-dia.is-fds { background: var(--ds-panel); }
-/* Dia de outro mês: quem o afasta é a falta de fundo e de moldura, não um
-   cinza mais claro. Clarear o número o levava a 3,3:1 — a data é conteúdo,
-   e data ilegível não vale a hierarquia que se ganha. */
+/* Dia de outro mês: quem o afasta é a falta de fundo e de moldura, não um */
 .cal-dia.is-fora { background: transparent; border-color: transparent; }
 .cal-num { font-family: var(--arq-font-mono); font-size: 0.74rem; color: var(--ds-text-500); }
 .cal-dia.is-hoje { border-color: var(--ds-blue); box-shadow: inset 0 0 0 1px var(--ds-blue); }
@@ -2714,8 +1981,7 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
 .cal-marca--outro { background: var(--ds-panel); color: var(--ds-text-700); border-left-color: var(--ds-line-dash); }
 
 @media (max-width: 52rem) {
-    /* No estreito a grade vira lista de dias com algo marcado: sete colunas
-       de 5rem não cabem, e calendário espremido não se lê. */
+    /* No estreito a grade vira lista de dias com algo marcado: sete colunas */
     .cal thead { display: none; }
     .cal, .cal tbody, .cal tr, .cal td { display: block; width: auto; }
     .cal tr { margin: 0; }
@@ -2760,16 +2026,11 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
     background: var(--ds-blue-50); border-color: var(--ds-blue-100); color: var(--ds-blue-dark);
 }
 
-/* =================================================================
-   LEMBRETES EM POST-IT
-   O que foi combinado na reunião fica onde o olho bate ao abrir a
-   fase. Papel colado, com leve inclinação — a metáfora é a mesma da
-   prancheta, e o formato curto obriga a escrever só o essencial.
-   ================================================================= */
+/* LEMBRETES EM POST-IT */
 .lembretes { margin-bottom: 2.5rem; }
 .lembretes-topo {
-    display: flex; align-items: baseline; justify-content: space-between;
-    gap: 1rem; flex-wrap: wrap;
+    display: flex; align-items: center; justify-content: flex-start;
+    gap: 0.45rem; flex-wrap: wrap;
 }
 .lembretes-topo .secao-titulo { margin: 0; }
 
@@ -2786,8 +2047,7 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
     transition: transform var(--arq-mid) var(--arq-ease-out),
                 box-shadow var(--arq-mid) var(--arq-ease);
 }
-/* Alternar a inclinação evita a fileira perfeitamente alinhada, que
-   denuncia que não é papel. */
+/* Alternar a inclinação evita a fileira perfeitamente alinhada, que */
 .postit:nth-child(even) { transform: rotate(0.9deg); background: #fdf0d6; }
 .postit:nth-child(3n) { transform: rotate(-0.3deg); }
 .postit:hover {
@@ -2804,8 +2064,7 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
 }
 .postit footer .app-link-btn { color: #67561c; font-size: 0.66rem; }
 .postit footer .app-link-btn:hover { color: #5c4d14; }
-/* Conversa com o cliente ganha outro papel: é recado de fora, não nota
-   interna, e a diferença importa na hora de conferir o que foi acordado. */
+/* Conversa com o cliente ganha outro papel: é recado de fora, não nota */
 .postit--cliente { background: #e4f0e9; }
 .postit--cliente:nth-child(even) { background: #dcece4; }
 .postit--cliente p { color: #17352a; }
@@ -2815,78 +2074,69 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
     .postit, .postit:hover { transform: none; transition: none; }
 }
 
-/* =================================================================
-   BOTÃO DE AÇÃO — versão final, sem disco
-   A pílula com disco na ponta parecia duas peças coladas, e no login,
-   onde o botão ocupa a largura toda, o disco ficava sozinho num canto
-   distante do rótulo. Agora é uma peça só: cantos do mesmo raio dos
-   campos, altura fixa, e a seta inline logo depois do texto.
-   ================================================================= */
+/* BOTÕES DE AÇÃO */
 .ds-btn--acao {
-    display: inline-flex; align-items: center; justify-content: center;
-    gap: 0.55rem;
-    min-height: 2.65rem; padding: 0.6rem 1.15rem;
-    border-radius: 0.55rem; border: 0;
-    font-family: var(--ds-font-sans); font-size: 0.94rem; font-weight: 500;
-    line-height: 1.2; text-decoration: none; cursor: pointer; white-space: nowrap;
+    position: relative; isolation: isolate; overflow: hidden;
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.55rem;
+    min-height: 0; padding: var(--arq-control-y) var(--arq-control-x);
+    border: 1px solid transparent; border-radius: var(--arq-control-radius);
     background: var(--ds-blue); color: #fff;
-    transition: background var(--arq-fast) ease;
+    font-family: var(--ds-font-sans); font-size: 0.9rem; font-weight: 500;
+    line-height: 1.2; text-decoration: none; cursor: pointer; white-space: nowrap;
+    transition: background var(--arq-fast) ease, box-shadow var(--arq-mid) var(--arq-ease),
+        transform var(--arq-fast) var(--arq-ease-out);
 }
-.ds-btn--acao:hover { background: var(--ds-blue-dark); color: #fff; }
+.ds-btn--acao > * { position: relative; z-index: 1; }
 .ds-btn--acao svg {
     width: 0.95rem; height: 0.95rem; flex-shrink: 0;
     transition: transform var(--arq-mid) var(--arq-ease-out);
 }
-.ds-btn--acao:hover svg { transform: translateX(2px); }
-/* O disco morreu; a regra fica neutralizada para o que ainda o declara. */
-.ds-btn--acao .ds-btn-ico {
-    display: contents; background: none; width: auto; height: auto;
+.ds-btn--acao:hover {
+    background: var(--ds-blue-dark); color: #fff;
+    transform: translateY(-1px); box-shadow: 0 4px 14px rgba(18, 60, 48, 0.28);
 }
-.ds-btn--acao:active { transform: translateY(1px); }
-
-/* A cor entra pela borda esquerda e varre o botão — de um lado ao
-   outro, e não a partir de um ponto, que ficava com cara de gota. */
+.ds-btn--acao:hover svg { transform: translateX(2px); }
+.ds-btn--acao:active { transform: translateY(1px); box-shadow: none; }
+.ds-btn--acao[disabled] { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
 .ds-btn--acao::before {
     content: ""; position: absolute; inset: 0; z-index: 0;
-    right: auto; top: 0; width: 100%; height: 100%; margin: 0;
     border-radius: inherit; background: var(--ds-blue-dark);
     transform: scaleX(0); transform-origin: left center;
     transition: transform 300ms var(--arq-ease-out);
 }
-.ds-btn--acao:focus-visible::before, .ds-btn--acao:active::before { transform: scaleX(1); }
 .ds-btn--acao:focus-visible { outline: none; background: var(--ds-blue); box-shadow: none; }
-.ds-btn--acao:focus-visible .ds-btn-ico { background: none; }
+.ds-btn--acao:focus-visible::before, .ds-btn--acao:active::before { transform: scaleX(1); }
+.ds-btn--acao .ds-btn-ico { display: contents; }
+.auth-submit, .ds-btn--acao.is-larga { width: 100%; box-sizing: border-box; }
 
-/* Sobre vidro escuro a peça é clara e a varredura é o verde entrando. */
-.auth-card .ds-btn--acao, .app-side .ds-btn--acao {
-    background: #f2f5f3; color: var(--ds-ink);
+.auth-card .ds-btn--acao, .app-side .ds-btn--acao { background: #f2f5f3; color: var(--ds-ink); }
+.auth-card .ds-btn--acao:hover, .app-side .ds-btn--acao:hover {
+    background: #fff; color: var(--ds-ink); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
 }
-.auth-card .ds-btn--acao:hover, .app-side .ds-btn--acao:hover { background: #fff; color: var(--ds-ink); }
 .auth-card .ds-btn--acao::before, .app-side .ds-btn--acao::before { background: var(--ds-blue); }
 .auth-card .ds-btn--acao:focus-visible, .app-side .ds-btn--acao:focus-visible {
     background: #f2f5f3; color: #fff;
 }
 .auth-card .ds-btn--acao svg, .app-side .ds-btn--acao svg { color: var(--ds-blue); }
 .auth-card .ds-btn--acao:focus-visible svg, .app-side .ds-btn--acao:focus-visible svg { color: #fff; }
+.frente-cta { min-width: 0; padding: 0.5rem 0.95rem; font-size: 0.86rem; }
 
-.auth-submit, .ds-btn--acao.is-larga { width: 100%; box-sizing: border-box; }
-.nav-destaque.is-larga { display: flex; width: auto; }
-.nav-destaque { margin: 0 0.75rem 0.5rem; padding: 0.6rem 1rem; border-radius: 0.55rem; }
-
-/* No painel todos os CTAs têm a mesma medida: "Continuar" e "Começar"
-   lado a lado com larguras diferentes fazem a coluna tremer. */
-.frente-cta { min-width: 11.5rem; padding: 0.6rem 1.15rem; font-size: 0.9rem; }
+.auth-card .auth-submit,
+.auth-card .auth-submit:hover,
+.auth-card .auth-submit:active,
+.auth-card .auth-submit:focus-visible { background: #f2f5f3; color: var(--ds-ink); }
+.auth-card .auth-submit::before { display: none; }
+.auth-card .auth-submit:hover svg,
+.auth-card .auth-submit:active svg,
+.auth-card .auth-submit:focus-visible svg { color: var(--ds-blue); transform: none; }
+.auth-card .auth-submit:focus-visible { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.78); }
 
 @media (prefers-reduced-motion: reduce) {
-    .ds-btn--acao::before, .ds-btn--acao svg { transition: none; }
+    .ds-btn--acao, .ds-btn--acao:hover, .ds-btn--acao:active,
+    .ds-btn--acao::before, .ds-btn--acao svg { transform: none; transition: none; }
 }
 
-/* =================================================================
-   LATERAL MENOS VERDE
-   O vidro puxava para o verde-escuro e brigava com o verde do sistema,
-   que é quem deve marcar o item ativo. Vira grafite quase neutro: a
-   cor volta a significar alguma coisa por ser exceção.
-   ================================================================= */
+/* LATERAL MENOS VERDE */
 .app-side {
     background: linear-gradient(180deg,
         rgba(18, 20, 19, 0.62), rgba(16, 18, 17, 0.74) 48%, rgba(17, 19, 18, 0.68));
@@ -2896,11 +2146,7 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
     .app-side { background: rgba(16, 18, 17, 0.97); }
 }
 
-/* =================================================================
-   AÇÕES DO POST-IT
-   Ícones no rodapé do papel: editar, arquivar, excluir. Discretos
-   porque não são o conteúdo — acendem quando a mão chega perto.
-   ================================================================= */
+/* AÇÕES DO POST-IT */
 .postit-acoes { display: inline-flex; align-items: center; gap: 0.3rem; }
 .postit-ico {
     display: inline-flex; align-items: center; justify-content: center;
@@ -2920,28 +2166,10 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
 .postit--cliente .postit-ico { color: #2f5346; }
 .postit--cliente .postit-ico:hover { color: #17352a; background: rgba(23, 53, 42, 0.1); }
 
-/* =================================================================
-   TAREFAS DENTRO DA FASE
-   ================================================================= */
-.tarefa-lista { list-style: none; margin: 0 0 1.25rem; padding: 0; }
-.tarefa-linha {
-    display: grid; grid-template-columns: 1.6rem minmax(0, 1fr) auto;
-    align-items: center; gap: 0.85rem;
-    padding: 0.6rem 0; border-top: 1px solid var(--ds-line);
-}
-.tarefa-linha:last-child { border-bottom: 1px solid var(--ds-line); }
+/* TAREFAS DENTRO DA FASE */
+
 .tarefa-id { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
 .tarefa-id strong { font-weight: 500; font-size: 0.93rem; }
-.tarefa-meta { font-size: 0.78rem; color: var(--ds-text-500); }
-.tarefa-linha.is-done .tarefa-id strong { color: var(--ds-text-500); text-decoration: line-through; }
-
-.timer-fase {
-    padding: 0.9rem 1rem; border: 1px solid var(--ds-line); border-radius: 0.6rem;
-    background: var(--ds-panel);
-}
-.timer-fase.is-rodando { background: var(--ds-blue-50); border-color: var(--ds-blue-100); }
-.timer-fase .timer-form { display: flex; align-items: flex-end; gap: 0.75rem; flex-wrap: wrap; }
-.timer-fase .timer-campo--cresce { flex: 1; min-width: 14rem; }
 
 /* O gatilho dos complementares é um botão comum, não uma barra. */
 /* Ação de manutenção, não de fluxo: fica no canto e em corpo de texto. */
@@ -2957,8 +2185,7 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
     outline: 2px solid var(--ds-blue-dark); outline-offset: 3px; border-radius: 0.2rem;
 }
 
-/* No modal de complementares, o campo livre precisa respirar longe das
-   caixas — colado, parecia mais uma opção da lista. */
+/* No modal de complementares, o campo livre precisa respirar longe das */
 .escolha-multipla .complementar-livre {
     margin-top: 1.5rem; padding-top: 1.25rem;
     border-top: 1px solid var(--ds-line);
@@ -2994,48 +2221,6 @@ a.projeto-card:focus-visible {
 .cal-marca--assinatura { background: #efecf6; color: #4f3878; border-left-color: var(--arq-violet); }
 .cal-marca--entrega, .cal-marca--orgao { background: #f7e6e2; color: #8e2a1c; border-left-color: var(--ds-danger); }
 
-/* =================================================================
-   O BOTÃO PRINCIPAL SE MEXE INTEIRO
-   Só a seta andando era pouco: o botão parecia parado com um detalhe
-   nervoso dentro. Agora a peça toda sobe no hover e afunda ao ser
-   apertada — o mesmo gesto do botão secundário, que é o que faz os
-   dois se lerem como a mesma família. A diferença entre eles é o
-   peso (preenchido × contornado), não o comportamento.
-   ================================================================= */
-.ds-btn--acao {
-    /* Medidas idênticas às do .ds-btn: dois botões lado a lado com
-       alturas diferentes denunciam que vieram de lugares diferentes. */
-    min-height: 0;
-    /* Borda transparente de 1px: o botão secundário tem borda visível, e
-       sem ela aqui os dois ficariam 2px diferentes de altura. */
-    border: 1px solid transparent;
-    padding: 0.62rem 1.15rem;
-    border-radius: 0.55rem;
-    font-size: 0.9rem;
-    transition: background var(--arq-fast) ease,
-                box-shadow var(--arq-mid) var(--arq-ease),
-                transform var(--arq-fast) var(--arq-ease-out);
-}
-.ds-btn--acao:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(18, 60, 48, 0.28);
-}
-.ds-btn--acao:active { transform: translateY(1px); box-shadow: none; }
-.ds-btn--acao svg { transition: transform var(--arq-mid) var(--arq-ease-out); }
-.ds-btn--acao:hover svg { transform: translateX(2px); }
-
-/* Sobre vidro escuro a sombra é preta, senão some no fundo. */
-.auth-card .ds-btn--acao:hover, .app-side .ds-btn--acao:hover {
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
-}
-
-/* O CTA do painel volta ao tamanho dos outros. */
-.frente-cta { min-width: 0; padding: 0.5rem 0.95rem; font-size: 0.86rem; }
-
-@media (prefers-reduced-motion: reduce) {
-    .ds-btn--acao, .ds-btn--acao:hover, .ds-btn--acao:active { transform: none; }
-}
-
 /* O painel ganhou o estado da fase entre o avanço e a ação. */
 .frente { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto auto; }
 .frente-selo { justify-self: end; white-space: nowrap; }
@@ -3056,17 +2241,11 @@ a.projeto-card:focus-visible {
 }
 .peca-resumo dd { margin: 0; font-size: 0.92rem; }
 
-/* =================================================================
-   BOTÃO DE CRIAR — o mais delicado da família
-   Criar não é a ação mais importante da tela de lista: consultar é.
-   Então o botão não grita. Contorno em vez de preenchimento, sinal de
-   mais à esquerda, e o mesmo gesto de subir no hover — a família
-   inteira se move igual, muda só quanto pesa.
-   ================================================================= */
+/* BOTÃO DE CRIAR — o mais delicado da família */
 .ds-btn--novo {
     display: inline-flex; align-items: center; gap: 0.5rem;
-    padding: 0.62rem 1.05rem 0.62rem 0.9rem;
-    border: 1px solid var(--ds-line-dash); border-radius: 0.55rem;
+    padding: var(--arq-control-y) 1.05rem var(--arq-control-y) 0.9rem;
+    border: 1px solid var(--ds-line-dash); border-radius: var(--arq-control-radius);
     background: var(--ds-surface); color: var(--ds-text-900);
     font-family: var(--ds-font-sans); font-size: 0.9rem; font-weight: 500;
     line-height: 1.2; text-decoration: none; cursor: pointer; white-space: nowrap;
@@ -3083,11 +2262,22 @@ a.projeto-card:focus-visible {
     color: var(--ds-blue-dark);
     transform: translateY(-1px); box-shadow: 0 4px 14px rgba(18, 32, 28, 0.12);
 }
-.ds-btn--novo:hover svg { transform: rotate(90deg); }
+.ds-btn--novo:hover svg { transform: scale(1.14); }
 .ds-btn--novo:active { transform: translateY(1px); box-shadow: none; }
 .ds-btn--novo:focus-visible {
     outline: none; border-color: var(--ds-blue-dark);
     box-shadow: inset 0 0 0 2px var(--ds-blue-dark);
+}
+.ds-btn.ds-btn--danger {
+    border-color: var(--ds-danger); background: var(--ds-danger); color: #fff;
+}
+.ds-btn.ds-btn--danger:hover {
+    border-color: #9f2f20; background: #9f2f20; color: #fff;
+    transform: translateY(-1px); box-shadow: 0 4px 14px rgba(142, 42, 28, 0.24);
+}
+.ds-btn.ds-btn--danger:active { transform: translateY(1px); box-shadow: none; }
+.ds-btn.ds-btn--danger:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--ds-danger) 45%, white); outline-offset: 2px;
 }
 
 /* Sobre o vidro escuro da lateral, o mesmo desenho invertido. */
@@ -3103,23 +2293,17 @@ a.projeto-card:focus-visible {
 .app-side .ds-btn--novo:focus-visible {
     border-color: #fff; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.8);
 }
-.nav-destaque.ds-btn--novo { justify-content: flex-start; }
+.nav-destaque.ds-btn--novo {
+    justify-content: flex-start; margin: 0 0.75rem 0.5rem; padding: 0.6rem 1rem;
+}
 
 @media (prefers-reduced-motion: reduce) {
     .ds-btn--novo, .ds-btn--novo:hover, .ds-btn--novo:active { transform: none; }
     .ds-btn--novo:hover svg { transform: none; }
 }
 
-/* =================================================================
-   MAIS COR NOS INDICADORES
-   Cinco números idênticos em cinza obrigam a ler os cinco rótulos
-   para achar o que importa. A cor faz o olho ir direto: verde é
-   andamento, âmbar é bola com o cliente, vermelho é devolução.
-   ================================================================= */
-/* A barra de 3px na lateral lia como divisória entre os indicadores, e uma
-   divisória grossa e colorida pesa mais do que o número que ela deveria
-   apresentar. Virou um filete curto acima do rótulo: marca a cor sem virar
-   parede. A separação entre eles é o hairline de 1px da própria grade. */
+/* MAIS COR NOS INDICADORES */
+/* A barra de 3px na lateral lia como divisória entre os indicadores, e uma */
 .kpi { border-left: 0; padding-left: 1.3rem; padding-top: 1.35rem; }
 .kpi::before {
     content: ""; position: absolute; top: 0; left: 1.3rem;
@@ -3134,15 +2318,12 @@ a.projeto-card:focus-visible {
 .kpi--violet { --sec: #4f3878; }
 .kpi--alert { --sec: #8e2a1c; }
 .kpi-label { color: var(--sec); }
-/* O número só assume a cor quando há algo ali; zerado ele é grafite, senão
-   um dia calmo vira cinco alarmes acesos. */
+/* O número só assume a cor quando há algo ali; zerado ele é grafite, senão */
 .kpi .kpi-value { color: var(--ds-text-900); }
 .kpi.is-aceso .kpi-value { color: var(--sec); }
 
 /* Fase bloqueada: cinza, cadeado, sem link. */
-/* Bloqueada é apagada, não ilegível: a 0,72 o resumo caía para 2,8:1, e a
-   frase que diz o que falta para destravar é exatamente a que precisa ser
-   lida. O que a afasta são o número tracejado e o cadeado. */
+/* Bloqueada é apagada, não ilegível: a 0,72 o resumo caía para 2,8:1, e a */
 .fase-linha.is-bloqueada { opacity: 0.88; }
 .fase-linha.is-bloqueada .fase-resumo,
 .fase-linha.is-bloqueada .fase-selo { color: var(--ds-text-700); }
@@ -3154,39 +2335,18 @@ a.projeto-card:focus-visible {
 .fase-cadeado { width: 0.8rem; height: 0.8rem; color: var(--ds-text-400); }
 
 /* Ícone de adicionar ao lado do título de uma seção. */
-.secao-add {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 1.75rem; height: 1.75rem; flex-shrink: 0;
-    border: 1px solid var(--ds-line-dash); border-radius: 0.4rem;
-    background: var(--ds-surface); color: var(--ds-blue); cursor: pointer;
-    transition: border-color var(--arq-fast) ease, background var(--arq-fast) ease,
-                transform var(--arq-fast) var(--arq-ease-out);
-}
-.secao-add svg { width: 0.9rem; height: 0.9rem; }
-.secao-add:hover {
-    background: var(--ds-blue-50); border-color: var(--ds-blue-light);
-    transform: rotate(90deg);
-}
-.secao-add:focus-visible {
-    outline: none; border-color: var(--ds-blue-dark);
-    box-shadow: inset 0 0 0 2px var(--ds-blue-dark);
-}
+.secao-add { color: var(--ds-blue); }
 
 /* Troca de roteiro sem caixa dentro de caixa. */
 .troca-roteiro {
-    display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
     margin-bottom: 2rem;
 }
 .troca-roteiro label {
     font-family: var(--arq-font-mono); font-size: 0.68rem; font-weight: 500;
     text-transform: uppercase; letter-spacing: 0.12em; color: var(--ds-text-500);
 }
-.troca-roteiro select { flex: 1; min-width: 14rem; }
 
-/* "Outro / complementar" repete abaixo de cada pergunta. Como caixa, virava
-   uma fileira de botõezinhos com mais peso que as próprias opções — que são a
-   resposta esperada. Vira link: presente para quem precisa, invisível para
-   quem não. */
+/* "Outro / complementar" repete abaixo de cada pergunta. Como caixa, virava */
 .abrir-campo--fino > summary {
     font-size: 0.78rem; padding: 0.15rem 0; width: fit-content;
     border: 0; background: none; border-radius: 0;
@@ -3205,28 +2365,11 @@ a.projeto-card:focus-visible {
 .fase-selo { display: inline-flex; align-items: center; gap: 0.35rem; }
 
 /* Ícone de ação numa linha de lista: aparece de leve, acende no hover. */
-.linha-ico {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 1.6rem; height: 1.6rem; padding: 0;
-    background: none; border: 0; border-radius: 0.3rem; cursor: pointer;
-    color: var(--ds-text-400);
-    transition: color var(--arq-fast) ease, background var(--arq-fast) ease;
-}
-.linha-ico svg { width: 0.9rem; height: 0.9rem; }
-.linha-ico:hover { color: var(--ds-blue-dark); background: var(--ds-panel); }
-.linha-ico--risco:hover { color: var(--ds-danger); background: rgba(168, 54, 38, 0.1); }
-.linha-ico:focus-visible {
-    outline: none; color: var(--ds-text-900); box-shadow: inset 0 0 0 2px var(--ds-blue-dark);
-}
+.linha-ico { color: var(--ds-text-400); }
 .agenda-acoes { display: flex; align-items: center; gap: 0.2rem; }
 .agenda-lista li:hover .linha-ico { color: var(--ds-text-500); }
 
-/* =================================================================
-   LINHA DE ADICIONAR DENTRO DA TABELA
-   Uma régua de campos embaixo da tabela nunca acerta a largura das
-   colunas — cada campo caía num lugar diferente do cabeçalho que o
-   nomeia. Sendo uma <tr>, o alinhamento é o da própria tabela.
-   ================================================================= */
+/* LINHA DE ADICIONAR DENTRO DA TABELA */
 .linha-add > td { vertical-align: middle; }
 .linha-add input {
     width: 100%; box-sizing: border-box;
@@ -3240,16 +2383,7 @@ a.projeto-card:focus-visible {
 }
 .linha-add input::placeholder { color: var(--ds-text-400); }
 .linha-add td.num input { text-align: right; }
-/* O "+" repete o gesto dos ícones de linha: mesma medida da lixeira que
-   está logo acima, na mesma coluna. */
-.linha-ico--mais:hover { color: var(--ds-blue-dark); background: var(--ds-blue-50); }
-
-/* =================================================================
-   SELETOR DE ROTEIRO
-   Rótulo, campo e botão numa régua só, com o campo levando o peso.
-   Antes era uma barra cinza com um select de contorno próprio dentro —
-   duas molduras para uma escolha.
-   ================================================================= */
+/* SELETOR DE ROTEIRO */
 .troca-roteiro {
     display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap;
     margin: 0 0 2.5rem; padding: 0 0 0.9rem;
@@ -3271,12 +2405,7 @@ a.projeto-card:focus-visible {
 }
 .troca-roteiro .ds-btn { flex-shrink: 0; padding: 0.32rem 0.8rem; font-size: 0.82rem; }
 
-/* =================================================================
-   PASSO A PASSO
-   Numeração vertical com fio ligando os passos. Aqui a numeração não é
-   enfeite: a ordem carrega informação real — o valor do contrato sai da
-   proposta, e o arquivo que se envia é o PDF das duas.
-   ================================================================= */
+/* PASSO A PASSO */
 .passos { list-style: none; margin: 0; padding: 0; }
 .passo {
     position: relative;
@@ -3299,22 +2428,16 @@ a.projeto-card:focus-visible {
     background: var(--ds-blue); border-color: var(--ds-blue); color: #fff;
 }
 .passo.is-esperando { opacity: 0.75; }
-.passo-corpo { min-width: 0; padding-top: 0.15rem; }
+
 .passo-titulo { margin: 0 0 0.2rem; font-size: 1.05rem; }
-.passo-sub { margin: 0 0 0.9rem; font-size: 0.88rem; color: var(--ds-text-500); max-width: 42rem; }
+
 .passo--final .passo-num { border-style: dashed; }
 .passo--final.is-feito .passo-num { border-style: solid; }
-/* O vazio de tela cheia (1,5rem de respiro) abre um buraco dentro do passo,
-   onde ele é só uma linha de contexto antes do botão. */
-.passo-corpo .data-empty { margin: 0 0 0.9rem; padding: 0 !important; text-align: left; }
+/* O vazio de tela cheia (1,5rem de respiro) abre um buraco dentro do passo, */
+
 .escolha-multipla label small { color: var(--ds-text-500); font-size: 0.75rem; margin-left: 0.35rem; }
 
-/* =================================================================
-   CRONÔMETRO FLUTUANTE
-   Acompanha a pessoa em toda tela porque o risco não é esquecer de
-   começar, é esquecer de parar. Fica acima da pilha de avisos, no
-   mesmo canto, para não haver dois lugares onde o app fala.
-   ================================================================= */
+/* CRONÔMETRO FLUTUANTE */
 .cronometro-flutuante {
     position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 60;
     display: flex; align-items: center; gap: 1.1rem;
@@ -3355,27 +2478,70 @@ a.projeto-card:focus-visible {
     display: flex; align-items: baseline; justify-content: space-between;
     gap: 1rem; flex-wrap: wrap;
 }
+.horas-bloco {
+    margin-top: 1rem; padding: 1.25rem 1.35rem 1.35rem;
+    border: 1px solid var(--ds-line); border-radius: 0.7rem;
+    background: var(--ds-surface); box-shadow: 0 10px 28px rgba(18, 32, 28, 0.055);
+}
 .horas-bloco .horas-comp-head .secao-titulo { margin: 0; }
 .horas-conta { font-size: 0.85rem; color: var(--ds-text-500); }
 .horas-bloco .ds-progress { margin: 0.6rem 0 1.2rem; }
 .horas-entradas { margin-bottom: 1.1rem; }
 .hora-cronometro { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
-.hora-cronometro input[type="text"] { flex: 1 1 18rem; }
+.hora-cronometro input[type="text"] {
+    flex: 0 1 24rem; min-height: 2.75rem; padding: 0.65rem 1rem; box-sizing: border-box;
+    border: 1px solid var(--ds-line); border-radius: 999px;
+    background: color-mix(in srgb, var(--arq-blue) 4%, var(--ds-panel));
+    transition: border-color var(--arq-fast) ease, background var(--arq-fast) ease, box-shadow var(--arq-fast) ease;
+}
+.hora-cronometro input[type="text"]:focus {
+    outline: none; border-color: var(--ds-blue-light); background: var(--ds-surface); box-shadow: var(--ds-focus-ring);
+}
 .hora-cronometro .ds-btn { flex-shrink: 0; display: inline-flex; align-items: center; gap: 0.4rem; }
 .hora-cronometro .ds-btn svg { width: 0.95rem; height: 0.95rem; }
 .data-table tr.is-rodando td { color: var(--ds-blue-dark); font-style: italic; }
+@media (max-width: 36rem) { .hora-cronometro input[type="text"] { flex-basis: 100%; width: 100%; } }
 
-/* --- Total da proposta: o número que o cliente lê primeiro --- */
-.proposta-total {
-    display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap;
-    margin-top: 1.1rem; padding-top: 0.9rem;
-    border-top: 2px solid var(--ds-text-900);
+.proposta-pdf-topo { display: inline-flex; align-items: center; gap: 0.45rem; flex-shrink: 0; }
+.proposta-pdf-topo svg { width: 1rem; height: 1rem; }
+.proposta-salvar-aviso {
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    margin: 0.4rem 0 0.9rem; padding: 0.5rem 0.7rem;
+    border-radius: 0.5rem; background: color-mix(in srgb, var(--arq-amber) 9%, var(--ds-surface));
+    color: #684709; font-size: 0.8rem;
 }
-.proposta-total .ds-kicker { flex-shrink: 0; }
-.proposta-total-valor {
-    font-size: 1.85rem; line-height: 1.05; color: var(--ds-text-900); margin-right: auto;
+.proposta-salvar-aviso::before {
+    content: "!"; display: inline-flex; align-items: center; justify-content: center;
+    width: 1rem; height: 1rem; flex-shrink: 0; border-radius: 50%;
+    background: var(--arq-amber); color: #fff; font-size: 0.66rem; font-weight: 700;
 }
-.proposta-total-horas { font-size: 0.8rem; color: var(--ds-text-500); }
+
+/* --- Total da proposta: fecha as mesmas colunas da tabela --- */
+.data-table .proposta-somatorio th {
+    padding-top: 0.9rem; vertical-align: top; border-top: 2px solid var(--ds-text-900);
+}
+.proposta-somatorio th:first-child { color: var(--ds-text-900); }
+.proposta-somatorio strong { display: block; font-size: 1.35rem; color: var(--ds-text-900); }
+.proposta-somatorio small {
+    display: block; margin-top: 0.2rem; font-size: 0.68rem;
+    font-weight: 400; color: var(--ds-text-500); white-space: nowrap;
+}
+.proposta-itens-tabela .col-horas { width: 7rem; }
+.proposta-itens-tabela .col-valor { width: 12rem; }
+.proposta-itens-tabela .col-acoes { width: 4rem; }
+@media (max-width: 40rem) {
+    .table-scroll .proposta-itens-tabela { min-width: 0; table-layout: fixed; font-size: 0.72rem; }
+    .proposta-itens-tabela .col-horas { width: 3.7rem; }
+    .proposta-itens-tabela .col-valor { width: 6.2rem; }
+    .proposta-itens-tabela .col-acoes { width: 3.4rem; }
+    .proposta-itens-tabela th, .proposta-itens-tabela td { padding: 0.58rem 0.2rem; }
+    .proposta-itens-tabela th:first-child, .proposta-itens-tabela td:first-child { padding-left: 0; }
+    .proposta-itens-tabela .linha-add td:nth-child(3) { font-size: 0.6rem; white-space: normal; }
+    .proposta-itens-tabela .agenda-acoes { gap: 0; }
+    .proposta-itens-tabela .linha-ico { width: 1.65rem; height: 1.65rem; }
+    .proposta-somatorio strong { font-size: 0.95rem; }
+    .proposta-somatorio small { font-size: 0.54rem; white-space: normal; }
+}
 .item-linha.is-editando td { background: var(--ds-blue-50); }
 .item-linha.is-editando input {
     width: 100%; box-sizing: border-box;
@@ -3388,3 +2554,216 @@ a.projeto-card:focus-visible {
 .item-linha.is-editando form { display: contents; }
 .fecho-acoes { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
 .fecho-acoes form { margin: 0; }
+
+/* Tarefas da fase: uma única tabela de trabalho, sem caixas sobrepostas. */
+.fase-tarefas-contagem {
+    flex-shrink: 0; color: var(--ds-text-500); font-size: 0.76rem;
+    white-space: nowrap;
+}
+.fase-tarefas-tabela { min-width: 43rem; table-layout: fixed; }
+.fase-tarefas-tabela .col-check { width: 3rem; }
+.fase-tarefas-tabela .col-data { width: 9.5rem; }
+.fase-tarefas-tabela .col-horas { width: 8rem; }
+.fase-tarefas-tabela .col-acoes { width: 4.5rem; }
+.fase-tarefas-tabela th:first-child,
+.fase-tarefas-tabela td:first-child { text-align: center; }
+.fase-tarefas-tabela td { vertical-align: middle; }
+.fase-tarefas-tabela td:nth-child(2) { overflow-wrap: anywhere; }
+.fase-tarefas-tabela .agenda-acoes { justify-content: flex-end; }
+.fase-check {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.35rem; height: 1.35rem; padding: 0;
+    border: 1.5px solid var(--ds-line-dash); border-radius: 0.35rem;
+    background: var(--ds-surface); color: #fff; cursor: pointer;
+    transition: border-color var(--arq-fast) ease, background var(--arq-fast) ease,
+        transform var(--arq-fast) ease;
+}
+.fase-check:hover { border-color: var(--arq-green); transform: translateY(-1px); }
+.fase-check:active { transform: translateY(1px); }
+.fase-check:focus-visible { outline: none; box-shadow: var(--ds-focus-ring); }
+.fase-check.is-feito { border-color: var(--arq-green); background: var(--arq-green); }
+.fase-check.is-vazio { opacity: 0.45; cursor: default; }
+.fase-check.is-vazio:hover { border-color: var(--ds-line-dash); transform: none; }
+.fase-check svg { width: 0.9rem; height: 0.9rem; }
+.fase-tarefas-tabela tr.is-done td { color: var(--ds-text-500); text-decoration: none; }
+.fase-tarefas-tabela tr.is-done td:nth-child(2) strong { text-decoration: line-through; }
+.fase-tarefas-tabela tr.is-editando td { background: var(--ds-blue-50); }
+.fase-tarefas-tabela tr.is-editando input {
+    width: 100%; box-sizing: border-box; padding: 0.3rem 0;
+    border: 0; border-bottom: 1px solid var(--ds-blue-light); border-radius: 0;
+    background: none; box-shadow: none; color: var(--ds-text-900); font: inherit;
+}
+.fase-tarefas-tabela tr.is-editando input:focus {
+    outline: none; border-bottom-color: var(--ds-blue); box-shadow: none;
+}
+.fase-tarefas-tabela tr.is-editando td.num input { text-align: right; }
+
+/* Valores monetários do painel permanecem inteiros na mesma linha. */
+.kpi-value { white-space: nowrap; }
+.kpi:last-child .kpi-value { font-size: 1.5rem; }
+@media (min-width: 75rem) {
+    .kpi-row { grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(14rem, 1.35fr); }
+}
+@media (max-width: 40rem) {
+    .fase-tarefas .contrato-secao-head { flex-direction: row; align-items: start; }
+    .fase-tarefas-tabela { min-width: 40rem; }
+}
+
+/* Agenda: prazo de tarefa é trabalho planejado, não compromisso editável. */
+.cal-marca--tarefa {
+    background: color-mix(in srgb, var(--arq-green) 10%, var(--ds-surface));
+    color: color-mix(in srgb, var(--arq-green) 72%, var(--ds-text-900));
+    border-left-color: var(--arq-green);
+}
+.cal-marca--tarefa.is-feita { opacity: 0.55; text-decoration: line-through; }
+.agenda-tarefas-mes { margin-bottom: 2rem; }
+.agenda-lista--tarefas li.is-feita { opacity: 0.58; }
+.agenda-lista--tarefas li.is-feita .agenda-info strong { text-decoration: line-through; }
+.agenda-lista--tarefas .linha-ico { flex-shrink: 0; }
+
+/* Próximas tarefas: um card, com indicadores e lista na mesma superfície. */
+.projeto-tarefas {
+    margin-top: 1rem; padding: 1.25rem 1.35rem 1.35rem;
+    border: 1px solid var(--ds-line); border-radius: 0.7rem;
+    background: var(--ds-surface); box-shadow: 0 10px 28px rgba(18, 32, 28, 0.055);
+}
+.projeto-tarefas-head {
+    display: flex; align-items: start; justify-content: space-between; gap: 1rem;
+}
+.projeto-tarefas-head .secao-titulo { margin: 0; }
+.projeto-tarefas-head .secao-sub { margin: 0.25rem 0 0; }
+.projeto-tarefas-acoes { display: flex; align-items: center; gap: 0.35rem; }
+.projeto-tarefas-resumo {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1px; margin: 0.85rem 0 0; background: var(--ds-line);
+    border-top: 1px solid var(--ds-line); border-bottom: 1px solid var(--ds-line);
+}
+.projeto-tarefas-resumo > div { padding: 0.7rem 0.8rem; background: var(--ds-panel); }
+.projeto-tarefas-resumo dt {
+    font-family: var(--arq-font-mono); font-size: 0.62rem; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.09em; color: var(--ds-text-500);
+}
+.projeto-tarefas-resumo dd {
+    margin: 0.2rem 0 0; font-family: var(--arq-font-mono);
+    font-size: 1.15rem; font-weight: 600; color: var(--ds-text-900);
+}
+.projeto-tarefas-resumo > div:nth-child(2) dd { color: var(--arq-green); }
+.projeto-tarefas-resumo > div:nth-child(3) dd { color: var(--arq-amber); }
+.projeto-tarefas-progresso {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center; gap: 0.8rem; margin: 0.8rem 0 0.35rem;
+}
+.projeto-tarefas-progresso span { font-size: 0.72rem; color: var(--ds-text-500); white-space: nowrap; }
+.projeto-tarefas-lista { list-style: none; margin: 0; padding: 0; }
+.projeto-tarefas-lista li {
+    display: grid; grid-template-columns: 1.5rem minmax(0, 1fr) 7.5rem 4rem 1.75rem;
+    align-items: center; gap: 0.75rem; padding: 0.72rem 0;
+    border-bottom: 1px solid var(--ds-line);
+}
+.projeto-tarefas-lista li:last-child { border-bottom: 0; }
+.projeto-tarefas-lista li.data-empty { display: block; }
+.projeto-tarefa-id { display: flex; flex-direction: column; min-width: 0; gap: 0.12rem; }
+.projeto-tarefa-id strong { overflow-wrap: anywhere; font-size: 0.9rem; }
+.projeto-tarefa-id span {
+    color: var(--ds-text-500); font-family: var(--arq-font-mono);
+    font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.07em;
+}
+.projeto-tarefa-prazo, .projeto-tarefa-horas {
+    font-size: 0.76rem; color: var(--ds-text-500); white-space: nowrap;
+}
+.projeto-tarefa-prazo.is-atrasada { color: var(--ds-danger); font-weight: 600; }
+.projeto-tarefa-horas { text-align: right; }
+.projeto-tarefas-feedback {
+    display: flex; align-items: center; gap: 0.65rem;
+    margin: 0.8rem 0 0; padding: 0.65rem 0.75rem;
+    border-radius: 0.45rem;
+    background: color-mix(in srgb, var(--arq-green) 12%, var(--ds-surface));
+    color: color-mix(in srgb, var(--arq-green) 72%, var(--ds-text-900));
+    animation: tarefa-confirmada 420ms var(--arq-ease-out) both;
+}
+.projeto-tarefas-feedback.is-reaberta {
+    background: var(--ds-blue-50); color: var(--ds-blue-dark);
+}
+.projeto-tarefas-feedback svg { width: 1.15rem; height: 1.15rem; flex-shrink: 0; }
+.projeto-tarefas-feedback span { display: flex; flex-direction: column; gap: 0.08rem; font-size: 0.78rem; }
+.projeto-tarefas-feedback strong { font-size: 0.84rem; }
+@keyframes tarefa-confirmada {
+    from { opacity: 0; transform: translateY(-0.35rem) scale(0.98); }
+    55% { transform: translateY(0) scale(1.015); }
+    to { opacity: 1; transform: none; }
+}
+@media (max-width: 40rem) {
+    .projeto-tarefas { padding: 1rem; }
+    .projeto-tarefas-resumo { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .projeto-tarefas-lista li {
+        grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+        gap: 0.55rem;
+    }
+    .projeto-tarefa-prazo { grid-column: 2; }
+    .projeto-tarefa-horas { grid-column: 3; grid-row: 2; }
+    .projeto-tarefas-lista .linha-ico { grid-column: 3; grid-row: 1; }
+}
+
+/* Controles somente com ícone: sem caixa em repouso e sem rotação. */
+.secao-add,
+.linha-ico,
+.cal-passo,
+.ds-modal-fechar,
+.ds-aviso-fechar,
+.nav-burger {
+    border-color: transparent; background: transparent; box-shadow: none;
+    transition: color var(--arq-fast) ease, background var(--arq-fast) ease,
+        transform var(--arq-fast) var(--arq-ease-out);
+}
+.secao-add,
+.linha-ico,
+.cal-passo,
+.ds-modal-fechar,
+.ds-aviso-fechar {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: var(--arq-icon-btn); height: var(--arq-icon-btn); flex-shrink: 0;
+    padding: 0; border: 0; border-radius: 0.4rem; line-height: 0;
+    cursor: pointer; text-decoration: none;
+}
+.secao-add svg,
+.linha-ico svg,
+.cal-passo svg,
+.ds-modal-fechar svg,
+.ds-aviso-fechar svg {
+    width: 0.9rem; height: 0.9rem;
+    transition: transform var(--arq-fast) var(--arq-ease-out);
+}
+.nav-burger svg { transition: transform var(--arq-fast) var(--arq-ease-out); }
+.secao-add:hover,
+.linha-ico:hover,
+.linha-ico--mais:hover,
+.linha-ico--risco:hover,
+.cal-passo:hover,
+.ds-modal-fechar:hover,
+.ds-aviso-fechar:hover,
+.nav-burger:hover {
+    border-color: transparent; background: var(--ds-blue-50);
+    color: var(--ds-blue-dark); box-shadow: none; transform: scale(1.1);
+}
+.secao-add:focus-visible,
+.linha-ico:focus-visible,
+.cal-passo:focus-visible,
+.ds-modal-fechar:focus-visible,
+.ds-aviso-fechar:focus-visible,
+.nav-burger:focus-visible {
+    outline: none; border-color: transparent; background: var(--ds-blue-50);
+    color: var(--ds-blue-dark); box-shadow: none; transform: scale(1.08);
+}
+.linha-ico--risco:hover {
+    background: color-mix(in srgb, var(--ds-danger) 11%, var(--ds-surface));
+    color: var(--ds-danger);
+}
+.linha-ico--risco:focus-visible {
+    background: color-mix(in srgb, var(--ds-danger) 11%, var(--ds-surface));
+    color: var(--ds-danger);
+}
+@media (max-width: 62rem) {
+    .nav-burger { color: rgba(255, 255, 255, 0.92); }
+    .nav-burger:hover,
+    .nav-burger:focus-visible { background: rgba(255, 255, 255, 0.16); color: #fff; }
+}

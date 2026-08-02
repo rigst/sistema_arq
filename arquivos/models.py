@@ -81,6 +81,11 @@ class Arquivo(EmpresaModel, Rastreavel):
         help_text="Lançamento gerado no financeiro, quando houver.",
     )
     observacoes = models.TextField("observações", blank=True)
+    favorito = models.BooleanField(
+        "arquivo principal",
+        default=False,
+        help_text="Exibe este arquivo entre os documentos principais do projeto.",
+    )
 
     class Meta:
         ordering = ["-criado_em"]

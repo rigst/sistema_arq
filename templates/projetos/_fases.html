@@ -26,9 +26,10 @@ material tem e o que fazer agora — e é o link para a área de trabalho da fas
                 </span>
                 <span class="fase-situacao">
                     <span class="fase-selo">
-                        <svg class="fase-cadeado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+                        {% include "core/_ico.html" with ico="cadeado" ico_classe="fase-cadeado" %}
                         Bloqueada
                     </span>
+                    <span class="fase-num-arquivos num">{{ f.horas_tarefas|default_if_none:"0"|floatformat:"0" }} h</span>
                 </span>
             </span>
             {% else %}
@@ -41,7 +42,7 @@ material tem e o que fazer agora — e é o link para a área de trabalho da fas
                 <span class="fase-situacao">
                     <span class="fase-selo fase-selo--{{ f.status }}">{{ f.rotulo_status }}</span>
                     <span class="fase-num-arquivos num">
-                        {{ f.arquivos.count }} arq.{% if f.prazo %} · {{ f.prazo|date:"d/m/y" }}{% endif %}
+                        {{ f.horas_tarefas|default_if_none:"0"|floatformat:"0" }} h · {{ f.arquivos.count }} arq.{% if f.prazo %} · {{ f.prazo|date:"d/m/y" }}{% endif %}
                     </span>
                 </span>
             </a>
@@ -59,16 +60,16 @@ material tem e o que fazer agora — e é o link para a área de trabalho da fas
     <dialog class="ds-modal" id="modal-complementares" aria-labelledby="modal-complementares-titulo">
         <form method="dialog" class="ds-modal-fechar-form">
             <button class="ds-modal-fechar" aria-label="Fechar">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                {% include "core/_ico.html" with ico="fechar" %}
             </button>
         </form>
         <h2 class="ds-modal-titulo ds-display" id="modal-complementares-titulo">Projetos complementares</h2>
         <p class="ds-modal-sub">
             Marque os que este projeto terá. Cada um parte do anteprojeto aprovado.
-            Complementar que já tem trabalho registrado só sai pela própria fase.
+            Desmarcar ou remover um complementar também exclui os arquivos ligados a ele.
         </p>
         <div class="ds-modal-corpo">
-            <form method="post" action="{% url 'fase_editar_complementares' projeto.pk %}" class="form-card">
+            <form method="post" action="{% url 'fase_editar_complementares' projeto.pk %}" class="form-card" data-confirma-complementares>
                 {% csrf_token %}
                 <fieldset class="escolha-multipla">
                     <legend class="ds-oculto">Projetos complementares</legend>
@@ -77,8 +78,15 @@ material tem e o que fazer agora — e é o link para a área de trabalho da fas
                         {% for p in complementares_todos %}
                             <label>
                                 <input type="checkbox" name="complementares" value="{{ p.chave }}"
-                                       {% if p.chave in complementares_marcados %}checked{% endif %}>
+                                       {% if p.chave in complementares_marcados %}checked data-complementar-atual="1"{% endif %}>
                                 <span>{{ p.nome }}</span>
+                            </label>
+                        {% endfor %}
+                        {% for complementar in complementares_extras %}
+                            <label>
+                                <input type="checkbox" name="complementares_livres" value="{{ complementar.pk }}"
+                                       checked data-complementar-atual="1">
+                                <span>{{ complementar.nome }}{% if complementar.arquivos.count %}<small>{{ complementar.arquivos.count }} arq.</small>{% endif %}</span>
                             </label>
                         {% endfor %}
                         </div>

@@ -23,10 +23,16 @@ Os serviços compreendem levantamento, estudo preliminar, anteprojeto, projeto \
 legal e projeto executivo, com os entregáveis descritos na proposta que integra \
 este contrato. Cada etapa depende da aprovação formal da anterior.
 
+ESCOPO E HONORÁRIOS DA PROPOSTA
+{{escopo}}
+
 CLÁUSULA 3 — DO PRAZO
 O prazo de entrega é {{prazo}}, contado do aceite deste contrato e do pagamento \
 da primeira parcela. Prazos de aprovação em órgãos públicos e o tempo de resposta \
 do CONTRATANTE não integram esta contagem.
+
+CRONOGRAMA PREVISTO
+{{cronograma}}
 
 CLÁUSULA 4 — DOS HONORÁRIOS
 Os honorários são de {{valor}}, pagos conforme o cronograma financeiro anexo. \
@@ -96,8 +102,14 @@ CLÁUSULA 4 — DO PRAZO
 Entrega do projeto em {{prazo}}. O acompanhamento se encerra em [PRAZO DE OBRA] \
 ou na conclusão da obra, o que ocorrer primeiro.
 
+CRONOGRAMA PREVISTO
+{{cronograma}}
+
 CLÁUSULA 5 — DOS HONORÁRIOS
 {{valor}}, pagos conforme cronograma anexo.
+
+ESCOPO E HONORÁRIOS DA PROPOSTA
+{{escopo}}
 
 CLÁUSULA 6 — DAS ALTERAÇÕES
 Alterações após a aprovação do projeto executivo serão orçadas à parte e \

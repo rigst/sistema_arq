@@ -48,6 +48,7 @@ class Fase(EmpresaModel, Rastreavel):
     parecer = models.TextField(
         blank=True, help_text="O que o cliente respondeu ao aprovar ou pedir ajuste."
     )
+    tarefas_semeadas = models.BooleanField(default=False)
 
     # Complementar quase sempre sai do escritório; a fase guarda quem assina.
     fornecedor = models.ForeignKey(

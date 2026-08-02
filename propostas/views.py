@@ -5,10 +5,10 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from datetime import date
 from decimal import Decimal, InvalidOperation
 
-from core.contexto import projeto_do_pedido
-from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
+from core.tenancy import queryset_da_empresa
 from precificacao.models import FatorPrecificacao
 from precificacao.services import aplicar_fatores, hora_tecnica_base, precificar_etapa
 from projetos.models import Projeto
@@ -29,49 +29,34 @@ def _reprecificar_itens(proposta):
 
 
 @login_required
-def lista_propostas(request):
-    propostas = queryset_da_empresa(Proposta.objects.select_related("cliente"), request.user)
-    # Vindo da ficha de um projeto, a lista chega já recortada nele.
-    projeto = projeto_do_pedido(request)
-    if projeto is not None:
-        propostas = propostas.filter(projeto_gerado=projeto)
-    return render(
-        request, "propostas/lista.html", {"propostas": propostas, "projeto": projeto}
-    )
-
-
-@login_required
-def nova_proposta(request):
-    grupo = obter_grupo_empresa_ou_erro(request.user)
-    projeto = projeto_do_pedido(request)
-    if request.method == "POST":
-        form = PropostaForm(request.POST, user=request.user, projeto=projeto)
-        if form.is_valid():
-            proposta = form.save(commit=False)
-            proposta.empresa = grupo
-            proposta.criado_por = request.user
-            proposta.hora_tecnica_aplicada = hora_tecnica_base(grupo)
-            if projeto is not None:
-                # Fecha o laço: a proposta nascida de um projeto aponta para ele,
-                # senão o roteiro continuaria dizendo que falta proposta.
-                proposta.projeto_gerado = projeto
-            proposta.save()
-            messages.success(
-                request, "Proposta criada. Ajuste a hora técnica e adicione os ambientes."
-            )
-            return redirect("proposta_detalhe", pk=proposta.pk)
-    else:
-        form = PropostaForm(user=request.user, projeto=projeto)
-    return render(request, "propostas/form.html", {"form": form, "projeto": projeto})
-
-
-@login_required
 def detalhe_proposta(request, pk):
     proposta = get_object_or_404(
-        queryset_da_empresa(Proposta.objects.select_related("cliente"), request.user), pk=pk
+        queryset_da_empresa(
+            Proposta.objects.select_related("cliente", "projeto_gerado"), request.user
+        ),
+        pk=pk,
     )
+    fases_entrega = _fases_de_entrega(proposta)
     fatores = queryset_da_empresa(FatorPrecificacao.objects.filter(ativo=True), request.user)
     selecionados = set(proposta.fatores.values_list("pk", flat=True))
+    form_termos = None
+    if proposta.editavel:
+        if request.method == "POST":
+            form_termos = PropostaForm(request.POST, instance=proposta, user=request.user)
+            prazos_validos, prazos = _prazos_do_post(request, fases_entrega)
+            if form_termos.is_valid() and prazos_validos:
+                with transaction.atomic():
+                    form_termos.save()
+                    for fase, prazo in prazos:
+                        fase.prazo = prazo
+                        fase.save(update_fields=["prazo"])
+                    if request.POST.get("acao") == "enviar":
+                        _enviar_ao_cliente(request, proposta)
+                    else:
+                        messages.success(request, "Proposta salva.")
+                return redirect("proposta_detalhe", pk=proposta.pk)
+        else:
+            form_termos = PropostaForm(instance=proposta, user=request.user)
     return render(
         request,
         "propostas/detalhe.html",
@@ -83,7 +68,51 @@ def detalhe_proposta(request, pk):
             "base": hora_tecnica_base(proposta.empresa),
             "fatores": fatores,
             "fatores_selecionados": selecionados,
+            "form_termos": form_termos,
+            "fases_entrega": fases_entrega,
         },
+    )
+
+
+def _fases_de_entrega(proposta):
+    if proposta.projeto_gerado_id is None:
+        return []
+    return list(
+        proposta.projeto_gerado.fases.exclude(
+            chave__in=("briefing", "proposta", "contrato")
+        ).order_by("ordem", "id")
+    )
+
+
+def _prazos_do_post(request, fases):
+    prazos = []
+    for fase in fases:
+        campo = f"prazo_fase_{fase.pk}"
+        if campo not in request.POST:
+            continue
+        valor = request.POST.get(campo, "").strip()
+        try:
+            prazo = date.fromisoformat(valor) if valor else None
+        except ValueError:
+            messages.error(request, f"Confira a data prevista de {fase.nome}.")
+            return False, []
+        prazos.append((fase, prazo))
+    return True, prazos
+
+
+def criar_proposta_do_projeto(projeto, usuario):
+    """Cria o rascunho que sucede o briefing, sem uma tela intermediária."""
+    existente = getattr(projeto, "proposta_origem", None)
+    if existente is not None:
+        return existente
+    return Proposta.objects.create(
+        empresa=projeto.empresa,
+        criado_por=usuario,
+        cliente=projeto.cliente,
+        projeto_gerado=projeto,
+        titulo=f"Proposta — {projeto.nome}",
+        tipo_projeto=projeto.tipo,
+        hora_tecnica_aplicada=hora_tecnica_base(projeto.empresa),
     )
 
 
@@ -93,8 +122,8 @@ def definir_hora_tecnica(request, pk):
     """Usuário escolhe a hora técnica da proposta: valor manual livre e/ou fatores
     de projeto aplicados sobre a hora-base. Reprecifica os itens existentes."""
     proposta = get_object_or_404(queryset_da_empresa(Proposta.objects.all(), request.user), pk=pk)
-    if proposta.projeto_gerado_id:
-        messages.info(request, "Proposta já aprovada; a hora técnica está travada.")
+    if not proposta.editavel:
+        messages.info(request, "Proposta enviada; retorne-a para edição antes de alterar a hora técnica.")
         return redirect("proposta_detalhe", pk=proposta.pk)
 
     fatores_ids = request.POST.getlist("fatores")
@@ -131,10 +160,13 @@ def adicionar_prontos(request, pk):
     O que trava a proposta não é o cálculo: é a folha em branco às dez da noite.
     """
     proposta = get_object_or_404(queryset_da_empresa(Proposta.objects.all(), request.user), pk=pk)
+    if not proposta.editavel:
+        messages.info(request, "Proposta enviada; retorne-a para edição antes de incluir itens.")
+        return redirect("proposta_detalhe", pk=proposta.pk)
     escolhidos = set(request.POST.getlist("prontos"))
     if not escolhidos:
         messages.error(request, "Marque ao menos um item.")
-        return redirect("proposta_detalhe", pk=proposta.pk)
+        return _itens_ou_redirect(request, proposta)
 
     ja_tem = {i.descricao for i in proposta.itens.all()}
     ordem = proposta.itens.count()
@@ -155,13 +187,16 @@ def adicionar_prontos(request, pk):
         messages.success(request, f"{criados} item(ns) adicionados e precificados. Ajuste as horas.")
     else:
         messages.info(request, "Esses itens já estavam na proposta.")
-    return redirect("proposta_detalhe", pk=proposta.pk)
+    return _itens_ou_redirect(request, proposta)
 
 
 @require_POST
 @login_required
 def adicionar_item(request, pk):
     proposta = get_object_or_404(queryset_da_empresa(Proposta.objects.all(), request.user), pk=pk)
+    if not proposta.editavel:
+        messages.info(request, "Proposta enviada; retorne-a para edição antes de incluir itens.")
+        return redirect("proposta_detalhe", pk=proposta.pk)
     form = ItemPropostaForm(request.POST)
     if form.is_valid():
         item = form.save(commit=False)
@@ -176,7 +211,7 @@ def adicionar_item(request, pk):
         messages.success(request, "Item precificado e adicionado.")
     else:
         messages.error(request, "Informe descrição e horas.")
-    return redirect("proposta_detalhe", pk=proposta.pk)
+    return _itens_ou_redirect(request, proposta)
 
 
 @login_required
@@ -267,19 +302,25 @@ def remover_item(request, pk):
 def finalizar_proposta(request, pk):
     """Fecha a proposta e a manda ao cliente. A partir daqui, ela não muda."""
     proposta = get_object_or_404(queryset_da_empresa(Proposta.objects.all(), request.user), pk=pk)
+    _enviar_ao_cliente(request, proposta)
+    return redirect("proposta_detalhe", pk=proposta.pk)
+
+
+def _enviar_ao_cliente(request, proposta):
+    """Valida e registra o envio, usado pela tela única e pela rota legada."""
     if not proposta.editavel:
         messages.info(request, "Esta proposta já foi enviada.")
-        return redirect("proposta_detalhe", pk=proposta.pk)
+        return False
     if not proposta.itens.exists():
         messages.error(request, "Uma proposta sem itens não tem o que enviar.")
-        return redirect("proposta_detalhe", pk=proposta.pk)
+        return False
 
     proposta.status = "enviada"
     proposta.save(update_fields=["status"])
     messages.success(
         request, f"“{proposta.titulo}” enviada ao cliente por R$ {proposta.valor_total}."
     )
-    return redirect("proposta_detalhe", pk=proposta.pk)
+    return True
 
 
 @require_POST
@@ -311,6 +352,7 @@ def proposta_pdf(request, pk):
         {
             "proposta": proposta,
             "itens": proposta.itens.all(),
+            "fases_entrega": _fases_de_entrega(proposta),
             "empresa_nome": request.user.nome_empresa,
             "hoje": timezone.now(),
         },
@@ -330,14 +372,21 @@ def aprovar_proposta(request, pk):
     if proposta.status == "aprovada":
         messages.info(request, "Esta proposta já está aprovada.")
         return redirect("proposta_detalhe", pk=proposta.pk)
+    if proposta.status != "enviada":
+        messages.info(request, "Envie a proposta ao cliente antes de registrar a aprovação.")
+        return redirect("proposta_detalhe", pk=proposta.pk)
 
     if proposta.projeto_gerado_id:
         proposta.status = "aprovada"
         proposta.save(update_fields=["status"])
+        _aprovar_fase_da_proposta(proposta, request.user)
         proposta.cliente.fase = "ganho"
         proposta.cliente.save(update_fields=["fase"])
         messages.success(request, f"“{proposta.titulo}” aprovada pelo cliente.")
-        return redirect("proposta_detalhe", pk=proposta.pk)
+        from contratos.services import criar_contrato_da_proposta
+
+        contrato = criar_contrato_da_proposta(proposta, request.user)
+        return redirect("contrato_detalhe", pk=contrato.pk)
 
     horas_estimadas = sum(
         (item.horas_estimadas for item in proposta.itens.all()), Decimal("0")
@@ -365,5 +414,22 @@ def aprovar_proposta(request, pk):
         proposta.cliente.fase = "ganho"
         proposta.cliente.save(update_fields=["fase"])
 
-    messages.success(request, "Proposta aprovada. Projeto criado com as etapas.")
-    return redirect("projeto_detalhe", pk=projeto.pk)
+    _aprovar_fase_da_proposta(proposta, request.user)
+    from contratos.services import criar_contrato_da_proposta
+
+    contrato = criar_contrato_da_proposta(proposta, request.user)
+    messages.success(request, "Proposta aprovada. Revise a minuta do contrato.")
+    return redirect("contrato_detalhe", pk=contrato.pk)
+
+
+def _aprovar_fase_da_proposta(proposta, usuario):
+    """A aprovação comercial libera a fase contratual, não o projeto técnico."""
+    from fases.models import Fase
+
+    fase = proposta.projeto_gerado.fases.filter(chave="proposta").first()
+    if fase and fase.status != Fase.APROVADA:
+        fase.status = Fase.APROVADA
+        fase.respondida_em = timezone.now()
+        fase.save(update_fields=["status", "respondida_em"])
+        fase._abrir_seguintes(usuario)
+        fase.projeto.tocar()

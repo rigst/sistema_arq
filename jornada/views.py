@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from core.estados import UF_CHOICES
@@ -140,16 +140,3 @@ def abrir(request):
         form = AberturaForm(user=request.user)
 
     return render(request, "jornada/abrir.html", {"form": form})
-
-
-@login_required
-def roteiro(request, projeto_pk):
-    """O roteiro passou a morar na página do projeto.
-
-    A rota continua de pé porque links antigos e o histórico do navegador
-    apontam para cá; ela só encaminha para o lugar novo.
-    """
-    projeto = get_object_or_404(
-        queryset_da_empresa(Projeto.objects.all(), request.user), pk=projeto_pk
-    )
-    return redirect("projeto_detalhe", pk=projeto.pk)

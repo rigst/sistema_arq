@@ -9,10 +9,9 @@
     <header class="page-head page-head--row">
         <div>
             <span class="ds-kicker">Agenda</span>
-            <h1 class="ds-h2 ds-display">Reuniões, visitas e prazos</h1>
+            <h1 class="ds-h2 ds-display">Reuniões, tarefas e prazos</h1>
             <p class="page-sub">
-                Compromissos do escritório vinculados a clientes e projetos. Serve para
-                saber quem do time está comprometido com o quê.
+                Compromissos e entregáveis das fases reunidos no calendário do escritório.
             </p>
         </div>
         <button class="ds-btn--acao" type="button" data-abre="modal-compromisso" hidden>
@@ -42,7 +41,7 @@
     </div>
 
     <table class="cal">
-        <caption class="ds-oculto">Compromissos de {{ titulo_mes }}</caption>
+        <caption class="ds-oculto">Compromissos e tarefas de {{ titulo_mes }}</caption>
         <thead>
             <tr>{% for d in dias_semana %}<th scope="col" abbr="{{ d }}">{{ d }}</th>{% endfor %}</tr>
         </thead>
@@ -55,8 +54,8 @@
                     {% if dia.compromissos %}
                     <ul class="cal-marcas">
                         {% for c in dia.compromissos %}
-                        <li class="cal-marca cal-marca--{{ c.tipo }}" title="{{ c.inicio|date:'H:i' }} · {{ c.titulo }}">
-                            <span class="ds-oculto">{{ c.inicio|date:'H:i' }} — </span>{{ c.titulo }}
+                        <li class="cal-marca cal-marca--{% if c.fase_id %}tarefa{% else %}{{ c.tipo }}{% endif %}{% if c.status == 'concluida' %} is-feita{% endif %}" title="{% if c.fase_id %}Tarefa · {{ c.fase.nome }}{% else %}{{ c.inicio|date:'H:i' }}{% endif %} · {{ c.titulo }}">
+                            {% if c.fase_id %}<span class="ds-oculto">Tarefa — </span>{% else %}<span class="ds-oculto">{{ c.inicio|date:'H:i' }} — </span>{% endif %}{{ c.titulo }}
                         </li>
                         {% endfor %}
                     </ul>
@@ -68,9 +67,31 @@
         </tbody>
     </table>
 
+    <section class="secao agenda-tarefas-mes">
+        <h2 class="secao-titulo ds-display">Tarefas previstas</h2>
+        <p class="secao-sub">Entregáveis das fases com data prevista neste mês.</p>
+        <ul class="agenda-lista agenda-lista--tarefas">
+            {% for tarefa in tarefas_do_mes %}
+            <li{% if tarefa.status == "concluida" %} class="is-feita"{% endif %}>
+                <div class="agenda-quando"><strong>{{ tarefa.prazo|date:"d/m" }}</strong><span>prazo</span></div>
+                <div class="agenda-info">
+                    <strong>{{ tarefa.titulo }}</strong>
+                    <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ tarefa.fase.nome }}</span>
+                    <p>{{ tarefa.projeto.nome }} · {{ tarefa.horas_previstas|floatformat:"0" }} h previstas{% if tarefa.status == "concluida" %} · feita{% endif %}</p>
+                </div>
+                <a class="linha-ico" href="{% url 'fase_detalhe' tarefa.fase_id %}#tarefas-fase" title="Abrir fase" aria-label="Abrir {{ tarefa.fase.nome }} de {{ tarefa.projeto.nome }}">
+                    {% include "core/_ico.html" with ico="seta" %}
+                </a>
+            </li>
+            {% empty %}
+            <li class="data-empty">Nenhuma tarefa com prazo neste mês.</li>
+            {% endfor %}
+        </ul>
+    </section>
+
     <section class="secao">
         <h2 class="secao-titulo ds-display">{{ titulo_mes|capfirst }}</h2>
-        <p class="secao-sub">Os compromissos do mês, em lista, com o que o calendário não cabe.</p>
+        <p class="secao-sub">Reuniões, visitas e outros compromissos do mês.</p>
         <ul class="agenda-lista">
             {% for c, form_edicao in do_mes %}
             <li>
@@ -96,13 +117,13 @@
                 <div class="agenda-acoes">
                     <button class="linha-ico" type="button" data-abre="modal-compromisso-{{ c.pk }}"
                             title="Editar" aria-label="Editar {{ c.titulo }}">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+                        {% include "core/_ico.html" with ico="editar" %}
                     </button>
                     <form method="post" action="{% url 'agenda_remover' c.pk %}" class="app-inline-form">
                         {% csrf_token %}
                         <button class="linha-ico linha-ico--risco" type="submit"
                                 title="Excluir" aria-label="Excluir {{ c.titulo }}">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M6 7l1 13h10l1-13"/></svg>
+                            {% include "core/_ico.html" with ico="excluir" %}
                         </button>
                     </form>
                 </div>
@@ -110,7 +131,7 @@
                 <dialog class="ds-modal" id="modal-compromisso-{{ c.pk }}" aria-labelledby="modal-compromisso-{{ c.pk }}-titulo">
                     <form method="dialog" class="ds-modal-fechar-form">
                         <button class="ds-modal-fechar" aria-label="Fechar">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                            {% include "core/_ico.html" with ico="fechar" %}
                         </button>
                     </form>
                     <h2 class="ds-modal-titulo ds-display" id="modal-compromisso-{{ c.pk }}-titulo">Editar compromisso</h2>
@@ -139,7 +160,7 @@
     <dialog class="ds-modal" id="modal-compromisso" aria-labelledby="modal-compromisso-titulo">
         <form method="dialog" class="ds-modal-fechar-form">
             <button class="ds-modal-fechar" aria-label="Fechar">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                {% include "core/_ico.html" with ico="fechar" %}
             </button>
         </form>
         <h2 class="ds-modal-titulo ds-display" id="modal-compromisso-titulo">Novo compromisso</h2>

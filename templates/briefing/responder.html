@@ -29,6 +29,7 @@
                 <span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span>
             </a>
             {% endif %}
+            <a class="ds-btn" href="{% url 'briefing_pdf' projeto.pk %}" target="_blank">Gerar PDF</a>
         </div>
         {% endif %}
     </header>
@@ -163,7 +164,7 @@
 
         <div class="form-actions briefing-salvar">
             <button class="ds-btn--acao" type="submit" form="briefing">
-                <span>Salvar briefing e seguir para a proposta</span>
+                <span>Salvar briefing</span>
                 {% include "core/_ico.html" with ico="seta" %}
             </button>
         </div>

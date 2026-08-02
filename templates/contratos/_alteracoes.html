@@ -1,0 +1,18 @@
+<section class="secao contrato-alteracoes" id="alteracoes-bloco">
+    <header class="contrato-secao-head"><div><h2 class="secao-titulo ds-display">Alterações contratuais</h2><p class="secao-sub">Escopo, aditivos, prazos e outras condições. O impacto financeiro pode aumentar, reduzir ou manter o valor contratado.</p></div></header>
+    <dl class="contrato-valores">
+        <div><dt>Valor original</dt><dd>R$ {{ contrato.valor_total }}</dd></div>
+        <div><dt>Impacto acumulado</dt><dd class="{% if impacto_alteracoes > 0 %}valor--entrada{% elif impacto_alteracoes < 0 %}valor--saida{% endif %}">{% if impacto_alteracoes > 0 %}+ {% endif %}R$ {{ impacto_alteracoes }}</dd></div>
+        <div><dt>Valor atualizado</dt><dd>R$ {{ valor_atualizado }}</dd></div>
+    </dl>
+    <form method="post" action="{% url 'contrato_alteracao' contrato.pk %}" class="contrato-alteracao-form" hx-post="{% url 'contrato_alteracao' contrato.pk %}" hx-target="#alteracoes-bloco" hx-swap="outerHTML">
+        {% csrf_token %}
+        <div class="contrato-campo contrato-campo--tipo">{{ form_alteracao.tipo.label_tag }}{{ form_alteracao.tipo }}</div>
+        <div class="contrato-campo contrato-campo--descricao">{{ form_alteracao.descricao.label_tag }}{{ form_alteracao.descricao }}</div>
+        <div class="contrato-campo contrato-campo--valor">{{ form_alteracao.valor_delta.label_tag }}{{ form_alteracao.valor_delta }}<small>{{ form_alteracao.valor_delta.help_text }}</small></div>
+        <button class="linha-ico linha-ico--mais" type="submit" title="Registrar alteração" aria-label="Registrar alteração">{% include "core/_ico.html" with ico="novo" %}</button>
+    </form>
+    <ol class="contrato-alteracoes-lista">
+        {% for alteracao in alteracoes %}{% include "contratos/_alteracao_linha.html" %}{% empty %}<li class="data-empty">Nenhuma alteração contratual registrada.</li>{% endfor %}
+    </ol>
+</section>

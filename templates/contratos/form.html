@@ -2,7 +2,7 @@
 {% block title %}{{ titulo }}{% endblock %}
 
 {% block content %}
-<section class="page page--narrow">
+<section class="page page--leitura">
     <header class="page-head">
         <span class="ds-kicker">Contratos</span>
         <h1 class="ds-h2 ds-display">{{ titulo }}</h1>
@@ -10,12 +10,20 @@
 
     {% include "core/_contexto_projeto.html" %}
 
-    <form method="post" class="ds-card form-card">
+    <form method="post" class="form-card contrato-editor">
         {% csrf_token %}
-        {{ form.as_p }}
+        <div class="form-dupla">
+            <p>{{ form.projeto.label_tag }}{{ form.projeto }}</p>
+            <p>{{ form.titulo.label_tag }}{{ form.titulo }}</p>
+            <p>{{ form.numero.label_tag }}{{ form.numero }}</p>
+            <p>{{ form.valor_total.label_tag }}{{ form.valor_total }}</p>
+            <p>{{ form.data_assinatura.label_tag }}{{ form.data_assinatura }}</p>
+        </div>
+        <p>{{ form.corpo.label_tag }}{{ form.corpo }}</p>
+        <p>{{ form.observacoes.label_tag }}{{ form.observacoes }}</p>
         <div class="form-actions">
-            <a class="ds-btn" href="{% if projeto %}{% url 'projeto_detalhe' projeto.pk %}{% else %}{% url 'contratos_lista' %}{% endif %}">Cancelar</a>
-            <button class="ds-btn ds-btn--solid" type="submit">Salvar</button>
+            <a class="ds-btn" href="{% if projeto %}{% url 'projeto_detalhe' projeto.pk %}{% else %}{% url 'projetos_painel' %}{% endif %}">Cancelar</a>
+            <button class="ds-btn ds-btn--solid" type="submit">Salvar contrato</button>
         </div>
     </form>
 </section>

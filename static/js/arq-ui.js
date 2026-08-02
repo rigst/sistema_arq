@@ -73,11 +73,35 @@
             if (form.method === "dialog" || form.hasAttribute("data-sem-espera")) return;
             /* Botão com formmethod="dialog" (o Cancelar) também só fecha. */
             if (e.submitter && e.submitter.formMethod === "dialog") return;
+            var remove = form.hasAttribute("data-confirmar-exclusao") ||
+                /remover|excluir|delete/i.test(form.action || "");
+            var desmarcouComplementar = Array.prototype.some.call(
+                form.querySelectorAll("[data-complementar-atual]"),
+                function (campo) { return !campo.checked; }
+            );
+            if ((remove || desmarcouComplementar) && !window.confirm(
+                desmarcouComplementar
+                    ? "Remover os complementares desmarcados e seus arquivos?"
+                    : "Excluir este item? Esta ação não pode ser desfeita."
+            )) {
+                e.preventDefault();
+                return;
+            }
             if (form.dataset.enviando === "1") { e.preventDefault(); return; }
             form.dataset.enviando = "1";
             var botao = form.querySelector('button[type="submit"], button:not([type])');
             if (botao) botao.classList.add("is-busy");
         });
+    }
+
+    function confirmarExclusaoHtmx() {
+        document.addEventListener("click", function (e) {
+            var botao = e.target.closest("[data-confirmar-exclusao][hx-post]");
+            if (botao && !window.confirm("Excluir este item? Esta ação não pode ser desfeita.")) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+            }
+        }, true);
     }
 
     /* Abertura de projeto em dois passos.
@@ -221,7 +245,7 @@
     }
 
     function iniciar() {
-        contarNumeros(); preencherBarras(); marcarEnvio();
+        contarNumeros(); preencherBarras(); marcarEnvio(); confirmarExclusaoHtmx();
         aberturaEmPassos(); avisos(); modais(); cronometro();
     }
 

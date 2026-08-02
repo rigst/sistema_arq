@@ -8,6 +8,9 @@ from projetos.models import Projeto
 class Contrato(EmpresaModel, Rastreavel):
     STATUS_CHOICES = [
         ("rascunho", "Rascunho"),
+        ("enviado", "Enviado ao cliente"),
+        ("ajustes", "Em alterações"),
+        ("aprovado", "Aprovado"),
         ("ativo", "Ativo (assinado)"),
         ("encerrado", "Encerrado"),
         ("cancelado", "Cancelado"),
@@ -40,6 +43,15 @@ class Contrato(EmpresaModel, Rastreavel):
     def cliente(self):
         return self.projeto.cliente
 
+    @property
+    def editavel(self):
+        """Um documento enviado só volta a mudar após uma decisão explícita."""
+        return self.status in {"rascunho", "ajustes"}
+
+    @property
+    def pronto_para_envio(self):
+        return bool(self.corpo.strip()) and self.valor_total > 0
+
 
 class Parcela(EmpresaModel):
     contrato = models.ForeignKey(Contrato, on_delete=models.CASCADE, related_name="parcelas")
@@ -66,8 +78,10 @@ class AlteracaoEscopo(EmpresaModel):
     """Registro append-only de alterações de escopo/aditivos por contrato."""
 
     TIPO_CHOICES = [
-        ("aditivo", "Aditivo (novo escopo)"),
         ("alteracao", "Alteração de escopo"),
+        ("aditivo", "Aditivo contratual"),
+        ("prazo", "Alteração de prazo"),
+        ("condicoes", "Condições contratuais"),
         ("aprovacao", "Aprovação registrada"),
     ]
 
@@ -109,6 +123,18 @@ class Documento(EmpresaModel):
     def __str__(self):
         return self.titulo
 
+    @property
+    def nome_arquivo(self):
+        from pathlib import Path
+
+        return Path(self.arquivo.name).name
+
+    @property
+    def extensao(self):
+        from pathlib import Path
+
+        return Path(self.arquivo.name).suffix.removeprefix(".").upper() or "ARQ"
+
 
 class ModeloContrato(EmpresaModel, Rastreavel):
     """Minuta reaproveitável. O corpo usa marcadores entre chaves duplas que
@@ -118,13 +144,21 @@ class ModeloContrato(EmpresaModel, Rastreavel):
     MARCADORES = {
         "{{cliente}}": "Nome do cliente",
         "{{cliente_documento}}": "CPF/CNPJ do cliente",
+        "{{cliente_email}}": "E-mail do cliente",
+        "{{cliente_telefone}}": "Telefone do cliente",
         "{{projeto}}": "Nome do projeto",
         "{{tipo_projeto}}": "Tipo do projeto",
         "{{escritorio}}": "Nome do escritório",
         "{{valor}}": "Valor total do contrato",
+        "{{horas}}": "Horas previstas",
         "{{data}}": "Data de hoje",
+        "{{data_inicio}}": "Data prevista de início",
         "{{prazo}}": "Data prevista de entrega",
+        "{{cronograma}}": "Datas previstas por fase",
+        "{{escopo}}": "Itens e valores da proposta",
         "{{endereco}}": "Endereço da obra",
+        "{{area_terreno}}": "Área do terreno",
+        "{{area_construida}}": "Área construída prevista",
     }
 
     nome = models.CharField(max_length=150)

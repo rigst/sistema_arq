@@ -2,6 +2,7 @@ import mimetypes
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Max, Sum
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -9,15 +10,18 @@ from django.views.decorators.http import require_POST
 
 from core.tenancy import queryset_da_empresa
 from projetos.models import Projeto
+from tarefas.models import Tarefa
 
 from . import catalogo
 from .forms import (
     ArquivoDaFaseForm,
+    FaseTarefaForm,
     LembreteForm,
     RenomearArquivoForm,
     RespostaClienteForm,
 )
 from .models import Fase, Lembrete, criar_complementares_avulsos, montar_fases
+from .services import garantir_tarefas_da_fase
 
 
 def _minhas(user):
@@ -43,7 +47,11 @@ def detalhe(request, pk):
         return redirect("briefing_responder", projeto_pk=fase.projeto_id)
     if fase.chave == "proposta":
         return _fase_proposta(request, fase)
+    if fase.chave == "contrato":
+        return _fase_contrato(request, fase)
+    garantir_tarefas_da_fase(fase, request.user)
     arquivos = list(fase.arquivos.select_related("criado_por").order_by("-criado_em"))
+    tarefas = fase.tarefas.all()
     return render(
         request,
         "fases/detalhe.html",
@@ -55,67 +63,28 @@ def detalhe(request, pk):
             "form_arquivo": ArquivoDaFaseForm(),
             "form_registro": LembreteForm(),
             "form_resposta": RespostaClienteForm(),
+            "tarefas": tarefas,
+            "tarefas_horas": tarefas.aggregate(total=Sum("horas_previstas"))["total"] or 0,
+            "form_tarefa": FaseTarefaForm(form_id=f"nova-tarefa-{fase.pk}"),
             "fases_projeto": fase.projeto.fases.all(),
-            "insumos": _insumos(fase),
         },
     )
 
 
 def _fase_proposta(request, fase):
-    """A fase de proposta e contrato, com as duas coisas na própria tela.
+    """A fase abre diretamente na proposta completa."""
+    from propostas.views import criar_proposta_do_projeto
 
-    Mandar para uma lista global de propostas e outra de contratos obrigava a
-    voltar duas vezes para conferir se o que foi feito era daquele projeto.
-    """
-    from contratos.models import Contrato, ModeloContrato
-    from propostas.models import Proposta
-
-    projeto = fase.projeto
-    proposta = getattr(projeto, "proposta_origem", None)
-    contrato = projeto.contratos.order_by("-criado_em").first()
-    return render(
-        request,
-        "fases/proposta.html",
-        {
-            "fase": fase,
-            "projeto": projeto,
-            "proposta": proposta,
-            "contrato": contrato,
-            "modelos": queryset_da_empresa(
-                ModeloContrato.objects.filter(ativo=True), request.user
-            ),
-            "arquivos": list(fase.arquivos.select_related("criado_por").order_by("-criado_em")),
-            "form_arquivo": ArquivoDaFaseForm(),
-            "form_resposta": RespostaClienteForm(),
-        },
-    )
+    proposta = criar_proposta_do_projeto(fase.projeto, request.user)
+    return redirect("proposta_detalhe", pk=proposta.pk)
 
 
-def _insumos(fase):
-    """O que a fase anterior deixou pronto e esta consome.
-
-    A partir do estudo preliminar, todo desenho parte do programa de
-    necessidades. Ter que abrir outra tela para lembrar quantos dormitórios o
-    cliente pediu é como o programa vira decorativo.
-    """
-    if fase.bloqueada:
-        messages.error(request, fase.impedimento)
-        return redirect(reverse("projeto_detalhe", kwargs={"pk": fase.projeto_id}) + "#fases")
-    if fase.chave == "briefing":
-        return None
-    briefing = getattr(fase.projeto, "briefing", None)
-    if briefing is None:
-        return None
-    ambientes = list(briefing.ambientes.all())
-    total = sum(a.area_total or 0 for a in ambientes)
-    return {
-        "briefing": briefing,
-        "ambientes": ambientes,
-        "area_total": total or None,
-        "referencias": briefing.referencias,
-        "estilo": briefing.estilo,
-        "restricoes": briefing.restricoes,
-    }
+def _fase_contrato(request, fase):
+    """O contrato só fica acessível quando a proposta já foi aprovada."""
+    contrato = fase.projeto.contratos.order_by("-criado_em").first()
+    if contrato is not None:
+        return redirect("contrato_detalhe", pk=contrato.pk)
+    return redirect(f"{reverse('contrato_novo')}?projeto={fase.projeto_id}")
 
 
 # ---------------------------------------------------------------- fluxo
@@ -125,6 +94,9 @@ def _insumos(fase):
 @login_required
 def enviar(request, pk):
     fase = get_object_or_404(_minhas(request.user), pk=pk)
+    if fase.chave in {"proposta", "contrato"}:
+        messages.info(request, "Envie e registre a resposta pelo documento desta fase.")
+        return redirect(_voltar(fase))
     if not fase.arquivos.exists():
         messages.error(
             request,
@@ -140,15 +112,118 @@ def enviar(request, pk):
 def responder(request, pk):
     """Registra o que o cliente respondeu: aprovou ou pediu ajustes."""
     fase = get_object_or_404(_minhas(request.user), pk=pk)
+    if fase.chave in {"proposta", "contrato"}:
+        messages.info(request, "Registre a resposta pelo documento desta fase.")
+        return redirect(_voltar(fase))
     form = RespostaClienteForm(request.POST)
     parecer = form.cleaned_data["parecer"] if form.is_valid() else ""
     aprovada = request.POST.get("decisao") == "aprovar"
     if fase.registrar_resposta(aprovada, parecer, request.user):
         if aprovada:
             messages.success(request, f"Cliente aprovou {fase.nome} de {fase.projeto.nome}. A próxima fase está liberada.")
+            proxima = (
+                fase.projeto.fases.filter(
+                    ordem__gt=fase.ordem, status=Fase.EM_ELABORACAO
+                )
+                .order_by("ordem", "id")
+                .first()
+            )
+            if proxima is not None:
+                return redirect("fase_detalhe", pk=proxima.pk)
         else:
             messages.success(request, f"Cliente pediu ajustes em {fase.nome} de {fase.projeto.nome}.")
     return redirect(_voltar(fase))
+
+
+def _tarefa_da_fase(user, pk):
+    return get_object_or_404(
+        queryset_da_empresa(Tarefa.objects.select_related("fase", "projeto"), user),
+        pk=pk,
+        fase__isnull=False,
+    )
+
+
+def _tarefas_ou_redirect(request, fase, form=None):
+    if request.headers.get("HX-Request"):
+        tarefas = fase.tarefas.all()
+        return render(
+            request,
+            "fases/_tarefas.html",
+            {
+                "fase": fase,
+                "tarefas": tarefas,
+                "tarefas_horas": tarefas.aggregate(total=Sum("horas_previstas"))["total"] or 0,
+                "form_tarefa": form
+                or FaseTarefaForm(form_id=f"nova-tarefa-{fase.pk}"),
+            },
+        )
+    return redirect(_voltar(fase) + "#tarefas-fase")
+
+
+@require_POST
+@login_required
+def adicionar_tarefa(request, pk):
+    fase = get_object_or_404(_minhas(request.user), pk=pk)
+    form = FaseTarefaForm(request.POST, form_id=f"nova-tarefa-{fase.pk}")
+    if form.is_valid():
+        tarefa = form.save(commit=False)
+        tarefa.empresa = fase.empresa
+        tarefa.criado_por = request.user
+        tarefa.projeto = fase.projeto
+        tarefa.fase = fase
+        maior_ordem = fase.tarefas.aggregate(maior=Max("ordem"))["maior"]
+        tarefa.ordem = 0 if maior_ordem is None else maior_ordem + 1
+        tarefa.save()
+        messages.success(request, "Tarefa adicionada.")
+        return _tarefas_ou_redirect(request, fase)
+    messages.error(request, "Informe a tarefa, a data e as horas previstas.")
+    return _tarefas_ou_redirect(request, fase, form)
+
+
+@login_required
+def editar_tarefa(request, pk):
+    tarefa = _tarefa_da_fase(request.user, pk)
+    form_id = f"editar-tarefa-{tarefa.pk}"
+    if request.method == "POST":
+        form = FaseTarefaForm(request.POST, instance=tarefa, form_id=form_id)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Tarefa atualizada.")
+            return _tarefas_ou_redirect(request, tarefa.fase)
+    else:
+        form = FaseTarefaForm(instance=tarefa, form_id=form_id)
+    return render(
+        request,
+        "fases/_tarefa_linha.html",
+        {"fase": tarefa.fase, "tarefa": tarefa, "form_edicao": form},
+    )
+
+
+@login_required
+def linha_tarefa(request, pk):
+    tarefa = _tarefa_da_fase(request.user, pk)
+    return render(
+        request, "fases/_tarefa_linha.html", {"fase": tarefa.fase, "tarefa": tarefa}
+    )
+
+
+@require_POST
+@login_required
+def alternar_tarefa(request, pk):
+    tarefa = _tarefa_da_fase(request.user, pk)
+    tarefa.status = "aberta" if tarefa.status == "concluida" else "concluida"
+    tarefa.save(update_fields=["status"])
+    return _tarefas_ou_redirect(request, tarefa.fase)
+
+
+@require_POST
+@login_required
+def remover_tarefa(request, pk):
+    tarefa = _tarefa_da_fase(request.user, pk)
+    fase = tarefa.fase
+    tarefa.delete()
+    messages.success(request, "Tarefa excluída.")
+    return _tarefas_ou_redirect(request, fase)
 
 
 @require_POST
@@ -247,17 +322,19 @@ def editar_complementares(request, projeto_pk):
             chave=catalogo.CHAVE_LIVRE
         )
     }
+    livres_marcados = set(request.POST.getlist("complementares_livres"))
 
-    # Desligar só o que está vazio: complementar com arquivo dentro guarda
-    # trabalho, e apagar isso por engano num modal seria irreversível.
     for chave in atuais - marcados:
         fase = projeto.fases.get(chave=chave)
-        if fase.arquivos.exists() or fase.status != Fase.NAO_INICIADA:
-            messages.error(
-                request,
-                f"“{fase.nome}” já tem trabalho registrado — remova pela própria fase.",
-            )
-            continue
+        for arquivo in fase.arquivos.all():
+            arquivo.arquivo.delete(save=False)
+        fase.delete()
+
+    for fase in projeto.fases.filter(chave=catalogo.CHAVE_LIVRE).exclude(
+        pk__in=livres_marcados
+    ):
+        for arquivo in fase.arquivos.all():
+            arquivo.arquivo.delete(save=False)
         fase.delete()
 
     montar_fases(projeto, complementares=marcados - atuais)
@@ -329,6 +406,28 @@ def _arquivo_da_empresa(user, pk):
     )
 
 
+@require_POST
+@login_required
+def alternar_favorito_arquivo(request, pk):
+    arquivo = _arquivo_da_empresa(request.user, pk)
+    if arquivo.fase_id is None:
+        raise Http404
+    arquivo.favorito = not arquivo.favorito
+    arquivo.save(update_fields=["favorito"])
+
+    if request.headers.get("HX-Request"):
+        if request.headers.get("HX-Target") == "arquivos-principais":
+            from projetos.views import contexto_arquivos_principais
+
+            return render(
+                request,
+                "projetos/_arquivos_principais.html",
+                contexto_arquivos_principais(arquivo.projeto),
+            )
+        return render(request, "fases/_arquivo_linha.html", {"a": arquivo})
+    return redirect(_voltar(arquivo.fase))
+
+
 @login_required
 def ver_arquivo(request, pk):
     """Serve o arquivo pelo sistema, e não pela pasta de mídia.
@@ -359,7 +458,7 @@ def renomear_arquivo(request, pk):
     destino = (
         reverse("fase_detalhe", kwargs={"pk": arquivo.fase_id})
         if arquivo.fase_id
-        else reverse("arquivos_lista")
+        else reverse("projeto_detalhe", kwargs={"pk": arquivo.projeto_id})
     )
     if request.method == "POST":
         antigo = arquivo.titulo
@@ -383,7 +482,11 @@ def renomear_arquivo(request, pk):
 def remover_arquivo(request, pk):
     arquivo = _arquivo_da_empresa(request.user, pk)
     fase = arquivo.fase
-    destino = reverse("fase_detalhe", kwargs={"pk": fase.pk}) if fase else reverse("arquivos_lista")
+    destino = (
+        reverse("fase_detalhe", kwargs={"pk": fase.pk})
+        if fase
+        else reverse("projeto_detalhe", kwargs={"pk": arquivo.projeto_id})
+    )
     titulo = arquivo.titulo
     arquivo.arquivo.delete(save=False)
     arquivo.delete()

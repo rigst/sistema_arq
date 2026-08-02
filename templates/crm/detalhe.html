@@ -13,7 +13,10 @@
                 · {{ cliente.get_origem_display }}
             </p>
         </div>
-        <a class="ds-btn" href="{% url 'crm_editar' cliente.pk %}">Editar</a>
+        <div class="cadastro-acoes">
+            <button class="linha-ico" type="button" data-abre="modal-cliente-editar" title="Editar" aria-label="Editar cliente">{% include "core/_ico.html" with ico="editar" %}</button>
+            <form method="post" action="{% url 'crm_remover' cliente.pk %}" data-confirmar-exclusao>{% csrf_token %}<button class="linha-ico linha-ico--risco" type="submit" title="Excluir" aria-label="Excluir cliente">{% include "core/_ico.html" with ico="excluir" %}</button></form>
+        </div>
     </header>
 
     <div class="detalhe-grid">
@@ -47,5 +50,12 @@
             </ul>
         </div>
     </div>
+
+    <dialog class="ds-modal" id="modal-cliente-editar" aria-labelledby="modal-cliente-editar-titulo">
+        <form method="dialog" class="ds-modal-fechar-form"><button class="ds-modal-fechar" aria-label="Fechar">{% include "core/_ico.html" with ico="fechar" %}</button></form>
+        <h2 class="ds-modal-titulo ds-display" id="modal-cliente-editar-titulo">Editar cliente</h2>
+        <p class="ds-modal-sub">{{ cliente.nome }}</p>
+        <div class="ds-modal-corpo"><form method="post" action="{% url 'crm_editar' cliente.pk %}" class="form-card">{% csrf_token %}{{ form_cliente.as_p }}<div class="form-actions"><button class="ds-btn" type="submit" formmethod="dialog" formnovalidate>Cancelar</button><button class="ds-btn ds-btn--solid" type="submit">Salvar</button></div></form></div>
+    </dialog>
 </section>
 {% endblock %}

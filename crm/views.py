@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import ProtectedError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -15,43 +16,48 @@ def lista_clientes(request):
     fase = request.GET.get("fase", "")
     if fase:
         clientes = clientes.filter(fase=fase)
+    clientes = list(clientes)
     return render(
         request,
         "crm/lista.html",
-        {"clientes": clientes, "fases": Cliente.FASE_CHOICES, "fase_ativa": fase},
+        {
+            "clientes": clientes,
+            "clientes_com_form": [
+                (cliente, ClienteForm(instance=cliente)) for cliente in clientes
+            ],
+            "form_cliente": ClienteForm(),
+            "fases": Cliente.FASE_CHOICES,
+            "fase_ativa": fase,
+        },
     )
 
 
+@require_POST
 @login_required
 def novo_cliente(request):
-    if request.method == "POST":
-        form = ClienteForm(request.POST)
-        if form.is_valid():
-            cliente = form.save(commit=False)
-            cliente.empresa = obter_grupo_empresa_ou_erro(request.user)
-            cliente.criado_por = request.user
-            cliente.save()
-            messages.success(request, "Cliente cadastrado.")
-            return redirect("crm_detalhe", pk=cliente.pk)
+    form = ClienteForm(request.POST)
+    if form.is_valid():
+        cliente = form.save(commit=False)
+        cliente.empresa = obter_grupo_empresa_ou_erro(request.user)
+        cliente.criado_por = request.user
+        cliente.save()
+        messages.success(request, "Cliente cadastrado.")
     else:
-        form = ClienteForm()
-    return render(request, "crm/form.html", {"form": form, "titulo": "Novo cliente"})
+        messages.error(request, "Confira os dados do cliente.")
+    return redirect("crm_lista")
 
 
+@require_POST
 @login_required
 def editar_cliente(request, pk):
     cliente = get_object_or_404(queryset_da_empresa(Cliente.objects.all(), request.user), pk=pk)
-    if request.method == "POST":
-        form = ClienteForm(request.POST, instance=cliente)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Cliente atualizado.")
-            return redirect("crm_detalhe", pk=cliente.pk)
+    form = ClienteForm(request.POST, instance=cliente)
+    if form.is_valid():
+        form.save()
+        messages.success(request, "Cliente atualizado.")
     else:
-        form = ClienteForm(instance=cliente)
-    return render(
-        request, "crm/form.html", {"form": form, "titulo": f"Editar {cliente.nome}"}
-    )
+        messages.error(request, "Confira os dados do cliente.")
+    return redirect("crm_lista")
 
 
 @login_required
@@ -64,8 +70,24 @@ def detalhe_cliente(request, pk):
             "cliente": cliente,
             "interacoes": cliente.interacoes.all(),
             "form_interacao": InteracaoForm(),
+            "form_cliente": ClienteForm(instance=cliente),
         },
     )
+
+
+@require_POST
+@login_required
+def remover_cliente(request, pk):
+    cliente = get_object_or_404(queryset_da_empresa(Cliente.objects.all(), request.user), pk=pk)
+    try:
+        cliente.delete()
+        messages.success(request, "Cliente excluído.")
+    except ProtectedError:
+        messages.error(
+            request,
+            "Este cliente possui projetos ou propostas vinculados e não pode ser excluído.",
+        )
+    return redirect("crm_lista")
 
 
 @require_POST

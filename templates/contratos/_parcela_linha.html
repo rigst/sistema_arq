@@ -1,0 +1,26 @@
+{% load l10n %}
+{% if form_edicao %}
+<tr id="parcela-{{ parcela.pk }}" class="is-editando">
+    <td>{{ parcela.numero }}</td>
+    <td><label class="ds-oculto" for="parcela-desc-{{ parcela.pk }}">Descrição</label><input id="parcela-desc-{{ parcela.pk }}" type="text" name="descricao" value="{{ parcela.descricao }}" form="edita-parcela-{{ parcela.pk }}"></td>
+    <td><label class="ds-oculto" for="parcela-venc-{{ parcela.pk }}">Vencimento</label><input id="parcela-venc-{{ parcela.pk }}" type="date" name="vencimento" value="{{ parcela.vencimento|date:'Y-m-d' }}" form="edita-parcela-{{ parcela.pk }}" required></td>
+    <td class="num"><label class="ds-oculto" for="parcela-valor-{{ parcela.pk }}">Valor</label><input id="parcela-valor-{{ parcela.pk }}" type="number" step="0.01" name="valor" value="{{ parcela.valor|unlocalize }}" form="edita-parcela-{{ parcela.pk }}" required></td>
+    <td>{% if parcela.paga %}<span class="valor--entrada">Paga</span>{% else %}Pendente{% endif %}</td>
+    <td><div class="agenda-acoes">
+        <form id="edita-parcela-{{ parcela.pk }}" method="post" hx-post="{% url 'parcela_editar' parcela.pk %}" hx-target="#parcelas-bloco" hx-swap="outerHTML">
+            {% csrf_token %}
+            <button class="linha-ico linha-ico--mais" type="submit" title="Salvar" aria-label="Salvar parcela">{% include "core/_ico.html" with ico="ok" %}</button>
+        </form>
+        <button class="linha-ico" type="button" title="Cancelar" aria-label="Cancelar edição" hx-get="{% url 'parcela_linha' parcela.pk %}" hx-target="#parcela-{{ parcela.pk }}" hx-swap="outerHTML">{% include "core/_ico.html" with ico="fechar" %}</button>
+    </div></td>
+</tr>
+{% else %}
+<tr id="parcela-{{ parcela.pk }}">
+    <td>{{ parcela.numero }}</td><td>{{ parcela.descricao|default:"Parcela" }}</td><td>{{ parcela.vencimento|date:"d/m/Y" }}</td><td class="num">R$ {{ parcela.valor }}</td>
+    <td><form method="post" hx-post="{% url 'parcela_alternar' parcela.pk %}" hx-target="#parcelas-bloco" hx-swap="outerHTML">{% csrf_token %}<button class="app-link-btn {% if parcela.paga %}valor--entrada{% endif %}" type="submit">{% if parcela.paga %}Paga{% else %}Pendente{% endif %}</button></form></td>
+    <td><div class="agenda-acoes">
+        <button class="linha-ico" type="button" title="Editar" aria-label="Editar parcela {{ parcela.numero }}" hx-get="{% url 'parcela_editar' parcela.pk %}" hx-target="#parcela-{{ parcela.pk }}" hx-swap="outerHTML">{% include "core/_ico.html" with ico="editar" %}</button>
+        <button class="linha-ico linha-ico--risco" type="button" title="Excluir" aria-label="Excluir parcela {{ parcela.numero }}" data-confirmar-exclusao hx-post="{% url 'parcela_remover' parcela.pk %}" hx-target="#parcelas-bloco" hx-swap="outerHTML" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% include "core/_ico.html" with ico="excluir" %}</button>
+    </div></td>
+</tr>
+{% endif %}

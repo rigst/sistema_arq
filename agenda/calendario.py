@@ -39,6 +39,8 @@ def dia_local(compromisso):
     logo abaixo — que o template converte para o fuso local — mostrava a
     segunda. Dois dias diferentes para o mesmo compromisso, na mesma tela.
     """
+    if getattr(compromisso, "prazo", None):
+        return compromisso.prazo
     return timezone.localtime(compromisso.inicio).date()
 
 

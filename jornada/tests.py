@@ -28,7 +28,10 @@ class RoteiroTests(TestCase):
         etapas = montar_roteiro(self.projeto)
         self.assertEqual(
             [e.chave for e in etapas],
-            ["briefing", "proposta", "estudo_preliminar", "anteprojeto", "executivo"],
+            [
+                "briefing", "proposta", "contrato", "estudo_preliminar",
+                "anteprojeto", "executivo",
+            ],
         )
         self.assertEqual(proxima_etapa(etapas).chave, "briefing")
         self.assertEqual(percentual(etapas), 0)
@@ -40,7 +43,7 @@ class RoteiroTests(TestCase):
         etapas = montar_roteiro(self.projeto)
         self.assertTrue(etapas[0].concluida)
         self.assertEqual(proxima_etapa(etapas).chave, "proposta")
-        self.assertEqual(percentual(etapas), 20)
+        self.assertEqual(percentual(etapas), 17)
 
     def test_proxima_prioriza_a_fase_ja_aberta(self):
         """Uma fase em elaboração pede mais atenção do que a seguinte, que nem
@@ -66,7 +69,7 @@ class RoteiroTests(TestCase):
         projeto = Projeto.objects.get(nome="Apartamento Vila Nova")
         # Depois de criado, o primeiro trabalho real é o briefing.
         self.assertRedirects(
-            resposta, f"/briefing/projeto/{projeto.pk}/responder/", target_status_code=302
+            resposta, f"/briefing/projeto/{projeto.pk}/responder/"
         )
         self.assertEqual(projeto.status, "ativo")
         self.assertEqual(projeto.cliente.nome, "João Pereira")
@@ -90,21 +93,6 @@ class RoteiroTests(TestCase):
         )
         self.assertEqual(resposta.status_code, 200)
         self.assertFalse(Projeto.objects.filter(nome="Sem cliente").exists())
-
-    def test_roteiro_de_outra_empresa_da_404(self):
-        outro_grupo = Group.objects.create(name="Outro escritório")
-        intruso = Usuario.objects.create_user(username="intruso", password="senha-de-teste-2")
-        # Todo usuário novo entra na empresa padrão por signal; aqui o intruso
-        # precisa pertencer só ao outro escritório.
-        intruso.groups.clear()
-        intruso.groups.add(outro_grupo)
-        self.client.force_login(intruso)
-        aceitar_documentos(intruso)
-        self.assertEqual(self.client.get(f"/projeto-novo/{self.projeto.pk}/").status_code, 404)
-
-    def test_rota_antiga_do_roteiro_encaminha_para_o_projeto(self):
-        resposta = self.client.get(f"/projeto-novo/{self.projeto.pk}/")
-        self.assertRedirects(resposta, f"/projetos/{self.projeto.pk}/")
 
     def test_ficha_do_projeto_traz_as_fases(self):
         resposta = self.client.get(f"/projetos/{self.projeto.pk}/")
@@ -143,6 +131,9 @@ class RoteiroTests(TestCase):
 
     def test_formulario_aberto_do_projeto_ja_vem_preenchido(self):
         """O ganho todo do contexto: não redigitar o que o sistema já sabe."""
+        self.projeto.fases.filter(chave__in=("briefing", "proposta")).update(
+            status=Fase.APROVADA
+        )
         resposta = self.client.get(f"/contratos/novo/?projeto={self.projeto.pk}")
         form = resposta.context["form"]
         self.assertEqual(form.fields["projeto"].initial, self.projeto.pk)
@@ -151,14 +142,14 @@ class RoteiroTests(TestCase):
         self.assertContains(resposta, "Dentro do projeto")
 
     def test_proposta_criada_do_projeto_fecha_o_laco(self):
-        self.client.post(
-            f"/propostas/nova/?projeto={self.projeto.pk}",
-            {"titulo": "Proposta — Casa", "tipo_projeto": "residencial"},
-        )
+        self.projeto.fases.filter(chave="briefing").update(status=Fase.APROVADA)
+        fase = self.projeto.fases.get(chave="proposta")
+        resposta = self.client.get(f"/fases/{fase.pk}/")
         self.projeto.refresh_from_db()
         proposta = getattr(self.projeto, "proposta_origem", None)
         self.assertIsNotNone(proposta)
         self.assertEqual(proposta.cliente, self.projeto.cliente)
+        self.assertRedirects(resposta, f"/propostas/{proposta.pk}/")
 
 
     def test_projeto_de_outra_empresa_nao_vira_contexto(self):

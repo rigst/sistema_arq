@@ -29,6 +29,9 @@ class PropostaForm(ArqModelForm):
         super().__init__(*args, **kwargs)
         if user is not None:
             self.fields["cliente"].queryset = queryset_da_empresa(Cliente.objects.all(), user)
+        if self.instance and self.instance.pk and self.instance.projeto_gerado_id:
+            self.fields["cliente"].disabled = True
+            self.fields["tipo_projeto"].disabled = True
         if projeto is not None:
             # Vindo de um projeto, cliente e tipo já estão decididos: não faz
             # sentido perguntar de novo, e errar aqui desliga a proposta do

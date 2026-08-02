@@ -14,8 +14,20 @@
         <tr><td>{{ item.descricao }}</td><td>{{ item.horas_estimadas }}</td><td class="total">R$ {{ item.valor }}</td></tr>
     {% endfor %}
     </tbody>
-    <tfoot><tr><th>Total</th><th></th><th class="total">R$ {{ proposta.valor_total }}</th></tr></tfoot>
+    <tfoot><tr><th>Total</th><th>{{ proposta.horas_totais|floatformat:"0" }} h</th><th class="total">R$ {{ proposta.valor_total }}<br><span class="muted">R$ {{ proposta.hora_tecnica_aplicada }}/h</span></th></tr></tfoot>
 </table>
+
+{% if fases_entrega %}
+<div class="bloco"><h3>Datas previstas de entrega</h3></div>
+<table>
+    <thead><tr><th>Fase / projeto complementar</th><th class="total">Data prevista</th></tr></thead>
+    <tbody>
+    {% for fase in fases_entrega %}
+        <tr><td>{{ fase.nome }}</td><td class="total">{{ fase.prazo|date:"d/m/Y"|default:"A definir" }}</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
 
 {% if proposta.observacoes %}
 <div class="bloco"><h3>Observações</h3><p>{{ proposta.observacoes|linebreaksbr }}</p></div>

@@ -36,10 +36,14 @@ class Tarefa(EmpresaModel, Rastreavel):
     )
     criterio_pronto = models.CharField(max_length=200, blank=True, verbose_name="critério de pronto")
     prazo = models.DateField(null=True, blank=True)
+    horas_previstas = models.DecimalField(
+        max_digits=8, decimal_places=2, default=0, verbose_name="horas previstas"
+    )
+    ordem = models.PositiveIntegerField(default=0)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="aberta")
 
     class Meta:
-        ordering = ["status", "prazo", "-id"]
+        ordering = ["ordem", "id"]
         verbose_name = "tarefa"
         verbose_name_plural = "tarefas"
 

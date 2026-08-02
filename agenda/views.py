@@ -9,6 +9,9 @@ from django.views.decorators.http import require_POST
 
 from core.contexto import projeto_do_pedido
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
+from fases.models import Fase
+from fases.services import garantir_tarefas_da_fase
+from tarefas.models import Tarefa
 
 from . import calendario
 from .forms import CompromissoForm
@@ -58,7 +61,30 @@ def agenda(request):
     semanas = calendario.montar_mes(ano, mes, [], hoje)
     primeiro, ultimo = semanas[0][0].data, semanas[-1][-1].data
     do_periodo = base.filter(inicio__date__gte=primeiro, inicio__date__lte=ultimo)
-    semanas = calendario.montar_mes(ano, mes, do_periodo, hoje)
+
+    fases_tecnicas = queryset_da_empresa(
+        Fase.objects.select_related("projeto").filter(tarefas_semeadas=False).exclude(
+            chave__in={"briefing", "proposta", "contrato"}
+        ),
+        request.user,
+    )
+    if projeto is not None:
+        fases_tecnicas = fases_tecnicas.filter(projeto=projeto)
+    for fase in fases_tecnicas:
+        garantir_tarefas_da_fase(fase, request.user)
+
+    tarefas = queryset_da_empresa(
+        Tarefa.objects.select_related("projeto", "fase").filter(
+            fase__isnull=False, prazo__gte=primeiro, prazo__lte=ultimo
+        ),
+        request.user,
+    )
+    if projeto is not None:
+        tarefas = tarefas.filter(projeto=projeto)
+    tarefas = tarefas.order_by("prazo", "fase__ordem", "ordem", "id")
+    semanas = calendario.montar_mes(
+        ano, mes, [*do_periodo, *tarefas], hoje
+    )
 
     anterior, seguinte = calendario.vizinhos(ano, mes)
     return render(
@@ -80,6 +106,7 @@ def agenda(request):
                 for c in do_periodo
                 if calendario.dia_local(c).month == mes
             ],
+            "tarefas_do_mes": [t for t in tarefas if t.prazo.month == mes],
             "proximos": base.filter(inicio__gte=timezone.now())[:8],
         },
     )

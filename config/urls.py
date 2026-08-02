@@ -31,7 +31,6 @@ urlpatterns = [
     path("diagnostico/", include("diagnostico.urls")),
     path("fornecedores/", include("fornecedores.urls")),
     path("orcamentos/", include("orcamentos.urls")),
-    path("arquivos/", include("arquivos.urls")),
     path("projeto-novo/", include("jornada.urls")),
     path("fases/", include("fases.urls")),
     path("modelos/", include("modelos.urls")),
