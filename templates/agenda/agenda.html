@@ -30,10 +30,15 @@
     <div class="cal-topo">
         <a class="cal-passo" href="?ano={{ anterior.ano|unlocalize }}&amp;mes={{ anterior.mes|unlocalize }}{% if projeto %}&amp;projeto={{ projeto.pk }}{% endif %}" aria-label="Mês anterior">←</a>
         <h2 class="cal-mes ds-display">{{ titulo_mes|capfirst }}</h2>
-        <a class="cal-passo" href="?ano={{ seguinte.ano|unlocalize }}&amp;mes={{ seguinte.mes|unlocalize }}{% if projeto %}&amp;projeto={{ projeto.pk }}{% endif %}" aria-label="Próximo mês">→</a>
+        {% comment %}
+        "Hoje" fica entre as setas: ele é um atalho dentro da navegação de mês,
+        e a seta de avançar precisa fechar o grupo à direita — botão de sair da
+        sequência no fim da sequência confunde qual dos dois avança.
+        {% endcomment %}
         {% if not eh_mes_corrente %}
         <a class="cal-hoje" href="?{% if projeto %}projeto={{ projeto.pk }}{% endif %}">Hoje</a>
         {% endif %}
+        <a class="cal-passo" href="?ano={{ seguinte.ano|unlocalize }}&amp;mes={{ seguinte.mes|unlocalize }}{% if projeto %}&amp;projeto={{ projeto.pk }}{% endif %}" aria-label="Próximo mês">→</a>
     </div>
 
     <table class="cal">

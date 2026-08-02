@@ -21,7 +21,7 @@
 
     <div class="kpi-row">
         {% for k in kpis %}
-        <a class="kpi kpi--{{ k.cor }}" href="{% url k.url %}">
+        <a class="kpi kpi--{{ k.cor }}{% if k.aceso %} is-aceso{% endif %}" href="{% url k.url %}">
             <span class="kpi-label">{{ k.label }}</span>
             <strong class="kpi-value num">{{ k.valor }}</strong>
             <span class="kpi-foot">{{ k.rodape }}</span>

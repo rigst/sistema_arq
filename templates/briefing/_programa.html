@@ -2,10 +2,24 @@
 Programa de necessidades. Trocado no lugar por htmx: adicionar um ambiente
 recarregando a página apagaria tudo que já foi marcado no roteiro acima —
 o briefing é preenchido durante a reunião, e perder isso é perder a conversa.
+
+A linha de adicionar é a última linha do corpo da tabela, e não uma régua
+solta embaixo: só assim "Ambiente", "m²" e "Uso" caem exatamente sob as suas
+colunas. Os campos moram fora da tag <form> (não se põe <form> dentro de
+<tr>) e chegam nela pelo atributo form — que o FormData do htmx respeita.
 {% endcomment %}
 <div id="programa-bloco">
+    {% if editando %}
+    <form id="programa-add"
+          hx-post="{% url 'briefing_add_ambiente' projeto.pk %}"
+          hx-target="#programa-bloco" hx-swap="outerHTML"
+          hx-on::after-request="if(event.detail.successful) this.reset()">
+        {% csrf_token %}
+    </form>
+    {% endif %}
+
     <div class="table-scroll">
-    <table class="data-table">
+    <table class="data-table data-table--programa">
         <thead><tr>
             <th scope="col">Ambiente</th>
             <th scope="col" class="num">m²</th>
@@ -31,8 +45,36 @@ o briefing é preenchido durante a reunião, e perder isso é perder a conversa.
                 {% endif %}
             </tr>
         {% empty %}
-            <tr><td colspan="4" class="data-empty">Nenhum ambiente listado.</td></tr>
+            {% if not editando %}
+            <tr><td colspan="3" class="data-empty">Nenhum ambiente listado.</td></tr>
+            {% endif %}
         {% endfor %}
+
+        {% if editando %}
+        <tr class="linha-add">
+            <td>
+                <label class="ds-oculto" for="amb-nome">Ambiente</label>
+                <input type="text" name="nome" id="amb-nome" form="programa-add"
+                       placeholder="Ambiente" maxlength="100" required>
+            </td>
+            <td class="num">
+                <label class="ds-oculto" for="amb-area">Área em m²</label>
+                <input type="number" name="area_aprox" id="amb-area" form="programa-add"
+                       step="0.01" placeholder="0,00">
+            </td>
+            <td>
+                <label class="ds-oculto" for="amb-uso">Uso</label>
+                <input type="text" name="uso" id="amb-uso" form="programa-add"
+                       placeholder="Uso" maxlength="200">
+            </td>
+            <td>
+                <button class="linha-ico linha-ico--mais" type="submit" form="programa-add"
+                        title="Adicionar ambiente" aria-label="Adicionar ambiente">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                </button>
+            </td>
+        </tr>
+        {% endif %}
         </tbody>
         {% if area_programa %}
         <tfoot><tr>
@@ -43,20 +85,4 @@ o briefing é preenchido durante a reunião, e perder isso é perder a conversa.
         {% endif %}
     </table>
     </div>
-
-    {% if editando %}
-    <form class="programa-add"
-          hx-post="{% url 'briefing_add_ambiente' projeto.pk %}"
-          hx-target="#programa-bloco" hx-swap="outerHTML"
-          hx-on::after-request="if(event.detail.successful) this.reset()">
-        {% csrf_token %}
-        <label class="ds-oculto" for="amb-nome">Ambiente</label>
-        <input type="text" name="nome" id="amb-nome" placeholder="Ambiente" maxlength="100" required>
-        <label class="ds-oculto" for="amb-area">Área em m²</label>
-        <input type="number" name="area_aprox" id="amb-area" step="0.01" placeholder="m²">
-        <label class="ds-oculto" for="amb-uso">Uso</label>
-        <input type="text" name="uso" id="amb-uso" placeholder="Uso" maxlength="200">
-        <button class="ds-btn" type="submit">Adicionar</button>
-    </form>
-    {% endif %}
 </div>

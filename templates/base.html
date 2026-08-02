@@ -184,6 +184,44 @@
     </div>
     {% endif %}
 
+    {% comment %}
+    Cronômetro em andamento: fica visível em toda tela, acima dos avisos. Quem
+    começa a contar e sai da página do projeto precisa continuar vendo o relógio
+    — o registro esquecido aberto é pior do que não ter registrado nada.
+    {% endcomment %}
+    {% if cronometro %}
+    <div class="cronometro-flutuante{% if cronometro.pausado %} is-pausado{% endif %}"
+         data-cronometro data-segundos="{{ cronometro.segundos|floatformat:0 }}"
+         {% if cronometro.pausado %}data-parado="1"{% endif %}
+         role="status" aria-live="off">
+        <div class="cron-id">
+            <span class="cron-rot">{% if cronometro.pausado %}Pausado{% else %}Contando{% endif %}</span>
+            <strong class="cron-tempo num" data-cron-visor>00:00:00</strong>
+            <span class="cron-desc">
+                {{ cronometro.descricao }}{% if cronometro.projeto %} · {{ cronometro.projeto.nome }}{% endif %}
+            </span>
+        </div>
+        <div class="cron-acoes">
+            <form method="post" action="{% url 'timer_pausar' %}">
+                {% csrf_token %}
+                <button class="linha-ico" type="submit"
+                        title="{% if cronometro.pausado %}Retomar{% else %}Pausar{% endif %}"
+                        aria-label="{% if cronometro.pausado %}Retomar cronômetro{% else %}Pausar cronômetro{% endif %}">
+                    {% if cronometro.pausado %}
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                    {% else %}
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h3v14H7zM14 5h3v14h-3z"/></svg>
+                    {% endif %}
+                </button>
+            </form>
+            <form method="post" action="{% url 'timer_parar' %}">
+                {% csrf_token %}
+                <button class="ds-btn cron-parar" type="submit">Parar e registrar</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
     <script src="{% static 'js/htmx.min.js' %}" nonce="{{ request.csp_nonce }}"></script>
     <script src="{% static 'js/stolben-ui.js' %}" nonce="{{ request.csp_nonce }}"></script>
     <script src="{% static 'js/arq-ui.js' %}" nonce="{{ request.csp_nonce }}"></script>

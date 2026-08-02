@@ -1,0 +1,62 @@
+{% comment %}
+Os itens da proposta e o total. Trocado inteiro a cada mudança: o total mora no
+rodapé e precisa acompanhar qualquer linha que entre, saia ou mude de horas.
+
+A linha de adicionar abre o corpo da tabela, logo abaixo do cabeçalho: é o
+gesto mais repetido da tela, e no fim de uma lista longa ela desaparece. Sendo
+uma <tr>, "Descrição" e "Horas" caem exatamente sob as colunas que os nomeiam.
+{% endcomment %}
+<div id="itens-bloco">
+    <div class="table-scroll">
+    <table class="data-table">
+        <thead><tr>
+            <th scope="col">Descrição</th>
+            <th scope="col" class="num">Horas</th>
+            <th scope="col" class="num">Valor</th>
+            <th scope="col"><span class="ds-oculto">Ações</span></th>
+        </tr></thead>
+        <tbody>
+        {% if proposta.editavel %}
+        <tr class="linha-add">
+            <td>
+                <label class="ds-oculto" for="novo-item-desc">Descrição</label>
+                <input type="text" name="descricao" id="novo-item-desc" form="add-item"
+                       placeholder="Ambiente ou etapa" maxlength="200" required>
+            </td>
+            <td class="num">
+                <label class="ds-oculto" for="novo-item-horas">Horas</label>
+                <input type="number" name="horas_estimadas" id="novo-item-horas" form="add-item"
+                       step="any" min="0" placeholder="0,00" required>
+            </td>
+            <td class="num">precifica ao somar</td>
+            <td>
+                <button class="linha-ico linha-ico--mais" type="submit" form="add-item"
+                        title="Precificar e adicionar" aria-label="Precificar e adicionar item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                </button>
+            </td>
+        </tr>
+        {% endif %}
+        {% for item in itens %}
+            {% include "propostas/_item_linha.html" with item=item %}
+        {% empty %}
+            {% if not proposta.editavel %}
+            <tr><td colspan="4" class="data-empty">Nenhum item nesta proposta.</td></tr>
+            {% endif %}
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    {% if proposta.editavel %}
+    {# Fora da tabela: os campos da linha chegam nele pelo atributo form. #}
+    <form method="post" action="{% url 'proposta_add_item' proposta.pk %}" id="add-item">{% csrf_token %}</form>
+    {% endif %}
+
+    {# O total é o que o cliente lê primeiro; no rodapé da tabela ele era mais uma linha. #}
+    <div class="proposta-total">
+        <span class="ds-kicker">Total da proposta</span>
+        <strong class="proposta-total-valor num">R$ {{ proposta.valor_total }}</strong>
+        <span class="proposta-total-horas num">{{ proposta.horas_totais }} h · R$ {{ proposta.hora_tecnica_aplicada }}/h</span>
+    </div>
+</div>

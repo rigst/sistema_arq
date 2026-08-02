@@ -42,6 +42,23 @@ class Proposta(EmpresaModel, Rastreavel):
     def valor_total(self):
         return sum((item.valor for item in self.itens.all()), Decimal("0"))
 
+    @property
+    def horas_totais(self):
+        return sum((item.horas_estimadas for item in self.itens.all()), Decimal("0"))
+
+    @property
+    def editavel(self):
+        """Depois de enviada, mexer nos valores é mudar o que o cliente já viu.
+
+        Corrigir continua possível — mas exige voltar a proposta para edição,
+        de propósito: o gesto tem de ser deliberado, e fica registrado.
+        """
+        return self.status == "rascunho"
+
+    @property
+    def aguardando_cliente(self):
+        return self.status == "enviada"
+
 
 class ItemProposta(EmpresaModel):
     """Ambiente/etapa da proposta com horas estimadas e valor calculado."""

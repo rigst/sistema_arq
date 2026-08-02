@@ -42,7 +42,7 @@
         <select name="template" id="troca-roteiro">
             {% for t in templates %}<option value="{{ t.pk }}" {% if t.pk == template.pk %}selected{% endif %}>{{ t.nome }}</option>{% endfor %}
         </select>
-        <button class="ds-btn" type="submit">Trocar</button>
+        <button class="ds-btn" type="submit">Aplicar</button>
     </form>
     {% endif %}
 

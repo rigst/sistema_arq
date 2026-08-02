@@ -179,13 +179,122 @@ def adicionar_item(request, pk):
     return redirect("proposta_detalhe", pk=proposta.pk)
 
 
+@login_required
+def editar_item(request, pk):
+    """Edição no lugar: a linha vira campos e volta pronta.
+
+    Uma tela só para corrigir "40 h" para "36 h" custa mais do que a correção,
+    e obriga a perder de vista o resto da proposta — que é justamente o que se
+    está comparando ao mexer numa linha.
+    """
+    item = get_object_or_404(
+        queryset_da_empresa(ItemProposta.objects.select_related("proposta"), request.user), pk=pk
+    )
+    proposta = item.proposta
+    if not proposta.editavel:
+        messages.info(request, "Proposta enviada; volte-a para edição antes de mexer nos itens.")
+        return redirect("proposta_detalhe", pk=proposta.pk)
+
+    if request.method == "POST":
+        form = ItemPropostaForm(request.POST, instance=item)
+        if form.is_valid():
+            item = form.save(commit=False)
+            calc = precificar_etapa(
+                proposta.empresa, item.horas_estimadas,
+                hora_tecnica=proposta.hora_tecnica_aplicada,
+            )
+            item.valor = calc["total"]
+            item.save()
+            messages.success(request, f"“{item.descricao}” atualizado.")
+            return _itens_ou_redirect(request, proposta)
+        messages.error(request, "Informe descrição e horas.")
+        return _itens_ou_redirect(request, proposta)
+
+    # GET: devolve só a linha, em modo de edição.
+    return render(
+        request,
+        "propostas/_item_linha.html",
+        {"item": item, "proposta": proposta, "form_edicao": ItemPropostaForm(instance=item)},
+    )
+
+
+@login_required
+def linha_item(request, pk):
+    """A mesma linha em leitura — é o que o Cancelar da edição traz de volta."""
+    item = get_object_or_404(
+        queryset_da_empresa(ItemProposta.objects.select_related("proposta"), request.user), pk=pk
+    )
+    return render(
+        request, "propostas/_item_linha.html", {"item": item, "proposta": item.proposta}
+    )
+
+
+def _itens_ou_redirect(request, proposta):
+    """Troca só o bloco de itens quando quem pediu foi o htmx.
+
+    O total mora no rodapé da tabela: devolver a linha sozinha deixaria o
+    número velho na tela, que é pior do que não atualizar nada.
+    """
+    if request.headers.get("HX-Request"):
+        return render(
+            request,
+            "propostas/_itens.html",
+            {
+                "proposta": proposta,
+                "itens": proposta.itens.all(),
+                "form_item": ItemPropostaForm(),
+            },
+        )
+    return redirect("proposta_detalhe", pk=proposta.pk)
+
+
 @require_POST
 @login_required
 def remover_item(request, pk):
-    item = get_object_or_404(queryset_da_empresa(ItemProposta.objects.all(), request.user), pk=pk)
-    proposta_pk = item.proposta_id
+    item = get_object_or_404(
+        queryset_da_empresa(ItemProposta.objects.select_related("proposta"), request.user), pk=pk
+    )
+    proposta = item.proposta
+    if not proposta.editavel:
+        messages.info(request, "Proposta enviada; volte-a para edição antes de mexer nos itens.")
+        return redirect("proposta_detalhe", pk=proposta.pk)
     item.delete()
-    return redirect("proposta_detalhe", pk=proposta_pk)
+    return _itens_ou_redirect(request, proposta)
+
+
+@require_POST
+@login_required
+def finalizar_proposta(request, pk):
+    """Fecha a proposta e a manda ao cliente. A partir daqui, ela não muda."""
+    proposta = get_object_or_404(queryset_da_empresa(Proposta.objects.all(), request.user), pk=pk)
+    if not proposta.editavel:
+        messages.info(request, "Esta proposta já foi enviada.")
+        return redirect("proposta_detalhe", pk=proposta.pk)
+    if not proposta.itens.exists():
+        messages.error(request, "Uma proposta sem itens não tem o que enviar.")
+        return redirect("proposta_detalhe", pk=proposta.pk)
+
+    proposta.status = "enviada"
+    proposta.save(update_fields=["status"])
+    messages.success(
+        request, f"“{proposta.titulo}” enviada ao cliente por R$ {proposta.valor_total}."
+    )
+    return redirect("proposta_detalhe", pk=proposta.pk)
+
+
+@require_POST
+@login_required
+def reabrir_proposta(request, pk):
+    """Cliente não aprovou: volta para edição, para refazer e mandar de novo."""
+    proposta = get_object_or_404(queryset_da_empresa(Proposta.objects.all(), request.user), pk=pk)
+    if proposta.status == "aprovada":
+        messages.info(request, "Proposta aprovada não volta para edição.")
+        return redirect("proposta_detalhe", pk=proposta.pk)
+
+    proposta.status = "rascunho"
+    proposta.save(update_fields=["status"])
+    messages.success(request, "Proposta reaberta. Ajuste o que for preciso e envie de novo.")
+    return redirect("proposta_detalhe", pk=proposta.pk)
 
 
 @login_required
@@ -212,10 +321,22 @@ def proposta_pdf(request, pk):
 @require_POST
 @login_required
 def aprovar_proposta(request, pk):
-    """Aprovar gera o projeto (com etapas) — elo Proposta → Projeto da jornada."""
+    """Cliente aprovou. Sem projeto ainda, aprovar também o cria com as fases.
+
+    Nascida dentro de um projeto (fase de proposta), ela já tem o seu — criar
+    outro duplicaria o mesmo trabalho em duas fichas.
+    """
     proposta = get_object_or_404(queryset_da_empresa(Proposta.objects.all(), request.user), pk=pk)
+    if proposta.status == "aprovada":
+        messages.info(request, "Esta proposta já está aprovada.")
+        return redirect("proposta_detalhe", pk=proposta.pk)
+
     if proposta.projeto_gerado_id:
-        messages.info(request, "Esta proposta já gerou um projeto.")
+        proposta.status = "aprovada"
+        proposta.save(update_fields=["status"])
+        proposta.cliente.fase = "ganho"
+        proposta.cliente.save(update_fields=["fase"])
+        messages.success(request, f"“{proposta.titulo}” aprovada pelo cliente.")
         return redirect("proposta_detalhe", pk=proposta.pk)
 
     horas_estimadas = sum(

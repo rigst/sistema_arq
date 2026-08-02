@@ -1,0 +1,65 @@
+{% load l10n %}
+{% comment %}
+Uma linha da proposta, em leitura ou em edição. As duas moram no mesmo arquivo
+porque são o mesmo objeto em dois estados — separá-las faria a coluna sair do
+lugar na troca.
+{% endcomment %}
+{% if form_edicao %}
+<tr class="item-linha is-editando" id="item-{{ item.pk }}">
+    <td>
+        <label class="ds-oculto" for="ed-desc-{{ item.pk }}">Descrição</label>
+        <input type="text" name="descricao" id="ed-desc-{{ item.pk }}"
+               form="edita-item-{{ item.pk }}" value="{{ item.descricao }}"
+               maxlength="200" required>
+        <form id="edita-item-{{ item.pk }}" method="post"
+              hx-post="{% url 'proposta_item_editar' item.pk %}"
+              hx-target="#itens-bloco" hx-swap="outerHTML"
+              hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'></form>
+    </td>
+    <td class="num">
+        <label class="ds-oculto" for="ed-horas-{{ item.pk }}">Horas</label>
+        <input type="number" name="horas_estimadas" id="ed-horas-{{ item.pk }}"
+               form="edita-item-{{ item.pk }}" value="{{ item.horas_estimadas|unlocalize }}"
+               step="any" min="0" required>
+    </td>
+    <td class="num">recalcula ao salvar</td>
+    <td>
+        <div class="agenda-acoes">
+            <button class="linha-ico linha-ico--mais" type="submit" form="edita-item-{{ item.pk }}"
+                    title="Salvar" aria-label="Salvar “{{ item.descricao }}”">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+            </button>
+            <button class="linha-ico" type="button" title="Cancelar" aria-label="Cancelar a edição"
+                    hx-get="{% url 'proposta_item_linha' item.pk %}"
+                    hx-target="#item-{{ item.pk }}" hx-swap="outerHTML">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+        </div>
+    </td>
+</tr>
+{% else %}
+<tr class="item-linha" id="item-{{ item.pk }}">
+    <td>{{ item.descricao }}</td>
+    <td class="num">{{ item.horas_estimadas }}</td>
+    <td class="num">R$ {{ item.valor }}</td>
+    <td>
+        {% if proposta.editavel %}
+        <div class="agenda-acoes">
+            <button class="linha-ico" type="button" title="Editar"
+                    aria-label="Editar “{{ item.descricao }}”"
+                    hx-get="{% url 'proposta_item_editar' item.pk %}"
+                    hx-target="#item-{{ item.pk }}" hx-swap="outerHTML">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4l10-10-4-4L4 16z"/><path d="M14 6l4 4"/></svg>
+            </button>
+            <button class="linha-ico linha-ico--risco" type="button" title="Excluir"
+                    aria-label="Excluir “{{ item.descricao }}”"
+                    hx-post="{% url 'proposta_remove_item' item.pk %}"
+                    hx-target="#itens-bloco" hx-swap="outerHTML"
+                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V5h6v2"/><path d="M6 7l1 13h10l1-13"/></svg>
+            </button>
+        </div>
+        {% endif %}
+    </td>
+</tr>
+{% endif %}

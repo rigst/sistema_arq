@@ -194,7 +194,36 @@
         });
     }
 
-    function iniciar() { contarNumeros(); preencherBarras(); marcarEnvio(); aberturaEmPassos(); avisos(); modais(); }
+    /* Cronômetro: o servidor manda os segundos já corridos e o navegador só
+       continua a contagem. Nada de guardar a hora de início aqui — relógio de
+       máquina errada faria o visor mentir sobre o que vai ser cobrado. */
+    function cronometro() {
+        var caixa = document.querySelector("[data-cronometro]");
+        if (!caixa) return;
+        var visor = caixa.querySelector("[data-cron-visor]");
+        if (!visor) return;
+
+        var segundos = parseInt(caixa.dataset.segundos, 10) || 0;
+        var parado = caixa.dataset.parado === "1";
+
+        function doisDigitos(n) { return n < 10 ? "0" + n : String(n); }
+
+        function pintar() {
+            var h = Math.floor(segundos / 3600);
+            var m = Math.floor((segundos % 3600) / 60);
+            var s = Math.floor(segundos % 60);
+            visor.textContent = doisDigitos(h) + ":" + doisDigitos(m) + ":" + doisDigitos(s);
+        }
+
+        pintar();
+        if (parado) return;
+        setInterval(function () { segundos += 1; pintar(); }, 1000);
+    }
+
+    function iniciar() {
+        contarNumeros(); preencherBarras(); marcarEnvio();
+        aberturaEmPassos(); avisos(); modais(); cronometro();
+    }
 
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", iniciar);

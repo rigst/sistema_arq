@@ -120,6 +120,7 @@ def detalhe_projeto(request, pk):
             ),
             "margem": calcular_margem_projeto(projeto),
             "horas_percent": round(horas_percent, 1),
+            "apontamentos": projeto.apontamentos.select_related("usuario"),
             "fases": projeto.fases.select_related("fornecedor"),
             "complementares_todos": COMPLEMENTARES_NOMEADOS,
             "roteiro": roteiro,

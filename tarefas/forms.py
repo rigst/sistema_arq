@@ -1,10 +1,30 @@
+from decimal import Decimal
+
 from django import forms
 
 from core.tenancy import queryset_da_empresa
 from projetos.models import Projeto
 
-from .models import Tarefa
+from .models import ApontamentoHora, Tarefa
 from core.forms import ArqModelForm
+
+
+class ApontamentoForm(forms.Form):
+    """Lançamento à mão: o que foi feito e quanto tempo levou.
+
+    Nem toda hora passa pelo cronômetro — quem lembra do trabalho de ontem
+    à noite precisa poder escrever, senão a conta do projeto fica pela metade
+    e a margem mente.
+    """
+
+    descricao = forms.CharField(
+        label="Descrição", max_length=200,
+        widget=forms.TextInput(attrs={"placeholder": "O que foi feito"}),
+    )
+    horas = forms.DecimalField(
+        label="Horas", max_digits=8, decimal_places=2, min_value=Decimal("0.01"),
+        widget=forms.NumberInput(attrs={"placeholder": "0,00", "step": "any", "min": "0.01"}),
+    )
 
 
 class TarefaForm(ArqModelForm):

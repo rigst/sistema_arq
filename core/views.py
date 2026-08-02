@@ -54,12 +54,16 @@ def dashboard(request):
     em_elaboracao = fases.filter(status=Fase.EM_ELABORACAO).count()
     com_ajustes = fases.filter(status=Fase.AJUSTES).count()
 
+    # A cor é a identidade do indicador, não o alarme: trocá-la conforme o
+    # valor fazia os cinco ficarem verdes num dia calmo, e aí a cor não
+    # distinguia mais nada. Quem responde pelo alarme é `aceso` — o número só
+    # ganha cor quando há algo ali para olhar.
     kpis = [
-        {"label": "Projetos ativos", "valor": projetos_ativos, "rodape": "em andamento", "url": "projetos_painel", "cor": "blue"},
-        {"label": "Fases em elaboração", "valor": em_elaboracao, "rodape": "sendo desenhadas agora", "url": "projetos_painel", "cor": "green"},
-        {"label": "Aguardando cliente", "valor": com_cliente, "rodape": "enviadas, sem resposta", "url": "projetos_painel", "cor": "amber" if com_cliente else "green"},
-        {"label": "Ajustes pedidos", "valor": com_ajustes, "rodape": "cliente devolveu", "url": "projetos_painel", "cor": "alert" if com_ajustes else "green"},
-        {"label": "A receber (previsto)", "valor": f"R$ {a_receber}", "rodape": "lançamentos previstos", "url": "financeiro_painel", "cor": "green"},
+        {"label": "Projetos ativos", "valor": projetos_ativos, "rodape": "em andamento", "url": "projetos_painel", "cor": "blue", "aceso": bool(projetos_ativos)},
+        {"label": "Fases em elaboração", "valor": em_elaboracao, "rodape": "sendo desenhadas agora", "url": "projetos_painel", "cor": "green", "aceso": bool(em_elaboracao)},
+        {"label": "Aguardando cliente", "valor": com_cliente, "rodape": "enviadas, sem resposta", "url": "projetos_painel", "cor": "amber", "aceso": bool(com_cliente)},
+        {"label": "Ajustes pedidos", "valor": com_ajustes, "rodape": "cliente devolveu", "url": "projetos_painel", "cor": "alert", "aceso": bool(com_ajustes)},
+        {"label": "A receber (previsto)", "valor": f"R$ {a_receber}", "rodape": "lançamentos previstos", "url": "financeiro_painel", "cor": "violet", "aceso": a_receber > 0},
     ]
 
     # O painel não repete o menu. A barra lateral já lista os módulos; repetir

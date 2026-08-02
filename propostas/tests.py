@@ -58,3 +58,98 @@ class ItensProntosTests(TestCase):
             ).status_code,
             404,
         )
+
+
+class CicloDaPropostaTests(ItensProntosTests):
+    """Rascunho → enviada → aprovada, e a volta quando o cliente diz não.
+
+    A trava importa mais do que parece: mexer no valor que o cliente já viu,
+    sem que ninguém tenha decidido reabrir, é o erro que só aparece na hora de
+    assinar o contrato.
+    """
+
+    def _com_itens(self):
+        self.client.post(
+            f"/propostas/{self.proposta.pk}/prontos/", {"prontos": ["Anteprojeto"]}
+        )
+        return self.proposta.itens.get()
+
+    def test_rascunho_e_editavel_e_enviada_nao_e(self):
+        self.assertTrue(self.proposta.editavel)
+        self._com_itens()
+        self.client.post(f"/propostas/{self.proposta.pk}/finalizar/")
+        self.proposta.refresh_from_db()
+        self.assertEqual(self.proposta.status, "enviada")
+        self.assertFalse(self.proposta.editavel)
+
+    def test_proposta_sem_item_nao_vai_ao_cliente(self):
+        self.client.post(f"/propostas/{self.proposta.pk}/finalizar/")
+        self.proposta.refresh_from_db()
+        self.assertEqual(self.proposta.status, "rascunho")
+
+    def test_enviada_recusa_mexer_nos_itens(self):
+        item = self._com_itens()
+        self.client.post(f"/propostas/{self.proposta.pk}/finalizar/")
+        self.client.post(f"/propostas/item/{item.pk}/remover/")
+        self.assertTrue(self.proposta.itens.filter(pk=item.pk).exists())
+
+    def test_reabrir_devolve_a_edicao(self):
+        self._com_itens()
+        self.client.post(f"/propostas/{self.proposta.pk}/finalizar/")
+        self.client.post(f"/propostas/{self.proposta.pk}/reabrir/")
+        self.proposta.refresh_from_db()
+        self.assertTrue(self.proposta.editavel)
+
+    def test_aprovada_nao_volta_para_edicao(self):
+        self._com_itens()
+        self.client.post(f"/propostas/{self.proposta.pk}/finalizar/")
+        self.client.post(f"/propostas/{self.proposta.pk}/aprovar/")
+        self.client.post(f"/propostas/{self.proposta.pk}/reabrir/")
+        self.proposta.refresh_from_db()
+        self.assertEqual(self.proposta.status, "aprovada")
+
+    def test_proposta_nascida_num_projeto_nao_cria_outro(self):
+        """Ela já tem o seu: aprovar de novo duplicaria o mesmo trabalho."""
+        from projetos.models import Projeto
+
+        projeto = Projeto.objects.create(
+            empresa=self.grupo, cliente=self.cliente, nome="Casa", tipo="residencial"
+        )
+        self.proposta.projeto_gerado = projeto
+        self.proposta.save(update_fields=["projeto_gerado"])
+        self._com_itens()
+        self.client.post(f"/propostas/{self.proposta.pk}/finalizar/")
+        self.client.post(f"/propostas/{self.proposta.pk}/aprovar/")
+        self.proposta.refresh_from_db()
+        self.assertEqual(self.proposta.status, "aprovada")
+        self.assertEqual(Projeto.objects.count(), 1)
+
+
+class EdicaoInlineDeItemTests(ItensProntosTests):
+    def test_mudar_as_horas_reprecifica_a_linha(self):
+        self.client.post(
+            f"/propostas/{self.proposta.pk}/prontos/", {"prontos": ["Anteprojeto"]}
+        )
+        item = self.proposta.itens.get()
+        antes = item.valor
+        self.client.post(
+            f"/propostas/item/{item.pk}/editar/",
+            {"descricao": item.descricao, "horas_estimadas": "10"},
+            headers={"HX-Request": "true"},
+        )
+        item.refresh_from_db()
+        self.assertEqual(item.horas_estimadas, Decimal("10.00"))
+        self.assertLess(item.valor, antes)
+
+    def test_htmx_recebe_o_bloco_todo_para_o_total_acompanhar(self):
+        self.client.post(
+            f"/propostas/{self.proposta.pk}/prontos/", {"prontos": ["Anteprojeto"]}
+        )
+        item = self.proposta.itens.get()
+        resposta = self.client.post(
+            f"/propostas/item/{item.pk}/editar/",
+            {"descricao": "Anteprojeto revisado", "horas_estimadas": "8"},
+            headers={"HX-Request": "true"},
+        )
+        self.assertContains(resposta, 'id="itens-bloco"')
+        self.assertContains(resposta, "Total da proposta")

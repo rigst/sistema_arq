@@ -56,7 +56,13 @@ class Tarefa(EmpresaModel, Rastreavel):
 
 
 class ApontamentoHora(EmpresaModel):
-    """Horas trabalhadas. Com timer: início sem fim = cronômetro rodando."""
+    """Horas trabalhadas, por cronômetro ou lançadas à mão.
+
+    Três estados, todos derivados de dois campos: `fim` diz se está fechado e
+    `pausado_em` diz se o relógio está andando. O tempo parado é descontado por
+    `segundos_pausa`, que cresce a cada retomada — assim uma pausa para o
+    almoço não entra na conta do cliente.
+    """
 
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="apontamentos",
@@ -71,6 +77,8 @@ class ApontamentoHora(EmpresaModel):
     descricao = models.CharField(max_length=200, blank=True, verbose_name="descrição")
     inicio = models.DateTimeField(default=timezone.now, verbose_name="início")
     fim = models.DateTimeField(null=True, blank=True)
+    pausado_em = models.DateTimeField(null=True, blank=True, verbose_name="pausado em")
+    segundos_pausa = models.PositiveIntegerField(default=0, verbose_name="segundos em pausa")
 
     class Meta:
         ordering = ["-inicio"]
@@ -82,10 +90,49 @@ class ApontamentoHora(EmpresaModel):
 
     @property
     def em_andamento(self):
+        """Aberto — rodando ou pausado. É o que impede abrir outro."""
         return self.fim is None
 
     @property
-    def horas(self):
+    def rodando(self):
+        return self.fim is None and self.pausado_em is None
+
+    @property
+    def pausado(self):
+        return self.fim is None and self.pausado_em is not None
+
+    @property
+    def segundos(self):
+        """Tempo efetivamente trabalhado, sem as pausas."""
         fim = self.fim or timezone.now()
-        segundos = max((fim - self.inicio).total_seconds(), 0)
-        return Decimal(str(round(segundos / 3600, 2)))
+        parado = self.segundos_pausa
+        if self.pausado_em:
+            # Pausa ainda aberta: conta até agora, ou até o fim se foi parado
+            # sem retomar antes.
+            parado += max(((self.fim or timezone.now()) - self.pausado_em).total_seconds(), 0)
+        return max((fim - self.inicio).total_seconds() - parado, 0)
+
+    @property
+    def horas(self):
+        return Decimal(str(round(self.segundos / 3600, 2)))
+
+    def pausar(self):
+        if self.rodando:
+            self.pausado_em = timezone.now()
+            self.save(update_fields=["pausado_em"])
+
+    def retomar(self):
+        if self.pausado:
+            self.segundos_pausa += int((timezone.now() - self.pausado_em).total_seconds())
+            self.pausado_em = None
+            self.save(update_fields=["segundos_pausa", "pausado_em"])
+
+    def parar(self):
+        if self.fim is not None:
+            return
+        agora = timezone.now()
+        if self.pausado_em:
+            self.segundos_pausa += int((agora - self.pausado_em).total_seconds())
+            self.pausado_em = None
+        self.fim = agora
+        self.save(update_fields=["fim", "pausado_em", "segundos_pausa"])
