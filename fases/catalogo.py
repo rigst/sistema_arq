@@ -117,6 +117,18 @@ COMPLEMENTARES = (
         opcional=True,
         grupo="complementar",
     ),
+    # O escritório encontra complementar que não cabe em lista fechada:
+    # acústico, luminotécnico, automação, impermeabilização. Em vez de crescer
+    # a lista para sempre, existe um tipo aberto que carrega o próprio nome.
+    Passo(
+        chave="comp_outro",
+        nome="Complementar",
+        resumo="Um complementar específico deste projeto.",
+        entrega=("Projeto e detalhamento", "Compatibilização com o arquitetônico"),
+        consome="O anteprojeto aprovado.",
+        opcional=True,
+        grupo="complementar",
+    ),
     Passo(
         chave="comp_paisagismo",
         nome="Paisagismo",
@@ -127,6 +139,11 @@ COMPLEMENTARES = (
         grupo="complementar",
     ),
 )
+
+CHAVE_LIVRE = "comp_outro"
+# A oferta em caixas mostra só os complementares nomeados; o aberto tem campo
+# de texto e não faz sentido como caixa de marcar.
+COMPLEMENTARES_NOMEADOS = tuple(p for p in COMPLEMENTARES if p.chave != CHAVE_LIVRE)
 
 TODAS = PRINCIPAIS + COMPLEMENTARES
 POR_CHAVE = {p.chave: p for p in TODAS}

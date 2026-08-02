@@ -44,7 +44,10 @@ def detalhe(request, pk):
             "projeto": fase.projeto,
             "arquivos": arquivos,
             "imagens": [a for a in arquivos if a.eh_imagem],
-            "registros": fase.registros.select_related("autor"),
+            "registros_fixados": fase.registros.filter(fixado=True).select_related("autor"),
+            "registros_arquivados": list(
+                fase.registros.filter(fixado=False).select_related("autor")
+            ),
             "form_arquivo": ArquivoDaFaseForm(),
             "form_registro": RegistroForm(),
             "form_ajuste": FaseAjusteForm(instance=fase, user=request.user),
@@ -151,8 +154,26 @@ def comentar(request, pk):
         registro.fase = fase
         registro.empresa = fase.empresa
         registro.autor = request.user
+        # Escrito à mão nasce fixado: foi escrito para ser lembrado.
+        registro.fixado = True
         registro.save()
-    return redirect(_voltar(fase))
+    else:
+        messages.error(request, "Escreva o lembrete antes de fixar.")
+    return redirect(f"{_voltar(fase)}#lembretes")
+
+
+@require_POST
+@login_required
+def soltar_registro(request, pk):
+    """Tira o lembrete do topo. Não apaga: desce para o histórico."""
+    from .models import RegistroFase
+
+    registro = get_object_or_404(
+        queryset_da_empresa(RegistroFase.objects.select_related("fase"), request.user), pk=pk
+    )
+    registro.fixado = False
+    registro.save(update_fields=["fixado"])
+    return redirect(f"{reverse('fase_detalhe', kwargs={'pk': registro.fase_id})}#lembretes")
 
 
 @require_POST

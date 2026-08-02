@@ -2,65 +2,116 @@
 {% block title %}Agenda{% endblock %}
 
 {% block content %}
-<section class="page">
-    <header class="page-head page-head--foto page-head--producao">
+<section class="page page--leitura">
+    {% include "core/_voltar.html" with projeto_voltar=projeto %}
+
+    <header class="page-head page-head--row">
         <div>
             <span class="ds-kicker">Agenda</span>
             <h1 class="ds-h2 ds-display">Reuniões, visitas e prazos</h1>
-            <p class="page-sub">Compromissos do escritório vinculados a clientes e projetos, separados da sua agenda pessoal. Serve para saber quem do time está comprometido com o quê.</p>
+            <p class="page-sub">
+                Compromissos do escritório vinculados a clientes e projetos. Serve para
+                saber quem do time está comprometido com o quê.
+            </p>
         </div>
+        <button class="ds-btn--acao" type="button" data-abre="modal-compromisso" hidden>
+            <span>Novo compromisso</span>
+            <span class="ds-btn-ico">{% include "core/_ico.html" with ico="novo" %}</span>
+        </button>
     </header>
 
-    <div class="detalhe-grid">
-        <div class="ds-card">
-            <h2 class="ds-display">Próximos</h2>
-            <ul class="agenda-lista">
-                {% for c in proximos %}
-                <li>
-                    <div class="agenda-quando">
-                        <strong>{{ c.inicio|date:"d/m" }}</strong>
-                        <span>{{ c.inicio|date:"H:i" }}</span>
-                    </div>
-                    <div class="agenda-info">
-                        <strong>{{ c.titulo }}</strong>
-                        <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ c.get_tipo_display }}</span>
-                        <p>
-                            {% if c.projeto %}{{ c.projeto.nome }}{% endif %}
-                            {% if c.cliente %} · {{ c.cliente.nome }}{% endif %}
-                            {% if c.local %} · {{ c.local }}{% endif %}
-                        </p>
-                    </div>
-                    <form method="post" action="{% url 'agenda_remover' c.pk %}">
-                        {% csrf_token %}
-                        <button class="app-link-btn" type="submit">remover</button>
-                    </form>
-                </li>
-                {% empty %}
-                <li class="data-empty">Nenhum compromisso futuro.</li>
-                {% endfor %}
-            </ul>
+    {% include "core/_contexto_projeto.html" %}
 
-            {% if passados %}
-            <h2 class="ds-display" style="margin-top:1.5rem">Anteriores</h2>
-            <ul class="agenda-lista agenda-lista--passados">
-                {% for c in passados %}
-                <li>
-                    <div class="agenda-quando"><strong>{{ c.inicio|date:"d/m" }}</strong><span>{{ c.inicio|date:"H:i" }}</span></div>
-                    <div class="agenda-info"><strong>{{ c.titulo }}</strong><p>{{ c.get_tipo_display }}{% if c.projeto %} · {{ c.projeto.nome }}{% endif %}</p></div>
-                </li>
-                {% endfor %}
-            </ul>
-            {% endif %}
-        </div>
+    {% comment %}
+    A navegação entre meses é link e não botão de script: cada mês ganha URL
+    própria, dá para guardar nos favoritos e a agenda funciona sem JavaScript.
+    {% endcomment %}
+    <div class="cal-topo">
+        <a class="cal-passo" href="?ano={{ anterior.ano }}&amp;mes={{ anterior.mes }}{% if projeto %}&amp;projeto={{ projeto.pk }}{% endif %}" aria-label="Mês anterior">←</a>
+        <h2 class="cal-mes ds-display">{{ titulo_mes|capfirst }}</h2>
+        <a class="cal-passo" href="?ano={{ seguinte.ano }}&amp;mes={{ seguinte.mes }}{% if projeto %}&amp;projeto={{ projeto.pk }}{% endif %}" aria-label="Próximo mês">→</a>
+        {% if not eh_mes_corrente %}
+        <a class="cal-hoje" href="?{% if projeto %}projeto={{ projeto.pk }}{% endif %}">Hoje</a>
+        {% endif %}
+    </div>
 
-        <div class="ds-card form-card">
-            <h2 class="ds-display">Novo compromisso</h2>
-            <form method="post">
+    <table class="cal">
+        <caption class="ds-oculto">Compromissos de {{ titulo_mes }}</caption>
+        <thead>
+            <tr>{% for d in dias_semana %}<th scope="col" abbr="{{ d }}">{{ d }}</th>{% endfor %}</tr>
+        </thead>
+        <tbody>
+            {% for semana in semanas %}
+            <tr>
+                {% for dia in semana %}
+                <td class="cal-dia{% if not dia.no_mes %} is-fora{% endif %}{% if dia.hoje %} is-hoje{% endif %}{% if dia.fim_de_semana %} is-fds{% endif %}{% if dia.compromissos %} tem-compromisso{% endif %}">
+                    <span class="cal-num num">{{ dia.data.day }}</span>
+                    {% if dia.compromissos %}
+                    <ul class="cal-marcas">
+                        {% for c in dia.compromissos %}
+                        <li class="cal-marca cal-marca--{{ c.tipo }}" title="{{ c.inicio|date:'H:i' }} · {{ c.titulo }}">
+                            <span class="ds-oculto">{{ c.inicio|date:'H:i' }} — </span>{{ c.titulo }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <section class="secao">
+        <h2 class="secao-titulo ds-display">{{ titulo_mes|capfirst }}</h2>
+        <p class="secao-sub">Os compromissos do mês, em lista, com o que o calendário não cabe.</p>
+        <ul class="agenda-lista">
+            {% for c in do_mes %}
+            <li>
+                <div class="agenda-quando">
+                    <strong>{{ c.inicio|date:"d/m" }}</strong>
+                    <span>{{ c.inicio|date:"H:i" }}</span>
+                </div>
+                <div class="agenda-info">
+                    <strong>{{ c.titulo }}</strong>
+                    <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ c.get_tipo_display }}</span>
+                    <p>
+                        {% if c.projeto %}{{ c.projeto.nome }}{% endif %}
+                        {% if c.cliente %} · {{ c.cliente.nome }}{% endif %}
+                        {% if c.local %} · {{ c.local }}{% endif %}
+                    </p>
+                </div>
+                <form method="post" action="{% url 'agenda_remover' c.pk %}" class="app-inline-form">
+                    {% csrf_token %}
+                    <button class="app-link-btn" type="submit">remover</button>
+                </form>
+            </li>
+            {% empty %}
+            <li class="data-empty">Nenhum compromisso neste mês.</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <dialog class="ds-modal" id="modal-compromisso" aria-labelledby="modal-compromisso-titulo">
+        <form method="dialog" class="ds-modal-fechar-form">
+            <button class="ds-modal-fechar" aria-label="Fechar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+        </form>
+        <h2 class="ds-modal-titulo ds-display" id="modal-compromisso-titulo">Novo compromisso</h2>
+        <p class="ds-modal-sub">Reunião, visita a obra ou prazo de entrega.</p>
+        <div class="ds-modal-corpo">
+            <form method="post" class="form-card">
                 {% csrf_token %}
                 {{ form.as_p }}
-                <button class="ds-btn ds-btn--solid" type="submit">Agendar</button>
+                <div class="form-actions">
+                    <button class="ds-btn--acao" type="submit">
+                        <span>Agendar</span>
+                        <span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span>
+                    </button>
+                </div>
             </form>
         </div>
-    </div>
+    </dialog>
 </section>
 {% endblock %}

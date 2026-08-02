@@ -95,7 +95,7 @@ def editar_projeto(request, pk):
 def detalhe_projeto(request, pk):
     from financeiro.services import calcular_margem_projeto
     from jornada.roteiro import montar_roteiro, percentual, proxima_etapa
-    from fases.catalogo import COMPLEMENTARES
+    from fases.catalogo import COMPLEMENTARES_NOMEADOS
 
     projeto = get_object_or_404(
         queryset_da_empresa(Projeto.objects.select_related("cliente"), request.user), pk=pk
@@ -154,7 +154,7 @@ def resolver_pendencia(request, pk):
 
 def complementares_disponiveis(projeto):
     """Os complementares que ainda não foram ligados neste projeto."""
-    from fases.catalogo import COMPLEMENTARES
+    from fases.catalogo import COMPLEMENTARES_NOMEADOS
 
     ja_tem = set(projeto.fases.values_list("chave", flat=True))
-    return [p for p in COMPLEMENTARES if p.chave not in ja_tem]
+    return [p for p in COMPLEMENTARES_NOMEADOS if p.chave not in ja_tem]

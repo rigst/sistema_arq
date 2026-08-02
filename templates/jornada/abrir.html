@@ -64,7 +64,9 @@
             <fieldset class="escolha-multipla">
                 <legend>{{ form.complementares.label }}</legend>
                 <p class="ht-hint">{{ form.complementares.help_text }}</p>
-                {{ form.complementares }}
+                <div class="caixas">{{ form.complementares }}</div>
+                <p class="complementar-livre">{{ form.complementar_outro.label_tag }}{{ form.complementar_outro }}</p>
+                <p class="ht-hint">{{ form.complementar_outro.help_text }}</p>
             </fieldset>
 
             <label class="form-marcar">
@@ -75,7 +77,12 @@
                 </span>
             </label>
 
-            <button class="ds-btn--acao" type="submit"><span>Criar e ir para o briefing</span><span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span></button>
+            <div class="form-actions">
+                <button class="ds-btn--acao" type="submit">
+                    <span>Criar e ir para o briefing</span>
+                    <span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span>
+                </button>
+            </div>
         </fieldset>
     </form>
 </section>

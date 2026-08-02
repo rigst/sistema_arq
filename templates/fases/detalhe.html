@@ -65,6 +65,82 @@
     </form>
     {% endif %}
 
+    {% comment %}
+    Lembretes no topo, em post-it. O que foi combinado na reunião precisa estar
+    onde o olho bate ao abrir a fase — no rodapé, junto do histórico, ninguém
+    lia antes de começar a desenhar, que é justamente quando importa.
+    {% endcomment %}
+    <section class="secao lembretes" id="lembretes">
+        <div class="lembretes-topo">
+            <h2 class="secao-titulo ds-display">Lembretes</h2>
+            <button class="ds-btn" type="button" data-abre="modal-lembrete" hidden>+ Novo lembrete</button>
+        </div>
+
+        {% if registros_fixados %}
+        <ul class="postits">
+            {% for r in registros_fixados %}
+            <li class="postit postit--{{ r.tipo }}">
+                <p>{{ r.texto }}</p>
+                <footer>
+                    <span>{{ r.criado_em|date:"d/m" }}{% if r.autor %} · {{ r.autor.get_username }}{% endif %}</span>
+                    <form method="post" action="{% url 'fase_soltar_registro' r.pk %}" class="app-inline-form">
+                        {% csrf_token %}<button class="app-link-btn" type="submit">arquivar</button>
+                    </form>
+                </footer>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="data-empty">
+            Nenhum lembrete. Use para o que foi combinado e não pode ser esquecido —
+            "cliente quer a churrasqueira fechada", "confirmar recuo com a prefeitura".
+        </p>
+        {% endif %}
+
+        {% if registros_arquivados %}
+        <details class="abrir-campo">
+            <summary>Histórico ({{ registros_arquivados|length }})</summary>
+            <ol class="linha-tempo">
+                {% for r in registros_arquivados %}
+                <li class="registro registro--{{ r.tipo }}">
+                    <span class="registro-marca" aria-hidden="true"></span>
+                    <div>
+                        <p class="registro-texto">{{ r.texto }}</p>
+                        <span class="registro-meta">
+                            {{ r.get_tipo_display }} · {{ r.criado_em|date:"d/m/y H:i" }}
+                            {% if r.autor %} · {{ r.autor.get_username }}{% endif %}
+                        </span>
+                    </div>
+                </li>
+                {% endfor %}
+            </ol>
+        </details>
+        {% endif %}
+
+        <dialog class="ds-modal" id="modal-lembrete" aria-labelledby="modal-lembrete-titulo">
+            <form method="dialog" class="ds-modal-fechar-form">
+                <button class="ds-modal-fechar" aria-label="Fechar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                </button>
+            </form>
+            <h2 class="ds-modal-titulo ds-display" id="modal-lembrete-titulo">Novo lembrete</h2>
+            <p class="ds-modal-sub">O combinado, a decisão, o que não pode ser esquecido nesta fase.</p>
+            <div class="ds-modal-corpo">
+                <form method="post" action="{% url 'fase_comentar' fase.pk %}" class="form-card">
+                    {% csrf_token %}
+                    <p>{{ form_registro.texto.label_tag }}{{ form_registro.texto }}</p>
+                    <p>{{ form_registro.tipo.label_tag }}{{ form_registro.tipo }}</p>
+                    <div class="form-actions">
+                        <button class="ds-btn--acao" type="submit">
+                            <span>Fixar lembrete</span>
+                            <span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </dialog>
+    </section>
+
     <section class="secao">
         <h2 class="secao-titulo ds-display">O que sai desta fase</h2>
         <p class="secao-sub">Entra aqui: {{ fase.consome|lower }}</p>
@@ -183,38 +259,6 @@
                 <button class="ds-btn ds-btn--solid" type="submit">Anexar</button>
             </form>
         </details>
-    </section>
-
-    <section class="secao" id="historico">
-        <h2 class="secao-titulo ds-display">Histórico</h2>
-        <p class="secao-sub">Conversas com o cliente, decisões internas e o que o sistema registrou.</p>
-
-        <form method="post" action="{% url 'fase_comentar' fase.pk %}" class="form-card registro-novo">
-            {% csrf_token %}
-            <p>{{ form_registro.texto.label_tag }}{{ form_registro.texto }}</p>
-            <div class="registro-envio">
-                <label class="ds-oculto" for="{{ form_registro.tipo.id_for_label }}">{{ form_registro.tipo.label }}</label>
-                {{ form_registro.tipo }}
-                <button class="ds-btn ds-btn--solid" type="submit">Registrar</button>
-            </div>
-        </form>
-
-        <ol class="linha-tempo">
-            {% for r in registros %}
-            <li class="registro registro--{{ r.tipo }}">
-                <span class="registro-marca" aria-hidden="true"></span>
-                <div>
-                    <p class="registro-texto">{{ r.texto }}</p>
-                    <span class="registro-meta">
-                        {{ r.get_tipo_display }} · {{ r.criado_em|date:"d/m/y H:i" }}
-                        {% if r.autor %} · {{ r.autor.get_username }}{% endif %}
-                    </span>
-                </div>
-            </li>
-            {% empty %}
-            <li class="data-empty">Nada registrado ainda.</li>
-            {% endfor %}
-        </ol>
     </section>
 
     <details class="abrir-campo">

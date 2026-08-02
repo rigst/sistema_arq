@@ -35,6 +35,10 @@ class Fase(EmpresaModel, Rastreavel):
     projeto = models.ForeignKey(Projeto, on_delete=models.CASCADE, related_name="fases")
     chave = models.CharField(max_length=30, choices=catalogo.CHOICES)
     ordem = models.PositiveIntegerField(default=0)
+    titulo_livre = models.CharField(
+        "nome do complementar", max_length=120, blank=True,
+        help_text="Só para complementar fora da lista — acústico, automação, luminotécnico.",
+    )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=NAO_INICIADA)
 
     prazo = models.DateField(null=True, blank=True, help_text="Data combinada de entrega.")
@@ -57,7 +61,13 @@ class Fase(EmpresaModel, Rastreavel):
         verbose_name = "fase"
         verbose_name_plural = "fases"
         constraints = [
-            models.UniqueConstraint(fields=["projeto", "chave"], name="fase_unica_por_projeto")
+            # O complementar aberto fica de fora: um projeto pode ter vários
+            # (acústico E automação), e cada um é uma fase própria.
+            models.UniqueConstraint(
+                fields=["projeto", "chave"],
+                condition=~models.Q(chave=catalogo.CHAVE_LIVRE),
+                name="fase_unica_por_projeto",
+            )
         ]
 
     def __str__(self):
@@ -70,6 +80,8 @@ class Fase(EmpresaModel, Rastreavel):
 
     @property
     def nome(self):
+        if self.titulo_livre:
+            return self.titulo_livre
         p = self.passo
         return p.nome if p else self.chave
 
@@ -179,9 +191,10 @@ class Fase(EmpresaModel, Rastreavel):
         self.projeto.tocar()
         return True
 
-    def registrar(self, tipo, texto, usuario=None):
+    def registrar(self, tipo, texto, usuario=None, fixado=False):
         return RegistroFase.objects.create(
-            empresa=self.empresa, fase=self, tipo=tipo, texto=texto, autor=usuario
+            empresa=self.empresa, fase=self, tipo=tipo, texto=texto,
+            autor=usuario, fixado=fixado,
         )
 
 
@@ -205,6 +218,10 @@ class RegistroFase(EmpresaModel):
     autor = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
+    # Fixado = post-it no topo da fase. O que a pessoa escreve à mão nasce
+    # fixado, porque foi escrito para ser lembrado; o que o sistema registra
+    # nasce arquivado, porque é rastro e não recado.
+    fixado = models.BooleanField(default=False)
     criado_em = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -235,5 +252,34 @@ def montar_fases(projeto, complementares=()):
         novas.append(
             Fase(empresa=projeto.empresa, projeto=projeto, chave=p.chave, ordem=ordem)
         )
+    Fase.objects.bulk_create(novas)
+    return novas
+
+
+def criar_complementares_avulsos(projeto, texto):
+    """Cria uma fase para cada complementar escrito à mão, separado por vírgula.
+
+    Nome vazio ou repetido é descartado em silêncio: o campo é de texto livre e
+    quem digita "elétrico, elétrico" quis dizer um.
+    """
+    nomes, vistos = [], {
+        f.titulo_livre.casefold()
+        for f in projeto.fases.filter(chave=catalogo.CHAVE_LIVRE)
+    }
+    for bruto in (texto or "").split(","):
+        nome = bruto.strip()
+        if not nome or nome.casefold() in vistos:
+            continue
+        vistos.add(nome.casefold())
+        nomes.append(nome)
+
+    ordem = len(catalogo.TODAS)
+    novas = [
+        Fase(
+            empresa=projeto.empresa, projeto=projeto,
+            chave=catalogo.CHAVE_LIVRE, titulo_livre=nome, ordem=ordem + i,
+        )
+        for i, nome in enumerate(nomes)
+    ]
     Fase.objects.bulk_create(novas)
     return novas

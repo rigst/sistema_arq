@@ -1,9 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
+from core.contexto import projeto_do_pedido
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 
 from .forms import TarefaForm
@@ -13,19 +15,27 @@ from .models import ApontamentoHora, Tarefa
 @login_required
 def lista_tarefas(request):
     tarefas = queryset_da_empresa(
-        Tarefa.objects.select_related("projeto", "responsavel"), request.user
+        Tarefa.objects.select_related("projeto", "responsavel", "fornecedor"), request.user
     )
+    projeto = projeto_do_pedido(request)
+    if projeto is not None:
+        tarefas = tarefas.filter(projeto=projeto)
+
     if request.method == "POST":
-        form = TarefaForm(request.POST, user=request.user)
+        form = TarefaForm(request.POST, user=request.user, projeto=projeto)
         if form.is_valid():
             tarefa = form.save(commit=False)
             tarefa.empresa = obter_grupo_empresa_ou_erro(request.user)
             tarefa.criado_por = request.user
+            if projeto is not None:
+                tarefa.projeto = projeto
             tarefa.save()
             messages.success(request, "Tarefa criada.")
-            return redirect("tarefas_lista")
+            destino = reverse("tarefas_lista")
+            return redirect(f"{destino}?projeto={projeto.pk}" if projeto else destino)
+        messages.error(request, "Confira os campos da tarefa.")
     else:
-        form = TarefaForm(user=request.user)
+        form = TarefaForm(user=request.user, projeto=projeto)
 
     timer_ativo = (
         queryset_da_empresa(ApontamentoHora.objects.all(), request.user)
@@ -36,7 +46,7 @@ def lista_tarefas(request):
     return render(
         request,
         "tarefas/lista.html",
-        {"tarefas": tarefas, "form": form, "timer_ativo": timer_ativo},
+        {"tarefas": tarefas, "form": form, "timer_ativo": timer_ativo, "projeto": projeto},
     )
 
 

@@ -269,3 +269,133 @@ class NavegacaoPorProjetoTests(BaseFase):
             self.assertNotIn(rota, nav)
         for rota in ['href="/"', 'href="/projetos/"', 'href="/modelos/"', 'href="/financeiro/"']:
             self.assertIn(rota, nav)
+
+
+class LembreteTests(BaseFase):
+    """O combinado fica no topo, em post-it; o rastro desce para o histórico."""
+
+    def test_comentario_escrito_a_mao_nasce_fixado(self):
+        fase = self.fase("briefing")
+        self.client.post(
+            f"/fases/{fase.pk}/registro/",
+            {"tipo": "cliente", "texto": "Cliente quer a churrasqueira fechada."},
+        )
+        registro = fase.registros.get(tipo="cliente")
+        self.assertTrue(registro.fixado)
+
+    def test_registro_do_sistema_nasce_arquivado(self):
+        """Rastro não é recado: fase iniciada não vira post-it."""
+        fase = self.fase("briefing")
+        fase.iniciar(self.user)
+        self.assertFalse(fase.registros.get(tipo="sistema").fixado)
+
+    def test_arquivar_lembrete_nao_apaga(self):
+        fase = self.fase("briefing")
+        self.client.post(f"/fases/{fase.pk}/registro/", {"tipo": "comentario", "texto": "Nota"})
+        registro = fase.registros.get(tipo="comentario")
+        self.client.post(f"/fases/registro/{registro.pk}/soltar/")
+        registro.refresh_from_db()
+        self.assertFalse(registro.fixado)
+        self.assertTrue(fase.registros.filter(pk=registro.pk).exists())
+
+    def test_lembrete_de_outra_empresa_da_404(self):
+        from django.contrib.auth.models import Group
+
+        outro = Group.objects.create(name="Vizinho 4")
+        alheio = Projeto.objects.create(
+            empresa=outro, cliente=self.cliente, nome="Alheio 4", tipo="comercial"
+        )
+        montar_fases(alheio)
+        registro = alheio.fases.first().registrar("comentario", "Sigiloso")
+        self.assertEqual(
+            self.client.post(f"/fases/registro/{registro.pk}/soltar/").status_code, 404
+        )
+
+
+class ComplementarLivreTests(BaseFase):
+    """Complementar que não cabe em lista fechada: acústico, automação."""
+
+    def test_cria_uma_fase_por_nome(self):
+        from fases.models import criar_complementares_avulsos
+
+        criar_complementares_avulsos(self.projeto, "Acústico, Automação residencial")
+        nomes = [f.nome for f in self.projeto.fases.filter(chave="comp_outro")]
+        self.assertEqual(sorted(nomes), ["Acústico", "Automação residencial"])
+
+    def test_ignora_vazio_e_repetido(self):
+        from fases.models import criar_complementares_avulsos
+
+        criar_complementares_avulsos(self.projeto, "Acústico, , acústico,  ")
+        self.assertEqual(self.projeto.fases.filter(chave="comp_outro").count(), 1)
+
+    def test_depende_do_anteprojeto_como_os_outros(self):
+        from fases.models import criar_complementares_avulsos
+
+        criar_complementares_avulsos(self.projeto, "Acústico")
+        fase = self.projeto.fases.get(chave="comp_outro")
+        self.assertTrue(fase.complementar)
+        self.assertFalse(fase.liberada)
+        self.assertIn("Anteprojeto", fase.impedimento)
+
+
+class TelasQueRespondemTests(BaseFase):
+    """Uma varredura rasa: toda tela principal responde 200.
+
+    Erro de template não aparece em teste de lógica — o de tarefas só apareceu
+    ao abrir a página no navegador, porque `|default:` com atributo de FK nula
+    estoura em vez de cair no padrão.
+    """
+
+    def test_telas_principais_abrem(self):
+        from briefing.services import semear_templates_padrao
+
+        # Sem roteiro cadastrado o briefing encaminha para os modelos; aqui o
+        # que se quer medir é a tela em si.
+        semear_templates_padrao(self.grupo, self.user)
+        fase = self.fase("briefing")
+        rotas = [
+            "/", "/tarefas/", "/agenda/", "/notificacoes/", "/modelos/",
+            "/projetos/", "/clientes/", "/obras/", "/fornecedores/",
+            "/financeiro/", "/precificacao/", "/escritorio/identidade/",
+            "/arquivos/", "/orcamentos/", "/propostas/", "/contratos/",
+            "/regulatorio/", "/projeto-novo/novo/",
+            f"/projetos/{self.projeto.pk}/", f"/fases/{fase.pk}/",
+            f"/briefing/projeto/{self.projeto.pk}/responder/",
+        ]
+        for rota in rotas:
+            with self.subTest(rota=rota):
+                self.assertEqual(self.client.get(rota).status_code, 200)
+
+    def test_agenda_aceita_mes_pela_url(self):
+        self.assertEqual(self.client.get("/agenda/?ano=2026&mes=12").status_code, 200)
+        # Mês inválido cai no corrente em vez de estourar.
+        self.assertEqual(self.client.get("/agenda/?ano=abc&mes=99").status_code, 200)
+
+    def test_briefing_abre_em_leitura_depois_de_respondido(self):
+        from briefing.models import Briefing, RespostaBriefing
+        from briefing.services import semear_templates_padrao
+
+        template = semear_templates_padrao(self.grupo, self.user)[0]
+        briefing = Briefing.objects.create(projeto=self.projeto, empresa=self.grupo)
+        RespostaBriefing.objects.create(
+            briefing=briefing, empresa=self.grupo,
+            pergunta=template.perguntas.first(), texto="Casal com dois filhos",
+        )
+        resposta = self.client.get(f"/briefing/projeto/{self.projeto.pk}/responder/")
+        self.assertFalse(resposta.context["editando"])
+        self.assertContains(resposta, "Editar briefing")
+        # E com ?editar=1 volta ao formulário.
+        self.assertTrue(
+            self.client.get(
+                f"/briefing/projeto/{self.projeto.pk}/responder/?editar=1"
+            ).context["editando"]
+        )
+
+    def test_rota_antiga_dos_blocos_encaminha_para_a_tela_unica(self):
+        from briefing.services import semear_templates_padrao
+
+        semear_templates_padrao(self.grupo, self.user)
+        self.assertRedirects(
+            self.client.get(f"/briefing/projeto/{self.projeto.pk}/"),
+            f"/briefing/projeto/{self.projeto.pk}/responder/",
+        )

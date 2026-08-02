@@ -4,21 +4,44 @@
 {% block content %}
 <section class="page page--leitura">
     {% include "core/_voltar.html" with projeto_voltar=projeto %}
+
     <header class="page-head page-head--row">
         <div>
             <span class="ds-kicker">Briefing · {{ template.nome }}</span>
             <h1 class="ds-h2 ds-display">{{ projeto.nome }}</h1>
             <p class="page-sub">
+                {% if editando %}
                 Marque as respostas durante a conversa. O campo de complemento guarda o que
                 o cliente disse com as palavras dele — é ali que costuma estar o projeto.
+                {% else %}
+                O que o cliente pediu, em leitura. Roteiro de perguntas, programa de
+                necessidades e restrições, tudo na mesma página.
+                {% endif %}
             </p>
         </div>
+        {% if respondido %}
         <div class="page-head-actions">
-
-            <a class="ds-btn" href="{% url 'briefing_projeto' projeto.pk %}">Blocos NBR</a>
+            {% if editando %}
+            <a class="ds-btn" href="{% url 'briefing_responder' projeto.pk %}">Ver em leitura</a>
+            {% else %}
+            <a class="ds-btn--acao" href="?editar=1">
+                <span>Editar briefing</span>
+                <span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span>
+            </a>
+            {% endif %}
         </div>
+        {% endif %}
     </header>
 
+    {% if leitura_ia %}
+    <div class="ia-rascunho">
+        <span class="ds-kicker">Leitura da IA · rascunho</span>
+        <p>{{ leitura_ia|linebreaksbr }}</p>
+        <p class="ht-hint">Gerado por IA a partir das respostas. Confira antes de usar com o cliente.</p>
+    </div>
+    {% endif %}
+
+{% if editando %}
     {% if templates.count > 1 %}
     <form method="post" action="{% url 'briefing_aplicar_template' projeto.pk %}" class="inline-add">
         {% csrf_token %}
@@ -29,19 +52,11 @@
     </form>
     {% endif %}
 
-    {% if leitura_ia %}
-    <div class="ia-rascunho">
-        <span class="ds-kicker">Leitura da IA · rascunho</span>
-        <p>{{ leitura_ia|linebreaksbr }}</p>
-        <p class="ht-hint">Gerado por IA a partir das respostas. Confira antes de usar com o cliente.</p>
-    </div>
-    {% endif %}
-
     <form method="post" class="briefing-respostas">
         {% csrf_token %}
         {% for bloco in blocos %}
-        <section class="ds-card">
-            <h2 class="ds-display">{{ bloco.nome }}</h2>
+        <section class="secao">
+            <h2 class="secao-titulo ds-display">{{ bloco.nome }}</h2>
             {% for p in bloco.perguntas %}
             <fieldset class="briefing-pergunta">
                 <legend>{{ p.texto }}</legend>
@@ -70,29 +85,145 @@
         {% endfor %}
 
         <div class="form-actions">
-            <button class="ds-btn ds-btn--solid" type="submit">Salvar respostas</button>
+            <button class="ds-btn--acao" type="submit">
+                <span>Salvar respostas</span>
+                <span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span>
+            </button>
         </div>
     </form>
+{% else %}
+    {% comment %}
+    Leitura: as mesmas respostas sem campo nenhum. Formulário aberto por padrão
+    convida a mexer no que já estava decidido e some com a visão do conjunto.
+    {% endcomment %}
+    {% for bloco in blocos %}
+    {% if bloco.respondidas %}
+    <section class="secao">
+        <h2 class="secao-titulo ds-display">{{ bloco.nome }}</h2>
+        <dl class="briefing-leitura">
+            {% for p in bloco.perguntas %}
+            {% if p.resposta_texto or p.marcadas %}
+            <div>
+                <dt>{{ p.texto }}</dt>
+                <dd>
+                    {% if p.marcadas %}
+                    <span class="briefing-marcadas">
+                        {% for o in p.opcoes.all %}{% if o.pk in p.marcadas %}<span class="chip chip--leitura">{{ o.texto }}</span>{% endif %}{% endfor %}
+                    </span>
+                    {% endif %}
+                    {% if p.resposta_texto %}<p>{{ p.resposta_texto|linebreaksbr }}</p>{% endif %}
+                </dd>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </dl>
+    </section>
+    {% endif %}
+    {% endfor %}
+{% endif %}
 
-    <div class="ds-card ia-bloco">
-        <h2 class="ds-display">Leitura do briefing pela IA</h2>
+    {% comment %}
+    Programa de necessidades e blocos NBR eram duas telas separadas. Fazem parte
+    da mesma conversa e agora ficam na mesma página, abaixo do roteiro.
+    {% endcomment %}
+    <section class="secao" id="programa">
+        <h2 class="secao-titulo ds-display">Programa de necessidades</h2>
+        <p class="secao-sub">Os ambientes com quantidade, metragem e uso — a base de tudo que vem depois.</p>
+
+        <div class="table-scroll">
+        <table class="data-table">
+            <thead><tr><th>Ambiente</th><th class="num">Qtd.</th><th class="num">m² cada</th><th class="num">m² total</th><th>Uso</th>{% if editando %}<th></th>{% endif %}</tr></thead>
+            <tbody>
+            {% for a in ambientes %}
+                <tr>
+                    <td>{{ a.nome }}</td>
+                    <td class="num">{{ a.quantidade }}</td>
+                    <td class="num">{{ a.area_aprox|default:"—" }}</td>
+                    <td class="num">{{ a.area_total|default:"—" }}</td>
+                    <td>{{ a.uso|default:"—" }}</td>
+                    {% if editando %}
+                    <td>
+                        <form method="post" action="{% url 'briefing_remove_ambiente' a.pk %}" class="app-inline-form">
+                            {% csrf_token %}<button class="app-link-btn" type="submit">remover</button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+            {% empty %}
+                <tr><td colspan="6" class="data-empty">Nenhum ambiente listado.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+
+        {% if editando %}
+        <form method="post" action="{% url 'briefing_add_ambiente' projeto.pk %}" class="inline-add">
+            {% csrf_token %}
+            {{ form_ambiente.nome }}
+            {{ form_ambiente.quantidade }}
+            {{ form_ambiente.area_aprox }}
+            {{ form_ambiente.uso }}
+            <button class="ds-btn" type="submit">Adicionar</button>
+        </form>
+        {% endif %}
+    </section>
+
+    <section class="secao" id="blocos">
+        <h2 class="secao-titulo ds-display">Perfil, orçamento e restrições</h2>
+        <p class="secao-sub">Os blocos da NBR 13532 que não cabem em pergunta de múltipla escolha.</p>
+
+        {% if editando %}
+        <form method="post" action="{% url 'briefing_salvar_blocos' projeto.pk %}" class="form-card">
+            {% csrf_token %}
+            <label class="form-block">Perfil e rotina do usuário {{ form_blocos.perfil_usuarios }}</label>
+            <div class="form-dupla">
+                <label class="form-block">Orçamento previsto {{ form_blocos.orcamento_previsto }}</label>
+                <label class="form-block">Prazo desejado {{ form_blocos.prazo_desejado }}</label>
+            </div>
+            <label class="form-block">Restrições do terreno / legais {{ form_blocos.restricoes }}</label>
+            <label class="form-block">Referências {{ form_blocos.referencias }}</label>
+            <label class="form-block">Estilo / prioridades {{ form_blocos.estilo }}</label>
+            <div class="form-actions">
+                <button class="ds-btn--acao" type="submit">
+                    <span>Salvar blocos</span>
+                    <span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span>
+                </button>
+            </div>
+        </form>
+        {% else %}
+        <dl class="briefing-leitura">
+            {% if briefing.perfil_usuarios %}<div><dt>Perfil e rotina</dt><dd><p>{{ briefing.perfil_usuarios|linebreaksbr }}</p></dd></div>{% endif %}
+            {% if briefing.orcamento_previsto %}<div><dt>Orçamento previsto</dt><dd><p>R$ {{ briefing.orcamento_previsto }}</p></dd></div>{% endif %}
+            {% if briefing.prazo_desejado %}<div><dt>Prazo desejado</dt><dd><p>{{ briefing.prazo_desejado|date:"d/m/Y" }}</p></dd></div>{% endif %}
+            {% if briefing.restricoes %}<div><dt>Restrições</dt><dd><p>{{ briefing.restricoes|linebreaksbr }}</p></dd></div>{% endif %}
+            {% if briefing.referencias %}<div><dt>Referências</dt><dd><p>{{ briefing.referencias|linebreaksbr }}</p></dd></div>{% endif %}
+            {% if briefing.estilo %}<div><dt>Estilo</dt><dd><p>{{ briefing.estilo }}</p></dd></div>{% endif %}
+        </dl>
+        {% if not briefing.perfil_usuarios and not briefing.restricoes and not briefing.referencias and not briefing.estilo and not briefing.orcamento_previsto and not briefing.prazo_desejado %}
+        <p class="data-empty">Nada preenchido nestes blocos ainda.</p>
+        {% endif %}
+        {% endif %}
+    </section>
+
+    <section class="secao ia-bloco">
+        <h2 class="secao-titulo ds-display">Leitura do briefing pela IA</h2>
         {% if ia_disponivel %}
-        <p class="ht-hint">
-            Envia as respostas deste briefing para a API da Anthropic e devolve uma leitura
-            em três parágrafos: o que o cliente quer, onde há contradição e o que já dá para
-            fechar como escopo. É rascunho para o arquiteto, não texto para o cliente.
+        <p class="secao-sub">
+            Envia as respostas para a API da Anthropic e devolve uma leitura em três
+            parágrafos: o que o cliente quer, onde há contradição e o que já dá para fechar
+            como escopo. É rascunho para o arquiteto, não texto para o cliente.
         </p>
-        <form method="post" action="{% url 'briefing_leitura_ia' projeto.pk %}">
+        <form method="post" action="{% url 'briefing_leitura_ia' projeto.pk %}" class="app-inline-form">
             {% csrf_token %}
             <button class="ds-btn" type="submit">Pedir leitura à IA</button>
         </form>
         {% else %}
-        <p class="ht-hint">
+        <p class="secao-sub">
             Apoio de IA desligado. Para habilitar, defina <code>ANTHROPIC_API_KEY</code> no
             ambiente e instale a biblioteca <code>anthropic</code>. Todo o resto do briefing
             funciona sem isso.
         </p>
         {% endif %}
-    </div>
+    </section>
 </section>
 {% endblock %}

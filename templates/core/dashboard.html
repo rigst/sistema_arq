@@ -56,7 +56,7 @@
                     <span class="frente-conta num">{{ f.feitas }}/{{ f.total }} etapas</span>
                 </div>
                 {% if f.proxima %}
-                <a class="ds-btn ds-btn--solid frente-cta" href="{{ f.proxima.url }}">{{ f.proxima.cta }}</a>
+                <a class="ds-btn--acao frente-cta" href="{{ f.proxima.url }}"><span>{{ f.proxima.cta }}</span><span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span></a>
                 {% else %}
                 <span class="frente-pronto">roteiro completo</span>
                 {% endif %}

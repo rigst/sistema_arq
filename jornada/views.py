@@ -4,10 +4,11 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
+from core.estados import UF_CHOICES
 from core.forms import ArqForm
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 from crm.models import Cliente
-from fases.models import montar_fases
+from fases.models import criar_complementares_avulsos, montar_fases
 from projetos.models import Projeto
 
 
@@ -58,13 +59,20 @@ class AberturaForm(ArqForm):
     nome = forms.CharField(label="Nome do projeto", max_length=200)
     tipo = forms.ChoiceField(label="Tipo de projeto", choices=Projeto.TIPO_CHOICES)
     cidade = forms.CharField(label="Cidade", max_length=120, required=False)
-    uf = forms.CharField(label="UF", max_length=2, required=False)
+    uf = forms.ChoiceField(label="Estado", required=False, choices=[("", "—")] + UF_CHOICES)
     endereco = forms.CharField(label="Endereço ou referência do terreno", max_length=200, required=False)
     complementares = forms.MultipleChoiceField(
         label="Projetos complementares",
         required=False,
         widget=forms.CheckboxSelectMultiple,
         help_text="Opcionais, e podem ser ligados depois. Cada um começa a partir do anteprojeto.",
+    )
+    complementar_outro = forms.CharField(
+        label="Outro complementar",
+        max_length=120,
+        required=False,
+        help_text="Para o que não está na lista — acústico, luminotécnico, automação. "
+                  "Separe por vírgula se for mais de um.",
     )
     tem_execucao = forms.BooleanField(
         label="O escritório também acompanha a execução da obra",
@@ -77,7 +85,7 @@ class AberturaForm(ArqForm):
         self.fields["cliente_existente"].queryset = queryset_da_empresa(
             Cliente.objects.filter(ativo=True), user
         )
-        from fases.catalogo import COMPLEMENTARES
+        from fases.catalogo import COMPLEMENTARES_NOMEADOS as COMPLEMENTARES
 
         self.fields["complementares"].choices = [(p.chave, p.nome) for p in COMPLEMENTARES]
 
@@ -121,6 +129,7 @@ def abrir(request):
                 status="ativo",
             )
             montar_fases(projeto, complementares=form.cleaned_data["complementares"])
+            criar_complementares_avulsos(projeto, form.cleaned_data["complementar_outro"])
             messages.success(
                 request, "Projeto aberto. O próximo passo é o briefing — está aberto abaixo."
             )

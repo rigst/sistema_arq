@@ -19,7 +19,7 @@ class TarefaForm(ArqModelForm):
             "prazo": forms.DateInput(attrs={"type": "date"}),
         }
 
-    def __init__(self, *args, user=None, **kwargs):
+    def __init__(self, *args, user=None, projeto=None, **kwargs):
         super().__init__(*args, **kwargs)
         if user is not None:
             self.fields["projeto"].queryset = queryset_da_empresa(Projeto.objects.all(), user)
@@ -41,6 +41,11 @@ class TarefaForm(ArqModelForm):
             )
             self.fields["fornecedor"].empty_label = "— equipe interna —"
             self.fields["fornecedor"].required = False
+
+        if projeto is not None:
+            # Dentro de um projeto, ele já está decidido.
+            self.fields["projeto"].initial = projeto.pk
+            self.fields["projeto"].disabled = True
 
         # Tarefa nova nasce aberta; status é acompanhamento, não cadastro.
         if self.instance.pk is None and "status" in self.fields:

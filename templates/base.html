@@ -93,13 +93,13 @@
                     {% include "core/_ico.html" with ico="projetos" %}
                     <span>Projetos</span>
                 </a>
-                <a href="{% url 'crm_lista' %}" class="nav-link{% if '/clientes/' in request.path %} is-active{% endif %}">
-                    {% include "core/_ico.html" with ico="clientes" %}
-                    <span>Clientes</span>
-                </a>
                 <a href="{% url 'obras_lista' %}" class="nav-link{% if '/obras/' in request.path %} is-active{% endif %}">
                     {% include "core/_ico.html" with ico="obras" %}
                     <span>Execução</span>
+                </a>
+                <a href="{% url 'crm_lista' %}" class="nav-link{% if '/clientes/' in request.path %} is-active{% endif %}">
+                    {% include "core/_ico.html" with ico="clientes" %}
+                    <span>Clientes</span>
                 </a>
                 <a href="{% url 'fornecedores_lista' %}" class="nav-link{% if '/fornecedores/' in request.path %} is-active{% endif %}">
                     {% include "core/_ico.html" with ico="fornecedores" %}
@@ -178,7 +178,11 @@
     <div class="ds-avisos" role="status" aria-live="polite" data-avisos>
         {% for message in messages %}
         <div class="ds-aviso ds-aviso--{{ message.tags|default:'info' }}">
-            <span class="ds-aviso-marca" aria-hidden="true"></span>
+            <span class="ds-aviso-marca" aria-hidden="true">
+                {% if message.tags == "error" %}{% include "core/_ico.html" with ico="erro" %}
+                {% elif message.tags == "warning" or message.tags == "info" %}{% include "core/_ico.html" with ico="atencao" %}
+                {% else %}{% include "core/_ico.html" with ico="ok" %}{% endif %}
+            </span>
             <p>{{ message }}</p>
             <button type="button" class="ds-aviso-fechar" aria-label="Dispensar aviso">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>

@@ -2429,9 +2429,9 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
     text-transform: uppercase; letter-spacing: 0.12em; color: var(--ds-text-500);
 }
 .escolha-multipla .ht-hint { margin: 0 0 0.7rem; }
-.escolha-multipla ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
-.escolha-multipla li { margin: 0; }
-.escolha-multipla label {
+.escolha-multipla .caixas > div { display: grid; gap: 0.35rem; }
+
+.escolha-multipla .caixas label {
     display: flex; align-items: center; gap: 0.6rem;
     padding: 0.55rem 0.85rem; border-radius: 0.5rem;
     border: 1px solid var(--ds-line); background: var(--ds-surface);
@@ -2440,12 +2440,13 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
     cursor: pointer;
     transition: border-color var(--arq-fast) ease, background var(--arq-fast) ease;
 }
-.escolha-multipla label:hover { border-color: var(--ds-blue-light); background: var(--ds-panel); }
-.escolha-multipla input { width: auto; flex: 0 0 auto; margin: 0; }
-.escolha-multipla input:checked + span,
-.escolha-multipla label:has(input:checked) { border-color: var(--ds-blue); }
+.escolha-multipla .caixas label:hover { border-color: var(--ds-blue-light); background: var(--ds-panel); }
+.escolha-multipla .caixas input { width: auto; flex: 0 0 auto; margin: 0; }
+.escolha-multipla .caixas label:has(input:checked) { border-color: var(--ds-blue); background: var(--ds-blue-50); }
+/* O campo de texto livre não é uma opção da lista: some o contorno de caixa. */
+.complementar-livre { margin: 0.85rem 0 0.2rem; display: flex; flex-direction: column; gap: 0.35rem; }
 @media (min-width: 34rem) {
-    .escolha-multipla ul { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .escolha-multipla .caixas > div { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* =================================================================
@@ -2503,4 +2504,300 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
 }
 @media (max-width: 40rem) {
     .ds-avisos { right: 0.75rem; left: 0.75rem; bottom: 0.75rem; width: auto; }
+}
+
+/* =================================================================
+   FOCO QUE ESPALHA A COR
+   O disco andando de lado era pouco: quem chega pelo teclado precisa
+   ver o botão inteiro mudar. No foco o disco cresce e toma a peça —
+   a mesma cor, o mesmo lugar de origem, só que ocupando tudo.
+   ================================================================= */
+.ds-btn--acao { position: relative; overflow: hidden; isolation: isolate; }
+.ds-btn--acao > * { position: relative; z-index: 1; }
+.ds-btn--acao::before {
+    content: ""; position: absolute; z-index: 0;
+    right: 0.4rem; top: 50%; width: 1.85rem; height: 1.85rem;
+    margin-top: -0.925rem; border-radius: 50%;
+    background: var(--ds-blue-dark);
+    transform: scale(0);
+    transition: transform 420ms var(--arq-ease-out);
+    pointer-events: none;
+}
+.ds-btn--acao:focus-visible::before,
+.ds-btn--acao:active::before { transform: scale(26); }
+.ds-btn--acao:focus-visible {
+    outline: none; box-shadow: none; background: var(--ds-blue);
+}
+/* Com a cor tomando o botão, o disco some para não virar mancha. */
+.ds-btn--acao:focus-visible .ds-btn-ico { background: rgba(255, 255, 255, 0.22); }
+
+/* Na pílula clara a expansão é o verde entrando: o rótulo inverte junto. */
+.auth-card .ds-btn--acao::before,
+.app-side .ds-btn--acao::before { background: var(--ds-blue); }
+.auth-card .ds-btn--acao:focus-visible,
+.app-side .ds-btn--acao:focus-visible { background: #f4f7f5; color: #fff; }
+.auth-card .ds-btn--acao:focus-visible .ds-btn-ico,
+.app-side .ds-btn--acao:focus-visible .ds-btn-ico { background: rgba(255, 255, 255, 0.24); }
+
+@media (prefers-reduced-motion: reduce) {
+    .ds-btn--acao::before { transition: none; }
+}
+
+/* O "Começar" do painel usa o mesmo molde — era o único CTA que tinha
+   ficado com o retângulo sólido e o foco escuro. */
+.frente-cta { padding: 0.35rem 0.35rem 0.35rem 1.1rem; font-size: 0.9rem; }
+.frente-cta .ds-btn-ico { width: 1.65rem; height: 1.65rem; }
+.frente-cta .ds-btn-ico svg { width: 0.85rem; height: 0.85rem; }
+
+/* =================================================================
+   AVISO EM VIDRO, COM ÍCONE
+   O risco na borda classificava sem dizer nada. Vira um disco com
+   ícone — que se lê de relance — sobre a mesma lâmina escura da
+   barra lateral, para o aviso pertencer ao sistema e não à página.
+   ================================================================= */
+.ds-aviso {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding: 0.9rem 0.9rem 0.9rem 0.95rem;
+    align-items: center;
+    background: rgba(22, 32, 29, 0.72);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    backdrop-filter: blur(20px) saturate(150%);
+    border: 0;
+    box-shadow: 0 18px 44px rgba(6, 12, 10, 0.42);
+}
+.ds-aviso p { color: rgba(255, 255, 255, 0.94); }
+.ds-aviso-marca {
+    align-self: center;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.7rem; height: 1.7rem; flex-shrink: 0;
+    border-radius: 50%; background: var(--ds-blue); color: #fff;
+}
+.ds-aviso-marca svg { width: 0.9rem; height: 0.9rem; }
+.ds-aviso--error .ds-aviso-marca { background: #c9503c; }
+.ds-aviso--warning .ds-aviso-marca, .ds-aviso--info .ds-aviso-marca { background: #a8760e; }
+.ds-aviso-fechar { color: rgba(255, 255, 255, 0.6); }
+.ds-aviso-fechar:hover { color: #fff; background: rgba(255, 255, 255, 0.16); }
+.ds-aviso-fechar:focus-visible {
+    outline: none; color: #fff; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.8);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .ds-aviso { background: rgba(20, 29, 26, 0.96); }
+}
+@media (prefers-reduced-transparency: reduce) {
+    .ds-aviso {
+        background: rgba(20, 29, 26, 0.98);
+        -webkit-backdrop-filter: none; backdrop-filter: none;
+    }
+}
+
+/* =================================================================
+   MODAL DE CRIAÇÃO
+   Formulário de cadastro sai da página. Numa lista, o formulário fixo
+   no topo empurra o conteúdo e é a primeira coisa que se lê — quando
+   quase sempre a pessoa veio consultar, não cadastrar.
+   ================================================================= */
+.ds-modal {
+    width: min(34rem, calc(100vw - 2rem));
+    padding: 1.6rem 1.6rem 1.75rem;
+    border: 0; border-radius: 0.9rem;
+    background: var(--ds-surface); color: var(--ds-text-900);
+    box-shadow: 0 30px 70px rgba(15, 17, 21, 0.3);
+}
+.ds-modal::backdrop {
+    background: rgba(12, 20, 18, 0.5);
+    -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+}
+.ds-modal[open] { animation: modal-entra 220ms var(--arq-ease-out) both; }
+@keyframes modal-entra {
+    from { opacity: 0; transform: translateY(0.8rem) scale(0.98); }
+    to { opacity: 1; transform: none; }
+}
+.ds-modal-fechar-form { position: absolute; top: 0.85rem; right: 0.9rem; margin: 0; }
+.ds-modal-fechar {
+    background: none; border: 0; padding: 0.3rem; cursor: pointer; line-height: 0;
+    color: var(--ds-text-500); border-radius: 0.35rem;
+    transition: color var(--arq-fast) ease, background var(--arq-fast) ease;
+}
+.ds-modal-fechar svg { width: 1rem; height: 1rem; }
+.ds-modal-fechar:hover { color: var(--ds-text-900); background: var(--ds-panel); }
+.ds-modal-fechar:focus-visible {
+    outline: none; color: var(--ds-text-900); box-shadow: inset 0 0 0 2px var(--ds-blue-dark);
+}
+.ds-modal-titulo { margin: 0 2rem 0.25rem 0; font-size: 1.2rem; }
+.ds-modal-sub { margin: 0 0 1.25rem; color: var(--ds-text-500); font-size: 0.88rem; }
+.ds-modal-corpo .form-card { display: flex; flex-direction: column; }
+.ds-modal-corpo .inline-add {
+    display: flex; flex-direction: column; align-items: stretch;
+    background: none; padding: 0; margin: 0; gap: 0.75rem;
+}
+.ds-modal-corpo .inline-add input,
+.ds-modal-corpo .inline-add select { width: 100%; flex: none; }
+
+/* O gatilho fica no cabeçalho da página, junto do título. */
+.page-head--row .ds-btn--acao { flex-shrink: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+    .ds-modal[open] { animation: none; }
+}
+
+/* =================================================================
+   CALENDÁRIO
+   Mês em grade, com o compromisso escrito dentro do dia. Ponto
+   colorido diria "tem algo"; o título diz o que é — e é isso que
+   evita abrir o dia só para descobrir.
+   ================================================================= */
+.cal-topo {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 0.9rem;
+}
+.cal-mes { margin: 0; font-size: 1.15rem; flex: 1; }
+.cal-passo {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 2rem; height: 2rem; flex-shrink: 0;
+    border: 1px solid var(--ds-line-dash); border-radius: 0.45rem;
+    color: var(--ds-text-700); text-decoration: none; font-size: 0.95rem;
+    transition: border-color var(--arq-fast) ease, background var(--arq-fast) ease;
+}
+.cal-passo:hover { background: var(--ds-panel); border-color: var(--ds-blue-light); }
+.cal-hoje {
+    font-size: 0.82rem; color: var(--ds-blue-dark); text-decoration: none;
+    padding: 0.3rem 0.6rem; border: 1px solid var(--ds-line-dash); border-radius: 0.45rem;
+}
+.cal-hoje:hover { background: var(--ds-panel); }
+
+.cal { width: 100%; border-collapse: collapse; margin-bottom: 2.5rem; table-layout: fixed; }
+.cal th {
+    padding: 0.4rem 0.5rem; text-align: left;
+    font-family: var(--arq-font-mono); font-size: 0.66rem; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.1em; color: var(--ds-text-500);
+    border-bottom: 1px solid var(--ds-line-dash);
+}
+.cal-dia {
+    vertical-align: top; height: 5.2rem;
+    padding: 0.35rem 0.4rem 0.45rem;
+    border: 1px solid var(--ds-line);
+    background: var(--ds-surface);
+}
+.cal-dia.is-fds { background: var(--ds-panel); }
+.cal-dia.is-fora { background: transparent; }
+.cal-dia.is-fora .cal-num { color: var(--ds-text-400); }
+.cal-num { font-family: var(--arq-font-mono); font-size: 0.74rem; color: var(--ds-text-500); }
+.cal-dia.is-hoje { border-color: var(--ds-blue); box-shadow: inset 0 0 0 1px var(--ds-blue); }
+.cal-dia.is-hoje .cal-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 1.35rem; height: 1.35rem; border-radius: 50%;
+    background: var(--ds-blue); color: #fff; font-weight: 600;
+}
+.cal-marcas { list-style: none; margin: 0.3rem 0 0; padding: 0; display: grid; gap: 0.2rem; }
+.cal-marca {
+    font-size: 0.72rem; line-height: 1.25;
+    padding: 0.16rem 0.35rem; border-radius: 0.28rem;
+    background: var(--ds-blue-50); color: var(--ds-blue-dark);
+    border-left: 2px solid var(--ds-blue);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cal-marca--visita { background: #f6efe0; color: #6d460a; border-left-color: var(--arq-amber); }
+.cal-marca--prazo { background: #f7e6e2; color: #8e2a1c; border-left-color: var(--ds-danger); }
+.cal-marca--outro { background: var(--ds-panel); color: var(--ds-text-700); border-left-color: var(--ds-line-dash); }
+
+@media (max-width: 52rem) {
+    /* No estreito a grade vira lista de dias com algo marcado: sete colunas
+       de 5rem não cabem, e calendário espremido não se lê. */
+    .cal thead { display: none; }
+    .cal, .cal tbody, .cal tr, .cal td { display: block; width: auto; }
+    .cal tr { margin: 0; }
+    .cal td.cal-dia { height: auto; border: 0; border-bottom: 1px solid var(--ds-line); display: none; }
+    .cal td.cal-dia.tem-compromisso, .cal td.cal-dia.is-hoje {
+        display: flex; gap: 0.75rem; align-items: baseline; padding: 0.6rem 0.2rem;
+    }
+    .cal td.cal-dia.is-fora { display: none; }
+    .cal-marcas { flex: 1; margin: 0; }
+    .cal-marca { white-space: normal; }
+}
+
+/* Histórico de avisos: o mesmo ícone do toast, em lista fria. */
+.aviso-hist { list-style: none; margin: 0; padding: 0; }
+.aviso-hist-item {
+    display: grid; grid-template-columns: 1.5rem minmax(0, 1fr); gap: 0.75rem;
+    align-items: start; padding: 0.65rem 0; border-top: 1px solid var(--ds-line);
+}
+.aviso-hist-item:last-child { border-bottom: 1px solid var(--ds-line); }
+.aviso-hist-marca {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.4rem; height: 1.4rem; margin-top: 0.05rem;
+    border-radius: 50%; background: var(--ds-blue-50); color: var(--ds-blue-dark);
+}
+.aviso-hist-marca svg { width: 0.8rem; height: 0.8rem; }
+.aviso-hist-item--erro .aviso-hist-marca { background: #f7e6e2; color: #8e2a1c; }
+.aviso-hist-item--atencao .aviso-hist-marca { background: #f6efe0; color: #6d460a; }
+.aviso-hist-item p { margin: 0 0 0.1rem; font-size: 0.9rem; }
+
+/* Briefing em leitura: mesma informação, sem campo nenhum. */
+.briefing-leitura { display: flex; flex-direction: column; gap: 1.1rem; margin: 0; }
+.briefing-leitura > div { display: flex; flex-direction: column; gap: 0.3rem; }
+.briefing-leitura dt {
+    font-family: var(--arq-font-mono); font-size: 0.68rem;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--ds-text-500);
+}
+.briefing-leitura dd { margin: 0; }
+.briefing-leitura dd p { margin: 0; font-size: 0.94rem; }
+.briefing-marcadas { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.35rem; }
+.chip--leitura {
+    padding: 0.2rem 0.6rem; font-size: 0.8rem;
+    background: var(--ds-blue-50); border-color: var(--ds-blue-100); color: var(--ds-blue-dark);
+}
+
+/* =================================================================
+   LEMBRETES EM POST-IT
+   O que foi combinado na reunião fica onde o olho bate ao abrir a
+   fase. Papel colado, com leve inclinação — a metáfora é a mesma da
+   prancheta, e o formato curto obriga a escrever só o essencial.
+   ================================================================= */
+.lembretes { margin-bottom: 2.5rem; }
+.lembretes-topo {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap;
+}
+.lembretes-topo .secao-titulo { margin: 0; }
+
+.postits {
+    list-style: none; margin: 0.9rem 0 1rem; padding: 0;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr)); gap: 1rem;
+}
+.postit {
+    display: flex; flex-direction: column; justify-content: space-between; gap: 0.75rem;
+    min-height: 8.5rem; padding: 0.9rem 0.95rem 0.7rem;
+    background: #fdf3c8;
+    box-shadow: 0 1px 1px rgba(20, 24, 26, 0.1), 0 8px 18px rgba(20, 24, 26, 0.12);
+    transform: rotate(-0.7deg);
+    transition: transform var(--arq-mid) var(--arq-ease-out),
+                box-shadow var(--arq-mid) var(--arq-ease);
+}
+/* Alternar a inclinação evita a fileira perfeitamente alinhada, que
+   denuncia que não é papel. */
+.postit:nth-child(even) { transform: rotate(0.9deg); background: #fdf0d6; }
+.postit:nth-child(3n) { transform: rotate(-0.3deg); }
+.postit:hover {
+    transform: rotate(0) translateY(-2px);
+    box-shadow: 0 2px 3px rgba(20, 24, 26, 0.12), 0 14px 28px rgba(20, 24, 26, 0.18);
+}
+.postit p {
+    margin: 0; font-size: 0.92rem; line-height: 1.45; color: #3a3117;
+    white-space: pre-line; overflow-wrap: anywhere;
+}
+.postit footer {
+    display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;
+    font-family: var(--arq-font-mono); font-size: 0.66rem; color: #8a7530;
+}
+.postit footer .app-link-btn { color: #8a7530; font-size: 0.66rem; }
+.postit footer .app-link-btn:hover { color: #5c4d14; }
+/* Conversa com o cliente ganha outro papel: é recado de fora, não nota
+   interna, e a diferença importa na hora de conferir o que foi acordado. */
+.postit--cliente { background: #e4f0e9; }
+.postit--cliente:nth-child(even) { background: #dcece4; }
+.postit--cliente p { color: #17352a; }
+.postit--cliente footer, .postit--cliente footer .app-link-btn { color: #3f6b5b; }
+
+@media (prefers-reduced-motion: reduce) {
+    .postit, .postit:hover { transform: none; transition: none; }
 }

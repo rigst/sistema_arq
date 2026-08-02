@@ -4,7 +4,7 @@ from django.views.decorators.http import require_POST
 
 from core.tenancy import queryset_da_empresa
 
-from .models import Notificacao
+from .models import AvisoSistema, Notificacao
 
 
 @login_required
@@ -16,6 +16,9 @@ def lista_notificacoes(request):
         {
             "notificacoes": notificacoes,
             "nao_lidas": [n for n in notificacoes if not n.lida],
+            "avisos": queryset_da_empresa(
+                AvisoSistema.objects.select_related("usuario"), request.user
+            )[:60],
         },
     )
 

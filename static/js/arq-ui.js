@@ -145,7 +145,38 @@
         });
     }
 
-    function iniciar() { contarNumeros(); preencherBarras(); marcarEnvio(); aberturaEmPassos(); avisos(); }
+    /* Modais de criação. O botão traz data-abre="id-do-dialog".
+       Sem JavaScript o <dialog> não abre — por isso todo modal do sistema é
+       para CRIAR algo, nunca para ler: quem não tem script continua vendo a
+       lista inteira, que é o conteúdo da página. */
+    function modais() {
+        document.querySelectorAll("[data-abre]").forEach(function (botao) {
+            var alvo = document.getElementById(botao.getAttribute("data-abre"));
+            if (!alvo || typeof alvo.showModal !== "function") return;
+            botao.hidden = false;
+            botao.addEventListener("click", function () {
+                alvo.showModal();
+                var primeiro = alvo.querySelector(
+                    "input:not([type=hidden]), select, textarea"
+                );
+                if (primeiro) primeiro.focus();
+            });
+        });
+
+        /* Clique fora fecha: o backdrop é o próprio <dialog>, então basta
+           conferir se o ponto do clique caiu fora da caixa. */
+        document.querySelectorAll("dialog.ds-modal").forEach(function (dlg) {
+            dlg.addEventListener("click", function (e) {
+                if (e.target !== dlg) return;
+                var r = dlg.getBoundingClientRect();
+                var dentro = e.clientX >= r.left && e.clientX <= r.right &&
+                             e.clientY >= r.top && e.clientY <= r.bottom;
+                if (!dentro) dlg.close();
+            });
+        });
+    }
+
+    function iniciar() { contarNumeros(); preencherBarras(); marcarEnvio(); aberturaEmPassos(); avisos(); modais(); }
 
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", iniciar);

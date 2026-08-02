@@ -2,40 +2,81 @@
 {% block title %}Notificações{% endblock %}
 
 {% block content %}
-<section class="page">
+<section class="page page--leitura">
     <header class="page-head page-head--row">
         <div>
             <span class="ds-kicker">Alertas</span>
             <h1 class="ds-h2 ds-display">Notificações</h1>
-            <p class="page-sub">Prazos, projetos parados, desvios de obra e obrigações — gerados automaticamente.</p>
+            <p class="page-sub">
+                O que precisa de atenção e o que já aconteceu, em duas listas separadas —
+                uma cobra ação, a outra é registro.
+            </p>
         </div>
         {% if nao_lidas %}
-        <form method="post" action="{% url 'notificacoes_todas' %}">
+        <form method="post" action="{% url 'notificacoes_todas' %}" class="app-inline-form">
             {% csrf_token %}
             <button class="ds-btn" type="submit">Marcar todas como lidas</button>
         </form>
         {% endif %}
     </header>
 
-    <ul class="notif-lista">
-        {% for n in notificacoes %}
-        <li class="notif-item notif-item--{{ n.nivel }} {% if n.lida %}is-lida{% endif %}">
-            <span class="arq-glifo" aria-hidden="true">{% if n.nivel == 'info' %}■{% else %}▲{% endif %}</span>
-            <div class="notif-corpo">
-                <strong>{{ n.titulo }}</strong>
-                {% if n.mensagem %}<p>{{ n.mensagem }}</p>{% endif %}
-                <span class="timeline-data">{{ n.criado_em|date:"d/m/Y H:i" }}</span>
-            </div>
-            {% if not n.lida %}
-            <form method="post" action="{% url 'notificacao_lida' n.pk %}">
-                {% csrf_token %}
-                <button class="app-link-btn" type="submit">{% if n.url %}ver{% else %}marcar lida{% endif %}</button>
-            </form>
-            {% endif %}
-        </li>
-        {% empty %}
-        <li class="data-empty">Nenhuma notificação. Tudo em dia.</li>
-        {% endfor %}
-    </ul>
+    <section class="secao">
+        <h2 class="secao-titulo ds-display">Precisa de atenção</h2>
+        <p class="secao-sub">
+            Prazos, projetos parados, desvios de execução e obrigações técnicas —
+            encontrados por varredura, não digitados por ninguém.
+        </p>
+        <ul class="notif-lista">
+            {% for n in notificacoes %}
+            <li class="notif-item notif-item--{{ n.nivel }} {% if n.lida %}is-lida{% endif %}">
+                <span class="arq-glifo" aria-hidden="true">{% if n.nivel == 'info' %}■{% else %}▲{% endif %}</span>
+                <div class="notif-corpo">
+                    <strong>{{ n.titulo }}</strong>
+                    {% if n.mensagem %}<p>{{ n.mensagem }}</p>{% endif %}
+                    <span class="timeline-data">{{ n.criado_em|date:"d/m/Y H:i" }}</span>
+                </div>
+                {% if not n.lida %}
+                <form method="post" action="{% url 'notificacao_lida' n.pk %}" class="app-inline-form">
+                    {% csrf_token %}
+                    <button class="app-link-btn" type="submit">{% if n.url %}ver{% else %}marcar lida{% endif %}</button>
+                </form>
+                {% endif %}
+            </li>
+            {% empty %}
+            <li class="data-empty">Nada pendente. Tudo em dia.</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    {% comment %}
+    Histórico dos avisos do canto. O toast some em segundos, às vezes justo
+    quando a pessoa desviou o olho — aqui fica o que foi dito, com hora e autor.
+    {% endcomment %}
+    <section class="secao">
+        <h2 class="secao-titulo ds-display">Histórico de avisos</h2>
+        <p class="secao-sub">
+            Tudo que apareceu no canto da tela: o que foi salvo, criado, enviado ou
+            deu errado. Registro do que aconteceu, e não do que falta fazer.
+        </p>
+        <ol class="aviso-hist">
+            {% for a in avisos %}
+            <li class="aviso-hist-item aviso-hist-item--{{ a.nivel }}">
+                <span class="aviso-hist-marca" aria-hidden="true">
+                    {% if a.nivel == "erro" %}{% include "core/_ico.html" with ico="erro" %}
+                    {% elif a.nivel == "atencao" %}{% include "core/_ico.html" with ico="atencao" %}
+                    {% else %}{% include "core/_ico.html" with ico="ok" %}{% endif %}
+                </span>
+                <div>
+                    <p>{{ a.texto }}</p>
+                    <span class="timeline-data">
+                        {{ a.criado_em|date:"d/m/Y H:i" }}{% if a.usuario %} · {{ a.usuario.get_username }}{% endif %}
+                    </span>
+                </div>
+            </li>
+            {% empty %}
+            <li class="data-empty">Nenhum aviso registrado ainda.</li>
+            {% endfor %}
+        </ol>
+    </section>
 </section>
 {% endblock %}

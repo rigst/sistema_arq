@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 from core.models import EmpresaModel
@@ -33,3 +34,37 @@ class Notificacao(EmpresaModel):
 
     def __str__(self):
         return self.titulo
+
+
+class AvisoSistema(EmpresaModel):
+    """O histórico dos avisos que passaram pelo canto da tela.
+
+    O toast some em segundos, e às vezes some justo quando a pessoa desviou o
+    olho. Guardar o que foi dito custa uma linha por ação e responde à pergunta
+    que aparece dez minutos depois: "salvou mesmo? o que apareceu ali?".
+
+    Não se confunde com Notificacao: aquela é gerada por varredura e diz o que
+    PRECISA de atenção; esta é o registro do que ACONTECEU.
+    """
+
+    NIVEL_CHOICES = [
+        ("sucesso", "Sucesso"),
+        ("erro", "Erro"),
+        ("atencao", "Atenção"),
+    ]
+
+    texto = models.CharField(max_length=300)
+    nivel = models.CharField(max_length=10, choices=NIVEL_CHOICES, default="sucesso")
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="+",
+    )
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-criado_em", "-id"]
+        verbose_name = "aviso do sistema"
+        verbose_name_plural = "avisos do sistema"
+
+    def __str__(self):
+        return self.texto

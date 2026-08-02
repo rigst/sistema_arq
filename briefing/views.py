@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from core.tenancy import queryset_da_empresa
@@ -22,26 +23,29 @@ def _get_briefing(request, projeto_pk):
 
 @login_required
 def editar_briefing(request, projeto_pk):
-    projeto, briefing = _get_briefing(request, projeto_pk)
-    if request.method == "POST":
-        form = BriefingForm(request.POST, instance=briefing)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Briefing salvo.")
-            return redirect("briefing_projeto", projeto_pk=projeto.pk)
-    else:
-        form = BriefingForm(instance=briefing)
-    return render(
-        request,
-        "briefing/form.html",
-        {
-            "projeto": projeto,
-            "briefing": briefing,
-            "form": form,
-            "ambientes": briefing.ambientes.all(),
-            "form_ambiente": AmbienteForm(),
-        },
+    """Rota antiga dos "blocos NBR", que agora moram na mesma tela do roteiro.
+
+    Eram três telas para uma conversa só — roteiro de perguntas, blocos e
+    programa de necessidades — e a pessoa precisava saber em qual delas cada
+    coisa tinha sido escrita.
+    """
+    projeto = get_object_or_404(
+        queryset_da_empresa(Projeto.objects.all(), request.user), pk=projeto_pk
     )
+    return redirect("briefing_responder", projeto_pk=projeto.pk)
+
+
+@require_POST
+@login_required
+def salvar_blocos(request, projeto_pk):
+    projeto, briefing = _get_briefing(request, projeto_pk)
+    form = BriefingForm(request.POST, instance=briefing)
+    if form.is_valid():
+        form.save()
+        messages.success(request, "Briefing salvo.")
+    else:
+        messages.error(request, "Confira os campos do briefing.")
+    return redirect(f"{reverse('briefing_responder', kwargs={'projeto_pk': projeto.pk})}?editar=1")
 
 
 @require_POST
@@ -237,10 +241,20 @@ def responder(request, projeto_pk):
     respostas = {r.pergunta_id: r for r in briefing.respostas.prefetch_related("opcoes")}
     blocos = perguntas_por_bloco(template)
     for bloco in blocos:
+        respondidas = 0
         for pergunta in bloco["perguntas"]:
             resposta = respostas.get(pergunta.pk)
             pergunta.resposta_texto = resposta.texto if resposta else ""
             pergunta.marcadas = {o.pk for o in resposta.opcoes.all()} if resposta else set()
+            if pergunta.resposta_texto or pergunta.marcadas:
+                respondidas += 1
+        # Em leitura, bloco sem nenhuma resposta vira título solto no vazio.
+        bloco["respondidas"] = respondidas
+
+    # Briefing já respondido abre em leitura. Formulário longo aberto por padrão
+    # convida a mexer no que já estava decidido, e some com a visão do conjunto.
+    respondido = briefing.respostas.exists()
+    editando = request.GET.get("editar") == "1" or not respondido
 
     return render(
         request,
@@ -251,6 +265,11 @@ def responder(request, projeto_pk):
             "template": template,
             "templates": _meus_templates(request.user).filter(ativo=True),
             "blocos": blocos,
+            "form_blocos": BriefingForm(instance=briefing),
+            "ambientes": briefing.ambientes.all(),
+            "form_ambiente": AmbienteForm(),
+            "editando": editando,
+            "respondido": respondido,
             "ia_disponivel": ia_disponivel(),
             "leitura_ia": request.session.pop(f"briefing_ia_{briefing.pk}", ""),
         },

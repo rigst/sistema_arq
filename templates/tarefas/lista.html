@@ -2,14 +2,25 @@
 {% block title %}Tarefas{% endblock %}
 
 {% block content %}
-<section class="page">
-    <header class="page-head page-head--foto page-head--producao">
+<section class="page page--leitura">
+    {% include "core/_voltar.html" with projeto_voltar=projeto %}
+
+    <header class="page-head page-head--row">
         <div>
             <span class="ds-kicker">Tarefas e horas</span>
-            <h1 class="ds-h2 ds-display">Tarefas da equipe</h1>
-            <p class="page-sub">Cada tarefa com um dono, um prazo e um critério de pronto. As horas apontadas aqui viram o custo real do projeto e a comparação com o estimado.</p>
+            <h1 class="ds-h2 ds-display">{% if projeto %}Tarefas de {{ projeto.nome }}{% else %}Tarefas da equipe{% endif %}</h1>
+            <p class="page-sub">
+                Cada tarefa com um dono, um prazo e um critério de pronto. As horas
+                apontadas aqui viram o custo real do projeto.
+            </p>
         </div>
+        <button class="ds-btn--acao" type="button" data-abre="modal-tarefa" hidden>
+            <span>Nova tarefa</span>
+            <span class="ds-btn-ico">{% include "core/_ico.html" with ico="novo" %}</span>
+        </button>
     </header>
+
+    {% include "core/_contexto_projeto.html" %}
 
     <section class="ds-card timer-card {% if timer_ativo %}is-rodando{% endif %}">
         <h2 class="ds-display">Apontamento de horas</h2>
@@ -48,41 +59,58 @@
         {% endif %}
     </section>
 
-    <div class="detalhe-grid">
-        <div class="ds-card">
-            <h2 class="ds-display">Lista</h2>
-            <table class="data-table">
-                <thead><tr><th></th><th>Tarefa</th><th>Projeto</th><th>Responsável</th><th>Prazo</th></tr></thead>
-                <tbody>
-                {% for t in tarefas %}
-                    <tr class="{% if t.status == 'concluida' %}is-done{% endif %}">
-                        <td>
-                            <form method="post" action="{% url 'tarefa_concluir' t.pk %}">
-                                {% csrf_token %}
-                                <button class="check-btn" type="submit" title="alternar">{% if t.status == 'concluida' %}✓{% else %}○{% endif %}</button>
-                            </form>
-                        </td>
-                        <td>{{ t.titulo }}{% if t.sem_dono %} <span class="tag-alerta">sem dono</span>{% endif %}{% if t.atrasada %} <span class="tag-alerta">atrasada</span>{% endif %}</td>
-                        <td>{{ t.projeto.nome|default:"—" }}</td>
-                        <td>{{ t.responsavel|default:"—" }}</td>
-                        <td>{{ t.prazo|date:"d/m/y"|default:"—" }}</td>
-                    </tr>
-                {% empty %}
-                    <tr><td colspan="5" class="data-empty">Nenhuma tarefa ainda.</td></tr>
-                {% endfor %}
-                </tbody>
-            </table>
+    <section class="secao">
+        <h2 class="secao-titulo ds-display">Lista</h2>
+        <div class="table-scroll">
+        <table class="data-table">
+            <thead><tr><th></th><th>Tarefa</th>{% if not projeto %}<th>Projeto</th>{% endif %}<th>Responsável</th><th>Prazo</th></tr></thead>
+            <tbody>
+            {% for t in tarefas %}
+                <tr class="{% if t.status == 'concluida' %}is-done{% endif %}">
+                    <td>
+                        <form method="post" action="{% url 'tarefa_concluir' t.pk %}" class="app-inline-form">
+                            {% csrf_token %}
+                            <button class="check-btn" type="submit" aria-label="Alternar conclusão de {{ t.titulo }}">{% if t.status == 'concluida' %}✓{% else %}○{% endif %}</button>
+                        </form>
+                    </td>
+                    <td>{{ t.titulo }}{% if t.sem_dono %} <span class="tag-alerta">sem dono</span>{% endif %}{% if t.atrasada %} <span class="tag-alerta">atrasada</span>{% endif %}</td>
+                    {% if not projeto %}<td>{{ t.projeto.nome|default:"—" }}</td>{% endif %}
+                    <td>{% if t.responsavel %}{{ t.responsavel }}{% elif t.fornecedor %}{{ t.fornecedor.nome }}{% else %}—{% endif %}</td>
+                    <td>{{ t.prazo|date:"d/m/y"|default:"—" }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="5" class="data-empty">Nenhuma tarefa ainda.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
         </div>
+    </section>
 
-        <div class="ds-card form-card">
-            <h2 class="ds-display">Nova tarefa</h2>
-            <form method="post">
+    {% comment %}
+    A criação mora num modal: numa lista, o formulário fixo empurra o conteúdo e
+    é a primeira coisa que se lê — quando quase sempre a pessoa veio consultar.
+    {% endcomment %}
+    <dialog class="ds-modal" id="modal-tarefa" aria-labelledby="modal-tarefa-titulo">
+        <form method="dialog" class="ds-modal-fechar-form">
+            <button class="ds-modal-fechar" aria-label="Fechar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+        </form>
+        <h2 class="ds-modal-titulo ds-display" id="modal-tarefa-titulo">Nova tarefa</h2>
+        <p class="ds-modal-sub">Quem faz, até quando, e como saber que ficou pronta.</p>
+        <div class="ds-modal-corpo">
+            <form method="post" class="form-card">
                 {% csrf_token %}
                 {{ form.as_p }}
-                <button class="ds-btn ds-btn--solid" type="submit">Criar tarefa</button>
+                <div class="form-actions">
+                    <button class="ds-btn--acao" type="submit">
+                        <span>Criar tarefa</span>
+                        <span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span>
+                    </button>
+                </div>
             </form>
         </div>
-    </div>
+    </dialog>
 </section>
 {% endblock %}
 

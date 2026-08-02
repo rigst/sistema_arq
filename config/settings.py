@@ -118,6 +118,9 @@ TEMPLATES = [
     },
 ]
 
+# Todo aviso mostrado no canto também vai para o histórico em Notificações.
+MESSAGE_STORAGE = "notificacoes.storage.ArmazenamentoComHistorico"
+
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 

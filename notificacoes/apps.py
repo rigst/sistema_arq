@@ -10,8 +10,9 @@ class NotificacoesConfig(AppConfig):
         from core.visitante_cleanup import registrar_limpeza
 
         def _limpar(grupo):
-            from .models import Notificacao
+            from .models import AvisoSistema, Notificacao
 
+            AvisoSistema.objects.filter(empresa=grupo).delete()
             Notificacao.objects.filter(empresa=grupo).delete()
 
         registrar_limpeza(_limpar)
