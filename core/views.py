@@ -31,29 +31,35 @@ def dashboard(request):
 
     from core.tenancy import queryset_da_empresa
     from financeiro.models import Lancamento
-    from obras.models import Obra
     from projetos.models import Projeto
     from regulatorio.models import ObrigacaoTecnica
-    from tarefas.models import Tarefa
 
     empresa = obter_empresa_ativa_usuario(request.user)
     u = request.user
 
     projetos_ativos = queryset_da_empresa(Projeto.objects.all(), u).filter(status="ativo").count()
-    obras = list(queryset_da_empresa(Obra.objects.prefetch_related("etapas"), u))
-    obras_desvio = sum(1 for o in obras if o.em_desvio)
-    tarefas_abertas = queryset_da_empresa(Tarefa.objects.all(), u).exclude(status="concluida").count()
     a_receber = queryset_da_empresa(Lancamento.objects.all(), u).filter(
         tipo="entrada", status="previsto"
     ).aggregate(s=Sum("valor"))["s"] or Decimal("0")
     obrigacoes = queryset_da_empresa(ObrigacaoTecnica.objects.all(), u).exclude(status="baixada")
     obrig_alerta = sum(1 for o in obrigacoes if o.vencida or o.vencendo or o.pendente_registro)
 
+    # Fases é o que o escritório realmente acompanha: quantas estão paradas
+    # com o cliente é a informação que muda o dia, mais do que um total de
+    # projetos que quase nunca varia.
+    from fases.models import Fase
+
+    fases = queryset_da_empresa(Fase.objects.select_related("projeto"), u)
+    com_cliente = fases.filter(status=Fase.AGUARDANDO).count()
+    em_elaboracao = fases.filter(status=Fase.EM_ELABORACAO).count()
+    com_ajustes = fases.filter(status=Fase.AJUSTES).count()
+
     kpis = [
         {"label": "Projetos ativos", "valor": projetos_ativos, "rodape": "em andamento", "url": "projetos_painel", "cor": "blue"},
-        {"label": "Execução em desvio", "valor": obras_desvio, "rodape": "atrás do previsto", "url": "obras_lista", "cor": "alert" if obras_desvio else "green"},
+        {"label": "Fases em elaboração", "valor": em_elaboracao, "rodape": "sendo desenhadas agora", "url": "projetos_painel", "cor": "green"},
+        {"label": "Aguardando cliente", "valor": com_cliente, "rodape": "enviadas, sem resposta", "url": "projetos_painel", "cor": "amber" if com_cliente else "green"},
+        {"label": "Ajustes pedidos", "valor": com_ajustes, "rodape": "cliente devolveu", "url": "projetos_painel", "cor": "alert" if com_ajustes else "green"},
         {"label": "A receber (previsto)", "valor": f"R$ {a_receber}", "rodape": "lançamentos previstos", "url": "financeiro_painel", "cor": "green"},
-        {"label": "Tarefas abertas", "valor": tarefas_abertas, "rodape": "a fazer", "url": "tarefas_lista", "cor": "violet"},
     ]
 
     # O painel não repete o menu. A barra lateral já lista os módulos; repetir
@@ -70,13 +76,19 @@ def dashboard(request):
         .order_by("-ultima_atualizacao")[:8]
     ):
         etapas = montar_roteiro(projeto)
+        proxima = proxima_etapa(etapas)
         frentes.append(
             {
                 "projeto": projeto,
-                "proxima": proxima_etapa(etapas),
+                "proxima": proxima,
                 "percentual": percentual(etapas),
                 "feitas": sum(1 for e in etapas if e.concluida),
                 "total": len(etapas),
+                # O estado da fase é o que diz se a bola está com o escritório
+                # ou com o cliente — e é isso que decide o que fazer hoje.
+                "situacao": proxima.resumo if proxima else "roteiro completo",
+                "status": proxima.status if proxima else "aprovada",
+                "aguardando": bool(proxima and proxima.status == "aguardando_cliente"),
             }
         )
 

@@ -79,7 +79,6 @@ def remover_ambiente(request, pk):
 
 from django.http import Http404  # noqa: E402
 
-from core.ia import IAIndisponivel, disponivel as ia_disponivel, resumir_briefing  # noqa: E402
 from core.tenancy import obter_grupo_empresa_ou_erro  # noqa: E402
 
 from .forms import TemplateBriefingForm  # noqa: E402
@@ -89,7 +88,7 @@ from .models import (  # noqa: E402
     RespostaBriefing,
     TemplateBriefing,
 )
-from .services import perguntas_por_bloco, respostas_para_ia, semear_templates_padrao  # noqa: E402
+from .services import perguntas_por_bloco, semear_templates_padrao  # noqa: E402
 
 
 def _meus_templates(user):
@@ -270,8 +269,6 @@ def responder(request, projeto_pk):
             "form_ambiente": AmbienteForm(),
             "editando": editando,
             "respondido": respondido,
-            "ia_disponivel": ia_disponivel(),
-            "leitura_ia": request.session.pop(f"briefing_ia_{briefing.pk}", ""),
         },
     )
 
@@ -292,18 +289,3 @@ def _salvar_respostas(request, briefing, template):
         resposta.opcoes.set(opcoes)
 
 
-@require_POST
-@login_required
-def leitura_ia(request, projeto_pk):
-    """Pede à Claude uma leitura do briefing. O texto volta como rascunho na
-    tela; nada é gravado no briefing sem o arquiteto decidir."""
-    projeto, briefing = _get_briefing(request, projeto_pk)
-    try:
-        texto = resumir_briefing(
-            projeto.nome, projeto.get_tipo_display(), respostas_para_ia(briefing)
-        )
-    except IAIndisponivel as erro:
-        messages.error(request, str(erro))
-    else:
-        request.session[f"briefing_ia_{briefing.pk}"] = texto
-    return redirect("briefing_responder", projeto_pk=projeto.pk)

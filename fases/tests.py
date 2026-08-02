@@ -36,6 +36,14 @@ class BaseFase(TestCase):
     def fase(self, chave):
         return self.projeto.fases.get(chave=chave)
 
+    def liberar_ate(self, chave):
+        """Aprova tudo que vem antes — a ordem agora é obrigatória de verdade."""
+        alvo = self.fase(chave)
+        for f in self.projeto.fases.filter(ordem__lt=alvo.ordem):
+            f.status = Fase.APROVADA
+            f.save(update_fields=["status"])
+        return alvo
+
 
 class MontagemTests(BaseFase):
     def test_projeto_novo_nasce_com_as_cinco_principais(self):
@@ -61,7 +69,7 @@ class FluxoTests(BaseFase):
         self.assertIn("Proposta e contrato", self.fase("estudo_preliminar").impedimento)
 
     def test_aprovar_uma_fase_libera_a_seguinte(self):
-        proposta = self.fase("proposta")
+        proposta = self.liberar_ate("proposta")
         proposta.iniciar(self.user)
         Arquivo.objects.create(
             empresa=self.grupo, projeto=self.projeto, fase=proposta,
@@ -72,7 +80,7 @@ class FluxoTests(BaseFase):
         self.assertTrue(self.fase("estudo_preliminar").liberada)
 
     def test_ajustes_nao_liberam_a_seguinte(self):
-        proposta = self.fase("proposta")
+        proposta = self.liberar_ate("proposta")
         proposta.iniciar(self.user)
         proposta.enviar_ao_cliente(self.user)
         proposta.registrar_resposta(False, "Rever o prazo", self.user)
@@ -89,7 +97,7 @@ class FluxoTests(BaseFase):
         self.assertEqual(briefing.status, Fase.APROVADA)
 
     def test_fase_que_exige_aprovacao_nao_fecha_por_atalho(self):
-        anteprojeto = self.fase("anteprojeto")
+        anteprojeto = self.liberar_ate("anteprojeto")
         anteprojeto.iniciar(self.user)
         self.assertFalse(anteprojeto.concluir_sem_aprovacao(self.user))
         self.assertEqual(anteprojeto.status, Fase.EM_ELABORACAO)
@@ -104,18 +112,38 @@ class FluxoTests(BaseFase):
         self.assertFalse(fase.registrar_resposta(True, "", self.user))
         self.assertEqual(fase.status, Fase.NAO_INICIADA)
 
+    def test_nao_da_para_comecar_fase_com_a_anterior_em_aberto(self):
+        """A trava é real e não conselho: adiantar trabalho sobre decisão não
+        confirmada é o retrabalho que o fluxo existe para cortar."""
+        anteprojeto = self.fase("anteprojeto")
+        self.assertFalse(anteprojeto.iniciar(self.user))
+        self.assertEqual(anteprojeto.status, Fase.NAO_INICIADA)
+
+        self.client.post(f"/fases/{anteprojeto.pk}/iniciar/")
+        anteprojeto.refresh_from_db()
+        self.assertEqual(anteprojeto.status, Fase.NAO_INICIADA)
+
+    def test_briefing_abre_direto_no_briefing(self):
+        """A fase de briefing não tem material solto: ela É a conversa."""
+        fase = self.fase("briefing")
+        self.assertRedirects(
+            self.client.get(f"/fases/{fase.pk}/"),
+            f"/briefing/projeto/{self.projeto.pk}/responder/",
+            target_status_code=302,
+        )
+
 
 class ViewsTests(BaseFase):
     def test_nao_envia_fase_vazia_ao_cliente(self):
         """Enviar sem material é pedir aprovação de nada."""
-        fase = self.fase("proposta")
+        fase = self.liberar_ate("proposta")
         fase.iniciar(self.user)
         self.client.post(f"/fases/{fase.pk}/enviar/")
         fase.refresh_from_db()
         self.assertEqual(fase.status, Fase.EM_ELABORACAO)
 
     def test_anexar_arquivo_registra_no_historico(self):
-        fase = self.fase("estudo_preliminar")
+        fase = self.liberar_ate("estudo_preliminar")
         self.client.post(
             f"/fases/{fase.pk}/anexar/",
             {"titulo": "Planta baixa", "arquivo": _png(), "categoria": "projeto", "fluxo": "interno"},
@@ -181,17 +209,8 @@ class ViewsTests(BaseFase):
         self.client.post(f"/fases/{fase.pk}/remover/")
         self.assertTrue(self.projeto.fases.filter(chave="executivo").exists())
 
-    def test_registrar_conversa_com_o_cliente(self):
-        fase = self.fase("briefing")
-        self.client.post(
-            f"/fases/{fase.pk}/registro/",
-            {"tipo": "cliente", "texto": "Pediu para rever a cozinha."},
-        )
-        registro = fase.registros.get(tipo="cliente")
-        self.assertEqual(registro.autor, self.user)
-
     def test_resposta_do_cliente_pela_tela(self):
-        fase = self.fase("proposta")
+        fase = self.liberar_ate("proposta")
         fase.iniciar(self.user)
         Arquivo.objects.create(
             empresa=self.grupo, projeto=self.projeto, fase=fase,
@@ -274,42 +293,14 @@ class NavegacaoPorProjetoTests(BaseFase):
 class LembreteTests(BaseFase):
     """O combinado fica no topo, em post-it; o rastro desce para o histórico."""
 
-    def test_comentario_escrito_a_mao_nasce_fixado(self):
-        fase = self.fase("briefing")
+    def test_lembrete_do_projeto_guarda_quando_e_quem(self):
         self.client.post(
-            f"/fases/{fase.pk}/registro/",
-            {"tipo": "cliente", "texto": "Cliente quer a churrasqueira fechada."},
+            f"/fases/projeto/{self.projeto.pk}/lembrete/",
+            {"texto": "Cliente quer a churrasqueira fechada."},
         )
-        registro = fase.registros.get(tipo="cliente")
-        self.assertTrue(registro.fixado)
-
-    def test_registro_do_sistema_nasce_arquivado(self):
-        """Rastro não é recado: fase iniciada não vira post-it."""
-        fase = self.fase("briefing")
-        fase.iniciar(self.user)
-        self.assertFalse(fase.registros.get(tipo="sistema").fixado)
-
-    def test_arquivar_lembrete_nao_apaga(self):
-        fase = self.fase("briefing")
-        self.client.post(f"/fases/{fase.pk}/registro/", {"tipo": "comentario", "texto": "Nota"})
-        registro = fase.registros.get(tipo="comentario")
-        self.client.post(f"/fases/registro/{registro.pk}/soltar/")
-        registro.refresh_from_db()
-        self.assertFalse(registro.fixado)
-        self.assertTrue(fase.registros.filter(pk=registro.pk).exists())
-
-    def test_lembrete_de_outra_empresa_da_404(self):
-        from django.contrib.auth.models import Group
-
-        outro = Group.objects.create(name="Vizinho 4")
-        alheio = Projeto.objects.create(
-            empresa=outro, cliente=self.cliente, nome="Alheio 4", tipo="comercial"
-        )
-        montar_fases(alheio)
-        registro = alheio.fases.first().registrar("comentario", "Sigiloso")
-        self.assertEqual(
-            self.client.post(f"/fases/registro/{registro.pk}/soltar/").status_code, 404
-        )
+        lembrete = self.projeto.lembretes.get()
+        self.assertEqual(lembrete.autor, self.user)
+        self.assertIsNotNone(lembrete.criado_em)
 
 
 class ComplementarLivreTests(BaseFase):
@@ -352,10 +343,11 @@ class TelasQueRespondemTests(BaseFase):
         # Sem roteiro cadastrado o briefing encaminha para os modelos; aqui o
         # que se quer medir é a tela em si.
         semear_templates_padrao(self.grupo, self.user)
-        fase = self.fase("briefing")
+        # A de briefing encaminha para o briefing; aqui vale uma que tem tela.
+        fase = self.fase("estudo_preliminar")
         rotas = [
-            "/", "/tarefas/", "/agenda/", "/notificacoes/", "/modelos/",
-            "/projetos/", "/clientes/", "/obras/", "/fornecedores/",
+            "/", "/agenda/", "/notificacoes/", "/modelos/",
+            "/projetos/", "/clientes/", "/fornecedores/",
             "/financeiro/", "/precificacao/", "/escritorio/identidade/",
             "/arquivos/", "/orcamentos/", "/propostas/", "/contratos/",
             "/regulatorio/", "/projeto-novo/novo/",
@@ -407,31 +399,23 @@ class LembreteDoProjetoTests(BaseFase):
     def test_cria_lembrete_no_projeto(self):
         self.client.post(
             f"/fases/projeto/{self.projeto.pk}/lembrete/",
-            {"tipo": "comentario", "texto": "Cliente viaja em janeiro."},
+            {"texto": "Cliente viaja em janeiro."},
         )
         lembrete = self.projeto.lembretes.get()
         self.assertIsNone(lembrete.fase_id)
-        self.assertTrue(lembrete.fixado)
-
-    def test_lembrete_de_fase_tambem_pertence_ao_projeto(self):
-        """Sem isso, o lembrete da fase sumiria da ficha do projeto."""
-        fase = self.fase("briefing")
-        self.client.post(f"/fases/{fase.pk}/registro/", {"tipo": "comentario", "texto": "Nota"})
-        self.assertEqual(fase.registros.get().projeto, self.projeto)
 
     def test_editar_e_excluir(self):
         self.client.post(
             f"/fases/projeto/{self.projeto.pk}/lembrete/",
-            {"tipo": "comentario", "texto": "Original"},
+            {"texto": "Original"},
         )
         lembrete = self.projeto.lembretes.get()
         self.client.post(
             f"/fases/lembrete/{lembrete.pk}/editar/",
-            {"tipo": "cliente", "texto": "Corrigido"},
+            {"texto": "Corrigido"},
         )
         lembrete.refresh_from_db()
         self.assertEqual(lembrete.texto, "Corrigido")
-        self.assertEqual(lembrete.tipo, "cliente")
 
         self.client.post(f"/fases/lembrete/{lembrete.pk}/remover/")
         self.assertFalse(self.projeto.lembretes.exists())
@@ -456,7 +440,7 @@ class TarefaNaFaseTests(BaseFase):
     """Tarefa nasce dentro da fase que a exige, e as horas seguem junto."""
 
     def test_cria_tarefa_ligada_a_fase_e_ao_projeto(self):
-        fase = self.fase("executivo")
+        fase = self.liberar_ate("executivo")
         self.client.post(
             f"/fases/{fase.pk}/tarefa/", {"titulo": "Detalhar esquadrias"}
         )
@@ -541,3 +525,12 @@ class AvisoDetalhadoTests(BaseFase):
         resposta = self.client.get("/notificacoes/")
         self.assertContains(resposta, "Histórico de avisos")
         self.assertContains(resposta, "entrou em elaboração")
+
+
+class AgendaNavegacaoTests(BaseFase):
+    def test_link_do_mes_seguinte_nao_localiza_o_ano(self):
+        """2026 formatado com separador vira "2.026" e o link quebra."""
+        resposta = self.client.get("/agenda/?ano=2026&mes=12")
+        self.assertContains(resposta, "ano=2027")
+        self.assertNotContains(resposta, "ano=2.027")
+        self.assertEqual(self.client.get("/agenda/?ano=2027&mes=1").status_code, 200)

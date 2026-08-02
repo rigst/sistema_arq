@@ -72,10 +72,6 @@
                     {% include "core/_ico.html" with ico="painel" %}
                     <span>Painel</span>
                 </a>
-                <a href="{% url 'tarefas_lista' %}" class="nav-link{% if '/tarefas/' in request.path %} is-active{% endif %}">
-                    {% include "core/_ico.html" with ico="tarefas" %}
-                    <span>Tarefas</span>
-                </a>
                 <a href="{% url 'agenda' %}" class="nav-link{% if '/agenda/' in request.path %} is-active{% endif %}">
                     {% include "core/_ico.html" with ico="agenda" %}
                     <span>Agenda</span>
@@ -92,10 +88,6 @@
                 <a href="{% url 'projetos_painel' %}" class="nav-link{% if '/projetos/' in request.path or '/fases/' in request.path %} is-active{% endif %}">
                     {% include "core/_ico.html" with ico="projetos" %}
                     <span>Projetos</span>
-                </a>
-                <a href="{% url 'obras_lista' %}" class="nav-link{% if '/obras/' in request.path %} is-active{% endif %}">
-                    {% include "core/_ico.html" with ico="obras" %}
-                    <span>Execução</span>
                 </a>
                 <a href="{% url 'crm_lista' %}" class="nav-link{% if '/clientes/' in request.path %} is-active{% endif %}">
                     {% include "core/_ico.html" with ico="clientes" %}

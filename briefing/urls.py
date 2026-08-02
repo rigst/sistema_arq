@@ -23,7 +23,6 @@ urlpatterns = [
         views.aplicar_template,
         name="briefing_aplicar_template",
     ),
-    path("projeto/<int:projeto_pk>/leitura-ia/", views.leitura_ia, name="briefing_leitura_ia"),
     path(
         "projeto/<int:projeto_pk>/ambiente/",
         views.adicionar_ambiente,

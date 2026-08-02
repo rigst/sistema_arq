@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load l10n %}
 {% block title %}Agenda{% endblock %}
 
 {% block content %}
@@ -27,9 +28,9 @@
     própria, dá para guardar nos favoritos e a agenda funciona sem JavaScript.
     {% endcomment %}
     <div class="cal-topo">
-        <a class="cal-passo" href="?ano={{ anterior.ano }}&amp;mes={{ anterior.mes }}{% if projeto %}&amp;projeto={{ projeto.pk }}{% endif %}" aria-label="Mês anterior">←</a>
+        <a class="cal-passo" href="?ano={{ anterior.ano|unlocalize }}&amp;mes={{ anterior.mes|unlocalize }}{% if projeto %}&amp;projeto={{ projeto.pk }}{% endif %}" aria-label="Mês anterior">←</a>
         <h2 class="cal-mes ds-display">{{ titulo_mes|capfirst }}</h2>
-        <a class="cal-passo" href="?ano={{ seguinte.ano }}&amp;mes={{ seguinte.mes }}{% if projeto %}&amp;projeto={{ projeto.pk }}{% endif %}" aria-label="Próximo mês">→</a>
+        <a class="cal-passo" href="?ano={{ seguinte.ano|unlocalize }}&amp;mes={{ seguinte.mes|unlocalize }}{% if projeto %}&amp;projeto={{ projeto.pk }}{% endif %}" aria-label="Próximo mês">→</a>
         {% if not eh_mes_corrente %}
         <a class="cal-hoje" href="?{% if projeto %}projeto={{ projeto.pk }}{% endif %}">Hoje</a>
         {% endif %}

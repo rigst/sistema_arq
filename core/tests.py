@@ -35,7 +35,7 @@ class DashboardTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         # KPIs e navegação lateral presentes.
         self.assertContains(resp, "Projetos ativos")
-        self.assertContains(resp, "Execução em desvio")
+        self.assertContains(resp, "Aguardando cliente")
         self.assertContains(resp, "app-side")
 
 

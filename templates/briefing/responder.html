@@ -33,13 +33,6 @@
         {% endif %}
     </header>
 
-    {% if leitura_ia %}
-    <div class="ia-rascunho">
-        <span class="ds-kicker">Leitura da IA · rascunho</span>
-        <p>{{ leitura_ia|linebreaksbr }}</p>
-        <p class="ht-hint">Gerado por IA a partir das respostas. Confira antes de usar com o cliente.</p>
-    </div>
-    {% endif %}
 
 {% if editando %}
     {% if templates.count > 1 %}
@@ -205,25 +198,5 @@
         {% endif %}
     </section>
 
-    <section class="secao ia-bloco">
-        <h2 class="secao-titulo ds-display">Leitura do briefing pela IA</h2>
-        {% if ia_disponivel %}
-        <p class="secao-sub">
-            Envia as respostas para a API da Anthropic e devolve uma leitura em três
-            parágrafos: o que o cliente quer, onde há contradição e o que já dá para fechar
-            como escopo. É rascunho para o arquiteto, não texto para o cliente.
-        </p>
-        <form method="post" action="{% url 'briefing_leitura_ia' projeto.pk %}" class="app-inline-form">
-            {% csrf_token %}
-            <button class="ds-btn" type="submit">Pedir leitura à IA</button>
-        </form>
-        {% else %}
-        <p class="secao-sub">
-            Apoio de IA desligado. Para habilitar, defina <code>ANTHROPIC_API_KEY</code> no
-            ambiente e instale a biblioteca <code>anthropic</code>. Todo o resto do briefing
-            funciona sem isso.
-        </p>
-        {% endif %}
-    </section>
 </section>
 {% endblock %}

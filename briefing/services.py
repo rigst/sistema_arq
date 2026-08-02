@@ -51,11 +51,3 @@ def perguntas_por_bloco(template):
     return blocos
 
 
-def respostas_para_ia(briefing):
-    """Pares (pergunta, resposta) prontos para o resumo — só o preenchido."""
-    pares = []
-    for resposta in briefing.respostas.select_related("pergunta").prefetch_related("opcoes"):
-        resumo = resposta.resumo
-        if resumo:
-            pares.append((resposta.pergunta.texto, resumo))
-    return pares

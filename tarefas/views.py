@@ -9,45 +9,25 @@ from core.contexto import projeto_do_pedido
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 
 from .forms import TarefaForm
+
+
+def _de_onde_veio(request):
+    """Volta para a tela que disparou a ação.
+
+    Concluir tarefa e cronômetro agora acontecem de dentro da fase, e mandar
+    para uma lista global depois disso perderia o lugar. O Referer é validado
+    contra o próprio host: sem isso, um link de fora conseguiria escolher para
+    onde a pessoa vai parar depois de uma ação autenticada.
+    """
+    from django.utils.http import url_has_allowed_host_and_scheme
+
+    destino = request.META.get("HTTP_REFERER", "")
+    if destino and url_has_allowed_host_and_scheme(
+        destino, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        return destino
+    return "dashboard"
 from .models import ApontamentoHora, Tarefa
-
-
-@login_required
-def lista_tarefas(request):
-    tarefas = queryset_da_empresa(
-        Tarefa.objects.select_related("projeto", "fase", "responsavel", "fornecedor"), request.user
-    )
-    projeto = projeto_do_pedido(request)
-    if projeto is not None:
-        tarefas = tarefas.filter(projeto=projeto)
-
-    if request.method == "POST":
-        form = TarefaForm(request.POST, user=request.user, projeto=projeto)
-        if form.is_valid():
-            tarefa = form.save(commit=False)
-            tarefa.empresa = obter_grupo_empresa_ou_erro(request.user)
-            tarefa.criado_por = request.user
-            if projeto is not None:
-                tarefa.projeto = projeto
-            tarefa.save()
-            messages.success(request, f"Tarefa “{tarefa.titulo}” criada.")
-            destino = reverse("tarefas_lista")
-            return redirect(f"{destino}?projeto={projeto.pk}" if projeto else destino)
-        messages.error(request, "Confira os campos da tarefa.")
-    else:
-        form = TarefaForm(user=request.user, projeto=projeto)
-
-    timer_ativo = (
-        queryset_da_empresa(ApontamentoHora.objects.all(), request.user)
-        .filter(usuario=request.user, fim__isnull=True)
-        .select_related("projeto", "tarefa")
-        .first()
-    )
-    return render(
-        request,
-        "tarefas/lista.html",
-        {"tarefas": tarefas, "form": form, "timer_ativo": timer_ativo, "projeto": projeto},
-    )
 
 
 @require_POST
@@ -56,7 +36,7 @@ def concluir_tarefa(request, pk):
     tarefa = get_object_or_404(queryset_da_empresa(Tarefa.objects.all(), request.user), pk=pk)
     tarefa.status = "concluida" if tarefa.status != "concluida" else "aberta"
     tarefa.save(update_fields=["status"])
-    return redirect("tarefas_lista")
+    return redirect(_de_onde_veio(request))
 
 
 @require_POST
@@ -78,7 +58,7 @@ def iniciar_timer(request):
         projeto=tarefa.projeto if tarefa else None,
         descricao=request.POST.get("descricao", ""),
     )
-    return redirect("tarefas_lista")
+    return redirect(_de_onde_veio(request))
 
 
 @require_POST
@@ -89,4 +69,4 @@ def parar_timer(request):
         fim=timezone.now()
     )
     messages.success(request, "Tempo registrado.")
-    return redirect("tarefas_lista")
+    return redirect(_de_onde_veio(request))

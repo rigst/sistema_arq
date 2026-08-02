@@ -48,7 +48,7 @@ def varrer_empresa(grupo):
             titulo=f"Tarefa {'atrasada' if atrasada else 'no prazo'}: {t.titulo}",
             mensagem=f"Prazo {t.prazo:%d/%m/%Y}.",
             nivel="critico" if atrasada else "alerta",
-            url=reverse("tarefas_lista"),
+            url=reverse("projetos_painel"),
         )
 
     # 2) Projetos ativos parados há muito tempo.

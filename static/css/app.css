@@ -2058,21 +2058,23 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 .complementar-oferta span { font-size: 0.84rem; color: var(--ds-text-500); }
 
 /* --- A área de trabalho da fase ---------------------------------- */
+/* Cartão contido, e não faixa larga: com o selo numa ponta e o botão na
+   outra, o olho tinha de atravessar a tela para juntar duas informações
+   que são a mesma frase. */
 .fase-estado {
-    display: flex; align-items: flex-start; justify-content: space-between;
-    gap: 1.5rem; flex-wrap: wrap;
-    padding: 1rem 1.15rem; margin-bottom: 1.5rem;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 0.7rem;
+    max-width: 34rem;
+    padding: 1rem 1.15rem 1.1rem; margin-bottom: 2rem;
     border: 1px solid var(--ds-line); border-radius: 0.6rem; background: var(--ds-panel);
 }
+.fase-estado-topo { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.85rem; }
 .fase-estado--aguardando_cliente { background: #faf5ea; border-color: #e6d3ab; }
 .fase-estado--ajustes { background: #fbf0ed; border-color: #e7c2b9; }
 .fase-estado--aprovada { background: var(--ds-blue-50); border-color: var(--ds-blue-100); }
-.fase-estado-texto { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.85rem; }
-.fase-estado-texto > p { flex-basis: 100%; margin: 0.2rem 0 0; }
 .fase-prazo, .fase-quem { font-family: var(--arq-font-mono); font-size: 0.74rem; color: var(--ds-text-500); }
 .fase-prazo.is-atrasada { color: var(--ds-danger); font-weight: 600; }
-.fase-aviso { font-size: 0.87rem; color: var(--ds-text-700); }
-.fase-acoes { display: flex; gap: 0.6rem; }
+.fase-aviso { margin: 0; font-size: 0.88rem; line-height: 1.5; color: var(--ds-text-700); }
+
 
 .fase-entrega { margin: 0 0 1rem; padding-left: 1.1rem; }
 .fase-entrega li { margin-bottom: 0.25rem; }
@@ -2931,7 +2933,25 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
 .timer-fase .timer-campo--cresce { flex: 1; min-width: 14rem; }
 
 /* O gatilho dos complementares é um botão comum, não uma barra. */
-#fases > [data-abre] { width: fit-content; }
+/* Ação de manutenção, não de fluxo: fica no canto e em corpo de texto. */
+.fases-rodape { display: flex; justify-content: flex-end; margin-top: 0.6rem; }
+.link-discreto {
+    background: none; border: 0; padding: 0.2rem 0; cursor: pointer;
+    font: inherit; font-size: 0.8rem; color: var(--ds-text-500);
+    text-decoration: underline; text-underline-offset: 3px;
+    transition: color var(--arq-fast) ease;
+}
+.link-discreto:hover { color: var(--ds-blue-dark); }
+.link-discreto:focus-visible {
+    outline: 2px solid var(--ds-blue-dark); outline-offset: 3px; border-radius: 0.2rem;
+}
+
+/* No modal de complementares, o campo livre precisa respirar longe das
+   caixas — colado, parecia mais uma opção da lista. */
+.escolha-multipla .complementar-livre {
+    margin-top: 1.5rem; padding-top: 1.25rem;
+    border-top: 1px solid var(--ds-line);
+}
 
 /* O cartão de projeto virou link inteiro. */
 a.projeto-card {
@@ -2962,3 +2982,53 @@ a.projeto-card:focus-visible {
 .cal-marca--levantamento, .cal-marca--medicao { background: #f6efe0; color: #6d460a; border-left-color: var(--arq-amber); }
 .cal-marca--assinatura { background: #efecf6; color: #4f3878; border-left-color: var(--arq-violet); }
 .cal-marca--entrega, .cal-marca--orgao { background: #f7e6e2; color: #8e2a1c; border-left-color: var(--ds-danger); }
+
+/* =================================================================
+   O BOTÃO PRINCIPAL SE MEXE INTEIRO
+   Só a seta andando era pouco: o botão parecia parado com um detalhe
+   nervoso dentro. Agora a peça toda sobe no hover e afunda ao ser
+   apertada — o mesmo gesto do botão secundário, que é o que faz os
+   dois se lerem como a mesma família. A diferença entre eles é o
+   peso (preenchido × contornado), não o comportamento.
+   ================================================================= */
+.ds-btn--acao {
+    /* Medidas idênticas às do .ds-btn: dois botões lado a lado com
+       alturas diferentes denunciam que vieram de lugares diferentes. */
+    min-height: 0;
+    /* Borda transparente de 1px: o botão secundário tem borda visível, e
+       sem ela aqui os dois ficariam 2px diferentes de altura. */
+    border: 1px solid transparent;
+    padding: 0.62rem 1.15rem;
+    border-radius: 0.55rem;
+    font-size: 0.9rem;
+    transition: background var(--arq-fast) ease,
+                box-shadow var(--arq-mid) var(--arq-ease),
+                transform var(--arq-fast) var(--arq-ease-out);
+}
+.ds-btn--acao:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(18, 60, 48, 0.28);
+}
+.ds-btn--acao:active { transform: translateY(1px); box-shadow: none; }
+.ds-btn--acao svg { transition: transform var(--arq-mid) var(--arq-ease-out); }
+.ds-btn--acao:hover svg { transform: translateX(2px); }
+
+/* Sobre vidro escuro a sombra é preta, senão some no fundo. */
+.auth-card .ds-btn--acao:hover, .app-side .ds-btn--acao:hover {
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+/* O CTA do painel volta ao tamanho dos outros. */
+.frente-cta { min-width: 0; padding: 0.5rem 0.95rem; font-size: 0.86rem; }
+
+@media (prefers-reduced-motion: reduce) {
+    .ds-btn--acao, .ds-btn--acao:hover, .ds-btn--acao:active { transform: none; }
+}
+
+/* O painel ganhou o estado da fase entre o avanço e a ação. */
+.frente { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto auto; }
+.frente-selo { justify-self: end; white-space: nowrap; }
+@media (max-width: 62rem) {
+    .frente { grid-template-columns: 1fr; }
+    .frente-selo { justify-self: start; }
+}

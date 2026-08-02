@@ -96,8 +96,7 @@ class Projeto(EmpresaModel, Rastreavel):
 
     @property
     def lembretes_fixados(self):
-        """Só os do projeto: os de fase se contam dentro da fase."""
-        return self.lembretes.filter(fixado=True, fase__isnull=True).count()
+        return self.lembretes.filter(fase__isnull=True).count()
 
     @property
     def horas_trabalhadas(self):

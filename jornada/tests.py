@@ -45,7 +45,11 @@ class RoteiroTests(TestCase):
     def test_proxima_prioriza_a_fase_ja_aberta(self):
         """Uma fase em elaboração pede mais atenção do que a seguinte, que nem
         começou — senão o painel manda o arquiteto começar coisa nova."""
+        from fases.models import Fase
+
+        # A ordem é obrigatória, então a anterior precisa estar aprovada.
         anteprojeto = self.projeto.fases.get(chave="anteprojeto")
+        self.projeto.fases.filter(ordem__lt=anteprojeto.ordem).update(status=Fase.APROVADA)
         anteprojeto.iniciar(self.user)
         self.assertEqual(proxima_etapa(montar_roteiro(self.projeto)).chave, "anteprojeto")
 

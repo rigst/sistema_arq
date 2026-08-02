@@ -34,30 +34,6 @@
             {% endif %}
         </div>
 
-        <div class="ds-card ia-bloco">
-            <h2 class="ds-display">Minuta pela IA</h2>
-            {% if ia_disponivel %}
-            <p class="ht-hint">
-                Envia os dados do contrato (cliente, projeto, valor, prazo) para a API da
-                Anthropic e recebe uma minuta em cláusulas numeradas. É rascunho de trabalho:
-                revise cláusula por cláusula e passe por um advogado antes de assinar.
-            </p>
-            <form method="post" class="form-card">
-                {% csrf_token %}
-                <input type="hidden" name="acao" value="ia">
-                <p><label>O que esta minuta precisa ter de diferente
-                    <textarea name="instrucoes" rows="3" placeholder="Ex.: incluir cláusula de multa por atraso do cliente e prever 3 visitas de obra"></textarea>
-                </label></p>
-                <button class="ds-btn" type="submit">Redigir minuta</button>
-            </form>
-            {% else %}
-            <p class="ht-hint">
-                Apoio de IA desligado. Defina <code>ANTHROPIC_API_KEY</code> no ambiente e
-                instale a biblioteca <code>anthropic</code> para habilitar. Os modelos salvos
-                funcionam sem isso.
-            </p>
-            {% endif %}
-        </div>
     </div>
 
     <form method="post" class="ds-card form-card">

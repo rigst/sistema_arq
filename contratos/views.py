@@ -196,7 +196,6 @@ def alternar_parcela(request, pk):
 # Modelos de contrato — minutas salvas, geração e apoio de IA
 # =====================================================================
 
-from core.ia import IAIndisponivel, disponivel as ia_disponivel, redigir_contrato  # noqa: E402
 
 from .forms import ModeloContratoForm  # noqa: E402
 from .models import ModeloContrato  # noqa: E402
@@ -293,7 +292,7 @@ def modelo_remover(request, pk):
 @login_required
 def redigir(request, pk):
     """Tela onde o contrato ganha texto: gera a partir de um modelo, pede uma
-    minuta à IA ou escreve à mão. O texto fica sempre editável."""
+    minuta de um modelo salvo ou escreve à mão. O texto fica sempre editável."""
     contrato = get_object_or_404(
         queryset_da_empresa(Contrato.objects.select_related("projeto__cliente"), request.user),
         pk=pk,
@@ -309,19 +308,6 @@ def redigir(request, pk):
                 contrato.corpo = modelo.gerar(_contexto_do_contrato(contrato))
                 contrato.save(update_fields=["corpo"])
                 messages.success(request, f"Texto gerado a partir de “{modelo.nome}”. Revise.")
-        elif acao == "ia":
-            try:
-                contrato.corpo = redigir_contrato(
-                    _contexto_do_contrato(contrato),
-                    request.POST.get("instrucoes", ""),
-                )
-            except IAIndisponivel as erro:
-                messages.error(request, str(erro))
-            else:
-                contrato.save(update_fields=["corpo"])
-                messages.success(
-                    request, "Minuta redigida. É um rascunho — revise cláusula por cláusula."
-                )
         else:
             contrato.corpo = request.POST.get("corpo", "")
             contrato.save(update_fields=["corpo"])
@@ -334,6 +320,5 @@ def redigir(request, pk):
         {
             "contrato": contrato,
             "modelos": _meus_modelos(request.user).filter(ativo=True),
-            "ia_disponivel": ia_disponivel(),
         },
     )

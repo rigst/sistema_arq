@@ -35,6 +35,10 @@ def _voltar(fase):
 def detalhe(request, pk):
     """A área de trabalho da fase: o que produzir, o material e o histórico."""
     fase = get_object_or_404(_minhas(request.user), pk=pk)
+    if fase.chave == "briefing":
+        # O briefing não tem material solto nem tarefa: ele É a conversa. Ter
+        # uma tela intermediária com arquivos vazios só somava um clique.
+        return redirect("briefing_responder", projeto_pk=fase.projeto_id)
     arquivos = list(fase.arquivos.select_related("criado_por").order_by("-criado_em"))
     return render(
         request,
@@ -44,10 +48,6 @@ def detalhe(request, pk):
             "projeto": fase.projeto,
             "arquivos": arquivos,
             "imagens": [a for a in arquivos if a.eh_imagem],
-            "registros_fixados": fase.registros.filter(fixado=True).select_related("autor"),
-            "registros_arquivados": list(
-                fase.registros.filter(fixado=False).select_related("autor")
-            ),
             "form_arquivo": ArquivoDaFaseForm(),
             "form_registro": LembreteForm(),
             "form_ajuste": FaseAjusteForm(instance=fase, user=request.user),
@@ -115,6 +115,9 @@ def _insumos(fase):
 @login_required
 def iniciar(request, pk):
     fase = get_object_or_404(_minhas(request.user), pk=pk)
+    if not fase.liberada:
+        messages.error(request, fase.impedimento)
+        return redirect(_voltar(fase))
     if fase.iniciar(request.user):
         messages.success(request, f"{fase.nome} de {fase.projeto.nome} entrou em elaboração.")
     return redirect(_voltar(fase))
@@ -181,8 +184,6 @@ def comentar(request, pk):
         registro.projeto = fase.projeto
         registro.empresa = fase.empresa
         registro.autor = request.user
-        # Escrito à mão nasce fixado: foi escrito para ser lembrado.
-        registro.fixado = True
         registro.save()
     else:
         messages.error(request, "Escreva o lembrete antes de fixar.")
@@ -268,7 +269,6 @@ def lembrete_do_projeto(request, projeto_pk):
         lembrete.empresa = projeto.empresa
         lembrete.projeto = projeto
         lembrete.autor = request.user
-        lembrete.fixado = True
         lembrete.save()
     else:
         messages.error(request, "Escreva o lembrete antes de fixar.")
@@ -305,18 +305,6 @@ def editar_complementares(request, projeto_pk):
     criar_complementares_avulsos(projeto, request.POST.get("complementar_outro", ""))
     messages.success(request, f"Complementares de {projeto.nome} atualizados.")
     return redirect(reverse("projeto_detalhe", kwargs={"pk": projeto.pk}) + "#fases")
-
-
-@require_POST
-@login_required
-def soltar_registro(request, pk):
-    """Tira o lembrete do topo. Não apaga: desce para o histórico."""
-    registro = get_object_or_404(
-        queryset_da_empresa(Lembrete.objects.select_related("fase"), request.user), pk=pk
-    )
-    registro.fixado = False
-    registro.save(update_fields=["fixado"])
-    return redirect(f"{reverse('fase_detalhe', kwargs={'pk': registro.fase_id})}#lembretes")
 
 
 @require_POST

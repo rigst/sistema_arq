@@ -42,7 +42,7 @@
         <div class="horas-comp-head">
             <h2 class="ds-display">Horas projetadas × trabalhadas</h2>
             <span>{{ projeto.horas_trabalhadas }} de {{ projeto.horas_estimadas }} h
-                {% if projeto.horas_saldo < 0 %}<span class="tag-alerta">estourou {{ projeto.horas_saldo|cut:"-" }} h</span>{% else %}<span class="horas-ok">restam {{ projeto.horas_saldo }} h</span>{% endif %}
+                {% if projeto.horas_saldo < 0 %}<span class="tag-alerta">estourou {{ projeto.horas_saldo|cut:"-" }} h</span>{% endif %}
             </span>
         </div>
         <div class="ds-progress ds-progress--on-light">
@@ -50,7 +50,7 @@
         </div>
     </div>
 
-    {% include "fases/_lembretes.html" with lembretes_fixados=lembretes_fixados lembretes_arquivados=lembretes_arquivados form_lembrete=form_lembrete acao_lembrete=acao_lembrete lembrete_modal_id="modal-lembrete-projeto" %}
+    {% include "fases/_lembretes.html" %}
 
     {% include "projetos/_fases.html" %}
 

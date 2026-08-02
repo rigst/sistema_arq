@@ -36,10 +36,7 @@
     direto para esse passo — com o projeto já no contexto.
     {% endcomment %}
     <section class="dash-frentes" aria-labelledby="frentes-titulo">
-        <div class="dash-frentes-topo">
-            <h2 class="dash-section-head ds-display" id="frentes-titulo">Onde cada projeto parou</h2>
-            <a class="ds-btn" href="{% url 'projetos_painel' %}">Todos os projetos</a>
-        </div>
+        <h2 class="dash-section-head ds-display" id="frentes-titulo">Onde cada projeto parou</h2>
 
         {% if frentes %}
         <ul class="frente-lista">
@@ -53,8 +50,12 @@
                     <div class="ds-progress ds-progress--on-light">
                         <div class="ds-progress-fill" style="width: {{ f.percentual|unlocalize }}%"></div>
                     </div>
-                    <span class="frente-conta num">{{ f.feitas }}/{{ f.total }} etapas</span>
+                    <span class="frente-conta num">
+                        {{ f.feitas }}/{{ f.total }} fases
+                        {% if f.proxima %} · {{ f.proxima.titulo|lower }}{% endif %}
+                    </span>
                 </div>
+                <span class="frente-selo fase-selo fase-selo--{{ f.status }}">{{ f.situacao }}</span>
                 {% if f.proxima %}
                 <a class="ds-btn--acao frente-cta" href="{{ f.proxima.url }}"><span>{{ f.proxima.cta }}</span><span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span></a>
                 {% else %}

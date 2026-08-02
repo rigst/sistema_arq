@@ -26,19 +26,15 @@ class FaseAjusteForm(ArqModelForm):
 
 
 class LembreteForm(ArqModelForm):
+    """Só o texto. Pedir o tipo era uma pergunta a mais para escrever um
+    recado de duas linhas, e a resposta não mudava nada no sistema."""
+
     class Meta:
         model = Lembrete
-        fields = ["tipo", "texto"]
-        widgets = {"texto": forms.Textarea(attrs={"rows": 3, "placeholder":
+        fields = ["texto"]
+        widgets = {"texto": forms.Textarea(attrs={"rows": 4, "placeholder":
                    "O que foi combinado, decidido ou pedido."})}
-        labels = {"tipo": "Tipo de registro", "texto": "Anotação"}
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # "Registro do sistema" é escrito pelo próprio sistema, não à mão.
-        self.fields["tipo"].choices = [
-            (v, r) for v, r in Lembrete.TIPO_CHOICES if v != "sistema"
-        ]
+        labels = {"texto": "Lembrete"}
 
 
 class RespostaClienteForm(ArqForm):

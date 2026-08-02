@@ -41,7 +41,6 @@ POR_ROTA = {
     "briefing_add_ambiente": "Programa de necessidades",
     "briefing_templates": "Modelos de briefing",
     "briefing_template_detalhe": "Modelo de briefing",
-    "tarefas_lista": "Tarefas",
     "tarefa_concluir": "Tarefas",
     "timer_iniciar": "Cronômetro",
     "timer_parar": "Cronômetro",

@@ -6,15 +6,15 @@
     <a class="voltar" href="{{ destino }}"><span aria-hidden="true">←</span> Voltar</a>
 
     <header class="page-head">
-        <span class="ds-kicker">{{ lembrete.fase.nome|default:lembrete.projeto.nome }}</span>
+        <span class="ds-kicker">{{ lembrete.projeto.nome }}</span>
         <h1 class="ds-h2 ds-display">Editar lembrete</h1>
+        <p class="page-sub">Criado em {{ lembrete.criado_em|date:"d/m/Y às H:i" }}.</p>
     </header>
 
     <form method="post" class="form-card">
         {% csrf_token %}
         {{ form.non_field_errors }}
         <p>{{ form.texto.label_tag }}{{ form.texto }}{{ form.texto.errors }}</p>
-        <p>{{ form.tipo.label_tag }}{{ form.tipo }}</p>
         <div class="form-actions">
             <a class="ds-btn" href="{{ destino }}">Cancelar</a>
             <button class="ds-btn--acao" type="submit">

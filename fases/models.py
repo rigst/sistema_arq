@@ -128,11 +128,12 @@ class Fase(EmpresaModel, Rastreavel):
 
     @property
     def liberada(self):
-        """Pode começar? Só depois que a anterior foi aprovada.
+        """Pode começar? Só depois que a anterior ter sido aprovada.
 
-        A trava é informativa, não policial: o sistema mostra o que falta e
-        deixa a decisão com o arquiteto, porque na prática se adianta trabalho
-        enquanto o cliente demora para responder.
+        A trava é real, e não conselho. Desenhar em cima de decisão não
+        confirmada é o retrabalho mais caro do escritório, e a única forma de
+        o sistema impedir isso é não deixar a fase abrir — o "eu adianto e
+        depois arrumo" é justamente o hábito que ele existe para cortar.
         """
         anterior = self.fase_anterior
         return anterior is None or anterior.status == self.APROVADA
@@ -151,7 +152,7 @@ class Fase(EmpresaModel, Rastreavel):
 
     # ---- Transições -----------------------------------------------------
     def iniciar(self, usuario=None):
-        if self.status != self.NAO_INICIADA:
+        if self.status != self.NAO_INICIADA or not self.liberada:
             return False
         self.status = self.EM_ELABORACAO
         self.iniciada_em = timezone.now()

@@ -112,12 +112,7 @@ def detalhe_projeto(request, pk):
         "projetos/detalhe.html",
         {
             "projeto": projeto,
-            "lembretes_fixados": projeto.lembretes.filter(
-                fixado=True, fase__isnull=True
-            ).select_related("autor"),
-            "lembretes_arquivados": list(
-                projeto.lembretes.filter(fixado=False, fase__isnull=True).select_related("autor")
-            ),
+            "lembretes": projeto.lembretes.filter(fase__isnull=True).select_related("autor"),
             "form_lembrete": LembreteForm(),
             "acao_lembrete": reverse("projeto_lembrete", kwargs={"projeto_pk": projeto.pk}),
             "complementares_marcados": set(

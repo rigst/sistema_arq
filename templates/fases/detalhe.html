@@ -16,40 +16,61 @@
     a fase: em que pé está, o que precisa acontecer para avançar, e qual é o
     botão disso. Um bloco só, e não três espalhados.
     {% endcomment %}
+    {% comment %}
+    Cabeçalho de estado. Antes era uma faixa larga com selo à esquerda e botão
+    lá na outra ponta — a mesma informação, mas obrigando o olho a atravessar a
+    tela. Agora é um cartão contido: estado e explicação juntos, ação embaixo.
+    {% endcomment %}
     <div class="fase-estado fase-estado--{{ fase.status }}">
-        <div class="fase-estado-texto">
-            <span class="fase-selo">{{ fase.get_status_display }}</span>
+        <div class="fase-estado-topo">
+            <span class="fase-selo fase-selo--{{ fase.status }}">{{ fase.get_status_display }}</span>
             {% if fase.prazo %}<span class="fase-prazo{% if fase.atrasada %} is-atrasada{% endif %}">entrega {{ fase.prazo|date:"d/m/Y" }}</span>{% endif %}
             {% if fase.fornecedor %}<span class="fase-quem">{{ fase.fornecedor.nome }}</span>{% endif %}
+        </div>
 
+        <p class="fase-aviso">
             {% if not fase.liberada and fase.status == "nao_iniciada" %}
-            <p class="fase-aviso">{{ fase.impedimento }} Dá para começar mesmo assim — a ordem é orientação, não bloqueio.</p>
+            {{ fase.impedimento }} A ordem existe para não desenhar em cima de decisão não confirmada.
+            {% elif fase.status == "nao_iniciada" %}
+            Liberada para começar. {{ fase.consome }}
             {% elif fase.status == "aguardando_cliente" %}
-            <p class="fase-aviso">Enviada em {{ fase.enviada_em|date:"d/m/Y" }}. Registre a resposta quando ela chegar.</p>
+            Enviada em {{ fase.enviada_em|date:"d/m/Y" }}. Registre a resposta abaixo quando ela chegar.
             {% elif fase.status == "ajustes" %}
-            <p class="fase-aviso">O cliente pediu ajustes{% if fase.parecer %}: “{{ fase.parecer }}”{% endif %}</p>
+            O cliente pediu ajustes{% if fase.parecer %}: “{{ fase.parecer }}”{% endif %} Refaça o material e envie de novo.
             {% elif fase.status == "aprovada" %}
-            <p class="fase-aviso">Aprovada em {{ fase.respondida_em|date:"d/m/Y" }}{% if fase.parecer %} — “{{ fase.parecer }}”{% endif %}</p>
+            Aprovada em {{ fase.respondida_em|date:"d/m/Y" }}{% if fase.parecer %} — “{{ fase.parecer }}”{% endif %}
+            {% else %}
+            Em elaboração. Anexe o material e envie ao cliente quando estiver pronto.
             {% endif %}
-        </div>
+        </p>
 
-        <div class="fase-acoes">
-            {% if fase.status == "nao_iniciada" %}
-            <form method="post" action="{% url 'fase_iniciar' fase.pk %}" class="app-inline-form">
-                {% csrf_token %}<button class="ds-btn--acao" type="submit"><span>Começar a fase</span><span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span></button>
+        {% if fase.status == "nao_iniciada" and fase.liberada %}
+        <form method="post" action="{% url 'fase_iniciar' fase.pk %}" class="app-inline-form">
+            {% csrf_token %}
+            <button class="ds-btn--acao" type="submit">
+                <span>Começar a fase</span>
+                {% include "core/_ico.html" with ico="seta" %}
+            </button>
+        </form>
+        {% elif fase.status == "em_elaboracao" or fase.status == "ajustes" %}
+            {% if fase.exige_aprovacao %}
+            <form method="post" action="{% url 'fase_enviar' fase.pk %}" class="app-inline-form">
+                {% csrf_token %}
+                <button class="ds-btn--acao" type="submit">
+                    <span>Enviar ao cliente</span>
+                    {% include "core/_ico.html" with ico="seta" %}
+                </button>
             </form>
-            {% elif fase.status == "em_elaboracao" or fase.status == "ajustes" %}
-                {% if fase.exige_aprovacao %}
-                <form method="post" action="{% url 'fase_enviar' fase.pk %}" class="app-inline-form">
-                    {% csrf_token %}<button class="ds-btn--acao" type="submit"><span>Enviar ao cliente</span><span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span></button>
-                </form>
-                {% else %}
-                <form method="post" action="{% url 'fase_concluir' fase.pk %}" class="app-inline-form">
-                    {% csrf_token %}<button class="ds-btn--acao" type="submit"><span>Concluir fase</span><span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span></button>
-                </form>
-                {% endif %}
+            {% else %}
+            <form method="post" action="{% url 'fase_concluir' fase.pk %}" class="app-inline-form">
+                {% csrf_token %}
+                <button class="ds-btn--acao" type="submit">
+                    <span>Concluir fase</span>
+                    {% include "core/_ico.html" with ico="seta" %}
+                </button>
+            </form>
             {% endif %}
-        </div>
+        {% endif %}
     </div>
 
     {% if fase.status == "aguardando_cliente" %}
@@ -64,8 +85,6 @@
         </div>
     </form>
     {% endif %}
-
-    {% include "fases/_lembretes.html" with lembretes_fixados=registros_fixados lembretes_arquivados=registros_arquivados form_lembrete=form_registro acao_lembrete=acao_lembrete lembrete_modal_id="modal-lembrete-fase" %}
 
     <section class="secao">
         <h2 class="secao-titulo ds-display">O que sai desta fase</h2>

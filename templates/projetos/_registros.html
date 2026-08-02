@@ -11,12 +11,6 @@ contratos, arquivos e obrigações técnicas. Saíram do menu lateral porque men
 
     <ul class="registro-atalhos">
         <li>
-            <a href="{% url 'tarefas_lista' %}?projeto={{ projeto.pk }}">
-                {% include "core/_ico.html" with ico="tarefas" %}
-                <span><strong>Tarefas</strong><small>Quem faz o quê, com prazo e horas.</small></span>
-            </a>
-        </li>
-        <li>
             <a href="{% url 'arquivos_lista' %}?projeto={{ projeto.pk }}">
                 {% include "core/_ico.html" with ico="arquivos" %}
                 <span><strong>Arquivos</strong><small>Tudo que entrou e saiu, de todas as fases.</small></span>
