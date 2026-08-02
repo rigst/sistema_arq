@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Proposta e contrato — {{ projeto.nome }}{% endblock %}
+
+{% block content %}
+<section class="page page--leitura">
+    {% include "core/_voltar.html" with projeto_voltar=projeto %}
+
+    <header class="page-head">
+        <span class="ds-kicker">{{ projeto.nome }} · {{ projeto.get_tipo_display }}</span>
+        <h1 class="ds-h2 ds-display">Proposta e contrato</h1>
+        <p class="page-sub">
+            O que o escritório cobra, em quanto tempo e sob quais condições. As duas
+            peças ficam aqui: mandar para listas separadas obrigava a voltar duas vezes
+            só para conferir se o que foi feito era deste projeto.
+        </p>
+    </header>
+
+    {% include "fases/_estado.html" with fase_instrucao="Monte a proposta e a minuta abaixo. Quando estiverem prontas, envie ao cliente." %}
+
+    <section class="secao">
+        <h2 class="secao-titulo ds-display">Proposta de honorários</h2>
+        <p class="secao-sub">Calculada da hora técnica, com os ambientes e o prazo por fase.</p>
+
+        {% if proposta %}
+        <dl class="peca-resumo">
+            <div><dt>Título</dt><dd>{{ proposta.titulo }}</dd></div>
+            <div><dt>Situação</dt><dd>{{ proposta.get_status_display }}</dd></div>
+            <div><dt>Hora técnica</dt><dd>R$ {{ proposta.hora_tecnica_aplicada }}</dd></div>
+            {% if proposta.validade %}<div><dt>Validade</dt><dd>{{ proposta.validade|date:"d/m/Y" }}</dd></div>{% endif %}
+        </dl>
+        <p class="fase-atalhos"><a class="ds-btn" href="{% url 'proposta_detalhe' proposta.pk %}">Abrir a proposta</a></p>
+        {% else %}
+        <p class="data-empty">Nenhuma proposta ainda.</p>
+        <p class="fase-atalhos">
+            <a class="ds-btn--acao" href="{% url 'proposta_nova' %}?projeto={{ projeto.pk }}">
+                <span>Montar proposta</span>
+                {% include "core/_ico.html" with ico="seta" %}
+            </a>
+        </p>
+        {% endif %}
+    </section>
+
+    <section class="secao">
+        <h2 class="secao-titulo ds-display">Contrato</h2>
+        <p class="secao-sub">
+            Gere a minuta de um modelo salvo — os marcadores viram os dados do projeto —
+            e revise antes de mandar assinar.
+        </p>
+
+        {% if contrato %}
+        <dl class="peca-resumo">
+            <div><dt>Título</dt><dd>{{ contrato.titulo }}</dd></div>
+            <div><dt>Situação</dt><dd>{{ contrato.get_status_display }}</dd></div>
+            <div><dt>Valor</dt><dd>R$ {{ contrato.valor_total }}</dd></div>
+            {% if contrato.data_assinatura %}<div><dt>Assinado em</dt><dd>{{ contrato.data_assinatura|date:"d/m/Y" }}</dd></div>{% endif %}
+        </dl>
+        <p class="fase-atalhos">
+            <a class="ds-btn" href="{% url 'contrato_detalhe' contrato.pk %}">Abrir o contrato</a>
+            <a class="ds-btn" href="{% url 'contrato_redigir' contrato.pk %}">Redigir o texto</a>
+        </p>
+        {% else %}
+        <p class="data-empty">Nenhum contrato ainda.</p>
+        <p class="fase-atalhos">
+            <a class="ds-btn--acao" href="{% url 'contrato_novo' %}?projeto={{ projeto.pk }}">
+                <span>Criar contrato</span>
+                {% include "core/_ico.html" with ico="seta" %}
+            </a>
+        </p>
+        {% if not modelos %}
+        <p class="ht-hint">
+            Nenhuma minuta salva ainda. <a href="{% url 'contratos_modelos' %}">Crie um modelo</a>
+            para não escrever o contrato do zero a cada projeto.
+        </p>
+        {% endif %}
+        {% endif %}
+    </section>
+
+    <section class="secao" id="arquivos">
+        <h2 class="secao-titulo ds-display">Arquivos desta fase</h2>
+        <p class="secao-sub">A proposta em PDF, o contrato assinado, o comprovante de envio.</p>
+
+        {% if arquivos %}
+        <ul class="arquivo-lista">
+            {% for a in arquivos %}
+            <li class="arquivo">
+                <span class="arquivo-tipo num">{{ a.extensao|default:"—" }}</span>
+                <div class="arquivo-id">
+                    <a href="{% url 'fase_arquivo_ver' a.pk %}" {% if a.visualizavel %}target="_blank" rel="noopener"{% endif %}>{{ a.titulo }}</a>
+                    <span class="arquivo-meta">{{ a.get_categoria_display }} · {{ a.criado_em|date:"d/m/y H:i" }}</span>
+                </div>
+                <div class="arquivo-acoes">
+                    <a class="app-link-btn" href="{% url 'fase_arquivo_editar' a.pk %}">editar</a>
+                    <form method="post" action="{% url 'fase_arquivo_remover' a.pk %}" class="app-inline-form">
+                        {% csrf_token %}<button class="app-link-btn" type="submit">remover</button>
+                    </form>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="data-empty">Nenhum arquivo nesta fase ainda.</p>
+        {% endif %}
+
+        <details class="abrir-campo">
+            <summary>Anexar arquivo</summary>
+            <form method="post" action="{% url 'fase_anexar' fase.pk %}" enctype="multipart/form-data" class="form-card">
+                {% csrf_token %}
+                <p>{{ form_arquivo.titulo.label_tag }}{{ form_arquivo.titulo }}</p>
+                <p>{{ form_arquivo.arquivo.label_tag }}{{ form_arquivo.arquivo }}</p>
+                <div class="form-dupla">
+                    <p>{{ form_arquivo.categoria.label_tag }}{{ form_arquivo.categoria }}</p>
+                    <p>{{ form_arquivo.fluxo.label_tag }}{{ form_arquivo.fluxo }}</p>
+                </div>
+                <div class="form-actions">
+                    <button class="ds-btn--acao" type="submit">
+                        <span>Anexar</span>
+                        {% include "core/_ico.html" with ico="seta" %}
+                    </button>
+                </div>
+            </form>
+        </details>
+    </section>
+</section>
+{% endblock %}

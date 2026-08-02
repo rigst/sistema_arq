@@ -37,19 +37,6 @@ def editar_briefing(request, projeto_pk):
 
 @require_POST
 @login_required
-def salvar_blocos(request, projeto_pk):
-    projeto, briefing = _get_briefing(request, projeto_pk)
-    form = BriefingForm(request.POST, instance=briefing)
-    if form.is_valid():
-        form.save()
-        messages.success(request, "Briefing salvo.")
-    else:
-        messages.error(request, "Confira os campos do briefing.")
-    return redirect(f"{reverse('briefing_responder', kwargs={'projeto_pk': projeto.pk})}?editar=1")
-
-
-@require_POST
-@login_required
 def adicionar_ambiente(request, projeto_pk):
     projeto, briefing = _get_briefing(request, projeto_pk)
     form = AmbienteForm(request.POST)
@@ -234,8 +221,19 @@ def responder(request, projeto_pk):
 
     if request.method == "POST":
         _salvar_respostas(request, briefing, template)
-        messages.success(request, "Respostas do briefing salvas.")
-        return redirect("briefing_responder", projeto_pk=projeto.pk)
+        form_blocos = BriefingForm(request.POST, instance=briefing)
+        if form_blocos.is_valid():
+            form_blocos.save()
+        messages.success(request, f"Briefing de {projeto.nome} salvo.")
+        # Briefing salvo é briefing pronto: o passo seguinte é a proposta, e
+        # devolver para a mesma tela faria a pessoa procurar onde continuar.
+        fase = projeto.fases.filter(chave="briefing").first()
+        if fase is not None:
+            fase.concluir_sem_aprovacao(request.user)
+        proposta = projeto.fases.filter(chave="proposta").first()
+        if proposta is not None:
+            return redirect("fase_detalhe", pk=proposta.pk)
+        return redirect("projeto_detalhe", pk=projeto.pk)
 
     respostas = {r.pergunta_id: r for r in briefing.respostas.prefetch_related("opcoes")}
     blocos = perguntas_por_bloco(template)
@@ -249,6 +247,9 @@ def responder(request, projeto_pk):
                 respondidas += 1
         # Em leitura, bloco sem nenhuma resposta vira título solto no vazio.
         bloco["respondidas"] = respondidas
+
+    ambientes = list(briefing.ambientes.all())
+    area_programa = sum(a.area_aprox or 0 for a in ambientes) or None
 
     # Briefing já respondido abre em leitura. Formulário longo aberto por padrão
     # convida a mexer no que já estava decidido, e some com a visão do conjunto.
@@ -265,7 +266,8 @@ def responder(request, projeto_pk):
             "templates": _meus_templates(request.user).filter(ativo=True),
             "blocos": blocos,
             "form_blocos": BriefingForm(instance=briefing),
-            "ambientes": briefing.ambientes.all(),
+            "ambientes": ambientes,
+            "area_programa": area_programa,
             "form_ambiente": AmbienteForm(),
             "editando": editando,
             "respondido": respondido,

@@ -9,7 +9,9 @@ está, e não numa tela de gerenciamento à parte.
 <section class="secao lembretes" id="lembretes">
     <div class="lembretes-topo">
         <h2 class="secao-titulo ds-display">Lembretes</h2>
-        <button class="ds-btn" type="button" data-abre="modal-lembrete" hidden>+ Novo lembrete</button>
+        <button class="secao-add" type="button" data-abre="modal-lembrete" aria-label="Novo lembrete" title="Novo lembrete" hidden>
+            {% include "core/_ico.html" with ico="novo" %}
+        </button>
     </div>
 
     {% if lembretes %}
@@ -23,9 +25,9 @@ está, e não numa tela de gerenciamento à parte.
                     {% if r.autor %} · {{ r.autor.get_username }}{% endif %}
                 </span>
                 <span class="postit-acoes">
-                    <a class="postit-ico" href="{% url 'lembrete_editar' r.pk %}" title="Editar" aria-label="Editar lembrete">
+                    <button class="postit-ico" type="button" data-abre="modal-lembrete-{{ r.pk }}" title="Editar" aria-label="Editar lembrete">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
-                    </a>
+                    </button>
                     <form method="post" action="{% url 'lembrete_remover' r.pk %}" class="app-inline-form">
                         {% csrf_token %}
                         <button class="postit-ico postit-ico--risco" type="submit" title="Excluir" aria-label="Excluir lembrete">
@@ -34,6 +36,36 @@ está, e não numa tela de gerenciamento à parte.
                     </form>
                 </span>
             </footer>
+
+            {% comment %}
+            Um modal por lembrete. Sair da página para trocar duas linhas de
+            texto e voltar é caro perto do que a edição é.
+            {% endcomment %}
+            <dialog class="ds-modal" id="modal-lembrete-{{ r.pk }}" aria-labelledby="modal-lembrete-{{ r.pk }}-titulo">
+                <form method="dialog" class="ds-modal-fechar-form">
+                    <button class="ds-modal-fechar" aria-label="Fechar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                    </button>
+                </form>
+                <h2 class="ds-modal-titulo ds-display" id="modal-lembrete-{{ r.pk }}-titulo">Editar lembrete</h2>
+                <p class="ds-modal-sub">Criado em {{ r.criado_em|date:"d/m/Y às H:i" }}.</p>
+                <div class="ds-modal-corpo">
+                    <form method="post" action="{% url 'lembrete_editar' r.pk %}" class="form-card">
+                        {% csrf_token %}
+                        <p>
+                            <label for="lembrete-{{ r.pk }}">Lembrete</label>
+                            <textarea name="texto" id="lembrete-{{ r.pk }}" rows="4" required>{{ r.texto }}</textarea>
+                        </p>
+                        <div class="form-actions">
+                            <button class="ds-btn" type="submit" formmethod="dialog" formnovalidate>Cancelar</button>
+                            <button class="ds-btn--acao" type="submit">
+                                <span>Salvar</span>
+                                {% include "core/_ico.html" with ico="seta" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </dialog>
         </li>
         {% endfor %}
     </ul>

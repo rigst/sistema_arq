@@ -151,14 +151,29 @@ class Fase(EmpresaModel, Rastreavel):
         )
 
     # ---- Transições -----------------------------------------------------
-    def iniciar(self, usuario=None):
+    def abrir(self, usuario=None):
+        """Deixa a fase ativa. Chamado pelo sistema, não pela pessoa.
+
+        Clicar em "Começar" não decidia nada: a fase abre porque a anterior foi
+        aprovada, e não porque alguém confirmou que sim, quer trabalhar. Um
+        botão que só tem uma resposta possível é um clique cobrado à toa.
+        """
         if self.status != self.NAO_INICIADA or not self.liberada:
             return False
         self.status = self.EM_ELABORACAO
         self.iniciada_em = timezone.now()
         self.save(update_fields=["status", "iniciada_em"])
-        self.registrar("sistema", "Fase iniciada.", usuario)
         return True
+
+    @property
+    def bloqueada(self):
+        return self.status == self.NAO_INICIADA and not self.liberada
+
+    def _abrir_seguintes(self, usuario=None):
+        """Aprovar uma fase acende a próxima — e os complementares, quando é o
+        anteprojeto que fecha."""
+        for outra in self.projeto.fases.filter(status=self.NAO_INICIADA):
+            outra.abrir(usuario)
 
     def enviar_ao_cliente(self, usuario=None):
         if self.status not in (self.EM_ELABORACAO, self.AJUSTES):
@@ -166,7 +181,6 @@ class Fase(EmpresaModel, Rastreavel):
         self.status = self.AGUARDANDO
         self.enviada_em = timezone.now()
         self.save(update_fields=["status", "enviada_em"])
-        self.registrar("sistema", "Enviada ao cliente para aprovação.", usuario)
         return True
 
     def registrar_resposta(self, aprovada, parecer="", usuario=None):
@@ -176,8 +190,8 @@ class Fase(EmpresaModel, Rastreavel):
         self.respondida_em = timezone.now()
         self.parecer = parecer
         self.save(update_fields=["status", "respondida_em", "parecer"])
-        verbo = "aprovou" if aprovada else "pediu ajustes"
-        self.registrar("cliente", f"Cliente {verbo}. {parecer}".strip(), usuario)
+        if aprovada:
+            self._abrir_seguintes(usuario)
         self.projeto.tocar()
         return True
 
@@ -188,14 +202,16 @@ class Fase(EmpresaModel, Rastreavel):
         self.status = self.APROVADA
         self.respondida_em = timezone.now()
         self.save(update_fields=["status", "respondida_em"])
-        self.registrar("sistema", "Fase concluída.", usuario)
+        self._abrir_seguintes(usuario)
         self.projeto.tocar()
         return True
 
-    def registrar(self, tipo, texto, usuario=None, fixado=False):
+    def registrar(self, texto, usuario=None):
+        """Anotação da fase escrita à mão. Registro automático não passa por
+        aqui: o que o sistema fez mora no histórico de avisos."""
         return Lembrete.objects.create(
-            empresa=self.empresa, projeto=self.projeto, fase=self, tipo=tipo,
-            texto=texto, autor=usuario, fixado=fixado,
+            empresa=self.empresa, projeto=self.projeto, fase=self,
+            texto=texto, autor=usuario,
         )
 
 
@@ -206,31 +222,20 @@ class Lembrete(EmpresaModel):
     nenhuma ("cliente viaja em janeiro"). Em vez de um segundo modelo quase
     igual, `fase` virou opcional: sem fase, o lembrete é do projeto todo.
 
-    Comentário e registro automático moram na mesma tabela de propósito.
-    Separar em duas obriga a cruzar horários na cabeça para entender por que
-    uma versão mudou; o que separa os dois é o campo `fixado`.
+    Só o que a pessoa escreve. Registro automático saiu da tabela: sem tela
+    que o mostrasse, era dado invisível — e o que o sistema fez já vive no
+    histórico de avisos, com hora, autor e link.
     """
-
-    TIPO_CHOICES = [
-        ("comentario", "Comentário interno"),
-        ("cliente", "Conversa com o cliente"),
-        ("sistema", "Registro do sistema"),
-    ]
 
     projeto = models.ForeignKey(Projeto, on_delete=models.CASCADE, related_name="lembretes")
     fase = models.ForeignKey(
         Fase, on_delete=models.CASCADE, related_name="registros", null=True, blank=True,
         help_text="Vazio quando o lembrete é do projeto inteiro.",
     )
-    tipo = models.CharField(max_length=15, choices=TIPO_CHOICES, default="comentario")
     texto = models.TextField()
     autor = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
-    # Fixado = post-it no topo da fase. O que a pessoa escreve à mão nasce
-    # fixado, porque foi escrito para ser lembrado; o que o sistema registra
-    # nasce arquivado, porque é rastro e não recado.
-    fixado = models.BooleanField(default=False)
     criado_em = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -239,11 +244,7 @@ class Lembrete(EmpresaModel):
         verbose_name_plural = "lembretes"
 
     def __str__(self):
-        return f"{self.fase or self.projeto} — {self.get_tipo_display()}"
-
-    @property
-    def do_sistema(self):
-        return self.tipo == "sistema"
+        return self.texto[:60]
 
 
 def montar_fases(projeto, complementares=()):
@@ -262,6 +263,11 @@ def montar_fases(projeto, complementares=()):
             Fase(empresa=projeto.empresa, projeto=projeto, chave=p.chave, ordem=ordem)
         )
     Fase.objects.bulk_create(novas)
+    # A primeira fase de um projeto novo já nasce ativa: não há nada antes dela
+    # para aprovar, e deixar tudo "não iniciada" faz o projeto parecer travado.
+    primeira = projeto.fases.order_by("ordem").first()
+    if primeira is not None:
+        primeira.abrir()
     return novas
 
 

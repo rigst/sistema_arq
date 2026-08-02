@@ -35,7 +35,7 @@ class RoteiroTests(TestCase):
 
     def test_fase_aprovada_avanca_o_roteiro(self):
         briefing = self.projeto.fases.get(chave="briefing")
-        briefing.iniciar(self.user)
+        briefing.abrir(self.user)
         briefing.concluir_sem_aprovacao(self.user)
         etapas = montar_roteiro(self.projeto)
         self.assertTrue(etapas[0].concluida)
@@ -50,7 +50,7 @@ class RoteiroTests(TestCase):
         # A ordem é obrigatória, então a anterior precisa estar aprovada.
         anteprojeto = self.projeto.fases.get(chave="anteprojeto")
         self.projeto.fases.filter(ordem__lt=anteprojeto.ordem).update(status=Fase.APROVADA)
-        anteprojeto.iniciar(self.user)
+        anteprojeto.abrir(self.user)
         self.assertEqual(proxima_etapa(montar_roteiro(self.projeto)).chave, "anteprojeto")
 
     def test_abrir_cria_cliente_e_projeto_de_uma_vez(self):
@@ -110,8 +110,10 @@ class RoteiroTests(TestCase):
         resposta = self.client.get(f"/projetos/{self.projeto.pk}/")
         self.assertContains(resposta, "Fases do projeto")
         self.assertContains(resposta, "Estudo preliminar")
-        fase = self.projeto.fases.get(chave="anteprojeto")
-        self.assertContains(resposta, f"/fases/{fase.pk}/")
+        # A fase bloqueada não vira link — só a que está aberta.
+        aberta = self.projeto.fases.get(chave="briefing")
+        self.assertContains(resposta, f"/fases/{aberta.pk}/")
+        self.assertContains(resposta, "Bloqueada")
 
     def test_execucao_so_entra_no_roteiro_quando_o_projeto_tem(self):
         """Muitos trabalhos terminam no projeto entregue; a obra é exceção."""

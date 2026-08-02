@@ -5,14 +5,33 @@ material tem e o que fazer agora — e é o link para a área de trabalho da fas
 <section class="secao" id="fases">
     <h2 class="secao-titulo ds-display">Fases do projeto</h2>
     <p class="secao-sub">
-        Cada fase guarda o próprio material e a própria aprovação. Uma fase se abre
-        quando a anterior é aprovada pelo cliente — é o que evita desenhar em cima de
-        decisão não confirmada.
+        A ordem é obrigatória: cada fase abre sozinha quando a anterior é aprovada
+        pelo cliente. É o que evita desenhar em cima de decisão não confirmada — o
+        retrabalho mais caro do escritório.
     </p>
 
     <ol class="fase-lista">
         {% for f in fases %}
-        <li class="fase-linha fase-linha--{{ f.status }}{% if f.complementar %} is-complementar{% endif %}">
+        {% comment %}
+        Fase bloqueada não é link: a ordem é obrigatória, e deixar clicável um
+        caminho que o sistema vai recusar é convidar para uma porta fechada.
+        {% endcomment %}
+        <li class="fase-linha fase-linha--{{ f.status }}{% if f.complementar %} is-complementar{% endif %}{% if f.bloqueada %} is-bloqueada{% endif %}">
+            {% if f.bloqueada %}
+            <span class="fase-linha-corpo" title="{{ f.impedimento }}">
+                <span class="fase-num num" aria-hidden="true">{{ forloop.counter }}</span>
+                <span class="fase-id">
+                    <strong>{{ f.nome }}</strong>
+                    <span class="fase-resumo">{{ f.impedimento }}</span>
+                </span>
+                <span class="fase-situacao">
+                    <span class="fase-selo">
+                        <svg class="fase-cadeado" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+                        Bloqueada
+                    </span>
+                </span>
+            </span>
+            {% else %}
             <a class="fase-linha-corpo" href="{% url 'fase_detalhe' f.pk %}">
                 <span class="fase-num num" aria-hidden="true">{% if f.status == "aprovada" %}✓{% else %}{{ forloop.counter }}{% endif %}</span>
                 <span class="fase-id">
@@ -26,6 +45,7 @@ material tem e o que fazer agora — e é o link para a área de trabalho da fas
                     </span>
                 </span>
             </a>
+            {% endif %}
         </li>
         {% endfor %}
     </ol>

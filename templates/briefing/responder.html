@@ -36,16 +36,22 @@
 
 {% if editando %}
     {% if templates.count > 1 %}
-    <form method="post" action="{% url 'briefing_aplicar_template' projeto.pk %}" class="inline-add">
+    <form method="post" action="{% url 'briefing_aplicar_template' projeto.pk %}" class="troca-roteiro">
         {% csrf_token %}
-        <select name="template" aria-label="Roteiro">
+        <label for="troca-roteiro">Roteiro</label>
+        <select name="template" id="troca-roteiro">
             {% for t in templates %}<option value="{{ t.pk }}" {% if t.pk == template.pk %}selected{% endif %}>{{ t.nome }}</option>{% endfor %}
         </select>
-        <button class="ds-btn" type="submit">Trocar de roteiro</button>
+        <button class="ds-btn" type="submit">Trocar</button>
     </form>
     {% endif %}
 
-    <form method="post" class="briefing-respostas">
+    {% comment %}
+    Um formulário só para a página inteira. Os campos dos blocos ficam
+    fisicamente depois do programa de necessidades — que tem formulário
+    próprio — e chegam aqui pelo atributo form="briefing".
+    {% endcomment %}
+    <form method="post" id="briefing" class="briefing-respostas">
         {% csrf_token %}
         {% for bloco in blocos %}
         <section class="secao">
@@ -60,7 +66,7 @@
                     {% for o in p.opcoes.all %}
                     <label class="briefing-opcao">
                         <input type="{% if p.tipo == 'multipla' %}checkbox{% else %}radio{% endif %}"
-                               name="p{{ p.pk }}" value="{{ o.pk }}"
+                               name="p{{ p.pk }}" value="{{ o.pk }}" form="briefing"
                                {% if o.pk in p.marcadas %}checked{% endif %}>
                         <span>{{ o.texto }}</span>
                     </label>
@@ -68,21 +74,30 @@
                 </div>
                 {% endif %}
 
+                {% if p.aceita_opcoes %}
+                {% comment %}
+                O campo livre fica fechado: a graça do roteiro é marcar opção na
+                reunião, e um textarea aberto embaixo de cada pergunta convida a
+                escrever tudo à mão — que é o que fazia ninguém usar as opções.
+                {% endcomment %}
+                <details class="abrir-campo abrir-campo--fino"{% if p.resposta_texto %} open{% endif %}>
+                    <summary>Outro / complementar</summary>
+                    <label class="briefing-complemento">
+                        <span class="ds-oculto">Complemento de “{{ p.texto }}”</span>
+                        <textarea name="t{{ p.pk }}" rows="2" form="briefing">{{ p.resposta_texto }}</textarea>
+                    </label>
+                </details>
+                {% else %}
                 <label class="briefing-complemento">
-                    <span>{% if p.aceita_opcoes %}Complemento{% else %}Resposta{% endif %}</span>
-                    <textarea name="t{{ p.pk }}" rows="2">{{ p.resposta_texto }}</textarea>
+                    <span>Resposta</span>
+                    <textarea name="t{{ p.pk }}" rows="2" form="briefing">{{ p.resposta_texto }}</textarea>
                 </label>
+                {% endif %}
             </fieldset>
             {% endfor %}
         </section>
         {% endfor %}
 
-        <div class="form-actions">
-            <button class="ds-btn--acao" type="submit">
-                <span>Salvar respostas</span>
-                <span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span>
-            </button>
-        </div>
     </form>
 {% else %}
     {% comment %}
@@ -121,18 +136,16 @@
     {% endcomment %}
     <section class="secao" id="programa">
         <h2 class="secao-titulo ds-display">Programa de necessidades</h2>
-        <p class="secao-sub">Os ambientes com quantidade, metragem e uso — a base de tudo que vem depois.</p>
+        <p class="secao-sub">Os ambientes com metragem e uso — a base de tudo que vem depois.</p>
 
         <div class="table-scroll">
         <table class="data-table">
-            <thead><tr><th>Ambiente</th><th class="num">Qtd.</th><th class="num">m² cada</th><th class="num">m² total</th><th>Uso</th>{% if editando %}<th></th>{% endif %}</tr></thead>
+            <thead><tr><th scope="col">Ambiente</th><th scope="col" class="num">m²</th><th scope="col">Uso</th>{% if editando %}<th scope="col"><span class="ds-oculto">Ações</span></th>{% endif %}</tr></thead>
             <tbody>
             {% for a in ambientes %}
                 <tr>
                     <td>{{ a.nome }}</td>
-                    <td class="num">{{ a.quantidade }}</td>
                     <td class="num">{{ a.area_aprox|default:"—" }}</td>
-                    <td class="num">{{ a.area_total|default:"—" }}</td>
                     <td>{{ a.uso|default:"—" }}</td>
                     {% if editando %}
                     <td>
@@ -143,9 +156,12 @@
                     {% endif %}
                 </tr>
             {% empty %}
-                <tr><td colspan="6" class="data-empty">Nenhum ambiente listado.</td></tr>
+                <tr><td colspan="4" class="data-empty">Nenhum ambiente listado.</td></tr>
             {% endfor %}
             </tbody>
+            {% if area_programa %}
+            <tfoot><tr><th scope="row">Área do programa</th><td class="num">{{ area_programa }} m²</td><td colspan="{% if editando %}2{% else %}1{% endif %}"></td></tr></tfoot>
+            {% endif %}
         </table>
         </div>
 
@@ -153,7 +169,6 @@
         <form method="post" action="{% url 'briefing_add_ambiente' projeto.pk %}" class="inline-add">
             {% csrf_token %}
             {{ form_ambiente.nome }}
-            {{ form_ambiente.quantidade }}
             {{ form_ambiente.area_aprox }}
             {{ form_ambiente.uso }}
             <button class="ds-btn" type="submit">Adicionar</button>
@@ -166,8 +181,11 @@
         <p class="secao-sub">Os blocos da NBR 13532 que não cabem em pergunta de múltipla escolha.</p>
 
         {% if editando %}
-        <form method="post" action="{% url 'briefing_salvar_blocos' projeto.pk %}" class="form-card">
-            {% csrf_token %}
+        {% comment %}
+        Sem <form> próprio: os campos declaram form="briefing" e são enviados
+        pelo formulário único da página, que fica lá em cima com as perguntas.
+        {% endcomment %}
+        <div class="form-card">
             <label class="form-block">Perfil e rotina do usuário {{ form_blocos.perfil_usuarios }}</label>
             <div class="form-dupla">
                 <label class="form-block">Orçamento previsto {{ form_blocos.orcamento_previsto }}</label>
@@ -176,13 +194,14 @@
             <label class="form-block">Restrições do terreno / legais {{ form_blocos.restricoes }}</label>
             <label class="form-block">Referências {{ form_blocos.referencias }}</label>
             <label class="form-block">Estilo / prioridades {{ form_blocos.estilo }}</label>
-            <div class="form-actions">
-                <button class="ds-btn--acao" type="submit">
-                    <span>Salvar blocos</span>
-                    <span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span>
-                </button>
-            </div>
-        </form>
+        </div>
+
+        <div class="form-actions briefing-salvar">
+            <button class="ds-btn--acao" type="submit" form="briefing">
+                <span>Salvar briefing e seguir para a proposta</span>
+                {% include "core/_ico.html" with ico="seta" %}
+            </button>
+        </div>
         {% else %}
         <dl class="briefing-leitura">
             {% if briefing.perfil_usuarios %}<div><dt>Perfil e rotina</dt><dd><p>{{ briefing.perfil_usuarios|linebreaksbr }}</p></dd></div>{% endif %}

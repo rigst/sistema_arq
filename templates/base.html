@@ -54,9 +54,9 @@
             </label>
         </div>
 
-        <a class="nav-destaque ds-btn--acao is-larga" href="{% url 'jornada_abrir' %}">
+        <a class="nav-destaque ds-btn--novo" href="{% url 'jornada_abrir' %}">
+            {% include "core/_ico.html" with ico="novo" %}
             <span>Novo projeto</span>
-            <span class="ds-btn-ico">{% include "core/_ico.html" with ico="novo" %}</span>
         </a>
 
         {% comment %}

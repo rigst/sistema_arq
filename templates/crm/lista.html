@@ -9,7 +9,7 @@
             <h1 class="ds-h2 ds-display">Clientes</h1>
             <p class="page-sub">Cada contato com fase, origem e histórico de conversa. É daqui que sai a proposta — e para cá que volta o projeto fechado.</p>
         </div>
-        <a class="ds-btn ds-btn--solid" href="{% url 'crm_novo' %}">Novo cliente</a>
+        <a class="ds-btn--novo" href="{% url 'crm_novo' %}">{% include "core/_ico.html" with ico="novo" %}<span>Novo cliente</span></a>
     </header>
 
     <div class="filtro-chips">

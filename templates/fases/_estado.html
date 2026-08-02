@@ -1,0 +1,63 @@
+{% comment %}
+Cabeçalho de estado da fase. Cartão contido: selo e prazo em cima, a frase que
+explica no meio, a ação embaixo. Não há botão de "começar" — a fase abre
+sozinha quando a anterior é aprovada, e um botão com uma resposta possível só
+é um clique cobrado à toa.
+{% endcomment %}
+<div class="fase-estado fase-estado--{{ fase.status }}">
+    <div class="fase-estado-topo">
+        <span class="fase-selo fase-selo--{{ fase.status }}">{{ fase.get_status_display }}</span>
+        {% if fase.prazo %}<span class="fase-prazo{% if fase.atrasada %} is-atrasada{% endif %}">entrega {{ fase.prazo|date:"d/m/Y" }}</span>{% endif %}
+        {% if fase.fornecedor %}<span class="fase-quem">{{ fase.fornecedor.nome }}</span>{% endif %}
+    </div>
+
+    <p class="fase-aviso">
+        {% if fase.bloqueada %}
+        {{ fase.impedimento }}
+        {% elif fase.status == "aguardando_cliente" %}
+        Enviada em {{ fase.enviada_em|date:"d/m/Y" }}. Registre a resposta abaixo quando ela chegar.
+        {% elif fase.status == "ajustes" %}
+        O cliente pediu ajustes{% if fase.parecer %}: “{{ fase.parecer }}”{% endif %} Refaça o material e envie de novo.
+        {% elif fase.status == "aprovada" %}
+        Aprovada em {{ fase.respondida_em|date:"d/m/Y" }}{% if fase.parecer %} — “{{ fase.parecer }}”{% endif %}
+        {% else %}
+        {{ fase_instrucao|default:"Em elaboração. Anexe o material e envie ao cliente quando estiver pronto." }}
+        {% endif %}
+    </p>
+
+    {% if fase.status == "em_elaboracao" or fase.status == "ajustes" %}
+        {% if fase.exige_aprovacao %}
+        <form method="post" action="{% url 'fase_enviar' fase.pk %}" class="app-inline-form">
+            {% csrf_token %}
+            <button class="ds-btn--acao" type="submit">
+                <span>Enviar ao cliente</span>
+                {% include "core/_ico.html" with ico="seta" %}
+            </button>
+        </form>
+        {% else %}
+        <form method="post" action="{% url 'fase_concluir' fase.pk %}" class="app-inline-form">
+            {% csrf_token %}
+            <button class="ds-btn--acao" type="submit">
+                <span>Concluir fase</span>
+                {% include "core/_ico.html" with ico="seta" %}
+            </button>
+        </form>
+        {% endif %}
+    {% endif %}
+</div>
+
+{% if fase.status == "aguardando_cliente" %}
+<form method="post" action="{% url 'fase_responder' fase.pk %}" class="fase-resposta form-card">
+    {% csrf_token %}
+    <h2 class="bloco-titulo">Resposta do cliente</h2>
+    <p>{{ form_resposta.parecer.label_tag }}{{ form_resposta.parecer }}</p>
+    <p class="ht-hint">{{ form_resposta.parecer.help_text }}</p>
+    <div class="fase-resposta-botoes">
+        <button class="ds-btn--acao" type="submit" name="decisao" value="aprovar">
+            <span>Cliente aprovou</span>
+            {% include "core/_ico.html" with ico="ok" %}
+        </button>
+        <button class="ds-btn" type="submit" name="decisao" value="ajustes">Pediu ajustes</button>
+    </div>
+</form>
+{% endif %}

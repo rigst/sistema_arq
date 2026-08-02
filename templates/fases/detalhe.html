@@ -11,80 +11,7 @@
         <p class="page-sub">{{ fase.resumo }}</p>
     </header>
 
-    {% comment %}
-    O cabeçalho de estado responde as três perguntas que a pessoa faz ao abrir
-    a fase: em que pé está, o que precisa acontecer para avançar, e qual é o
-    botão disso. Um bloco só, e não três espalhados.
-    {% endcomment %}
-    {% comment %}
-    Cabeçalho de estado. Antes era uma faixa larga com selo à esquerda e botão
-    lá na outra ponta — a mesma informação, mas obrigando o olho a atravessar a
-    tela. Agora é um cartão contido: estado e explicação juntos, ação embaixo.
-    {% endcomment %}
-    <div class="fase-estado fase-estado--{{ fase.status }}">
-        <div class="fase-estado-topo">
-            <span class="fase-selo fase-selo--{{ fase.status }}">{{ fase.get_status_display }}</span>
-            {% if fase.prazo %}<span class="fase-prazo{% if fase.atrasada %} is-atrasada{% endif %}">entrega {{ fase.prazo|date:"d/m/Y" }}</span>{% endif %}
-            {% if fase.fornecedor %}<span class="fase-quem">{{ fase.fornecedor.nome }}</span>{% endif %}
-        </div>
-
-        <p class="fase-aviso">
-            {% if not fase.liberada and fase.status == "nao_iniciada" %}
-            {{ fase.impedimento }} A ordem existe para não desenhar em cima de decisão não confirmada.
-            {% elif fase.status == "nao_iniciada" %}
-            Liberada para começar. {{ fase.consome }}
-            {% elif fase.status == "aguardando_cliente" %}
-            Enviada em {{ fase.enviada_em|date:"d/m/Y" }}. Registre a resposta abaixo quando ela chegar.
-            {% elif fase.status == "ajustes" %}
-            O cliente pediu ajustes{% if fase.parecer %}: “{{ fase.parecer }}”{% endif %} Refaça o material e envie de novo.
-            {% elif fase.status == "aprovada" %}
-            Aprovada em {{ fase.respondida_em|date:"d/m/Y" }}{% if fase.parecer %} — “{{ fase.parecer }}”{% endif %}
-            {% else %}
-            Em elaboração. Anexe o material e envie ao cliente quando estiver pronto.
-            {% endif %}
-        </p>
-
-        {% if fase.status == "nao_iniciada" and fase.liberada %}
-        <form method="post" action="{% url 'fase_iniciar' fase.pk %}" class="app-inline-form">
-            {% csrf_token %}
-            <button class="ds-btn--acao" type="submit">
-                <span>Começar a fase</span>
-                {% include "core/_ico.html" with ico="seta" %}
-            </button>
-        </form>
-        {% elif fase.status == "em_elaboracao" or fase.status == "ajustes" %}
-            {% if fase.exige_aprovacao %}
-            <form method="post" action="{% url 'fase_enviar' fase.pk %}" class="app-inline-form">
-                {% csrf_token %}
-                <button class="ds-btn--acao" type="submit">
-                    <span>Enviar ao cliente</span>
-                    {% include "core/_ico.html" with ico="seta" %}
-                </button>
-            </form>
-            {% else %}
-            <form method="post" action="{% url 'fase_concluir' fase.pk %}" class="app-inline-form">
-                {% csrf_token %}
-                <button class="ds-btn--acao" type="submit">
-                    <span>Concluir fase</span>
-                    {% include "core/_ico.html" with ico="seta" %}
-                </button>
-            </form>
-            {% endif %}
-        {% endif %}
-    </div>
-
-    {% if fase.status == "aguardando_cliente" %}
-    <form method="post" action="{% url 'fase_responder' fase.pk %}" class="fase-resposta form-card">
-        {% csrf_token %}
-        <h2 class="bloco-titulo">Resposta do cliente</h2>
-        <p>{{ form_resposta.parecer.label_tag }}{{ form_resposta.parecer }}</p>
-        <p class="ht-hint">{{ form_resposta.parecer.help_text }}</p>
-        <div class="fase-resposta-botoes">
-            <button class="ds-btn ds-btn--solid" type="submit" name="decisao" value="aprovar">Cliente aprovou</button>
-            <button class="ds-btn" type="submit" name="decisao" value="ajustes">Pediu ajustes</button>
-        </div>
-    </form>
-    {% endif %}
+    {% include "fases/_estado.html" %}
 
     <section class="secao">
         <h2 class="secao-titulo ds-display">O que sai desta fase</h2>
@@ -113,20 +40,18 @@
 
         {% if insumos.ambientes %}
         <table class="data-table programa">
-            <thead><tr><th>Ambiente</th><th>Uso</th><th class="num">Qtd.</th><th class="num">m² cada</th><th class="num">m² total</th></tr></thead>
+            <thead><tr><th scope="col">Ambiente</th><th scope="col">Uso</th><th scope="col" class="num">m²</th></tr></thead>
             <tbody>
                 {% for a in insumos.ambientes %}
                 <tr>
                     <td>{{ a.nome }}</td>
                     <td>{{ a.uso|default:"—" }}</td>
-                    <td class="num">{{ a.quantidade }}</td>
                     <td class="num">{{ a.area_aprox|default:"—" }}</td>
-                    <td class="num">{{ a.area_total|default:"—" }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
             {% if insumos.area_total %}
-            <tfoot><tr><th colspan="4">Área do programa</th><th class="num">{{ insumos.area_total }} m²</th></tr></tfoot>
+            <tfoot><tr><th scope="row" colspan="2">Área do programa</th><td class="num">{{ insumos.area_total }} m²</td></tr></tfoot>
             {% endif %}
         </table>
         {% else %}
@@ -206,119 +131,13 @@
         </details>
     </section>
 
-    {% comment %}
-    Tarefas e horas moram na fase, e não numa lista solta: "detalhar esquadria"
-    é trabalho de executivo. Apontar hora aqui liga o custo real à etapa que o
-    consumiu, que é o que permite saber qual fase estourou.
-    {% endcomment %}
-    <section class="secao" id="tarefas">
-        <div class="lembretes-topo">
-            <h2 class="secao-titulo ds-display">Tarefas desta fase</h2>
-            <button class="ds-btn" type="button" data-abre="modal-tarefa-fase" hidden>+ Nova tarefa</button>
-        </div>
-
-        {% if tarefas %}
-        <ul class="tarefa-lista">
-            {% for t in tarefas %}
-            <li class="tarefa-linha {% if t.status == 'concluida' %}is-done{% endif %}">
-                <form method="post" action="{% url 'tarefa_concluir' t.pk %}" class="app-inline-form">
-                    {% csrf_token %}
-                    <button class="check-btn" type="submit" aria-label="Alternar conclusão de {{ t.titulo }}">{% if t.status == 'concluida' %}✓{% else %}○{% endif %}</button>
-                </form>
-                <div class="tarefa-id">
-                    <strong>{{ t.titulo }}</strong>
-                    <span class="tarefa-meta">
-                        {% if t.responsavel %}{{ t.responsavel }}{% elif t.fornecedor %}{{ t.fornecedor.nome }}{% else %}sem dono{% endif %}
-                        {% if t.prazo %} · {{ t.prazo|date:"d/m/y" }}{% endif %}
-                        {% if t.atrasada %} · <span class="tag-alerta">atrasada</span>{% endif %}
-                    </span>
-                </div>
-                <form method="post" action="{% url 'timer_iniciar' %}" class="app-inline-form">
-                    {% csrf_token %}
-                    <input type="hidden" name="tarefa" value="{{ t.pk }}">
-                    <button class="app-link-btn" type="submit">cronômetro</button>
-                </form>
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p class="data-empty">Nenhuma tarefa nesta fase.</p>
-        {% endif %}
-
-        <div class="timer-fase {% if timer_ativo %}is-rodando{% endif %}">
-            {% if timer_ativo %}
-            <div class="timer-relogio">
-                <span class="ds-kicker">Rodando desde {{ timer_ativo.inicio|date:"H:i" }}</span>
-                <strong data-timer-start="{{ timer_ativo.inicio.isoformat }}">00:00:00</strong>
-            </div>
-            <p class="timer-alvo">{{ timer_ativo.tarefa.titulo|default:timer_ativo.descricao|default:"Sem tarefa vinculada" }}</p>
-            <form method="post" action="{% url 'timer_parar' %}" class="app-inline-form">
-                {% csrf_token %}
-                <button class="ds-btn--acao" type="submit">
-                    <span>Parar e registrar</span>
-                    {% include "core/_ico.html" with ico="seta" %}
-                </button>
-            </form>
-            {% else %}
-            <form method="post" action="{% url 'timer_iniciar' %}" class="timer-form">
-                {% csrf_token %}
-                <label class="timer-campo timer-campo--cresce">
-                    <span>No que você vai trabalhar agora</span>
-                    <input type="text" name="descricao" placeholder="Ex.: detalhamento das esquadrias">
-                </label>
-                <button class="ds-btn" type="submit">Iniciar cronômetro</button>
-            </form>
-            {% endif %}
-        </div>
-
-        <dialog class="ds-modal" id="modal-tarefa-fase" aria-labelledby="modal-tarefa-fase-titulo">
-            <form method="dialog" class="ds-modal-fechar-form">
-                <button class="ds-modal-fechar" aria-label="Fechar">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-                </button>
-            </form>
-            <h2 class="ds-modal-titulo ds-display" id="modal-tarefa-fase-titulo">Nova tarefa</h2>
-            <p class="ds-modal-sub">Em {{ fase.nome }}. Quem faz, até quando, e como saber que ficou pronta.</p>
-            <div class="ds-modal-corpo">
-                <form method="post" action="{% url 'fase_nova_tarefa' fase.pk %}" class="form-card">
-                    {% csrf_token %}
-                    <p>{{ form_tarefa.titulo.label_tag }}{{ form_tarefa.titulo }}</p>
-                    <p>{{ form_tarefa.descricao.label_tag }}{{ form_tarefa.descricao }}</p>
-                    <div class="form-dupla">
-                        <p>{{ form_tarefa.responsavel.label_tag }}{{ form_tarefa.responsavel }}</p>
-                        <p>{{ form_tarefa.fornecedor.label_tag }}{{ form_tarefa.fornecedor }}</p>
-                    </div>
-                    <div class="form-dupla">
-                        <p>{{ form_tarefa.prazo.label_tag }}{{ form_tarefa.prazo }}</p>
-                        <p>{{ form_tarefa.criterio_pronto.label_tag }}{{ form_tarefa.criterio_pronto }}</p>
-                    </div>
-                    <div class="form-actions">
-                        <button class="ds-btn--acao" type="submit">
-                            <span>Abrir tarefa</span>
-                            {% include "core/_ico.html" with ico="seta" %}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </dialog>
-    </section>
-
-    <details class="abrir-campo">
-        <summary>Prazo e responsável</summary>
-        <form method="post" action="{% url 'fase_ajustar' fase.pk %}" class="form-card">
+    {% if fase.complementar %}
+    <div class="fases-rodape">
+        <form method="post" action="{% url 'fase_remover' fase.pk %}" class="app-inline-form">
             {% csrf_token %}
-            <div class="form-dupla">
-                <p>{{ form_ajuste.prazo.label_tag }}{{ form_ajuste.prazo }}</p>
-                <p>{{ form_ajuste.fornecedor.label_tag }}{{ form_ajuste.fornecedor }}</p>
-            </div>
-            <button class="ds-btn ds-btn--solid" type="submit">Salvar</button>
+            <button class="link-discreto" type="submit">Remover este complementar do projeto</button>
         </form>
-        {% if fase.complementar %}
-        <form method="post" action="{% url 'fase_remover' fase.pk %}" class="app-inline-form fase-remover">
-            {% csrf_token %}
-            <button class="app-link-btn" type="submit">Remover este complementar do projeto</button>
-        </form>
-        {% endif %}
-    </details>
+    </div>
+    {% endif %}
 </section>
 {% endblock %}

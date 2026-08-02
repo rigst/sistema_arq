@@ -5,6 +5,11 @@ from core.forms import ArqModelForm
 
 
 class BriefingForm(ArqModelForm):
+    """Os blocos da NBR. Os campos declaram `form="briefing"` para poderem
+    ficar fora da tag <form> no HTML e ainda assim serem enviados por ela —
+    é o que permite um botão de salvar só, com o programa de necessidades
+    (que tem formulário próprio) no meio da página."""
+
     class Meta:
         model = Briefing
         fields = [
@@ -22,11 +27,16 @@ class BriefingForm(ArqModelForm):
             "prazo_desejado": forms.DateInput(attrs={"type": "date"}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for campo in self.fields.values():
+            campo.widget.attrs["form"] = "briefing"
+
 
 class AmbienteForm(ArqModelForm):
     class Meta:
         model = AmbientePrograma
-        fields = ["nome", "quantidade", "area_aprox", "uso"]
+        fields = ["nome", "area_aprox", "uso"]
 
 
 class TemplateBriefingForm(ArqModelForm):

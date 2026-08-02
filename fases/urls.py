@@ -4,14 +4,11 @@ from . import views
 
 urlpatterns = [
     path("<int:pk>/", views.detalhe, name="fase_detalhe"),
-    path("<int:pk>/iniciar/", views.iniciar, name="fase_iniciar"),
     path("<int:pk>/enviar/", views.enviar, name="fase_enviar"),
     path("<int:pk>/responder/", views.responder, name="fase_responder"),
     path("<int:pk>/concluir/", views.concluir, name="fase_concluir"),
-    path("<int:pk>/ajustar/", views.ajustar, name="fase_ajustar"),
     path("<int:pk>/registro/", views.comentar, name="fase_comentar"),
     path("<int:pk>/anexar/", views.anexar, name="fase_anexar"),
-    path("<int:pk>/tarefa/", views.nova_tarefa, name="fase_nova_tarefa"),
     path("lembrete/<int:pk>/editar/", views.editar_lembrete, name="lembrete_editar"),
     path("lembrete/<int:pk>/remover/", views.remover_lembrete, name="lembrete_remover"),
     path(

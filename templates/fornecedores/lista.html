@@ -14,7 +14,7 @@
                 como foi trabalhar com ele da última vez.
             </p>
         </div>
-        <a class="ds-btn ds-btn--solid" href="{% url 'fornecedor_novo' %}">Novo fornecedor</a>
+        <a class="ds-btn--novo" href="{% url 'fornecedor_novo' %}">{% include "core/_ico.html" with ico="novo" %}<span>Novo fornecedor</span></a>
     </header>
 
     {% if categorias %}

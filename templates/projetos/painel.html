@@ -10,8 +10,7 @@
             <p class="page-sub">Fase atual, lembretes, tempo parado e prazo — lado a lado.</p>
         </div>
         <div class="page-head-actions">
-            <a class="ds-btn" href="{% url 'projetos_kanban' %}">Painel visual</a>
-            <a class="ds-btn ds-btn--solid" href="{% url 'projeto_novo' %}">Novo projeto</a>
+            <a class="ds-btn--novo" href="{% url 'jornada_abrir' %}">{% include "core/_ico.html" with ico="novo" %}<span>Novo projeto</span></a>
         </div>
     </header>
 
