@@ -3,7 +3,7 @@ from django import forms
 from core.forms import ArqForm, ArqModelForm
 from core.tenancy import queryset_da_empresa
 
-from .models import Fase, RegistroFase
+from .models import Fase, Lembrete
 
 
 class FaseAjusteForm(ArqModelForm):
@@ -25,9 +25,9 @@ class FaseAjusteForm(ArqModelForm):
         self.fields["fornecedor"].empty_label = "— equipe do escritório —"
 
 
-class RegistroForm(ArqModelForm):
+class LembreteForm(ArqModelForm):
     class Meta:
-        model = RegistroFase
+        model = Lembrete
         fields = ["tipo", "texto"]
         widgets = {"texto": forms.Textarea(attrs={"rows": 3, "placeholder":
                    "O que foi combinado, decidido ou pedido."})}
@@ -37,7 +37,7 @@ class RegistroForm(ArqModelForm):
         super().__init__(*args, **kwargs)
         # "Registro do sistema" é escrito pelo próprio sistema, não à mão.
         self.fields["tipo"].choices = [
-            (v, r) for v, r in RegistroFase.TIPO_CHOICES if v != "sistema"
+            (v, r) for v, r in Lembrete.TIPO_CHOICES if v != "sistema"
         ]
 
 

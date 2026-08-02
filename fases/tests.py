@@ -399,3 +399,145 @@ class TelasQueRespondemTests(BaseFase):
             self.client.get(f"/briefing/projeto/{self.projeto.pk}/"),
             f"/briefing/projeto/{self.projeto.pk}/responder/",
         )
+
+
+class LembreteDoProjetoTests(BaseFase):
+    """Lembrete que não é de fase nenhuma vale para o projeto inteiro."""
+
+    def test_cria_lembrete_no_projeto(self):
+        self.client.post(
+            f"/fases/projeto/{self.projeto.pk}/lembrete/",
+            {"tipo": "comentario", "texto": "Cliente viaja em janeiro."},
+        )
+        lembrete = self.projeto.lembretes.get()
+        self.assertIsNone(lembrete.fase_id)
+        self.assertTrue(lembrete.fixado)
+
+    def test_lembrete_de_fase_tambem_pertence_ao_projeto(self):
+        """Sem isso, o lembrete da fase sumiria da ficha do projeto."""
+        fase = self.fase("briefing")
+        self.client.post(f"/fases/{fase.pk}/registro/", {"tipo": "comentario", "texto": "Nota"})
+        self.assertEqual(fase.registros.get().projeto, self.projeto)
+
+    def test_editar_e_excluir(self):
+        self.client.post(
+            f"/fases/projeto/{self.projeto.pk}/lembrete/",
+            {"tipo": "comentario", "texto": "Original"},
+        )
+        lembrete = self.projeto.lembretes.get()
+        self.client.post(
+            f"/fases/lembrete/{lembrete.pk}/editar/",
+            {"tipo": "cliente", "texto": "Corrigido"},
+        )
+        lembrete.refresh_from_db()
+        self.assertEqual(lembrete.texto, "Corrigido")
+        self.assertEqual(lembrete.tipo, "cliente")
+
+        self.client.post(f"/fases/lembrete/{lembrete.pk}/remover/")
+        self.assertFalse(self.projeto.lembretes.exists())
+
+    def test_lembrete_de_outra_empresa_nao_pode_ser_editado(self):
+        from django.contrib.auth.models import Group
+        from fases.models import Lembrete
+
+        outro = Group.objects.create(name="Vizinho 5")
+        alheio = Projeto.objects.create(
+            empresa=outro, cliente=self.cliente, nome="Alheio 5", tipo="comercial"
+        )
+        lembrete = Lembrete.objects.create(
+            empresa=outro, projeto=alheio, texto="Sigiloso", tipo="comentario"
+        )
+        self.assertEqual(
+            self.client.get(f"/fases/lembrete/{lembrete.pk}/editar/").status_code, 404
+        )
+
+
+class TarefaNaFaseTests(BaseFase):
+    """Tarefa nasce dentro da fase que a exige, e as horas seguem junto."""
+
+    def test_cria_tarefa_ligada_a_fase_e_ao_projeto(self):
+        fase = self.fase("executivo")
+        self.client.post(
+            f"/fases/{fase.pk}/tarefa/", {"titulo": "Detalhar esquadrias"}
+        )
+        tarefa = fase.tarefas.get()
+        self.assertEqual(tarefa.projeto, self.projeto)
+        self.assertTrue(fase.registros.filter(texto__contains="Detalhar esquadrias").exists())
+
+    def test_fase_de_outra_empresa_da_404(self):
+        from django.contrib.auth.models import Group
+
+        outro = Group.objects.create(name="Vizinho 6")
+        alheio = Projeto.objects.create(
+            empresa=outro, cliente=self.cliente, nome="Alheio 6", tipo="comercial"
+        )
+        montar_fases(alheio)
+        fase = alheio.fases.first()
+        self.assertEqual(self.client.post(f"/fases/{fase.pk}/tarefa/", {"titulo": "x"}).status_code, 404)
+
+
+class ComplementaresEmLoteTests(BaseFase):
+    def test_liga_e_desliga_de_uma_vez(self):
+        self.client.post(
+            f"/fases/projeto/{self.projeto.pk}/complementares/",
+            {"complementares": ["comp_estrutural", "comp_eletrica"]},
+        )
+        chaves = set(self.projeto.fases.values_list("chave", flat=True))
+        self.assertIn("comp_estrutural", chaves)
+        self.assertIn("comp_eletrica", chaves)
+
+        self.client.post(
+            f"/fases/projeto/{self.projeto.pk}/complementares/",
+            {"complementares": ["comp_estrutural"]},
+        )
+        chaves = set(self.projeto.fases.values_list("chave", flat=True))
+        self.assertIn("comp_estrutural", chaves)
+        self.assertNotIn("comp_eletrica", chaves)
+
+    def test_nao_desliga_complementar_com_trabalho_dentro(self):
+        """Desmarcar num modal não pode apagar arquivo por engano."""
+        self.client.post(
+            f"/fases/projeto/{self.projeto.pk}/complementares/",
+            {"complementares": ["comp_estrutural"]},
+        )
+        fase = self.projeto.fases.get(chave="comp_estrutural")
+        Arquivo.objects.create(
+            empresa=self.grupo, projeto=self.projeto, fase=fase,
+            titulo="Cálculo", arquivo=_png("c.png"),
+        )
+        self.client.post(
+            f"/fases/projeto/{self.projeto.pk}/complementares/", {"complementares": []}
+        )
+        self.assertTrue(self.projeto.fases.filter(chave="comp_estrutural").exists())
+        fase.arquivos.first().arquivo.delete(save=False)
+
+    def test_texto_livre_acrescenta_sem_apagar_os_marcados(self):
+        self.client.post(
+            f"/fases/projeto/{self.projeto.pk}/complementares/",
+            {"complementares": ["comp_paisagismo"], "complementar_outro": "Acústico"},
+        )
+        chaves = list(self.projeto.fases.values_list("chave", flat=True))
+        self.assertIn("comp_paisagismo", chaves)
+        self.assertIn("comp_outro", chaves)
+
+
+class AvisoDetalhadoTests(BaseFase):
+    """O histórico precisa dizer o quê e onde, não só o verbo."""
+
+    def test_aviso_guarda_lugar_e_link(self):
+        from notificacoes.models import AvisoSistema
+
+        fase = self.fase("briefing")
+        self.client.post(f"/fases/{fase.pk}/iniciar/")
+        aviso = AvisoSistema.objects.filter(empresa=self.grupo).first()
+        self.assertIn("Briefing", aviso.texto)
+        self.assertIn(self.projeto.nome, aviso.texto)
+        self.assertIn("Fase", aviso.onde)
+        self.assertEqual(aviso.url, f"/fases/{fase.pk}/iniciar/")
+
+    def test_aviso_aparece_no_historico(self):
+        fase = self.fase("briefing")
+        self.client.post(f"/fases/{fase.pk}/iniciar/")
+        resposta = self.client.get("/notificacoes/")
+        self.assertContains(resposta, "Histórico de avisos")
+        self.assertContains(resposta, "entrou em elaboração")

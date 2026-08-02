@@ -15,7 +15,7 @@ from .models import ApontamentoHora, Tarefa
 @login_required
 def lista_tarefas(request):
     tarefas = queryset_da_empresa(
-        Tarefa.objects.select_related("projeto", "responsavel", "fornecedor"), request.user
+        Tarefa.objects.select_related("projeto", "fase", "responsavel", "fornecedor"), request.user
     )
     projeto = projeto_do_pedido(request)
     if projeto is not None:
@@ -30,7 +30,7 @@ def lista_tarefas(request):
             if projeto is not None:
                 tarefa.projeto = projeto
             tarefa.save()
-            messages.success(request, "Tarefa criada.")
+            messages.success(request, f"Tarefa “{tarefa.titulo}” criada.")
             destino = reverse("tarefas_lista")
             return redirect(f"{destino}?projeto={projeto.pk}" if projeto else destino)
         messages.error(request, "Confira os campos da tarefa.")

@@ -3,6 +3,6 @@
     <p class="kanban-card-cli">{{ p.cliente.nome }}</p>
     <div class="kanban-card-meta">
         <span>{{ p.fase_atual.nome|default:"—" }}</span>
-        {% if p.pendencias_abertas %}<span class="tag-alerta">{{ p.pendencias_abertas }} pend.</span>{% endif %}
+        {% if p.lembretes_fixados %}<span class="tag-alerta">{{ p.lembretes_fixados }} lembrete(s)</span>{% endif %}
     </div>
 </article>

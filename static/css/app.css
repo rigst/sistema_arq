@@ -1108,10 +1108,10 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
     background:
         linear-gradient(90deg,
             transparent 0 15rem, rgba(255, 255, 255, 0.34) 26rem, rgba(255, 255, 255, 0.5) 60%),
-        radial-gradient(46rem 40rem at 6% 4%, rgba(52, 168, 133, 0.45), transparent 62%),
-        radial-gradient(40rem 36rem at 96% 12%, rgba(70, 140, 200, 0.38), transparent 60%),
-        radial-gradient(44rem 40rem at 82% 98%, rgba(24, 92, 74, 0.42), transparent 62%),
-        radial-gradient(34rem 30rem at 26% 96%, rgba(196, 132, 84, 0.28), transparent 62%),
+        radial-gradient(46rem 40rem at 6% 4%, rgba(52, 168, 133, 0.16), transparent 62%),
+        radial-gradient(40rem 36rem at 96% 12%, rgba(70, 140, 200, 0.2), transparent 60%),
+        radial-gradient(44rem 40rem at 82% 98%, rgba(24, 92, 74, 0.16), transparent 62%),
+        radial-gradient(34rem 30rem at 26% 96%, rgba(196, 132, 84, 0.14), transparent 62%),
         var(--fundo-escritorio, url("../img/fundo-vidro.jpg")) center / cover no-repeat,
         var(--ds-ink);
 }
@@ -2787,17 +2787,178 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
 }
 .postit footer {
     display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;
-    font-family: var(--arq-font-mono); font-size: 0.66rem; color: #8a7530;
+    font-family: var(--arq-font-mono); font-size: 0.66rem; color: #67561c;
 }
-.postit footer .app-link-btn { color: #8a7530; font-size: 0.66rem; }
+.postit footer .app-link-btn { color: #67561c; font-size: 0.66rem; }
 .postit footer .app-link-btn:hover { color: #5c4d14; }
 /* Conversa com o cliente ganha outro papel: é recado de fora, não nota
    interna, e a diferença importa na hora de conferir o que foi acordado. */
 .postit--cliente { background: #e4f0e9; }
 .postit--cliente:nth-child(even) { background: #dcece4; }
 .postit--cliente p { color: #17352a; }
-.postit--cliente footer, .postit--cliente footer .app-link-btn { color: #3f6b5b; }
+.postit--cliente footer, .postit--cliente footer .app-link-btn { color: #2f5346; }
 
 @media (prefers-reduced-motion: reduce) {
     .postit, .postit:hover { transform: none; transition: none; }
 }
+
+/* =================================================================
+   BOTÃO DE AÇÃO — versão final, sem disco
+   A pílula com disco na ponta parecia duas peças coladas, e no login,
+   onde o botão ocupa a largura toda, o disco ficava sozinho num canto
+   distante do rótulo. Agora é uma peça só: cantos do mesmo raio dos
+   campos, altura fixa, e a seta inline logo depois do texto.
+   ================================================================= */
+.ds-btn--acao {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 0.55rem;
+    min-height: 2.65rem; padding: 0.6rem 1.15rem;
+    border-radius: 0.55rem; border: 0;
+    font-family: var(--ds-font-sans); font-size: 0.94rem; font-weight: 500;
+    line-height: 1.2; text-decoration: none; cursor: pointer; white-space: nowrap;
+    background: var(--ds-blue); color: #fff;
+    transition: background var(--arq-fast) ease;
+}
+.ds-btn--acao:hover { background: var(--ds-blue-dark); color: #fff; }
+.ds-btn--acao svg {
+    width: 0.95rem; height: 0.95rem; flex-shrink: 0;
+    transition: transform var(--arq-mid) var(--arq-ease-out);
+}
+.ds-btn--acao:hover svg { transform: translateX(2px); }
+/* O disco morreu; a regra fica neutralizada para o que ainda o declara. */
+.ds-btn--acao .ds-btn-ico {
+    display: contents; background: none; width: auto; height: auto;
+}
+.ds-btn--acao:active { transform: translateY(1px); }
+
+/* A cor entra pela borda esquerda e varre o botão — de um lado ao
+   outro, e não a partir de um ponto, que ficava com cara de gota. */
+.ds-btn--acao::before {
+    content: ""; position: absolute; inset: 0; z-index: 0;
+    right: auto; top: 0; width: 100%; height: 100%; margin: 0;
+    border-radius: inherit; background: var(--ds-blue-dark);
+    transform: scaleX(0); transform-origin: left center;
+    transition: transform 300ms var(--arq-ease-out);
+}
+.ds-btn--acao:focus-visible::before, .ds-btn--acao:active::before { transform: scaleX(1); }
+.ds-btn--acao:focus-visible { outline: none; background: var(--ds-blue); box-shadow: none; }
+.ds-btn--acao:focus-visible .ds-btn-ico { background: none; }
+
+/* Sobre vidro escuro a peça é clara e a varredura é o verde entrando. */
+.auth-card .ds-btn--acao, .app-side .ds-btn--acao {
+    background: #f2f5f3; color: var(--ds-ink);
+}
+.auth-card .ds-btn--acao:hover, .app-side .ds-btn--acao:hover { background: #fff; color: var(--ds-ink); }
+.auth-card .ds-btn--acao::before, .app-side .ds-btn--acao::before { background: var(--ds-blue); }
+.auth-card .ds-btn--acao:focus-visible, .app-side .ds-btn--acao:focus-visible {
+    background: #f2f5f3; color: #fff;
+}
+.auth-card .ds-btn--acao svg, .app-side .ds-btn--acao svg { color: var(--ds-blue); }
+.auth-card .ds-btn--acao:focus-visible svg, .app-side .ds-btn--acao:focus-visible svg { color: #fff; }
+
+.auth-submit, .ds-btn--acao.is-larga { width: 100%; box-sizing: border-box; }
+.nav-destaque.is-larga { display: flex; width: auto; }
+.nav-destaque { margin: 0 0.75rem 0.5rem; padding: 0.6rem 1rem; border-radius: 0.55rem; }
+
+/* No painel todos os CTAs têm a mesma medida: "Continuar" e "Começar"
+   lado a lado com larguras diferentes fazem a coluna tremer. */
+.frente-cta { min-width: 11.5rem; padding: 0.6rem 1.15rem; font-size: 0.9rem; }
+
+@media (prefers-reduced-motion: reduce) {
+    .ds-btn--acao::before, .ds-btn--acao svg { transition: none; }
+}
+
+/* =================================================================
+   LATERAL MENOS VERDE
+   O vidro puxava para o verde-escuro e brigava com o verde do sistema,
+   que é quem deve marcar o item ativo. Vira grafite quase neutro: a
+   cor volta a significar alguma coisa por ser exceção.
+   ================================================================= */
+.app-side {
+    background: linear-gradient(180deg,
+        rgba(18, 20, 19, 0.62), rgba(16, 18, 17, 0.74) 48%, rgba(17, 19, 18, 0.68));
+    box-shadow: 2px 0 40px rgba(6, 8, 7, 0.34);
+}
+@media (max-width: 62rem) {
+    .app-side { background: rgba(16, 18, 17, 0.97); }
+}
+
+/* =================================================================
+   AÇÕES DO POST-IT
+   Ícones no rodapé do papel: editar, arquivar, excluir. Discretos
+   porque não são o conteúdo — acendem quando a mão chega perto.
+   ================================================================= */
+.postit-acoes { display: inline-flex; align-items: center; gap: 0.3rem; }
+.postit-ico {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.35rem; height: 1.35rem; padding: 0;
+    background: none; border: 0; border-radius: 0.28rem; cursor: pointer;
+    color: #67561c; opacity: 0.7;
+    transition: opacity var(--arq-fast) ease, color var(--arq-fast) ease,
+                background var(--arq-fast) ease;
+}
+.postit-ico svg { width: 0.85rem; height: 0.85rem; }
+.postit:hover .postit-ico { opacity: 1; }
+.postit-ico:hover { color: #5c4d14; background: rgba(92, 77, 20, 0.12); }
+.postit-ico--risco:hover { color: #8e2a1c; background: rgba(142, 42, 28, 0.12); }
+.postit-ico:focus-visible {
+    outline: none; opacity: 1; box-shadow: inset 0 0 0 2px currentColor;
+}
+.postit--cliente .postit-ico { color: #2f5346; }
+.postit--cliente .postit-ico:hover { color: #17352a; background: rgba(23, 53, 42, 0.1); }
+
+/* =================================================================
+   TAREFAS DENTRO DA FASE
+   ================================================================= */
+.tarefa-lista { list-style: none; margin: 0 0 1.25rem; padding: 0; }
+.tarefa-linha {
+    display: grid; grid-template-columns: 1.6rem minmax(0, 1fr) auto;
+    align-items: center; gap: 0.85rem;
+    padding: 0.6rem 0; border-top: 1px solid var(--ds-line);
+}
+.tarefa-linha:last-child { border-bottom: 1px solid var(--ds-line); }
+.tarefa-id { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.tarefa-id strong { font-weight: 500; font-size: 0.93rem; }
+.tarefa-meta { font-size: 0.78rem; color: var(--ds-text-500); }
+.tarefa-linha.is-done .tarefa-id strong { color: var(--ds-text-500); text-decoration: line-through; }
+
+.timer-fase {
+    padding: 0.9rem 1rem; border: 1px solid var(--ds-line); border-radius: 0.6rem;
+    background: var(--ds-panel);
+}
+.timer-fase.is-rodando { background: var(--ds-blue-50); border-color: var(--ds-blue-100); }
+.timer-fase .timer-form { display: flex; align-items: flex-end; gap: 0.75rem; flex-wrap: wrap; }
+.timer-fase .timer-campo--cresce { flex: 1; min-width: 14rem; }
+
+/* O gatilho dos complementares é um botão comum, não uma barra. */
+#fases > [data-abre] { width: fit-content; }
+
+/* O cartão de projeto virou link inteiro. */
+a.projeto-card {
+    display: flex; flex-direction: column; gap: 0.55rem;
+    text-decoration: none; color: inherit;
+}
+a.projeto-card:hover { text-decoration: none; }
+a.projeto-card .projeto-nome { color: var(--ds-text-900); }
+a.projeto-card:hover .projeto-nome { color: var(--ds-blue-dark); }
+a.projeto-card:focus-visible {
+    outline: 2px solid var(--ds-blue-dark); outline-offset: 2px;
+}
+.projeto-card .projeto-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; }
+.projeto-card .projeto-cliente { font-size: 0.84rem; color: var(--ds-text-500); }
+.projeto-card .projeto-metricas {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem 1rem;
+    margin-top: 0.35rem; padding-top: 0.7rem; border-top: 1px solid var(--ds-line);
+}
+.projeto-card .projeto-metricas > span { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.pm-rot {
+    font-family: var(--arq-font-mono); font-size: 0.64rem;
+    text-transform: uppercase; letter-spacing: 0.07em; color: var(--ds-text-500);
+}
+.pm-val { font-size: 0.86rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Cores dos tipos novos de compromisso no calendário. */
+.cal-marca--briefing, .cal-marca--apresentacao { background: var(--ds-blue-50); color: var(--ds-blue-dark); border-left-color: var(--ds-blue); }
+.cal-marca--levantamento, .cal-marca--medicao { background: #f6efe0; color: #6d460a; border-left-color: var(--arq-amber); }
+.cal-marca--assinatura { background: #efecf6; color: #4f3878; border-left-color: var(--arq-violet); }
+.cal-marca--entrega, .cal-marca--orgao { background: #f7e6e2; color: #8e2a1c; border-left-color: var(--ds-danger); }

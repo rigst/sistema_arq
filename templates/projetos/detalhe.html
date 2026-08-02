@@ -50,33 +50,11 @@
         </div>
     </div>
 
+    {% include "fases/_lembretes.html" with lembretes_fixados=lembretes_fixados lembretes_arquivados=lembretes_arquivados form_lembrete=form_lembrete acao_lembrete=acao_lembrete lembrete_modal_id="modal-lembrete-projeto" %}
+
     {% include "projetos/_fases.html" %}
 
     {% include "projetos/_registros.html" %}
 
-    <section class="secao">
-        <h2 class="secao-titulo ds-display">Pendências</h2>
-        <p class="secao-sub">O que trava o andamento e não cabe numa fase só.</p>
-        <form method="post" action="{% url 'projeto_add_pendencia' projeto.pk %}" class="inline-add">
-            {% csrf_token %}
-            {{ form_pendencia.descricao }}
-            {{ form_pendencia.prazo }}
-            <button class="ds-btn ds-btn--solid" type="submit">Adicionar</button>
-        </form>
-        <ul class="pendencias">
-            {% for pend in pendencias %}
-            <li class="{% if pend.resolvida %}is-resolvida{% endif %}">
-                <span>{{ pend.descricao }}{% if pend.prazo %} · {{ pend.prazo|date:"d/m/y" }}{% endif %}</span>
-                {% if not pend.resolvida %}
-                <form method="post" action="{% url 'pendencia_resolver' pend.pk %}" class="app-inline-form">
-                    {% csrf_token %}<button class="app-link-btn" type="submit">resolver</button>
-                </form>
-                {% endif %}
-            </li>
-            {% empty %}
-            <li class="data-empty">Sem pendências.</li>
-            {% endfor %}
-        </ul>
-    </section>
 </section>
 {% endblock %}

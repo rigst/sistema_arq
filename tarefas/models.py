@@ -20,6 +20,11 @@ class Tarefa(EmpresaModel, Rastreavel):
     projeto = models.ForeignKey(
         Projeto, on_delete=models.CASCADE, related_name="tarefas", null=True, blank=True
     )
+    # A tarefa nasce dentro da fase que a exige: detalhar esquadria é trabalho
+    # de executivo, não do projeto em abstrato. Sem fase, é tarefa do projeto.
+    fase = models.ForeignKey(
+        "fases.Fase", on_delete=models.SET_NULL, null=True, blank=True, related_name="tarefas"
+    )
     responsavel = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="tarefas",
         verbose_name="responsável",

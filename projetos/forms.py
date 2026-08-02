@@ -3,7 +3,7 @@ from django import forms
 from crm.models import Cliente
 from core.tenancy import queryset_da_empresa
 
-from .models import Pendencia, Projeto
+from .models import Projeto
 from core.forms import ArqModelForm
 
 
@@ -37,10 +37,3 @@ class ProjetoForm(ArqModelForm):
             from .models import Tag
 
             self.fields["tags"].queryset = queryset_da_empresa(Tag.objects.all(), user)
-
-
-class PendenciaForm(ArqModelForm):
-    class Meta:
-        model = Pendencia
-        fields = ["descricao", "prazo"]
-        widgets = {"prazo": forms.DateInput(attrs={"type": "date"})}

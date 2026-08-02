@@ -41,7 +41,7 @@ def agenda(request):
             if projeto is not None and compromisso.projeto_id is None:
                 compromisso.projeto = projeto
             compromisso.save()
-            messages.success(request, "Compromisso agendado.")
+            messages.success(request, f"{compromisso.get_tipo_display()} “{compromisso.titulo}” agendada para {compromisso.inicio:%d/%m às %H:%M}.")
             return redirect(f"{reverse('agenda')}?ano={ano}&mes={mes}")
         messages.error(request, "Confira os campos do compromisso.")
     else:
@@ -88,6 +88,7 @@ def remover_compromisso(request, pk):
     compromisso = get_object_or_404(
         queryset_da_empresa(Compromisso.objects.all(), request.user), pk=pk
     )
+    titulo = compromisso.titulo
     compromisso.delete()
-    messages.success(request, "Compromisso removido.")
+    messages.success(request, f"Compromisso “{titulo}” removido da agenda.")
     return redirect("agenda")

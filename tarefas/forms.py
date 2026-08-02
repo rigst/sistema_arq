@@ -11,7 +11,7 @@ class TarefaForm(ArqModelForm):
     class Meta:
         model = Tarefa
         fields = [
-            "titulo", "descricao", "projeto", "responsavel", "fornecedor",
+            "titulo", "descricao", "projeto", "fase", "responsavel", "fornecedor",
             "criterio_pronto", "prazo", "status",
         ]
         widgets = {
@@ -43,9 +43,20 @@ class TarefaForm(ArqModelForm):
             self.fields["fornecedor"].required = False
 
         if projeto is not None:
-            # Dentro de um projeto, ele já está decidido.
+            # Dentro de um projeto, ele já está decidido — e as fases oferecidas
+            # são as dele, não as de todos os projetos da empresa.
             self.fields["projeto"].initial = projeto.pk
             self.fields["projeto"].disabled = True
+            self.fields["fase"].queryset = projeto.fases.all()
+            self.fields["fase"].empty_label = "— sem fase específica —"
+        elif user is not None:
+            from fases.models import Fase
+
+            self.fields["fase"].queryset = queryset_da_empresa(
+                Fase.objects.select_related("projeto"), user
+            )
+            self.fields["fase"].empty_label = "— sem fase específica —"
+        self.fields["fase"].required = False
 
         # Tarefa nova nasce aberta; status é acompanhamento, não cadastro.
         if self.instance.pk is None and "status" in self.fields:

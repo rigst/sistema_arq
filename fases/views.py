@@ -14,11 +14,11 @@ from . import catalogo
 from .forms import (
     ArquivoDaFaseForm,
     FaseAjusteForm,
-    RegistroForm,
+    LembreteForm,
     RenomearArquivoForm,
     RespostaClienteForm,
 )
-from .models import Fase, montar_fases
+from .models import Fase, Lembrete, criar_complementares_avulsos, montar_fases
 
 
 def _minhas(user):
@@ -49,12 +49,38 @@ def detalhe(request, pk):
                 fase.registros.filter(fixado=False).select_related("autor")
             ),
             "form_arquivo": ArquivoDaFaseForm(),
-            "form_registro": RegistroForm(),
+            "form_registro": LembreteForm(),
             "form_ajuste": FaseAjusteForm(instance=fase, user=request.user),
             "form_resposta": RespostaClienteForm(),
             "fases_projeto": fase.projeto.fases.all(),
             "insumos": _insumos(fase),
+            "tarefas": fase.tarefas.select_related("responsavel", "fornecedor"),
+            "form_tarefa": _form_tarefa(request, fase),
+            "timer_ativo": _timer_ativo(request),
+            "acao_lembrete": reverse("fase_comentar", kwargs={"pk": fase.pk}),
         },
+    )
+
+
+def _form_tarefa(request, fase):
+    from tarefas.forms import TarefaForm
+
+    form = TarefaForm(user=request.user, projeto=fase.projeto)
+    # A fase já está decidida por estar nesta tela.
+    if "fase" in form.fields:
+        form.fields["fase"].initial = fase.pk
+        form.fields["fase"].disabled = True
+    return form
+
+
+def _timer_ativo(request):
+    from tarefas.models import ApontamentoHora
+
+    return (
+        queryset_da_empresa(ApontamentoHora.objects.all(), request.user)
+        .filter(usuario=request.user, fim__isnull=True)
+        .select_related("projeto", "tarefa")
+        .first()
     )
 
 
@@ -90,7 +116,7 @@ def _insumos(fase):
 def iniciar(request, pk):
     fase = get_object_or_404(_minhas(request.user), pk=pk)
     if fase.iniciar(request.user):
-        messages.success(request, f"{fase.nome} em elaboração.")
+        messages.success(request, f"{fase.nome} de {fase.projeto.nome} entrou em elaboração.")
     return redirect(_voltar(fase))
 
 
@@ -104,7 +130,7 @@ def enviar(request, pk):
             "Anexe o material antes de enviar — é o material que o cliente vai aprovar.",
         )
     elif fase.enviar_ao_cliente(request.user):
-        messages.success(request, f"{fase.nome} marcada como enviada ao cliente.")
+        messages.success(request, f"{fase.nome} de {fase.projeto.nome} enviada ao cliente.")
     return redirect(_voltar(fase))
 
 
@@ -118,9 +144,9 @@ def responder(request, pk):
     aprovada = request.POST.get("decisao") == "aprovar"
     if fase.registrar_resposta(aprovada, parecer, request.user):
         if aprovada:
-            messages.success(request, f"{fase.nome} aprovada. A próxima fase está liberada.")
+            messages.success(request, f"Cliente aprovou {fase.nome} de {fase.projeto.nome}. A próxima fase está liberada.")
         else:
-            messages.success(request, f"{fase.nome}: ajustes registrados.")
+            messages.success(request, f"Cliente pediu ajustes em {fase.nome} de {fase.projeto.nome}.")
     return redirect(_voltar(fase))
 
 
@@ -129,7 +155,7 @@ def responder(request, pk):
 def concluir(request, pk):
     fase = get_object_or_404(_minhas(request.user), pk=pk)
     if fase.concluir_sem_aprovacao(request.user):
-        messages.success(request, f"{fase.nome} concluída.")
+        messages.success(request, f"{fase.nome} de {fase.projeto.nome} concluída.")
     return redirect(_voltar(fase))
 
 
@@ -140,7 +166,7 @@ def ajustar(request, pk):
     form = FaseAjusteForm(request.POST, instance=fase, user=request.user)
     if form.is_valid():
         form.save()
-        messages.success(request, "Fase atualizada.")
+        messages.success(request, f"Prazo e responsável de {fase.nome} atualizados.")
     return redirect(_voltar(fase))
 
 
@@ -148,10 +174,11 @@ def ajustar(request, pk):
 @login_required
 def comentar(request, pk):
     fase = get_object_or_404(_minhas(request.user), pk=pk)
-    form = RegistroForm(request.POST)
+    form = LembreteForm(request.POST)
     if form.is_valid():
         registro = form.save(commit=False)
         registro.fase = fase
+        registro.projeto = fase.projeto
         registro.empresa = fase.empresa
         registro.autor = request.user
         # Escrito à mão nasce fixado: foi escrito para ser lembrado.
@@ -164,12 +191,128 @@ def comentar(request, pk):
 
 @require_POST
 @login_required
+def nova_tarefa(request, pk):
+    """Tarefa criada de dentro da fase já nasce ligada a ela e ao projeto."""
+    from tarefas.forms import TarefaForm
+
+    fase = get_object_or_404(_minhas(request.user), pk=pk)
+    form = TarefaForm(request.POST, user=request.user, projeto=fase.projeto)
+    if form.is_valid():
+        tarefa = form.save(commit=False)
+        tarefa.empresa = fase.empresa
+        tarefa.criado_por = request.user
+        tarefa.projeto = fase.projeto
+        tarefa.fase = fase
+        tarefa.save()
+        fase.registrar("sistema", f"Tarefa aberta: {tarefa.titulo}.", request.user)
+        messages.success(request, f"Tarefa “{tarefa.titulo}” aberta em {fase.nome}.")
+    else:
+        messages.error(request, "Confira os campos da tarefa.")
+    return redirect(f"{_voltar(fase)}#tarefas")
+
+
+@login_required
+def editar_lembrete(request, pk):
+    lembrete = get_object_or_404(
+        queryset_da_empresa(Lembrete.objects.select_related("fase", "projeto"), request.user),
+        pk=pk,
+    )
+    destino = (
+        reverse("fase_detalhe", kwargs={"pk": lembrete.fase_id})
+        if lembrete.fase_id
+        else reverse("projeto_detalhe", kwargs={"pk": lembrete.projeto_id})
+    )
+    if request.method == "POST":
+        form = LembreteForm(request.POST, instance=lembrete)
+        if form.is_valid():
+            form.save()
+            onde = lembrete.fase.nome if lembrete.fase_id else lembrete.projeto.nome
+            messages.success(request, f"Lembrete editado em {onde}.")
+            return redirect(f"{destino}#lembretes")
+    else:
+        form = LembreteForm(instance=lembrete)
+    return render(
+        request,
+        "fases/lembrete_editar.html",
+        {"form": form, "lembrete": lembrete, "destino": destino},
+    )
+
+
+@require_POST
+@login_required
+def remover_lembrete(request, pk):
+    lembrete = get_object_or_404(
+        queryset_da_empresa(Lembrete.objects.select_related("fase"), request.user), pk=pk
+    )
+    destino = (
+        reverse("fase_detalhe", kwargs={"pk": lembrete.fase_id})
+        if lembrete.fase_id
+        else reverse("projeto_detalhe", kwargs={"pk": lembrete.projeto_id})
+    )
+    resumo = lembrete.texto[:60] + ("…" if len(lembrete.texto) > 60 else "")
+    lembrete.delete()
+    messages.success(request, f"Lembrete excluído: “{resumo}”.")
+    return redirect(f"{destino}#lembretes")
+
+
+@require_POST
+@login_required
+def lembrete_do_projeto(request, projeto_pk):
+    """Lembrete que não é de fase nenhuma — vale para o projeto inteiro."""
+    projeto = get_object_or_404(
+        queryset_da_empresa(Projeto.objects.all(), request.user), pk=projeto_pk
+    )
+    form = LembreteForm(request.POST)
+    if form.is_valid():
+        lembrete = form.save(commit=False)
+        lembrete.empresa = projeto.empresa
+        lembrete.projeto = projeto
+        lembrete.autor = request.user
+        lembrete.fixado = True
+        lembrete.save()
+    else:
+        messages.error(request, "Escreva o lembrete antes de fixar.")
+    return redirect(reverse("projeto_detalhe", kwargs={"pk": projeto.pk}) + "#lembretes")
+
+
+@require_POST
+@login_required
+def editar_complementares(request, projeto_pk):
+    """Liga e desliga complementares de uma vez, pelo modal do projeto."""
+    projeto = get_object_or_404(
+        queryset_da_empresa(Projeto.objects.all(), request.user), pk=projeto_pk
+    )
+    marcados = set(request.POST.getlist("complementares"))
+    atuais = {
+        f.chave for f in projeto.fases.filter(chave__startswith="comp_").exclude(
+            chave=catalogo.CHAVE_LIVRE
+        )
+    }
+
+    # Desligar só o que está vazio: complementar com arquivo dentro guarda
+    # trabalho, e apagar isso por engano num modal seria irreversível.
+    for chave in atuais - marcados:
+        fase = projeto.fases.get(chave=chave)
+        if fase.arquivos.exists() or fase.status != Fase.NAO_INICIADA:
+            messages.error(
+                request,
+                f"“{fase.nome}” já tem trabalho registrado — remova pela própria fase.",
+            )
+            continue
+        fase.delete()
+
+    montar_fases(projeto, complementares=marcados - atuais)
+    criar_complementares_avulsos(projeto, request.POST.get("complementar_outro", ""))
+    messages.success(request, f"Complementares de {projeto.nome} atualizados.")
+    return redirect(reverse("projeto_detalhe", kwargs={"pk": projeto.pk}) + "#fases")
+
+
+@require_POST
+@login_required
 def soltar_registro(request, pk):
     """Tira o lembrete do topo. Não apaga: desce para o histórico."""
-    from .models import RegistroFase
-
     registro = get_object_or_404(
-        queryset_da_empresa(RegistroFase.objects.select_related("fase"), request.user), pk=pk
+        queryset_da_empresa(Lembrete.objects.select_related("fase"), request.user), pk=pk
     )
     registro.fixado = False
     registro.save(update_fields=["fixado"])
@@ -226,7 +369,7 @@ def anexar(request, pk):
         arquivo.criado_por = request.user
         arquivo.save()
         fase.registrar("sistema", f"Arquivo anexado: {arquivo.titulo}.", request.user)
-        messages.success(request, "Arquivo anexado à fase.")
+        messages.success(request, f"Arquivo “{arquivo.titulo}” anexado a {fase.nome}.")
     else:
         messages.error(request, "Confira o arquivo e o nome antes de anexar.")
     return redirect(_voltar(fase))
@@ -281,7 +424,7 @@ def renomear_arquivo(request, pk):
                 arquivo.fase.registrar(
                     "sistema", f"Arquivo renomeado: “{antigo}” → “{arquivo.titulo}”.", request.user
                 )
-            messages.success(request, "Arquivo atualizado.")
+            messages.success(request, f"Arquivo renomeado para “{arquivo.titulo}”.")
             return redirect(destino)
     else:
         form = RenomearArquivoForm(instance=arquivo)

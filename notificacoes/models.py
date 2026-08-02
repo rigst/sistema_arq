@@ -55,6 +55,10 @@ class AvisoSistema(EmpresaModel):
 
     texto = models.CharField(max_length=300)
     nivel = models.CharField(max_length=10, choices=NIVEL_CHOICES, default="sucesso")
+    # Onde aconteceu. "Tarefa criada." sozinho não diz nada três dias depois;
+    # com o lugar e o link, o histórico responde "criada onde?" sem adivinhação.
+    onde = models.CharField("onde", max_length=160, blank=True)
+    url = models.CharField(max_length=300, blank=True)
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
         related_name="+",
@@ -68,3 +72,7 @@ class AvisoSistema(EmpresaModel):
 
     def __str__(self):
         return self.texto
+
+    @property
+    def tem_destino(self):
+        return bool(self.url)

@@ -6,9 +6,18 @@ from projetos.models import Projeto
 
 
 class Compromisso(EmpresaModel, Rastreavel):
+    # Os tipos seguem o fluxo do projeto: quase todo compromisso de escritório
+    # de arquitetura é uma etapa acontecendo, não um evento genérico.
     TIPO_CHOICES = [
+        ("briefing", "Reunião de briefing"),
+        ("levantamento", "Levantamento em campo"),
+        ("apresentacao", "Apresentação ao cliente"),
         ("reuniao", "Reunião"),
+        ("assinatura", "Assinatura de contrato"),
+        ("entrega", "Entrega de fase"),
+        ("orgao", "Protocolo ou órgão público"),
         ("visita", "Visita a obra"),
+        ("medicao", "Medição de obra"),
         ("prazo", "Prazo/entrega"),
         ("outro", "Outro"),
     ]

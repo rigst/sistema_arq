@@ -7,7 +7,7 @@
         <div>
             <span class="ds-kicker">Projetos</span>
             <h1 class="ds-h2 ds-display">Painel de projetos</h1>
-            <p class="page-sub">Fase atual, pendências, tempo parado e margem — lado a lado.</p>
+            <p class="page-sub">Fase atual, lembretes, tempo parado e prazo — lado a lado.</p>
         </div>
         <div class="page-head-actions">
             <a class="ds-btn" href="{% url 'projetos_kanban' %}">Painel visual</a>
@@ -24,19 +24,23 @@
 
     <div class="projeto-grid">
         {% for p in projetos %}
-        <article class="ds-card projeto-card">
-            <div class="projeto-card-top">
-                <a class="projeto-nome" href="{% url 'projeto_detalhe' p.pk %}" title="{{ p.nome }}">{{ p.nome }}</a>
+        {% comment %}
+        O cartão inteiro é o link. Antes só o nome levava ao projeto, e o resto
+        do cartão parecia clicável sem ser — que é pior do que não parecer.
+        {% endcomment %}
+        <a class="projeto-card" href="{% url 'projeto_detalhe' p.pk %}">
+            <span class="projeto-card-top">
+                <strong class="projeto-nome" title="{{ p.nome }}">{{ p.nome }}</strong>
                 <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ p.get_status_display }}</span>
-            </div>
-            <p class="projeto-cliente">{{ p.cliente.nome }} · {{ p.get_tipo_display }}</p>
-            <dl class="projeto-metricas">
-                <div><dt>Fase atual</dt><dd>{{ p.fase_atual.nome|default:"—" }}</dd></div>
-                <div><dt>Pendências</dt><dd>{{ p.pendencias_abertas }}</dd></div>
-                <div><dt>Parado há</dt><dd>{{ p.dias_parado }} d</dd></div>
-                <div><dt>Prazo</dt><dd>{{ p.data_prevista|date:"d/m/y"|default:"—" }}</dd></div>
-            </dl>
-        </article>
+            </span>
+            <span class="projeto-cliente">{{ p.cliente.nome }} · {{ p.get_tipo_display }}</span>
+            <span class="projeto-metricas">
+                <span><span class="pm-rot">Fase atual</span><span class="pm-val">{{ p.fase_atual.nome|default:"—" }}</span></span>
+                <span><span class="pm-rot">Lembretes</span><span class="pm-val">{{ p.lembretes_fixados }}</span></span>
+                <span><span class="pm-rot">Parado há</span><span class="pm-val">{{ p.dias_parado }} d</span></span>
+                <span><span class="pm-rot">Prazo</span><span class="pm-val">{{ p.data_prevista|date:"d/m/y"|default:"—" }}</span></span>
+            </span>
+        </a>
         {% empty %}
         <p class="data-empty">Nenhum projeto ainda. Crie o primeiro.</p>
         {% endfor %}

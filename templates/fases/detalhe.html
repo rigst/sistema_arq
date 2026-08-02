@@ -65,81 +65,7 @@
     </form>
     {% endif %}
 
-    {% comment %}
-    Lembretes no topo, em post-it. O que foi combinado na reunião precisa estar
-    onde o olho bate ao abrir a fase — no rodapé, junto do histórico, ninguém
-    lia antes de começar a desenhar, que é justamente quando importa.
-    {% endcomment %}
-    <section class="secao lembretes" id="lembretes">
-        <div class="lembretes-topo">
-            <h2 class="secao-titulo ds-display">Lembretes</h2>
-            <button class="ds-btn" type="button" data-abre="modal-lembrete" hidden>+ Novo lembrete</button>
-        </div>
-
-        {% if registros_fixados %}
-        <ul class="postits">
-            {% for r in registros_fixados %}
-            <li class="postit postit--{{ r.tipo }}">
-                <p>{{ r.texto }}</p>
-                <footer>
-                    <span>{{ r.criado_em|date:"d/m" }}{% if r.autor %} · {{ r.autor.get_username }}{% endif %}</span>
-                    <form method="post" action="{% url 'fase_soltar_registro' r.pk %}" class="app-inline-form">
-                        {% csrf_token %}<button class="app-link-btn" type="submit">arquivar</button>
-                    </form>
-                </footer>
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p class="data-empty">
-            Nenhum lembrete. Use para o que foi combinado e não pode ser esquecido —
-            "cliente quer a churrasqueira fechada", "confirmar recuo com a prefeitura".
-        </p>
-        {% endif %}
-
-        {% if registros_arquivados %}
-        <details class="abrir-campo">
-            <summary>Histórico ({{ registros_arquivados|length }})</summary>
-            <ol class="linha-tempo">
-                {% for r in registros_arquivados %}
-                <li class="registro registro--{{ r.tipo }}">
-                    <span class="registro-marca" aria-hidden="true"></span>
-                    <div>
-                        <p class="registro-texto">{{ r.texto }}</p>
-                        <span class="registro-meta">
-                            {{ r.get_tipo_display }} · {{ r.criado_em|date:"d/m/y H:i" }}
-                            {% if r.autor %} · {{ r.autor.get_username }}{% endif %}
-                        </span>
-                    </div>
-                </li>
-                {% endfor %}
-            </ol>
-        </details>
-        {% endif %}
-
-        <dialog class="ds-modal" id="modal-lembrete" aria-labelledby="modal-lembrete-titulo">
-            <form method="dialog" class="ds-modal-fechar-form">
-                <button class="ds-modal-fechar" aria-label="Fechar">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-                </button>
-            </form>
-            <h2 class="ds-modal-titulo ds-display" id="modal-lembrete-titulo">Novo lembrete</h2>
-            <p class="ds-modal-sub">O combinado, a decisão, o que não pode ser esquecido nesta fase.</p>
-            <div class="ds-modal-corpo">
-                <form method="post" action="{% url 'fase_comentar' fase.pk %}" class="form-card">
-                    {% csrf_token %}
-                    <p>{{ form_registro.texto.label_tag }}{{ form_registro.texto }}</p>
-                    <p>{{ form_registro.tipo.label_tag }}{{ form_registro.tipo }}</p>
-                    <div class="form-actions">
-                        <button class="ds-btn--acao" type="submit">
-                            <span>Fixar lembrete</span>
-                            <span class="ds-btn-ico">{% include "core/_ico.html" with ico="seta" %}</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </dialog>
-    </section>
+    {% include "fases/_lembretes.html" with lembretes_fixados=registros_fixados lembretes_arquivados=registros_arquivados form_lembrete=form_registro acao_lembrete=acao_lembrete lembrete_modal_id="modal-lembrete-fase" %}
 
     <section class="secao">
         <h2 class="secao-titulo ds-display">O que sai desta fase</h2>
@@ -259,6 +185,103 @@
                 <button class="ds-btn ds-btn--solid" type="submit">Anexar</button>
             </form>
         </details>
+    </section>
+
+    {% comment %}
+    Tarefas e horas moram na fase, e não numa lista solta: "detalhar esquadria"
+    é trabalho de executivo. Apontar hora aqui liga o custo real à etapa que o
+    consumiu, que é o que permite saber qual fase estourou.
+    {% endcomment %}
+    <section class="secao" id="tarefas">
+        <div class="lembretes-topo">
+            <h2 class="secao-titulo ds-display">Tarefas desta fase</h2>
+            <button class="ds-btn" type="button" data-abre="modal-tarefa-fase" hidden>+ Nova tarefa</button>
+        </div>
+
+        {% if tarefas %}
+        <ul class="tarefa-lista">
+            {% for t in tarefas %}
+            <li class="tarefa-linha {% if t.status == 'concluida' %}is-done{% endif %}">
+                <form method="post" action="{% url 'tarefa_concluir' t.pk %}" class="app-inline-form">
+                    {% csrf_token %}
+                    <button class="check-btn" type="submit" aria-label="Alternar conclusão de {{ t.titulo }}">{% if t.status == 'concluida' %}✓{% else %}○{% endif %}</button>
+                </form>
+                <div class="tarefa-id">
+                    <strong>{{ t.titulo }}</strong>
+                    <span class="tarefa-meta">
+                        {% if t.responsavel %}{{ t.responsavel }}{% elif t.fornecedor %}{{ t.fornecedor.nome }}{% else %}sem dono{% endif %}
+                        {% if t.prazo %} · {{ t.prazo|date:"d/m/y" }}{% endif %}
+                        {% if t.atrasada %} · <span class="tag-alerta">atrasada</span>{% endif %}
+                    </span>
+                </div>
+                <form method="post" action="{% url 'timer_iniciar' %}" class="app-inline-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="tarefa" value="{{ t.pk }}">
+                    <button class="app-link-btn" type="submit">cronômetro</button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="data-empty">Nenhuma tarefa nesta fase.</p>
+        {% endif %}
+
+        <div class="timer-fase {% if timer_ativo %}is-rodando{% endif %}">
+            {% if timer_ativo %}
+            <div class="timer-relogio">
+                <span class="ds-kicker">Rodando desde {{ timer_ativo.inicio|date:"H:i" }}</span>
+                <strong data-timer-start="{{ timer_ativo.inicio.isoformat }}">00:00:00</strong>
+            </div>
+            <p class="timer-alvo">{{ timer_ativo.tarefa.titulo|default:timer_ativo.descricao|default:"Sem tarefa vinculada" }}</p>
+            <form method="post" action="{% url 'timer_parar' %}" class="app-inline-form">
+                {% csrf_token %}
+                <button class="ds-btn--acao" type="submit">
+                    <span>Parar e registrar</span>
+                    {% include "core/_ico.html" with ico="seta" %}
+                </button>
+            </form>
+            {% else %}
+            <form method="post" action="{% url 'timer_iniciar' %}" class="timer-form">
+                {% csrf_token %}
+                <label class="timer-campo timer-campo--cresce">
+                    <span>No que você vai trabalhar agora</span>
+                    <input type="text" name="descricao" placeholder="Ex.: detalhamento das esquadrias">
+                </label>
+                <button class="ds-btn" type="submit">Iniciar cronômetro</button>
+            </form>
+            {% endif %}
+        </div>
+
+        <dialog class="ds-modal" id="modal-tarefa-fase" aria-labelledby="modal-tarefa-fase-titulo">
+            <form method="dialog" class="ds-modal-fechar-form">
+                <button class="ds-modal-fechar" aria-label="Fechar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                </button>
+            </form>
+            <h2 class="ds-modal-titulo ds-display" id="modal-tarefa-fase-titulo">Nova tarefa</h2>
+            <p class="ds-modal-sub">Em {{ fase.nome }}. Quem faz, até quando, e como saber que ficou pronta.</p>
+            <div class="ds-modal-corpo">
+                <form method="post" action="{% url 'fase_nova_tarefa' fase.pk %}" class="form-card">
+                    {% csrf_token %}
+                    <p>{{ form_tarefa.titulo.label_tag }}{{ form_tarefa.titulo }}</p>
+                    <p>{{ form_tarefa.descricao.label_tag }}{{ form_tarefa.descricao }}</p>
+                    <div class="form-dupla">
+                        <p>{{ form_tarefa.responsavel.label_tag }}{{ form_tarefa.responsavel }}</p>
+                        <p>{{ form_tarefa.fornecedor.label_tag }}{{ form_tarefa.fornecedor }}</p>
+                    </div>
+                    <div class="form-dupla">
+                        <p>{{ form_tarefa.prazo.label_tag }}{{ form_tarefa.prazo }}</p>
+                        <p>{{ form_tarefa.criterio_pronto.label_tag }}{{ form_tarefa.criterio_pronto }}</p>
+                    </div>
+                    <div class="form-actions">
+                        <button class="ds-btn--acao" type="submit">
+                            <span>Abrir tarefa</span>
+                            {% include "core/_ico.html" with ico="seta" %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </dialog>
     </section>
 
     <details class="abrir-campo">

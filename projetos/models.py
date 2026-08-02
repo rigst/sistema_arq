@@ -95,8 +95,9 @@ class Projeto(EmpresaModel, Rastreavel):
         return (timezone.now() - self.ultima_atualizacao).days
 
     @property
-    def pendencias_abertas(self):
-        return self.pendencias.filter(resolvida=False).count()
+    def lembretes_fixados(self):
+        """Só os do projeto: os de fase se contam dentro da fase."""
+        return self.lembretes.filter(fixado=True, fase__isnull=True).count()
 
     @property
     def horas_trabalhadas(self):
@@ -111,21 +112,3 @@ class Projeto(EmpresaModel, Rastreavel):
     def horas_saldo(self):
         """Horas estimadas − trabalhadas. Negativo = estourou a estimativa."""
         return (self.horas_estimadas or 0) - self.horas_trabalhadas
-
-
-class Pendencia(EmpresaModel):
-    projeto = models.ForeignKey(Projeto, on_delete=models.CASCADE, related_name="pendencias")
-    descricao = models.CharField(max_length=200, verbose_name="descrição")
-    responsavel = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+",
-        verbose_name="responsável",
-    )
-    prazo = models.DateField(null=True, blank=True)
-    resolvida = models.BooleanField(default=False)
-    criado_em = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ["resolvida", "prazo"]
-
-    def __str__(self):
-        return self.descricao

@@ -10,9 +10,9 @@ class FasesConfig(AppConfig):
         from core.visitante_cleanup import registrar_limpeza
 
         def _limpar(grupo):
-            from .models import Fase, RegistroFase
+            from .models import Fase, Lembrete
 
-            RegistroFase.objects.filter(empresa=grupo).delete()
+            Lembrete.objects.filter(empresa=grupo).delete()
             Fase.objects.filter(empresa=grupo).delete()
 
         registrar_limpeza(_limpar)

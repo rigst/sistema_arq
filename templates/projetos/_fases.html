@@ -30,25 +30,51 @@ material tem e o que fazer agora — e é o link para a área de trabalho da fas
         {% endfor %}
     </ol>
 
-    {% if complementares_disponiveis %}
-    <details class="abrir-campo">
-        <summary>Adicionar projeto complementar</summary>
-        <p class="ht-hint">
-            Opcionais e sob demanda. Cada um parte do anteprojeto aprovado, porque é aí
-            que existe planta para calcular em cima.
+    <button class="ds-btn" type="button" data-abre="modal-complementares" hidden>
+        Editar projetos complementares
+    </button>
+
+    <dialog class="ds-modal" id="modal-complementares" aria-labelledby="modal-complementares-titulo">
+        <form method="dialog" class="ds-modal-fechar-form">
+            <button class="ds-modal-fechar" aria-label="Fechar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+        </form>
+        <h2 class="ds-modal-titulo ds-display" id="modal-complementares-titulo">Projetos complementares</h2>
+        <p class="ds-modal-sub">
+            Marque os que este projeto terá. Cada um parte do anteprojeto aprovado.
+            Complementar que já tem trabalho registrado só sai pela própria fase.
         </p>
-        <ul class="complementar-oferta">
-            {% for p in complementares_disponiveis %}
-            <li>
-                <form method="post" action="{% url 'fase_ativar_complementar' projeto.pk %}" class="app-inline-form">
-                    {% csrf_token %}
-                    <input type="hidden" name="chave" value="{{ p.chave }}">
-                    <button class="ds-btn" type="submit">+ {{ p.nome }}</button>
-                </form>
-                <span>{{ p.resumo }}</span>
-            </li>
-            {% endfor %}
-        </ul>
-    </details>
-    {% endif %}
+        <div class="ds-modal-corpo">
+            <form method="post" action="{% url 'fase_editar_complementares' projeto.pk %}" class="form-card">
+                {% csrf_token %}
+                <fieldset class="escolha-multipla">
+                    <legend class="ds-oculto">Projetos complementares</legend>
+                    <div class="caixas">
+                        <div>
+                        {% for p in complementares_todos %}
+                            <label>
+                                <input type="checkbox" name="complementares" value="{{ p.chave }}"
+                                       {% if p.chave in complementares_marcados %}checked{% endif %}>
+                                <span>{{ p.nome }}</span>
+                            </label>
+                        {% endfor %}
+                        </div>
+                    </div>
+                    <p class="complementar-livre">
+                        <label for="comp-outro">Outro complementar</label>
+                        <input type="text" id="comp-outro" name="complementar_outro"
+                               placeholder="Acústico, automação…">
+                    </p>
+                    <p class="ht-hint">Separe por vírgula se for mais de um. Os já existentes continuam.</p>
+                </fieldset>
+                <div class="form-actions">
+                    <button class="ds-btn--acao" type="submit">
+                        <span>Salvar complementares</span>
+                        {% include "core/_ico.html" with ico="seta" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </dialog>
 </section>

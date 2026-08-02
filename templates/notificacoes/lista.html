@@ -70,6 +70,7 @@
                     <p>{{ a.texto }}</p>
                     <span class="timeline-data">
                         {{ a.criado_em|date:"d/m/Y H:i" }}{% if a.usuario %} · {{ a.usuario.get_username }}{% endif %}
+                        {% if a.onde %} · {% if a.tem_destino %}<a href="{{ a.url }}">{{ a.onde }}</a>{% else %}{{ a.onde }}{% endif %}{% endif %}
                     </span>
                 </div>
             </li>

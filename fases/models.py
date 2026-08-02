@@ -192,18 +192,22 @@ class Fase(EmpresaModel, Rastreavel):
         return True
 
     def registrar(self, tipo, texto, usuario=None, fixado=False):
-        return RegistroFase.objects.create(
-            empresa=self.empresa, fase=self, tipo=tipo, texto=texto,
-            autor=usuario, fixado=fixado,
+        return Lembrete.objects.create(
+            empresa=self.empresa, projeto=self.projeto, fase=self, tipo=tipo,
+            texto=texto, autor=usuario, fixado=fixado,
         )
 
 
-class RegistroFase(EmpresaModel):
-    """A linha do tempo da fase: conversa, comentário e o que o sistema fez.
+class Lembrete(EmpresaModel):
+    """O combinado, a conversa e o rastro — do projeto ou de uma fase dele.
 
-    Comentário e registro automático moram na mesma lista de propósito. Separar
-    em duas telas obriga a cruzar horários na cabeça para entender por que uma
-    versão mudou.
+    Nasceu preso à fase, mas o projeto também tem recado que não é de fase
+    nenhuma ("cliente viaja em janeiro"). Em vez de um segundo modelo quase
+    igual, `fase` virou opcional: sem fase, o lembrete é do projeto todo.
+
+    Comentário e registro automático moram na mesma tabela de propósito.
+    Separar em duas obriga a cruzar horários na cabeça para entender por que
+    uma versão mudou; o que separa os dois é o campo `fixado`.
     """
 
     TIPO_CHOICES = [
@@ -212,7 +216,11 @@ class RegistroFase(EmpresaModel):
         ("sistema", "Registro do sistema"),
     ]
 
-    fase = models.ForeignKey(Fase, on_delete=models.CASCADE, related_name="registros")
+    projeto = models.ForeignKey(Projeto, on_delete=models.CASCADE, related_name="lembretes")
+    fase = models.ForeignKey(
+        Fase, on_delete=models.CASCADE, related_name="registros", null=True, blank=True,
+        help_text="Vazio quando o lembrete é do projeto inteiro.",
+    )
     tipo = models.CharField(max_length=15, choices=TIPO_CHOICES, default="comentario")
     texto = models.TextField()
     autor = models.ForeignKey(
@@ -226,11 +234,11 @@ class RegistroFase(EmpresaModel):
 
     class Meta:
         ordering = ["-criado_em", "-id"]
-        verbose_name = "registro da fase"
-        verbose_name_plural = "registros da fase"
+        verbose_name = "lembrete"
+        verbose_name_plural = "lembretes"
 
     def __str__(self):
-        return f"{self.fase} — {self.get_tipo_display()}"
+        return f"{self.fase or self.projeto} — {self.get_tipo_display()}"
 
     @property
     def do_sistema(self):

@@ -44,11 +44,16 @@ class ArmazenamentoComHistorico(FallbackStorage):
             grupo = obter_grupo_empresa_usuario(usuario)
             if grupo is None:
                 return
+            from .localizacao import descrever
+
+            onde, url = descrever(request)
             AvisoSistema.objects.create(
                 empresa=grupo,
                 usuario=usuario,
                 nivel=NIVEL_POR_CONSTANTE.get(level, "sucesso"),
                 texto=str(message)[:300],
+                onde=onde[:160],
+                url=url[:300],
             )
         except Exception:
             logger.warning("Não foi possível guardar o aviso no histórico.", exc_info=True)
