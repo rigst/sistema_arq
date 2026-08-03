@@ -15,6 +15,7 @@ urlpatterns = [
     path("<int:pk>/alteracao/", views.registrar_alteracao, name="contrato_alteracao"),
     path("<int:pk>/documento/", views.enviar_documento, name="contrato_documento"),
     path("documento/<int:pk>/remover/", views.remover_documento, name="contrato_documento_remover"),
+    path("documento/<int:pk>/baixar/", views.baixar_documento, name="contrato_documento_baixar"),
     path("parcela/<int:pk>/alternar/", views.alternar_parcela, name="parcela_alternar"),
     path("parcela/<int:pk>/editar/", views.editar_parcela, name="parcela_editar"),
     path("parcela/<int:pk>/linha/", views.linha_parcela, name="parcela_linha"),

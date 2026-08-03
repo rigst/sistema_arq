@@ -1,8 +1,10 @@
+import mimetypes
 from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Max
+from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -118,6 +120,24 @@ def detalhe_contrato(request, pk):
             "fases_entrega": fases_entrega,
         },
     )
+
+
+@login_required
+def baixar_documento(request, pk):
+    documento = get_object_or_404(
+        queryset_da_empresa(Documento.objects.select_related("contrato"), request.user), pk=pk
+    )
+    if not documento.arquivo:
+        raise Http404
+    tipo, _ = mimetypes.guess_type(documento.arquivo.name)
+    resposta = FileResponse(
+        documento.arquivo.open("rb"),
+        content_type=tipo or "application/octet-stream",
+        as_attachment=True,
+        filename=documento.nome_arquivo,
+    )
+    resposta["X-Content-Type-Options"] = "nosniff"
+    return resposta
 
 
 @login_required

@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 
 from core.models import EmpresaModel, Rastreavel
+from core.uploads import validar_documento
 from projetos.models import Projeto
 
 # Dias antes do vencimento em que a obrigação passa a "vencendo".
@@ -33,7 +34,9 @@ class ObrigacaoTecnica(EmpresaModel, Rastreavel):
     data_registro = models.DateField(null=True, blank=True, verbose_name="data de registro")
     vencimento = models.DateField(null=True, blank=True)
     valor = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    arquivo = models.FileField(upload_to="regulatorio/%Y/%m/", null=True, blank=True)
+    arquivo = models.FileField(
+        upload_to="regulatorio/%Y/%m/", null=True, blank=True, validators=[validar_documento]
+    )
     observacoes = models.TextField(blank=True, verbose_name="observações")
 
     class Meta:

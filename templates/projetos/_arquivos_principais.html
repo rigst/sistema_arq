@@ -50,10 +50,10 @@
         <li class="arquivo arquivo-principal">
             <span class="arquivo-tipo num">{{ documento.extensao }}</span>
             <div class="arquivo-id">
-                <a href="{{ documento.arquivo.url }}" target="_blank" rel="noopener">{{ documento.titulo }}</a>
+                <a href="{% url 'contrato_documento_baixar' documento.pk %}">{{ documento.titulo }}</a>
                 <span class="arquivo-meta">Documento do contrato · {{ documento.criado_em|date:"d/m/y H:i" }}</span>
             </div>
-            <a class="linha-ico" href="{{ documento.arquivo.url }}" target="_blank" rel="noopener" title="Abrir arquivo" aria-label="Abrir {{ documento.titulo }}">
+            <a class="linha-ico" href="{% url 'contrato_documento_baixar' documento.pk %}" title="Baixar arquivo" aria-label="Baixar {{ documento.titulo }}">
                 {% include "core/_ico.html" with ico="baixar" %}
             </a>
         </li>

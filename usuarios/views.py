@@ -1,14 +1,17 @@
 import logging
 import secrets
+from hashlib import sha256
 
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView, LogoutView
+from django.core.cache import cache
 from django.shortcuts import redirect
 from django.urls import reverse
 
 from core.tenancy import nome_grupo_visitante
+from core.request import ip_cliente
 
 from .models import Usuario
 from .visitantes import (
@@ -25,12 +28,20 @@ class UsuarioLoginView(LoginView):
     redirect_authenticated_user = True
 
     def _client_ip(self):
-        forwarded_for = self.request.META.get("HTTP_X_FORWARDED_FOR")
-        if forwarded_for:
-            # Atrás do nginx (proxy_add_x_forwarded_for), o IP direto do cliente
-            # é a entrada mais à direita.
-            return forwarded_for.split(",")[-1].strip()
-        return self.request.META.get("REMOTE_ADDR", "")
+        return ip_cliente(self.request)
+
+    def _login_rate_key(self):
+        identificador = self.request.POST.get("username", "").strip().casefold()
+        origem = f"{self._client_ip()}|{identificador}".encode()
+        return f"login:rate:{sha256(origem).hexdigest()}"
+
+    def _registrar_falha(self, chave):
+        if cache.add(chave, 1, timeout=900):
+            return
+        try:
+            cache.incr(chave)
+        except ValueError:
+            cache.set(chave, 1, timeout=900)
 
     def post(self, request, *args, **kwargs):
         if "entrar_visitante" in request.POST:
@@ -45,7 +56,18 @@ class UsuarioLoginView(LoginView):
                 return redirect(reverse("login"))
             registrar_tentativa_visitante(ip)
             return self.criar_e_logar_visitante()
-        return super().post(request, *args, **kwargs)
+        chave = self._login_rate_key()
+        if int(cache.get(chave, 0)) >= 8:
+            logger.warning("Rate limit de login excedido", extra={"ip": self._client_ip()})
+            messages.error(request, "Muitas tentativas. Aguarde 15 minutos e tente novamente.")
+            form = self.get_form()
+            return self.render_to_response(self.get_context_data(form=form), status=429)
+        resposta = super().post(request, *args, **kwargs)
+        if 300 <= resposta.status_code < 400:
+            cache.delete(chave)
+        else:
+            self._registrar_falha(chave)
+        return resposta
 
     def criar_e_logar_visitante(self):
         limpar_visitantes_expirados()

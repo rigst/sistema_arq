@@ -9,6 +9,22 @@ from .models import Usuario
 
 @admin.register(Usuario)
 class UsuarioAdmin(UserAdmin):
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        (
+            "Identificação e acesso",
+            {
+                "fields": (
+                    "nome_exibicao",
+                    "email",
+                    "perfil",
+                    "groups",
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                )
+            },
+        ),
+    )
     fieldsets = UserAdmin.fieldsets + (
         (
             "Informações adicionais",
@@ -18,6 +34,8 @@ class UsuarioAdmin(UserAdmin):
     readonly_fields = ("criado_em", "atualizado_em")
     list_display = ("username", "email", "perfil", "is_staff", "is_active", "empresa_atual")
     list_filter = ("perfil", "is_staff", "is_active", "groups")
+    search_fields = ("username", "nome_exibicao", "email")
+    filter_horizontal = ("groups", "user_permissions")
 
     def empresa_atual(self, obj):
         return obj.nome_empresa
@@ -48,9 +66,7 @@ class UsuarioAdmin(UserAdmin):
         return queryset.filter(groups=grupo)
 
     def has_module_permission(self, request):
-        return bool(
-            request.user.is_active and request.user.is_staff and request.user.eh_admin_perfil
-        )
+        return bool(request.user.is_active and request.user.is_superuser)
 
     def has_view_permission(self, request, obj=None):
         return self.has_module_permission(request)

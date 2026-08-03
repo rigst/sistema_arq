@@ -202,3 +202,99 @@ PRIVACIDADE_V11 = PRIVACIDADE_V1.replace(
     "Para exercer qualquer um deles, fale com quem opera esta instalação do sistema. \\\nRespondemos em até 15 dias.",
     "Para exercer qualquer um deles, escreva para rodrigo@stolben.com. Respondemos em \\\naté 15 dias.",
 )
+
+
+# --- v1.2: texto alinhado à primeira implantação web --------------------
+
+_DOCUMENTOS_E_RESPONSABILIDADE = """
+## Propostas, contratos e documentos
+
+O sistema ajuda a montar propostas, minutas, cronogramas e PDFs a partir dos dados
+cadastrados. Esses materiais são rascunhos de apoio: você deve revisar valores, datas,
+escopo, obrigações profissionais e cláusulas antes de enviar ou assinar. A geração de
+PDF não constitui assinatura eletrônica nem substitui assessoria jurídica, contábil,
+tributária, de engenharia ou de arquitetura.
+
+Arquivos enviados devem ser lícitos, necessários ao projeto e livres de código malicioso.
+Você não deve cadastrar dados excessivos, credenciais, dados bancários completos ou
+documentos pessoais que não sejam necessários à execução do trabalho.
+"""
+
+TERMOS_V12 = TERMOS_V11.replace(
+    "## O que não prometemos", _DOCUMENTOS_E_RESPONSABILIDADE + "\n## O que não prometemos"
+).replace(
+    "O sistema está em desenvolvimento, com foco em aprendizado e portfólio. Funções "
+    "podem mudar, e podem existir falhas.",
+    "Esta é uma versão inicial do serviço. Funções podem evoluir, e mudanças relevantes "
+    "serão informadas pelos canais disponíveis no sistema.",
+)
+
+_COMPARTILHAMENTO_V12 = """
+## Com quem compartilhamos
+
+Usamos prestadores de infraestrutura estritamente para hospedar a aplicação, banco de
+dados, arquivos, cache, filas, backups, entrega de e-mail e monitoramento técnico. Eles
+devem tratar os dados conforme contrato e instruções compatíveis com esta política. A
+lista e a localização desses prestadores devem ser mantidas na documentação operacional
+da instalação.
+
+Pode haver transferência internacional quando um prestador processar ou armazenar dados
+fora do Brasil. Nesse caso, o operador da instalação deve adotar um mecanismo permitido
+pela LGPD. Também compartilhamos dados quando houver obrigação legal ou ordem válida.
+
+Não vendemos dados pessoais e não os usamos para publicidade comportamental.
+"""
+
+_RETENCAO_V12 = """
+## Por quanto tempo guardamos
+
+Dados de conta e de negócio ficam disponíveis enquanto a conta estiver ativa. Depois de
+um pedido de encerramento, são eliminados ou anonimizados quando não forem mais
+necessários, ressalvados prazos legais, exercício regular de direitos, prevenção a fraude
+e o ciclo técnico dos backups.
+
+Escritórios visitantes e seus dados são apagados automaticamente após 24 horas. Registros
+de aceite são mantidos enquanto necessários para demonstrar a versão aceita. Registros de
+incidentes de segurança com dados pessoais são mantidos por pelo menos cinco anos, nos
+termos da regulamentação da ANPD.
+"""
+
+_SEGURANCA_V12 = """
+## Segurança
+
+Adotamos HTTPS em produção, hash de senhas, isolamento por escritório, proteção CSRF,
+limitação de tentativas de acesso, cabeçalhos de segurança, downloads autenticados e
+restrições de tipo e tamanho de arquivo. O acesso administrativo global é reservado a
+superusuários.
+
+Nenhum sistema é infalível. Incidentes com risco ou dano relevante serão avaliados e,
+quando aplicável, comunicados à ANPD e aos titulares no prazo regulamentar. Relatos de
+segurança devem ser enviados para rodrigo@stolben.com.
+"""
+
+PRIVACIDADE_V12 = PRIVACIDADE_V11.replace(
+    "## Com quem compartilhamos\n\nCom a infraestrutura que hospeda o sistema, no limite "
+    "necessário para ele funcionar. Com autoridades, quando houver obrigação legal. Fora "
+    "disso, não compartilhamos.",
+    _COMPARTILHAMENTO_V12.strip(),
+).replace(
+    "## Por quanto tempo guardamos\n\nDados de conta e de negócio: enquanto a conta "
+    "existir, e por até 5 anos depois do encerramento quando houver necessidade de defesa "
+    "em processo.\n\nEscritório visitante: apagado automaticamente 24 horas depois da "
+    "criação, junto com tudo que foi cadastrado nele.\n\nRegistros de aceite: mantidos "
+    "enquanto forem necessários como prova do consentimento ao contrato.",
+    _RETENCAO_V12.strip(),
+).replace(
+    "## Segurança\n\nUsamos conexão criptografada, senhas guardadas com hash, separação "
+    "de dados por escritório e cabeçalhos de segurança no navegador. Nenhum sistema é "
+    "infalível — se houver incidente relevante, comunicamos os afetados e a ANPD.",
+    _SEGURANCA_V12.strip(),
+)
+
+# O texto legado usa continuação de linha e chega aqui sem quebras internas.
+PRIVACIDADE_V12 = PRIVACIDADE_V12.replace(
+    "## Com quem compartilhamos\n\nCom a infraestrutura que hospeda o sistema, no limite "
+    "necessário para ele funcionar. Com autoridades, quando houver obrigação legal. "
+    "Fora isso, não compartilhamos.",
+    _COMPARTILHAMENTO_V12.strip(),
+)

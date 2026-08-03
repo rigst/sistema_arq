@@ -2,6 +2,7 @@ from django import forms
 from django.utils import timezone
 
 from core.tenancy import queryset_da_empresa
+from core.uploads import validar_extrato
 from projetos.models import Projeto
 
 from .models import Categoria, ContaBancaria, Lancamento
@@ -42,7 +43,7 @@ class ContaBancariaForm(ArqModelForm):
 
 class ImportarExtratoForm(ArqForm):
     conta = forms.ModelChoiceField(queryset=ContaBancaria.objects.none(), label="Conta")
-    arquivo = forms.FileField(label="Extrato (OFX ou CSV)")
+    arquivo = forms.FileField(label="Extrato (OFX ou CSV)", validators=[validar_extrato])
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)

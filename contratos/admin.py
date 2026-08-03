@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import AlteracaoEscopo, Contrato, Documento, Parcela
+from .models import AlteracaoEscopo, Contrato, Documento, ModeloContrato, Parcela
 
 
 class ParcelaInline(admin.TabularInline):
@@ -24,3 +24,10 @@ class ContratoAdmin(admin.ModelAdmin):
 admin.site.register(Parcela)
 admin.site.register(AlteracaoEscopo)
 admin.site.register(Documento)
+
+
+@admin.register(ModeloContrato)
+class ModeloContratoAdmin(admin.ModelAdmin):
+    list_display = ("nome", "padrao", "ativo", "empresa", "atualizado_em")
+    list_filter = ("padrao", "ativo")
+    search_fields = ("nome", "descricao", "corpo")

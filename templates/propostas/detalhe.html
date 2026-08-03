@@ -84,27 +84,43 @@
 
     {% if proposta.editavel %}
     <section class="secao proposta-hora">
-        <h2 class="secao-titulo ds-display">Hora técnica desta proposta</h2>
-        <p class="page-sub">Hora-base do escritório: <strong>R$ {{ base }}</strong>. Escolha um valor manual ou aplique os fatores do projeto.</p>
+        <div class="proposta-hora-head">
+            <div>
+                <h2 class="secao-titulo ds-display">Precificação desta proposta</h2>
+                <p class="secao-sub">A hora-base do escritório é <strong>R$ {{ base }}</strong>.</p>
+            </div>
+            <div class="proposta-hora-atual">
+                <span>Hora aplicada</span>
+                <strong class="num">R$ {{ proposta.hora_tecnica_aplicada }}</strong>
+            </div>
+        </div>
         <form method="post" action="{% url 'proposta_hora_tecnica' proposta.pk %}" class="ht-proposta-form">
             {% csrf_token %}
+            <fieldset class="fatores-projeto">
+                <legend>Fatores por projeto</legend>
             {% if fatores %}
             <div class="fatores-lista">
                 {% for f in fatores %}
                 <label class="fator-check">
-                    <input type="checkbox" name="fatores" value="{{ f.pk }}" {% if f.pk in fatores_selecionados %}checked{% endif %}>
+                    <input type="checkbox" name="fatores" value="{{ f.pk }}"
+                           {% if f.pk in fatores_selecionados %}checked{% endif %}>
                     <span>{{ f.nome }} <em>{% if f.percentual >= 0 %}+{% endif %}{{ f.percentual }}%</em></span>
                 </label>
                 {% endfor %}
             </div>
-            <p class="ht-hint">Deixe o valor manual em branco para calcular a hora técnica a partir da base × fatores marcados.</p>
+            <p class="ht-hint">Os percentuais selecionados são somados e aplicados somente a esta proposta.</p>
             {% else %}
-            <p class="ht-hint">Cadastre fatores em <a href="{% url 'precificacao' %}">Precificação</a> para ajustar por variáveis do projeto, ou informe um valor manual.</p>
+            <p class="ht-hint">Nenhum fator ativo. Cadastre urgência, complexidade ou outros ajustes na <a href="{% url 'precificacao' %}">Hora Técnica</a>.</p>
             {% endif %}
+            </fieldset>
             <div class="inline-add">
-                <input type="text" name="valor_manual" placeholder="valor manual (opcional), ex.: 150,00">
+                <label class="proposta-hora-manual">
+                    <span>Valor manual opcional</span>
+                    <input type="number" min="0.01" step="0.01" name="valor_manual" placeholder="Ex.: 150,00">
+                </label>
                 <button class="ds-btn ds-btn--solid" type="submit">Aplicar hora técnica</button>
             </div>
+            <p class="ht-hint">Deixe o valor manual vazio para calcular pela hora-base e pelos fatores marcados. Todos os itens serão recalculados.</p>
         </form>
     </section>
     {% endif %}

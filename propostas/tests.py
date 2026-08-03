@@ -3,6 +3,8 @@ from decimal import Decimal
 from django.test import TestCase
 
 from crm.models import Cliente
+from precificacao.models import ConfiguracaoPrecificacao, FatorPrecificacao
+from precificacao.services import precificar_etapa
 from propostas.models import Proposta
 
 class ItensProntosTests(TestCase):
@@ -294,3 +296,66 @@ class EdicaoInlineDeItemTests(ItensProntosTests):
         self.assertContains(resposta, 'id="itens-bloco"')
         self.assertContains(resposta, 'class="proposta-somatorio"')
         self.assertContains(resposta, "8 h")
+
+
+class FatoresDaPropostaTests(ItensProntosTests):
+    def setUp(self):
+        super().setUp()
+        ConfiguracaoPrecificacao.objects.update_or_create(
+            empresa=self.grupo,
+            defaults={"hora_tecnica_manual": Decimal("100.00")},
+        )
+        self.urgencia = FatorPrecificacao.objects.create(
+            empresa=self.grupo, nome="Urgência", percentual=Decimal("20.00")
+        )
+        self.complexidade = FatorPrecificacao.objects.create(
+            empresa=self.grupo, nome="Complexidade", percentual=Decimal("10.00")
+        )
+
+    def test_aplica_fatores_e_reprecifica_itens(self):
+        self.client.post(
+            f"/propostas/{self.proposta.pk}/item/",
+            {"descricao": "Estudo", "horas_estimadas": "10"},
+        )
+        resposta = self.client.post(
+            f"/propostas/{self.proposta.pk}/hora-tecnica/",
+            {"fatores": [self.urgencia.pk, self.complexidade.pk], "valor_manual": ""},
+        )
+        self.assertRedirects(resposta, f"/propostas/{self.proposta.pk}/")
+        self.proposta.refresh_from_db()
+        self.assertEqual(self.proposta.hora_tecnica_aplicada, Decimal("130.00"))
+        self.assertEqual(
+            set(self.proposta.fatores.values_list("pk", flat=True)),
+            {self.urgencia.pk, self.complexidade.pk},
+        )
+        esperado = precificar_etapa(
+            self.grupo, Decimal("10"), hora_tecnica=Decimal("130.00")
+        )["total"]
+        self.assertEqual(self.proposta.itens.get().valor, esperado)
+
+    def test_ignora_fator_inativo_e_de_outra_empresa(self):
+        from django.contrib.auth.models import Group
+
+        inativo = FatorPrecificacao.objects.create(
+            empresa=self.grupo, nome="Antigo", percentual=Decimal("90"), ativo=False
+        )
+        outro = Group.objects.create(name="Outra empresa dos fatores")
+        alheio = FatorPrecificacao.objects.create(
+            empresa=outro, nome="Alheio", percentual=Decimal("80")
+        )
+        self.client.post(
+            f"/propostas/{self.proposta.pk}/hora-tecnica/",
+            {"fatores": [self.urgencia.pk, inativo.pk, alheio.pk]},
+        )
+        self.proposta.refresh_from_db()
+        self.assertEqual(self.proposta.hora_tecnica_aplicada, Decimal("120.00"))
+        self.assertEqual(list(self.proposta.fatores.all()), [self.urgencia])
+
+    def test_valor_manual_invalido_nao_altera_fatores(self):
+        self.proposta.fatores.add(self.urgencia)
+        resposta = self.client.post(
+            f"/propostas/{self.proposta.pk}/hora-tecnica/",
+            {"fatores": [self.complexidade.pk], "valor_manual": "inválido"},
+        )
+        self.assertRedirects(resposta, f"/propostas/{self.proposta.pk}/")
+        self.assertEqual(list(self.proposta.fatores.all()), [self.urgencia])

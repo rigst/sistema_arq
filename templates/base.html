@@ -19,7 +19,7 @@
     {% if empresa_ativa.imagem_fundo %}
     <style nonce="{{ request.csp_nonce }}">
         /* Fundo do escritório, enviado em Escritório → Identidade. */
-        .app-shell { --fundo-escritorio: url("{{ empresa_ativa.imagem_fundo.url }}"); }
+        .app-shell { --fundo-escritorio: url("{% url 'identidade_imagem' 'fundo' %}"); }
     </style>
     {% endif %}
     {% block extra_head %}{% endblock %}
@@ -37,7 +37,7 @@
             {% endcomment %}
             <a class="app-brand" href="{% url 'dashboard' %}">
                 {% if empresa_ativa.logo %}
-                <img class="app-brand-logo" src="{{ empresa_ativa.logo.url }}" alt="">
+                <img class="app-brand-logo" src="{% url 'identidade_imagem' 'logo' %}" alt="">
                 <span class="app-brand-word">{{ empresa_ativa.nome }}</span>
                 {% else %}
                 <svg class="app-brand-mark" viewBox="0 0 32 32" aria-hidden="true">

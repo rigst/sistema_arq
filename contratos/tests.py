@@ -186,6 +186,45 @@ class FluxoContratoTests(TestCase):
             self.assertFalse(Documento.objects.exists())
             self.assertFalse(os.path.exists(caminho))
 
+    def test_download_de_documento_e_autenticado_e_isolado_por_empresa(self):
+        with tempfile.TemporaryDirectory() as media_root, self.settings(MEDIA_ROOT=media_root):
+            self.client.post(
+                f"/contratos/{self.contrato.pk}/documento/",
+                {
+                    "titulo": "Contrato assinado",
+                    "arquivo": SimpleUploadedFile("assinado.pdf", b"pdf de teste", "application/pdf"),
+                },
+            )
+            documento = Documento.objects.get()
+            resposta = self.client.get(f"/contratos/documento/{documento.pk}/baixar/")
+            self.assertEqual(resposta.status_code, 200)
+            self.assertIn("attachment", resposta["Content-Disposition"])
+            resposta.close()
+
+            from django.contrib.auth.models import Group
+
+            outro_grupo = Group.objects.create(name="Escritório sem acesso ao documento")
+            outro = Usuario.objects.create_user(username="outro-doc", password="senha-de-teste")
+            # O signal de bootstrap inclui todo usuário novo na empresa padrão;
+            # substituímos o vínculo para representar outro tenant de verdade.
+            outro.groups.set([outro_grupo])
+            aceitar_documentos(outro)
+            self.client.force_login(outro)
+            self.assertEqual(
+                self.client.get(f"/contratos/documento/{documento.pk}/baixar/").status_code,
+                404,
+            )
+
+    def test_upload_de_html_e_rejeitado(self):
+        self.client.post(
+            f"/contratos/{self.contrato.pk}/documento/",
+            {
+                "titulo": "Arquivo perigoso",
+                "arquivo": SimpleUploadedFile("pagina.html", b"<script>alert(1)</script>"),
+            },
+        )
+        self.assertFalse(Documento.objects.exists())
+
     def test_crud_inline_de_parcelas(self):
         self.contrato.status = "aprovado"
         self.contrato.save(update_fields=["status"])

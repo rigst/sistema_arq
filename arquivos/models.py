@@ -1,6 +1,7 @@
 from django.db import models
 
 from core.models import EmpresaModel, Rastreavel
+from core.uploads import validar_documento
 from projetos.models import Projeto
 
 
@@ -60,7 +61,7 @@ class Arquivo(EmpresaModel, Rastreavel):
         related_name="arquivos",
     )
     titulo = models.CharField("título", max_length=200)
-    arquivo = models.FileField(upload_to="arquivos/%Y/%m/")
+    arquivo = models.FileField(upload_to="arquivos/%Y/%m/", validators=[validar_documento])
     fluxo = models.CharField(max_length=25, choices=FLUXO_CHOICES, default="interno")
     categoria = models.CharField(max_length=20, choices=CATEGORIA_CHOICES, default="outro")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pendente")
@@ -102,7 +103,7 @@ class Arquivo(EmpresaModel, Rastreavel):
 
     # Extensões que o navegador abre sozinho. O resto se baixa: tentar exibir
     # um DWG numa aba só produz uma tela em branco e uma dúvida.
-    IMAGENS = {"png", "jpg", "jpeg", "gif", "webp", "avif", "svg"}
+    IMAGENS = {"png", "jpg", "jpeg", "webp"}
     NAVEGAVEIS = IMAGENS | {"pdf"}
 
     @property

@@ -128,24 +128,29 @@ def definir_hora_tecnica(request, pk):
 
     fatores_ids = request.POST.getlist("fatores")
     fatores = list(
-        queryset_da_empresa(FatorPrecificacao.objects.all(), request.user).filter(pk__in=fatores_ids)
+        queryset_da_empresa(FatorPrecificacao.objects.filter(ativo=True), request.user).filter(
+            pk__in=fatores_ids
+        )
     )
-    proposta.fatores.set(fatores)
 
     valor_manual = request.POST.get("valor_manual", "").strip().replace(",", ".")
     if valor_manual:
         try:
-            proposta.hora_tecnica_aplicada = Decimal(valor_manual)
+            hora_aplicada = Decimal(valor_manual)
         except (InvalidOperation, ValueError):
             messages.error(request, "Valor de hora técnica inválido.")
             return redirect("proposta_detalhe", pk=proposta.pk)
+        if hora_aplicada <= 0:
+            messages.error(request, "A hora técnica deve ser maior que zero.")
+            return redirect("proposta_detalhe", pk=proposta.pk)
     else:
-        proposta.hora_tecnica_aplicada = aplicar_fatores(
-            hora_tecnica_base(proposta.empresa), fatores
-        )
+        hora_aplicada = aplicar_fatores(hora_tecnica_base(proposta.empresa), fatores)
 
-    proposta.save(update_fields=["hora_tecnica_aplicada"])
-    _reprecificar_itens(proposta)
+    with transaction.atomic():
+        proposta.fatores.set(fatores)
+        proposta.hora_tecnica_aplicada = hora_aplicada
+        proposta.save(update_fields=["hora_tecnica_aplicada"])
+        _reprecificar_itens(proposta)
     messages.success(
         request, f"Hora técnica desta proposta: R$ {proposta.hora_tecnica_aplicada}."
     )

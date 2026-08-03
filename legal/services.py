@@ -1,15 +1,12 @@
 from django.utils import timezone
 
+from core.request import ip_cliente
+
 from .models import AceiteLegal, DocumentoLegal
 
 
 def ip_do_pedido(request) -> str:
-    """IP real do cliente. Atrás do nginx (proxy_add_x_forwarded_for) o IP
-    direto é a entrada mais à direita de X-Forwarded-For."""
-    encaminhado = request.META.get("HTTP_X_FORWARDED_FOR")
-    if encaminhado:
-        return encaminhado.split(",")[-1].strip()
-    return request.META.get("REMOTE_ADDR", "") or ""
+    return ip_cliente(request)
 
 
 def documento_vigente(tipo: str):

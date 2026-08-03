@@ -14,3 +14,10 @@ class PropostaAdmin(admin.ModelAdmin):
     list_filter = ("status",)
     search_fields = ("titulo",)
     inlines = [ItemInline]
+    filter_horizontal = ("fatores",)
+
+
+@admin.register(ItemProposta)
+class ItemPropostaAdmin(admin.ModelAdmin):
+    list_display = ("descricao", "proposta", "horas_estimadas", "valor", "ordem")
+    search_fields = ("descricao", "proposta__titulo")

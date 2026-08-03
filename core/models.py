@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
 
+from core.uploads import validar_imagem
+
 
 class Empresa(models.Model):
     """Tenant do sistema. Cada escritório é uma Empresa vinculada a um auth.Group;
@@ -14,12 +16,15 @@ class Empresa(models.Model):
     )
     ativa = models.BooleanField(default=True)
     # Identidade visual do escritório: aparece no painel e nos documentos.
-    logo = models.ImageField(upload_to="empresas/logos/", blank=True, null=True)
+    logo = models.ImageField(
+        upload_to="empresas/logos/", blank=True, null=True, validators=[validar_imagem]
+    )
     imagem_fundo = models.ImageField(
         "imagem de fundo",
         upload_to="empresas/fundos/",
         blank=True,
         null=True,
+        validators=[validar_imagem],
         help_text="Foto larga que abre o painel. Sem ela, entra a imagem padrão.",
     )
     cor_primaria = models.CharField(max_length=7, blank=True, default="", verbose_name="cor primária")

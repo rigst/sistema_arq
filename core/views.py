@@ -1,9 +1,12 @@
+import mimetypes
 import secrets
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseNotFound, JsonResponse
+from django.core.exceptions import PermissionDenied
+from django.db import connection
+from django.http import FileResponse, Http404, HttpResponseNotFound, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -18,6 +21,12 @@ def healthz(request):
         token_recebido = request.headers.get("X-Healthz-Token", "").strip()
         if not token_recebido or not secrets.compare_digest(token_recebido, healthz_token):
             return HttpResponseNotFound()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+    except Exception:  # noqa: BLE001
+        return JsonResponse({"status": "indisponivel"}, status=503)
     return JsonResponse({"status": "ok"})
 
 
@@ -147,3 +156,20 @@ def identidade(request):
         form = IdentidadeEmpresaForm(instance=empresa)
 
     return render(request, "core/identidade.html", {"form": form, "empresa": empresa})
+
+
+@login_required
+def imagem_identidade(request, tipo):
+    empresa = obter_empresa_ativa_usuario(request.user)
+    if empresa is None or tipo not in {"logo", "fundo"}:
+        raise Http404
+    arquivo = empresa.logo if tipo == "logo" else empresa.imagem_fundo
+    if not arquivo:
+        raise Http404
+    mime, _ = mimetypes.guess_type(arquivo.name)
+    resposta = FileResponse(
+        arquivo.open("rb"), content_type=mime or "application/octet-stream", as_attachment=False
+    )
+    resposta["X-Content-Type-Options"] = "nosniff"
+    resposta["Cache-Control"] = "private, max-age=300"
+    return resposta

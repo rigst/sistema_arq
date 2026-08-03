@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import models
 
 from core.models import EmpresaModel, Rastreavel
+from core.uploads import validar_documento
 from projetos.models import Projeto
 
 
@@ -114,7 +115,7 @@ class Documento(EmpresaModel):
         Contrato, on_delete=models.CASCADE, related_name="documentos", null=True, blank=True
     )
     titulo = models.CharField(max_length=200, verbose_name="título")
-    arquivo = models.FileField(upload_to="documentos/%Y/%m/")
+    arquivo = models.FileField(upload_to="documentos/%Y/%m/", validators=[validar_documento])
     criado_em = models.DateTimeField(auto_now_add=True)
 
     class Meta:

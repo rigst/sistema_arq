@@ -136,7 +136,7 @@ class IdentidadeTests(TestCase):
 
         painel = self.client.get("/")
         self.assertContains(painel, "--fundo-escritorio")
-        self.assertContains(painel, empresa.imagem_fundo.url)
+        self.assertContains(painel, "/escritorio/identidade/fundo/")
         empresa.imagem_fundo.delete(save=True)
 
     def test_sem_imagem_o_painel_nao_declara_a_variavel(self):

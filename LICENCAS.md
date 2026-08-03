@@ -1,110 +1,63 @@
-# Licenças — A.R.Q.
+# Licenças de terceiros
 
-Resumo das licenças das dependências e recomendação de licença para o app.
+O código original do A.R.Q. é proprietário conforme [LICENSE](LICENSE). Este
+arquivo registra componentes de terceiros usados pela release atual; não
+substitui os textos oficiais de cada projeto.
 
-## Dependências diretas (requirements.txt)
+## Dependências diretas
 
-| Pacote | Licença | Tipo |
-|---|---|---|
-| Django | BSD-3-Clause | permissiva |
-| asgiref | BSD-3-Clause | permissiva |
-| dj-database-url | BSD-3-Clause | permissiva |
-| **psycopg[binary]** | **LGPL-3.0-or-later** | copyleft fraco (biblioteca) |
-| pillow | HPND (estilo MIT/BSD) | permissiva |
-| celery | BSD-3-Clause | permissiva |
-| redis (redis-py) | MIT | permissiva |
-| gunicorn | MIT | permissiva |
-| sqlparse | BSD-3-Clause | permissiva |
-| weasyprint | BSD-3-Clause | permissiva |
-| ofxparse | MIT | permissiva |
+| Componente | Versão | Licença declarada |
+|---|---:|---|
+| Django | 6.0.7 | BSD-3-Clause |
+| asgiref | 3.11.1 | BSD-3-Clause |
+| dj-database-url | 3.0.1 | BSD |
+| psycopg / psycopg-binary | 3.2.12 | LGPL-3.0-only |
+| Pillow | 12.3.0 | MIT-CMU |
+| Celery | 5.4.0 | BSD-3-Clause |
+| redis-py | 5.2.1 | MIT |
+| Gunicorn | 23.0.0 | MIT |
+| sqlparse | 0.5.5 | BSD-3-Clause |
+| WeasyPrint | 69.0 | BSD-3-Clause |
+| ofxparse | 0.21 | MIT |
 
-## Transitivas relevantes
+As dependências transitivas são instaladas pelo pip a partir de
+requirements.txt. A imagem de produção deve preservar os metadados e textos de
+licença instalados nos pacotes. psycopg-binary é redistribuído na imagem sob
+LGPL; alterações no próprio componente continuam sujeitas a essa licença.
 
-| Pacote | Licença | Observação |
-|---|---|---|
-| **Pyphen** (via WeasyPrint) | GPL-2.0 **ou** LGPL-2.1 **ou** MPL-1.1 (tri-licença) | você escolhe uma; opte por LGPL ou MPL para evitar o GPL |
-| lxml | BSD-3-Clause | permissiva |
-| cffi, pycparser | MIT | permissiva |
-| tinycss2, cssselect2, pydyf, fonttools, webencodings | BSD/MIT | permissivas |
-| beautifulsoup4, soupsieve, tinyhtml5 | MIT | permissivas |
-| brotli, zopfli | MIT | permissivas |
-
-## Front-end (vendorizado em static/)
+## Front-end e fontes
 
 | Item | Licença |
 |---|---|
-| htmx 2.x (`static/js/htmx.min.js`) | BSD-2-Clause (0BSD/BSD) |
-| `stolben-ui.css` / `stolben-ui.js` | proprietário do autor (código próprio) |
-| Fontes Inter e Manrope (Google Fonts) | SIL Open Font License 1.1 |
+| HTMX 2.x (static/js/htmx.min.js) | Zero-Clause BSD |
+| CSS, JavaScript, ícones e marca próprios | Proprietária |
+| Archivo, IBM Plex Sans e IBM Plex Mono | SIL Open Font License 1.1 |
 
-## Análise
+As fontes são solicitadas ao Google Fonts na configuração atual. Isso deve ser
+considerado na política de privacidade e na escolha dos fornecedores da
+implantação. Para evitar a requisição externa, hospede as fontes localmente
+antes do lançamento.
 
-- **Quase tudo é permissivo** (MIT/BSD/HPND): não obriga a abrir o código do app nem
-  impõe condições ao seu licenciamento.
-- **Único copyleft no runtime: `psycopg` (LGPL-3.0).** A LGPL, para uso como **biblioteca**
-  (o app apenas importa o pacote, instalado separadamente via pip), **não obriga** a abrir o
-  código do app. A obrigação prática é permitir a substituição/atualização da própria lib
-  LGPL — o que já ocorre naturalmente, já que ela é instalada como pacote independente.
-- **`Pyphen` é tri-licenciado** (GPL/LGPL/MPL). Tri-licença significa que você **escolhe**
-  uma das opções; escolhendo LGPL-2.1 ou MPL-1.1, não há obrigação de GPL. Além disso, o
-  Pyphen só é usado para hifenização na geração de PDF (WeasyPrint).
+## Imagens
 
-**Conclusão:** nenhuma dependência força o app a ser open source. Você pode licenciar o
-código do A.R.Q. como quiser.
+Os JPGs em static/img/ foram incorporados durante o desenvolvimento. Antes de
+uso comercial, o responsável pelo deploy deve manter no inventário privado a
+origem e a prova de licença de cada imagem:
 
-## Recomendação de licença do app
+- fundo-vidro.jpg
+- hero-comercial.jpg
+- hero-gestao.jpg
+- hero-obra.jpg
+- hero-painel.jpg
+- hero-producao.jpg
+- login-arquitetura.jpg
 
-Como é um app **gratuito** e sem intenção comercial, a recomendação é **MIT** — a mais
-simples e permissiva, compatível com todas as dependências acima. Alternativas:
+Não há metadados suficientes no repositório para afirmar a licença ou autoria
+dessas imagens. Essa validação é um bloqueio operacional para publicação
+comercial, não um problema que possa ser resolvido apenas pelo código.
 
-- **MIT** (recomendada): máxima simplicidade e adoção; deixa o portfólio reutilizável.
-- **BSD-3-Clause**: equivalente à MIT, com cláusula de não-endosso.
-- **Apache-2.0**: permissiva + concessão explícita de patentes (mais “corporativa”).
-- **Proprietário/privado**: se não quiser permitir reuso; basta não publicar uma licença
-  e manter o repositório privado.
+## Auditoria
 
-> Observação: distribuir binários de `psycopg`/`Pyphen` (ex.: em uma imagem Docker) mantém
-> as obrigações LGPL — na prática, disponibilizar as versões dessas libs e permitir sua
-> troca. Rodando via `pip install`, isso já é atendido.
-
-## Apoio de IA (opcional)
-
-O pacote `anthropic` (SDK oficial da Anthropic, licença MIT) é usado por
-`core/ia.py` para dois rascunhos: leitura do briefing e minuta de contrato.
-
-O recurso é **desligado por padrão**. Só aparece na interface quando existe
-`ANTHROPIC_API_KEY` no ambiente. Quando ligado, o conteúdo enviado no prompt
-(respostas do briefing ou dados do contrato) sai para a API da Anthropic — as
-telas avisam isso antes do envio, e o uso é cobrado na conta de quem configurou
-a chave. O sistema inteiro funciona sem a chave e sem o pacote instalado.
-
-## Imagens e tipografia
-
-**Fotos** (`static/img/*.jpg`): Unsplash — a
-[Unsplash License](https://unsplash.com/license) permite uso comercial e não
-comercial, sem pedir permissão nem atribuição. As imagens foram baixadas,
-recortadas e recomprimidas para dentro do repositório, então o app não depende
-de CDN externo em produção.
-
-| Arquivo | Origem |
-| --- | --- |
-| `login-arquitetura.jpg` | `unsplash.com/photos/1625390711106-3728815ebcd9` |
-| `hero-painel.jpg` | `unsplash.com/photos/1546414701-81cc6963c67f` |
-| `hero-obra.jpg` | `unsplash.com/photos/1522743791393-522312deeebf` |
-
-**Fontes**: Archivo, IBM Plex Sans e IBM Plex Mono, todas sob
-[SIL Open Font License 1.1](https://openfontlicense.org/), servidas pelo Google
-Fonts. A OFL permite uso, modificação e redistribuição, inclusive comercial;
-a única restrição prática é não vender as fontes isoladamente.
-
-## Termos de uso e política de privacidade
-
-O texto em `legal/textos.py` é um rascunho redigido para este projeto, com base
-na LGPD (Lei 13.709/2018). **Não é parecer jurídico.** Antes de usar em
-produção com clientes reais, revise com um advogado — em especial os trechos de
-retenção de dados, papel de controlador/operador e foro.
-
-A seção "Licença do software" dos termos descreve a licença **proprietária** do
-`LICENSE` deste repositório. Se a licença do projeto mudar, publique uma versão
-nova do documento (`legal/textos.py` + migração de dados) — mudar o texto de uma
-versão já aceita descaracterizaria o registro de aceite.
+Na atualização desta release, as licenças declaradas foram conferidas nos
+metadados dos pacotes instalados. Refaça a conferência sempre que
+requirements.txt mudar.

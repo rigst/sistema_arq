@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from legal.models import AceiteLegal, DocumentoLegal
@@ -59,6 +59,7 @@ class AceiteTests(TestCase):
             self.assertEqual(aceite.user_agent, "Navegador de Teste/1.0")
             self.assertIsNotNone(aceite.aceito_em)
 
+    @override_settings(TRUST_X_FORWARDED_FOR=True)
     def test_ip_vem_do_x_forwarded_for_atras_de_proxy(self):
         self.client.post(
             "/aceite/",
@@ -66,7 +67,7 @@ class AceiteTests(TestCase):
             REMOTE_ADDR="10.0.0.1",
             HTTP_X_FORWARDED_FOR="198.51.100.4, 203.0.113.9",
         )
-        self.assertEqual(AceiteLegal.objects.first().ip, "203.0.113.9")
+        self.assertEqual(AceiteLegal.objects.first().ip, "198.51.100.4")
 
     def test_sem_marcar_a_caixa_nada_e_registrado(self):
         resposta = self.client.post("/aceite/", {})

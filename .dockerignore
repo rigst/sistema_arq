@@ -1,0 +1,12 @@
+.git
+.gitignore
+.venv
+__pycache__
+*.py[cod]
+.env
+.env.production
+db.sqlite3*
+media
+staticfiles
+.pytest_cache
+*.log
