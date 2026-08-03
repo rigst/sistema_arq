@@ -9,10 +9,40 @@ from django.db import connection
 from django.http import FileResponse, Http404, HttpResponseNotFound, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from core.tenancy import definir_empresa_ativa, obter_empresa_ativa_usuario
+
+
+FRASES_MOTIVACIONAIS = (
+    "Cada projeto avança quando o próximo passo fica claro.",
+    "Um bom briefing abre caminho para decisões melhores.",
+    "Consistência hoje deixa a obra mais tranquila amanhã.",
+    "Pequenos avanços mantêm cada projeto em movimento.",
+    "Organização transforma intenção em entrega.",
+    "Cuide do essencial, decida o próximo passo e siga.",
+    "Seu trabalho ganha força quando o processo está bem cuidado.",
+)
+
+
+def _saudacao_do_dia(agora):
+    """Retorna saudação e frase do dia usando o horário local do escritório."""
+    if agora.hour < 12:
+        saudacao = "Bom dia"
+    elif agora.hour < 18:
+        saudacao = "Boa tarde"
+    else:
+        saudacao = "Boa noite"
+    frase = FRASES_MOTIVACIONAIS[agora.date().toordinal() % len(FRASES_MOTIVACIONAIS)]
+    return saudacao, frase
+
+
+def _primeiro_nome_usuario(usuario):
+    """Usa o primeiro nome informado, com fallback seguro para o login."""
+    nome = (usuario.nome_exibicao or usuario.get_full_name() or usuario.username).strip()
+    return nome.split()[0] if nome else ""
 
 
 def healthz(request):
@@ -45,6 +75,7 @@ def dashboard(request):
 
     empresa = obter_empresa_ativa_usuario(request.user)
     u = request.user
+    saudacao, frase_motivacional = _saudacao_do_dia(timezone.localtime())
 
     projetos_ativos = queryset_da_empresa(Projeto.objects.all(), u).filter(status="ativo").count()
     a_receber = queryset_da_empresa(Lancamento.objects.all(), u).filter(
@@ -113,6 +144,9 @@ def dashboard(request):
         "core/dashboard.html",
         {
             "empresa": empresa,
+            "saudacao": saudacao,
+            "primeiro_nome": _primeiro_nome_usuario(u),
+            "frase_motivacional": frase_motivacional,
             "kpis": kpis,
             "frentes": frentes,
             "obrig_alerta": obrig_alerta,

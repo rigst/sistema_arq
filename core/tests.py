@@ -1,9 +1,13 @@
 from decimal import Decimal
 from datetime import date
+from datetime import datetime
+from unittest.mock import patch
 
 from django.test import Client, TestCase
+from django.utils import timezone
 
 from core.factories import criar_empresa_e_usuario
+from core.views import FRASES_MOTIVACIONAIS, _primeiro_nome_usuario, _saudacao_do_dia
 from core.models import Empresa
 from core.pdf import _identidade_pdf, render_pdf
 from core.visitante_cleanup import limpar_dados_negocio
@@ -42,6 +46,25 @@ class DashboardTests(TestCase):
         self.assertContains(resp, "Projetos ativos")
         self.assertContains(resp, "Aguardando cliente")
         self.assertContains(resp, "app-side")
+
+    def test_dashboard_sauda_com_primeiro_nome_e_frase_do_dia(self):
+        self.user.nome_exibicao = "Marina Costa"
+        self.user.save(update_fields=["nome_exibicao"])
+        agora = datetime(2026, 8, 3, 9, 30, tzinfo=timezone.get_current_timezone())
+        with patch("core.views.timezone.localtime", return_value=agora):
+            resp = self.client.get("/")
+
+        self.assertContains(resp, "Bom dia, Marina.")
+        self.assertContains(resp, FRASES_MOTIVACIONAIS[agora.date().toordinal() % len(FRASES_MOTIVACIONAIS)])
+
+    def test_saudacao_muda_por_periodo_e_primeiro_nome_tem_fallback(self):
+        self.assertEqual(_saudacao_do_dia(datetime(2026, 8, 3, 11, 59))[0], "Bom dia")
+        self.assertEqual(_saudacao_do_dia(datetime(2026, 8, 3, 12, 0))[0], "Boa tarde")
+        self.assertEqual(_saudacao_do_dia(datetime(2026, 8, 3, 18, 0))[0], "Boa noite")
+        self.user.nome_exibicao = ""
+        self.user.first_name = "João"
+        self.user.save(update_fields=["nome_exibicao", "first_name"])
+        self.assertEqual(_primeiro_nome_usuario(self.user), "João")
 
     def test_primeiro_acesso_instala_modelos_sem_duplicar(self):
         self.assertFalse(TemplateBriefing.objects.filter(empresa=self.grupo).exists())
