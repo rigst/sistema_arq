@@ -24,6 +24,7 @@ class Projeto(EmpresaModel, Rastreavel):
         ("comercial", "Comercial"),
         ("empresarial", "Empresarial"),
         ("institucional", "Institucional"),
+        ("urbanismo", "Urbanismo"),
     ]
     STATUS_CHOICES = [
         ("ativo", "Ativo"),

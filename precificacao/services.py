@@ -4,7 +4,7 @@
 - hora técnica-base cobrada: valor manual (se definido) ou o custo. Ponto de partida.
 - hora técnica aplicada: base ajustada pelas variáveis do projeto (fatores) ou um
   valor escolhido livremente pelo usuário.
-- preço da etapa = (hora técnica × horas com margem) + reserva + despesas diretas.
+- preço da etapa = base com segurança + imposto + lucro previsto + despesas diretas.
 """
 
 from decimal import Decimal
@@ -66,12 +66,15 @@ def precificar_etapa(grupo, horas_estimadas, hora_tecnica=None, despesas_diretas
 
     horas_com_margem = horas * (Decimal("1") + config.margem_seguranca_percent / CEM)
     base = ht * horas_com_margem
-    com_reserva = base * (Decimal("1") + config.reserva_percent / CEM)
-    total = (com_reserva + despesas).quantize(Decimal("0.01"))
+    imposto = base * config.imposto_percent / CEM
+    lucro = base * config.lucro_previsto_percent / CEM
+    total = (base + imposto + lucro + despesas).quantize(Decimal("0.01"))
     return {
         "hora_tecnica": ht,
         "horas_com_margem": horas_com_margem.quantize(Decimal("0.01")),
         "subtotal": base.quantize(Decimal("0.01")),
+        "imposto": imposto.quantize(Decimal("0.01")),
+        "lucro_previsto": lucro.quantize(Decimal("0.01")),
         "despesas_diretas": despesas.quantize(Decimal("0.01")),
         "total": total,
     }

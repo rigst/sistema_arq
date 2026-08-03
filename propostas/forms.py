@@ -2,20 +2,13 @@ from django import forms
 
 from core.tenancy import queryset_da_empresa
 from crm.models import Cliente
+from projetos.models import Projeto
 
 from .models import ItemProposta, Proposta
 from core.forms import ArqModelForm
 
-TIPO_CHOICES = [
-    ("residencial", "Residencial"),
-    ("comercial", "Comercial"),
-    ("corporativo", "Corporativo"),
-    ("interiores", "Interiores"),
-]
-
-
 class PropostaForm(ArqModelForm):
-    tipo_projeto = forms.ChoiceField(choices=TIPO_CHOICES)
+    tipo_projeto = forms.ChoiceField(choices=Projeto.TIPO_CHOICES)
 
     class Meta:
         model = Proposta
@@ -51,14 +44,23 @@ class ItemPropostaForm(ArqModelForm):
 
     class Meta:
         model = ItemProposta
-        fields = ["descricao", "horas_estimadas"]
+        fields = ["descricao", "inclusoes", "horas_estimadas"]
         widgets = {
-            "descricao": forms.TextInput(attrs={"placeholder": "Ambiente ou etapa"}),
+            "descricao": forms.TextInput(attrs={"placeholder": "Etapa ou serviço"}),
+            "inclusoes": forms.Textarea(attrs={"placeholder": "O que está incluído", "rows": 2}),
             "horas_estimadas": forms.NumberInput(attrs={"placeholder": "Horas", "step": "0.5"}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Integrações e propostas antigas que enviavam só o título continuam
+        # válidas; o item nunca fica sem explicação, pois recebe este texto.
+        self.fields["inclusoes"].required = False
         # O default 0 do modelo virava valor inicial e escondia o placeholder:
         # o campo mostrava um zero solto no lugar de dizer o que se escreve ali.
         self.fields["horas_estimadas"].initial = None
+
+    def clean_inclusoes(self):
+        return self.cleaned_data.get("inclusoes", "").strip() or (
+            "Entregáveis e atividades conforme o escopo desta etapa."
+        )

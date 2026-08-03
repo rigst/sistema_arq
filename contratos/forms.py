@@ -87,9 +87,13 @@ class DocumentoEdicaoForm(ArqModelForm):
 
 
 class ModeloContratoForm(ArqModelForm):
+    tipo_projeto = forms.ChoiceField(
+        choices=[("", "Qualquer tipo"), *Projeto.TIPO_CHOICES], required=False
+    )
+
     class Meta:
         model = ModeloContrato
-        fields = ["nome", "descricao", "corpo", "padrao", "ativo"]
+        fields = ["nome", "tipo_projeto", "descricao", "corpo", "padrao", "ativo"]
         widgets = {"corpo": forms.Textarea(attrs={"rows": 20, "spellcheck": "true"})}
 
     def __init__(self, *args, **kwargs):

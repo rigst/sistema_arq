@@ -17,10 +17,15 @@ class ConfiguracaoPrecificacao(EmpresaModel):
         help_text="Margem de segurança sobre as horas estimadas.",
         verbose_name="margem de segurança (%)",
     )
-    reserva_percent = models.DecimalField(
+    imposto_percent = models.DecimalField(
+        max_digits=5, decimal_places=2, default=Decimal("0.00"),
+        help_text="Percentual estimado de impostos incidente sobre o serviço.",
+        verbose_name="imposto (%)",
+    )
+    lucro_previsto_percent = models.DecimalField(
         max_digits=5, decimal_places=2, default=Decimal("20.00"),
-        help_text="Reserva do escritório (impostos, reinvestimento, imprevistos).",
-        verbose_name="reserva (%)",
+        help_text="Lucro desejado sobre o custo do serviço.",
+        verbose_name="lucro previsto (%)",
     )
     hora_tecnica_manual = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True,

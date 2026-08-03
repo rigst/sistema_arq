@@ -34,7 +34,7 @@ PRINCIPAIS = (
         resumo="A conversa com o cliente virando programa de necessidades.",
         entrega=(
             "Roteiro de perguntas respondido",
-            "Programa de necessidades: ambientes, metragens e uso",
+            "Programa de necessidades: ambientes e metragens",
             "Referências e restrições do terreno",
         ),
         consome="Os dados do cliente e do projeto.",
@@ -149,6 +149,16 @@ COMPLEMENTARES = (
 )
 
 CHAVE_LIVRE = "comp_outro"
+PRAZOS_UTEIS_PADRAO = {
+    "estudo_preliminar": 15,
+    "anteprojeto": 20,
+    "executivo": 30,
+    "comp_estrutural": 15,
+    "comp_eletrica": 15,
+    "comp_hidraulica": 15,
+    "comp_paisagismo": 15,
+    "comp_outro": 15,
+}
 # A oferta em caixas mostra só os complementares nomeados; o aberto tem campo
 # de texto e não faz sentido como caixa de marcar.
 COMPLEMENTARES_NOMEADOS = tuple(p for p in COMPLEMENTARES if p.chave != CHAVE_LIVRE)

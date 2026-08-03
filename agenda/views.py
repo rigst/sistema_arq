@@ -63,7 +63,8 @@ def agenda(request):
     do_periodo = base.filter(inicio__date__gte=primeiro, inicio__date__lte=ultimo)
 
     fases_tecnicas = queryset_da_empresa(
-        Fase.objects.select_related("projeto").filter(tarefas_semeadas=False).exclude(
+        Fase.objects.select_related("projeto").filter(tarefas_semeadas=False)
+        .exclude(status=Fase.NAO_INICIADA).exclude(
             chave__in={"briefing", "proposta", "contrato"}
         ),
         request.user,
@@ -76,7 +77,7 @@ def agenda(request):
     tarefas = queryset_da_empresa(
         Tarefa.objects.select_related("projeto", "fase").filter(
             fase__isnull=False, prazo__gte=primeiro, prazo__lte=ultimo
-        ),
+        ).exclude(fase__status=Fase.NAO_INICIADA),
         request.user,
     )
     if projeto is not None:

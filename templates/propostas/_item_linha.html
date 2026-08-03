@@ -11,6 +11,9 @@ lugar na troca.
         <input type="text" name="descricao" id="ed-desc-{{ item.pk }}"
                form="edita-item-{{ item.pk }}" value="{{ item.descricao }}"
                maxlength="200" required>
+        <label class="ds-oculto" for="ed-inclusoes-{{ item.pk }}">O que inclui</label>
+        <textarea name="inclusoes" id="ed-inclusoes-{{ item.pk }}"
+                  form="edita-item-{{ item.pk }}" rows="2" required>{{ item.inclusoes }}</textarea>
         <form id="edita-item-{{ item.pk }}" method="post"
               hx-post="{% url 'proposta_item_editar' item.pk %}"
               hx-target="#itens-bloco" hx-swap="outerHTML"
@@ -39,8 +42,8 @@ lugar na troca.
 </tr>
 {% else %}
 <tr class="item-linha" id="item-{{ item.pk }}">
-    <td>{{ item.descricao }}</td>
-    <td class="num">{{ item.horas_estimadas }}</td>
+    <td><strong class="item-proposta-titulo">{{ item.descricao }}</strong><span class="item-proposta-inclusoes">{{ item.inclusoes }}</span></td>
+    <td class="num">{{ item.horas_estimadas|floatformat:"0" }}</td>
     <td class="num">R$ {{ item.valor }}</td>
     <td>
         {% if proposta.editavel %}

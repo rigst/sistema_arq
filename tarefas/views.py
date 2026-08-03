@@ -36,6 +36,9 @@ from .models import ApontamentoHora, Tarefa
 @login_required
 def concluir_tarefa(request, pk):
     tarefa = get_object_or_404(queryset_da_empresa(Tarefa.objects.all(), request.user), pk=pk)
+    if tarefa.fase_id and tarefa.fase.bloqueada:
+        messages.error(request, "Esta tarefa pertence a uma fase ainda bloqueada.")
+        return redirect(_de_onde_veio(request))
     tarefa.status = "concluida" if tarefa.status != "concluida" else "aberta"
     tarefa.save(update_fields=["status"])
     return redirect(_de_onde_veio(request))

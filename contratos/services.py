@@ -15,17 +15,24 @@ def _moeda(valor):
     return f"R$ {_numero(valor)}"
 
 
+def _horas(valor):
+    return f"{Decimal(valor or 0):.0f}"
+
+
 def garantir_modelos_padrao(empresa, usuario=None):
     """Disponibiliza as minutas iniciais sem duplicar modelos já instalados."""
     from .modelos_padrao import MODELOS_PADRAO
     from .models import ModeloContrato
 
     for dados in MODELOS_PADRAO:
-        ModeloContrato.objects.get_or_create(
+        modelo, criado = ModeloContrato.objects.get_or_create(
             empresa=empresa,
             nome=dados["nome"],
             defaults={**dados, "criado_por": usuario},
         )
+        if not criado and not modelo.tipo_projeto and dados.get("tipo_projeto"):
+            modelo.tipo_projeto = dados["tipo_projeto"]
+            modelo.save(update_fields=["tipo_projeto"])
     return ModeloContrato.objects.filter(empresa=empresa, ativo=True)
 
 
@@ -47,13 +54,14 @@ def contexto_do_contrato(contrato):
         .order_by("ordem", "id")
     )
     cronograma = "\n".join(
-        f"- {fase.nome}: {fase.prazo.strftime('%d/%m/%Y') if fase.prazo else 'a definir'}"
+        f"- {fase.nome}: {fase.dias_uteis_proposta} dias úteis"
+        if fase.dias_uteis_proposta else f"- {fase.nome}: prazo a definir"
         for fase in fases
     )
     escopo = ""
     if proposta is not None:
         escopo = "\n".join(
-            f"- {item.descricao}: {_numero(item.horas_estimadas)} h — {_moeda(item.valor)}"
+            f"- {item.descricao}: {item.inclusoes} — {_horas(item.horas_estimadas)} h — {_moeda(item.valor)}"
             for item in proposta.itens.all()
         )
     endereco = projeto.localizacao
@@ -69,7 +77,7 @@ def contexto_do_contrato(contrato):
         "tipo_projeto": projeto.get_tipo_display(),
         "escritorio": contrato.empresa.name,
         "valor": _moeda(contrato.valor_total),
-        "horas": _numero(
+        "horas": _horas(
             proposta.horas_totais if proposta is not None else projeto.horas_estimadas
         ),
         "data": timezone.localdate().strftime("%d/%m/%Y"),
@@ -121,7 +129,11 @@ def criar_contrato_da_proposta(proposta, usuario):
         return contrato
 
     modelos = garantir_modelos_padrao(proposta.empresa, usuario)
-    modelo = modelos.filter(padrao=True).first() or modelos.first()
+    modelo = (
+        modelos.filter(tipo_projeto=projeto.tipo).first()
+        or modelos.filter(tipo_projeto="", padrao=True).first()
+        or modelos.first()
+    )
     if modelo is not None:
         contrato.corpo = modelo.gerar(contexto_do_contrato(contrato))
         contrato.save(update_fields=["corpo"])

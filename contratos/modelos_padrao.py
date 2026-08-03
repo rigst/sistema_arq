@@ -9,6 +9,7 @@ PROJETO_ARQUITETONICO = {
     "nome": "Projeto arquitetônico — pessoa física",
     "descricao": "Prestação de serviços de projeto para cliente pessoa física.",
     "padrao": True,
+    "tipo_projeto": "residencial",
     "corpo": """CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE ARQUITETURA
 
 CONTRATANTE: {{cliente}}, inscrito(a) no CPF/CNPJ sob o nº {{cliente_documento}}.
@@ -137,6 +138,7 @@ COMERCIAL = {
     "nome": "Projeto comercial — pessoa jurídica",
     "descricao": "Projeto para loja, escritório ou serviço, com aprovações, sigilo e responsabilidades definidos.",
     "padrao": False,
+    "tipo_projeto": "comercial",
     "corpo": """CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE ARQUITETURA
 
 CONTRATANTE: {{cliente}}, inscrito(a) no CPF/CNPJ sob o nº {{cliente_documento}}.
@@ -191,4 +193,63 @@ _______________________________        _______________________________
 """,
 }
 
-MODELOS_PADRAO = [PROJETO_ARQUITETONICO, INTERIORES, COMERCIAL]
+def _modelo_por_tipo(tipo, rotulo, objeto, requisitos):
+    return {
+        "nome": f"{rotulo} — prestação de serviços",
+        "tipo_projeto": tipo,
+        "descricao": f"Minuta-base para projeto {rotulo.lower()}, editável antes do envio.",
+        "padrao": False,
+        "corpo": f"""CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE ARQUITETURA E URBANISMO
+
+CONTRATANTE: {{{{cliente}}}}, CPF/CNPJ nº {{{{cliente_documento}}}}.
+CONTRATADA: {{{{escritorio}}}}.
+
+CLÁUSULA 1 — OBJETO
+Desenvolvimento de {objeto} para “{{{{projeto}}}}”, em {{{{endereco}}}}, conforme a proposta aprovada.
+
+CLÁUSULA 2 — ESCOPO E ENTREGÁVEIS
+{{{{escopo}}}}
+O trabalho observará especialmente: {requisitos}. Serviços não descritos serão objeto de proposta adicional.
+
+CLÁUSULA 3 — ETAPAS E PRAZOS
+As etapas seguem a ordem abaixo. Os prazos são contados em dias úteis a partir da assinatura e cada etapa depende da aprovação da anterior.
+{{{{cronograma}}}}
+O tempo de análise do CONTRATANTE, de órgãos públicos e de terceiros suspende a contagem.
+
+CLÁUSULA 4 — HONORÁRIOS
+Os honorários totalizam {{{{valor}}}}, pagos conforme o cronograma financeiro acordado.
+
+CLÁUSULA 5 — OBRIGAÇÕES E APROVAÇÕES
+O CONTRATANTE fornecerá documentos e decisões no prazo acordado. Aprovações de etapa serão formalizadas por escrito.
+
+CLÁUSULA 6 — ALTERAÇÕES
+Mudanças após aprovação de etapa serão avaliadas quanto a prazo e valor e formalizadas por aditivo.
+
+CLÁUSULA 7 — RESPONSABILIDADE TÉCNICA E DIREITOS AUTORAIS
+A CONTRATADA emitirá o RRT dos serviços sob sua responsabilidade. O projeto destina-se apenas ao objeto deste contrato, observadas as Leis 9.610/1998 e 12.378/2010.
+
+CLÁUSULA 8 — RESCISÃO E FORO
+Na rescisão, são devidos os serviços concluídos e o proporcional da etapa em curso. Fica eleito o foro de [COMARCA].
+
+{{{{data}}}}
+
+_______________________________        _______________________________
+{{{{cliente}}}}                         {{{{escritorio}}}}
+""",
+    }
+
+
+EMPRESARIAL = _modelo_por_tipo(
+    "empresarial", "Projeto empresarial", "sede ou ambiente empresarial",
+    "fluxos de equipes, infraestrutura tecnológica, segurança, acústica e continuidade da operação",
+)
+INSTITUCIONAL = _modelo_por_tipo(
+    "institucional", "Projeto institucional", "equipamento de uso coletivo",
+    "acessibilidade, segurança, normas setoriais, fluxos de público e validações institucionais",
+)
+URBANISMO = _modelo_por_tipo(
+    "urbanismo", "Projeto de urbanismo", "planejamento e desenho urbano da área de intervenção",
+    "legislação urbanística, mobilidade, infraestrutura, meio ambiente, participação e fases de implantação",
+)
+
+MODELOS_PADRAO = [PROJETO_ARQUITETONICO, COMERCIAL, EMPRESARIAL, INSTITUCIONAL, URBANISMO]

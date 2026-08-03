@@ -8,7 +8,7 @@
         <div>
             <span class="ds-kicker">Financeiro</span>
             <h1 class="ds-h2 ds-display">Caixa do escritório</h1>
-            <p class="page-sub">Visão do realizado em {{ resumo.mes }}/{{ resumo.ano|unlocalize }}, saldos das contas e lançamentos previstos ou concluídos.</p>
+            <p class="page-sub">Visão do realizado em {{ resumo.mes }}/{{ resumo.ano|unlocalize }}, saldos das contas e movimentos do escritório.</p>
         </div>
         <div class="page-head-actions">
             {% if tem_conta %}<button class="ds-btn--novo" type="button" data-abre="modal-novo-lancamento" hidden>{% include "core/_ico.html" with ico="novo" %}<span>Novo lançamento</span></button>{% endif %}
@@ -49,7 +49,7 @@
         <header class="secao-head-inline">
             <div>
                 <h2 class="secao-titulo ds-display" id="lancamentos-titulo">Lançamentos</h2>
-                <p class="secao-sub">Até 100 registros mais recentes, ordenados pela data financeira.</p>
+                <p class="secao-sub">As parcelas dos projetos são originadas nos próprios contratos. Cadastre aqui somente pagamentos, despesas e receitas alheias ou extras, sem categorias.</p>
             </div>
         </header>
         <div class="table-scroll">
@@ -59,7 +59,7 @@
                 {% for l in lancamentos %}
                     <tr>
                         <td class="num">{{ l.data|date:"d/m/y" }}</td>
-                        <td><strong>{{ l.descricao }}</strong>{% if l.categoria %}<small>{{ l.categoria.nome }}</small>{% endif %}</td>
+                        <td><strong>{{ l.descricao }}</strong></td>
                         <td>{{ l.projeto.nome|default:"—" }}</td>
                         <td>{{ l.conta.nome }}</td>
                         <td><span class="financeiro-status financeiro-status--{{ l.status }}">{{ l.get_status_display }}</span></td>
@@ -76,7 +76,7 @@
     <dialog class="ds-modal ds-modal--amplo" id="modal-novo-lancamento" aria-labelledby="modal-novo-lancamento-titulo"{% if abrir_modal_lancamento %} data-modal-inicial{% endif %}>
         <form method="dialog" class="ds-modal-fechar-form"><button class="ds-modal-fechar" aria-label="Fechar">{% include "core/_ico.html" with ico="fechar" %}</button></form>
         <h2 class="ds-modal-titulo ds-display" id="modal-novo-lancamento-titulo">Novo lançamento</h2>
-        <p class="ds-modal-sub">Registre uma entrada ou saída, realizada ou prevista.</p>
+        <p class="ds-modal-sub">Registre somente pagamentos, despesas e receitas extras. Parcelas de projetos vêm dos respectivos contratos.</p>
         <div class="ds-modal-corpo">
             <form method="post" class="form-card form-card--duas-colunas">
                 {% csrf_token %}{{ form.as_p }}

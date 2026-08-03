@@ -23,13 +23,15 @@ class ConfiguracaoPrecificacaoForm(ArqModelForm):
             "horas_uteis_mes",
             "hora_tecnica_manual",
             "margem_seguranca_percent",
-            "reserva_percent",
+            "imposto_percent",
+            "lucro_previsto_percent",
         ]
         labels = {
             "horas_uteis_mes": "Horas úteis por mês",
             "hora_tecnica_manual": "Hora técnica manual",
             "margem_seguranca_percent": "Margem de segurança (%)",
-            "reserva_percent": "Reserva (%)",
+            "imposto_percent": "Imposto (%)",
+            "lucro_previsto_percent": "Lucro previsto (%)",
         }
         widgets = {
             "horas_uteis_mes": forms.NumberInput(attrs={"min": "1", "step": "1"}),
@@ -39,7 +41,8 @@ class ConfiguracaoPrecificacaoForm(ArqModelForm):
             "margem_seguranca_percent": forms.NumberInput(
                 attrs={"min": "0", "step": "0.01"}
             ),
-            "reserva_percent": forms.NumberInput(attrs={"min": "0", "step": "0.01"}),
+            "imposto_percent": forms.NumberInput(attrs={"min": "0", "step": "0.01"}),
+            "lucro_previsto_percent": forms.NumberInput(attrs={"min": "0", "step": "0.01"}),
         }
 
 

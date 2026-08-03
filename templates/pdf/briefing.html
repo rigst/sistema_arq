@@ -18,8 +18,8 @@
 {% if ambientes %}
 <div class="bloco"><h3>Programa de necessidades</h3></div>
 <table>
-    <thead><tr><th>Ambiente</th><th>Uso</th><th class="total">Área</th></tr></thead>
-    <tbody>{% for ambiente in ambientes %}<tr><td>{{ ambiente.nome }}</td><td>{{ ambiente.uso|default:"—" }}</td><td class="total">{{ ambiente.area_aprox|default:"—" }} m²</td></tr>{% endfor %}</tbody>
+    <thead><tr><th>Ambiente</th><th class="total">Área</th></tr></thead>
+    <tbody>{% for ambiente in ambientes %}<tr><td>{{ ambiente.nome }}</td><td class="total">{{ ambiente.area_aprox|default:"—" }} m²</td></tr>{% endfor %}</tbody>
 </table>
 {% endif %}
 

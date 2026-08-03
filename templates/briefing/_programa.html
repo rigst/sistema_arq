@@ -4,7 +4,7 @@ recarregando a página apagaria tudo que já foi marcado no roteiro acima —
 o briefing é preenchido durante a reunião, e perder isso é perder a conversa.
 
 A linha de adicionar é a última linha do corpo da tabela, e não uma régua
-solta embaixo: só assim "Ambiente", "m²" e "Uso" caem exatamente sob as suas
+solta embaixo: só assim "Ambiente" e "m²" caem exatamente sob as suas
 colunas. Os campos moram fora da tag <form> (não se põe <form> dentro de
 <tr>) e chegam nela pelo atributo form — que o FormData do htmx respeita.
 {% endcomment %}
@@ -23,7 +23,6 @@ colunas. Os campos moram fora da tag <form> (não se põe <form> dentro de
         <thead><tr>
             <th scope="col">Ambiente</th>
             <th scope="col" class="num">m²</th>
-            <th scope="col">Uso</th>
             {% if editando %}<th scope="col"><span class="ds-oculto">Ações</span></th>{% endif %}
         </tr></thead>
         <tbody>
@@ -31,7 +30,6 @@ colunas. Os campos moram fora da tag <form> (não se põe <form> dentro de
             <tr>
                 <td>{{ a.nome }}</td>
                 <td class="num">{{ a.area_aprox|default:"—" }}</td>
-                <td>{{ a.uso|default:"—" }}</td>
                 {% if editando %}
                 <td>
                     <button class="linha-ico linha-ico--risco" type="button"
@@ -46,7 +44,7 @@ colunas. Os campos moram fora da tag <form> (não se põe <form> dentro de
             </tr>
         {% empty %}
             {% if not editando %}
-            <tr><td colspan="3" class="data-empty">Nenhum ambiente listado.</td></tr>
+            <tr><td colspan="2" class="data-empty">Nenhum ambiente listado.</td></tr>
             {% endif %}
         {% endfor %}
 
@@ -63,11 +61,6 @@ colunas. Os campos moram fora da tag <form> (não se põe <form> dentro de
                        step="0.01" placeholder="0,00">
             </td>
             <td>
-                <label class="ds-oculto" for="amb-uso">Uso</label>
-                <input type="text" name="uso" id="amb-uso" form="programa-add"
-                       placeholder="Uso" maxlength="200">
-            </td>
-            <td>
                 <button class="linha-ico linha-ico--mais" type="submit" form="programa-add"
                         title="Adicionar ambiente" aria-label="Adicionar ambiente">
                     {% include "core/_ico.html" with ico="novo" %}
@@ -80,7 +73,7 @@ colunas. Os campos moram fora da tag <form> (não se põe <form> dentro de
         <tfoot><tr>
             <th scope="row">Área do programa</th>
             <td class="num">{{ area_programa }} m²</td>
-            <td colspan="{% if editando %}2{% else %}1{% endif %}"></td>
+            {% if editando %}<td></td>{% endif %}
         </tr></tfoot>
         {% endif %}
     </table>

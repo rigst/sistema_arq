@@ -11,7 +11,7 @@ uma <tr>, "Descrição" e "Horas" caem exatamente sob as colunas que os nomeiam.
     <table class="data-table proposta-itens-tabela">
         <colgroup><col><col class="col-horas"><col class="col-valor"><col class="col-acoes"></colgroup>
         <thead><tr>
-            <th scope="col">Descrição</th>
+            <th scope="col">Etapa / serviço e o que inclui</th>
             <th scope="col" class="num">Horas</th>
             <th scope="col" class="num">Valor</th>
             <th scope="col"><span class="ds-oculto">Ações</span></th>
@@ -22,7 +22,10 @@ uma <tr>, "Descrição" e "Horas" caem exatamente sob as colunas que os nomeiam.
             <td>
                 <label class="ds-oculto" for="novo-item-desc">Descrição</label>
                 <input type="text" name="descricao" id="novo-item-desc" form="add-item"
-                       placeholder="Ambiente ou etapa" maxlength="200" required>
+                       placeholder="Etapa ou serviço *" maxlength="200" required>
+                <label class="ds-oculto" for="novo-item-inclusoes">O que inclui</label>
+                <textarea name="inclusoes" id="novo-item-inclusoes" form="add-item"
+                          rows="2" placeholder="O que está incluído *" required></textarea>
             </td>
             <td class="num">
                 <label class="ds-oculto" for="novo-item-horas">Horas</label>

@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 from core.tenancy import queryset_da_empresa
 from fases.catalogo import COMPLEMENTARES_NOMEADOS
 from fases.forms import LembreteForm
+from fases.models import Fase
 from fases.services import garantir_tarefas_do_projeto
 from tarefas.models import Tarefa
 
@@ -50,6 +51,16 @@ def editar_projeto(request, pk):
 
 @require_POST
 @login_required
+def remover_projeto(request, pk):
+    projeto = get_object_or_404(queryset_da_empresa(Projeto.objects.all(), request.user), pk=pk)
+    nome = projeto.nome
+    projeto.delete()
+    messages.success(request, f"Projeto “{nome}” excluído.")
+    return redirect("projetos_painel")
+
+
+@require_POST
+@login_required
 def atualizar_planejamento(request, pk):
     projeto = get_object_or_404(queryset_da_empresa(Projeto.objects.all(), request.user), pk=pk)
     form = PlanejamentoProjetoForm(request.POST, instance=projeto)
@@ -63,7 +74,9 @@ def atualizar_planejamento(request, pk):
 
 
 def _contexto_tarefas(projeto):
-    tarefas = projeto.tarefas.filter(fase__isnull=False)
+    tarefas = projeto.tarefas.filter(fase__isnull=False).exclude(
+        fase__status=Fase.NAO_INICIADA
+    )
     totais = tarefas.aggregate(
         total=Count("id"),
         concluidas=Count("id", filter=Q(status="concluida")),
@@ -163,6 +176,9 @@ def alternar_tarefa(request, pk):
         projeto__isnull=False,
         fase__isnull=False,
     )
+    if tarefa.fase.bloqueada:
+        messages.error(request, "Esta tarefa pertence a uma fase ainda bloqueada.")
+        return redirect(reverse("projeto_detalhe", kwargs={"pk": tarefa.projeto_id}) + "#tarefas")
     tarefa.status = "aberta" if tarefa.status == "concluida" else "concluida"
     tarefa.save(update_fields=["status"])
     tarefa.projeto.tocar()

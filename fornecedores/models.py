@@ -26,6 +26,9 @@ class Fornecedor(EmpresaModel, Rastreavel):
         ("paisagismo", "Paisagismo"),
         ("obra_civil", "Obra civil"),
         ("projeto", "Projeto complementar"),
+        ("comunicacao_visual", "Comunicação visual"),
+        ("servicos_engenharia", "Serviços de engenharia"),
+        ("freelancer", "Freelancer"),
         ("outro", "Outro"),
     ]
 

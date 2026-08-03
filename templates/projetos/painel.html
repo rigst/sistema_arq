@@ -27,7 +27,8 @@
         O cartão inteiro é o link. Antes só o nome levava ao projeto, e o resto
         do cartão parecia clicável sem ser — que é pior do que não parecer.
         {% endcomment %}
-        <a class="projeto-card" href="{% url 'projeto_detalhe' p.pk %}">
+        <article class="projeto-card projeto-card--com-acoes">
+            <a class="projeto-card-link" href="{% url 'projeto_detalhe' p.pk %}">
             <span class="projeto-card-top">
                 <strong class="projeto-nome" title="{{ p.nome }}">{{ p.nome }}</strong>
                 <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ p.get_status_display }}</span>
@@ -39,7 +40,20 @@
                 <span><span class="pm-rot">Parado há</span><span class="pm-val">{{ p.dias_parado }} d</span></span>
                 <span><span class="pm-rot">Prazo</span><span class="pm-val">{{ p.data_prevista|date:"d/m/y"|default:"—" }}</span></span>
             </span>
-        </a>
+            </a>
+            <span class="projeto-card-acoes">
+                <a class="linha-ico" href="{% url 'projeto_editar' p.pk %}" title="Editar" aria-label="Editar projeto {{ p.nome }}">
+                    {% include "core/_ico.html" with ico="editar" %}
+                </a>
+                <form method="post" action="{% url 'projeto_remover' p.pk %}">
+                    {% csrf_token %}
+                    <button class="linha-ico linha-ico--risco" type="submit" title="Excluir"
+                            aria-label="Excluir projeto {{ p.nome }}" data-confirmar-exclusao>
+                        {% include "core/_ico.html" with ico="excluir" %}
+                    </button>
+                </form>
+            </span>
+        </article>
         {% empty %}
         <p class="data-empty">Nenhum projeto ainda. Crie o primeiro.</p>
         {% endfor %}

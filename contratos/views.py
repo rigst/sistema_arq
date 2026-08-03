@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Max
+from django.db.models import Case, IntegerField, Max, When
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -49,6 +49,16 @@ def novo_contrato(request):
             contrato.empresa = obter_grupo_empresa_ou_erro(request.user)
             contrato.criado_por = request.user
             contrato.save()
+            if not contrato.corpo.strip():
+                modelos = garantir_modelos_padrao(contrato.empresa, request.user)
+                modelo = (
+                    modelos.filter(tipo_projeto=contrato.projeto.tipo).first()
+                    or modelos.filter(tipo_projeto="", padrao=True).first()
+                    or modelos.first()
+                )
+                if modelo is not None:
+                    contrato.corpo = modelo.gerar(contexto_do_contrato(contrato))
+                    contrato.save(update_fields=["corpo"])
             messages.success(request, "Contrato criado.")
             return redirect("contrato_detalhe", pk=contrato.pk)
     else:
@@ -67,7 +77,20 @@ def detalhe_contrato(request, pk):
         pk=pk,
     )
     modelos = garantir_modelos_padrao(contrato.empresa, request.user)
-    modelo_padrao = modelos.filter(padrao=True).first() or modelos.first()
+    modelo_padrao = (
+        modelos.filter(tipo_projeto=contrato.projeto.tipo).first()
+        or modelos.filter(tipo_projeto="", padrao=True).first()
+        or modelos.first()
+    )
+    modelos = modelos.order_by(
+        Case(
+            When(tipo_projeto=contrato.projeto.tipo, then=0),
+            When(tipo_projeto="", then=1),
+            default=2,
+            output_field=IntegerField(),
+        ),
+        "nome",
+    )
     proposta_origem = None
     if contrato.origem_tipo == "proposta" and contrato.origem_id:
         from propostas.models import Proposta
@@ -162,7 +185,7 @@ def contrato_pdf(request, pk):
             "empresa_nome": request.user.nome_empresa,
             "hoje": timezone.now(),
         },
-        filename=f"contrato-{contrato.pk}.pdf",
+        filename=f"contrato-{contrato.pk}.pdf", user=request.user,
     )
 
 

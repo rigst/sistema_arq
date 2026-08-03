@@ -45,7 +45,7 @@ def painel_precificacao(request):
             "form_fator": FatorPrecificacaoForm(),
             "custo_hora": custo,
             "hora_base": hora_base,
-            "hora_com_reservas": precificar_etapa(
+            "hora_final": precificar_etapa(
                 grupo, 1, hora_tecnica=hora_base
             )["total"],
             "total_custos": total_custos_fixos(grupo),

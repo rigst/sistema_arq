@@ -65,6 +65,11 @@ class ItemProposta(EmpresaModel):
 
     proposta = models.ForeignKey(Proposta, on_delete=models.CASCADE, related_name="itens")
     descricao = models.CharField(max_length=200, verbose_name="descrição")
+    inclusoes = models.TextField(
+        "o que inclui",
+        default="Entregáveis e atividades conforme o escopo desta etapa.",
+        help_text="Descreva os entregáveis e limites deste item.",
+    )
     horas_estimadas = models.DecimalField(max_digits=8, decimal_places=2, default=0, verbose_name="horas estimadas")
     valor = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     ordem = models.PositiveIntegerField(default=0)

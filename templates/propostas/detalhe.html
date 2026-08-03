@@ -53,20 +53,27 @@
         {% if proposta.editavel %}
         <form method="post" class="form-card" id="proposta-termos-form">
             {% csrf_token %}
+            {% if form_termos.errors %}
+            <div class="form-error-summary" role="alert">
+                <strong>A proposta não foi salva.</strong>
+                <ul>{% for campo in form_termos %}{% for erro in campo.errors %}<li>{{ campo.label }}: {{ erro }}</li>{% endfor %}{% endfor %}</ul>
+            </div>
+            {% endif %}
+            <p class="form-required-hint"><span aria-hidden="true">*</span> Campos obrigatórios</p>
             <div class="form-dupla">
-                <p>{{ form_termos.titulo.label_tag }}{{ form_termos.titulo }}</p>
+                <p><label for="{{ form_termos.titulo.id_for_label }}">{{ form_termos.titulo.label }} <span class="campo-obrigatorio" aria-hidden="true">*</span></label>{{ form_termos.titulo }}</p>
                 {% if proposta.projeto_gerado %}
                 <div class="termo-fixo">
-                    <span>Cliente</span>
+                    <span>Cliente <span class="campo-obrigatorio" aria-hidden="true">*</span></span>
                     <strong>{{ proposta.cliente.nome }}</strong>
                 </div>
                 <div class="termo-fixo">
-                    <span>Tipo de projeto</span>
+                    <span>Tipo de projeto <span class="campo-obrigatorio" aria-hidden="true">*</span></span>
                     <strong>{{ proposta.tipo_projeto|capfirst }}</strong>
                 </div>
                 {% else %}
-                <p>{{ form_termos.cliente.label_tag }}{{ form_termos.cliente }}</p>
-                <p>{{ form_termos.tipo_projeto.label_tag }}{{ form_termos.tipo_projeto }}</p>
+                <p><label for="{{ form_termos.cliente.id_for_label }}">{{ form_termos.cliente.label }} <span class="campo-obrigatorio" aria-hidden="true">*</span></label>{{ form_termos.cliente }}</p>
+                <p><label for="{{ form_termos.tipo_projeto.id_for_label }}">{{ form_termos.tipo_projeto.label }} <span class="campo-obrigatorio" aria-hidden="true">*</span></label>{{ form_termos.tipo_projeto }}</p>
                 {% endif %}
                 <p>{{ form_termos.validade.label_tag }}{{ form_termos.validade }}</p>
             </div>
@@ -116,7 +123,7 @@
             <div class="inline-add">
                 <label class="proposta-hora-manual">
                     <span>Valor manual opcional</span>
-                    <input type="number" min="0.01" step="0.01" name="valor_manual" placeholder="Ex.: 150,00">
+                    <input type="text" inputmode="decimal" name="valor_manual" data-moeda-br placeholder="Ex.: 150,00">
                 </label>
                 <button class="ds-btn ds-btn--solid" type="submit">Aplicar hora técnica</button>
             </div>
@@ -146,7 +153,7 @@
                 <fieldset class="escolha-multipla">
                     <legend>{{ grupo }}</legend>
                     <div class="caixas"><div>
-                    {% for descricao, horas in itens_grupo %}
+                    {% for descricao, horas, inclusoes in itens_grupo %}
                         <label>
                             <input type="checkbox" name="prontos" value="{{ descricao }}">
                             <span>{{ descricao }} <small class="num">{{ horas }} h</small></span>
@@ -170,8 +177,8 @@
 
     {% if fases_entrega %}
     <section class="secao proposta-cronograma">
-        <h2 class="secao-titulo ds-display">Datas previstas de entrega</h2>
-        <p class="secao-sub">Cronograma das fases e dos projetos complementares incluídos.</p>
+        <h2 class="secao-titulo ds-display">Prazos por etapa</h2>
+        <p class="secao-sub">Informe apenas a duração de cada fase em dias úteis. A contagem começa na assinatura do contrato e segue a ordem das etapas.</p>
         <div class="cronograma-proposta">
             {% for fase in fases_entrega %}
             <div class="cronograma-proposta-linha{% if fase.complementar %} is-complementar{% endif %}">
@@ -181,12 +188,13 @@
                 </div>
                 {% if proposta.editavel %}
                 <label>
-                    <span class="ds-oculto">Data prevista de {{ fase.nome }}</span>
-                    <input type="date" name="prazo_fase_{{ fase.pk }}"
-                           value="{{ fase.prazo|date:'Y-m-d' }}" form="proposta-termos-form">
+                    <span class="ds-oculto">Prazo em dias úteis de {{ fase.nome }}</span>
+                    <input type="number" min="1" step="1" name="dias_fase_{{ fase.pk }}"
+                           value="{{ fase.dias_uteis_proposta|default_if_none:'' }}" form="proposta-termos-form"
+                           placeholder="Dias úteis">
                 </label>
                 {% else %}
-                <time{% if fase.prazo %} datetime="{{ fase.prazo|date:'Y-m-d' }}"{% endif %}>{{ fase.prazo|date:"d/m/Y"|default:"A definir" }}</time>
+                <span>{% if fase.dias_uteis_proposta %}{{ fase.dias_uteis_proposta }} dias úteis{% else %}A definir{% endif %}</span>
                 {% endif %}
             </div>
             {% endfor %}

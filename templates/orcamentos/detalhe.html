@@ -58,7 +58,7 @@
                     <td>
                         <form method="post" action="{% url 'orcamento_item_realizado' item.pk %}" class="avanco-form">
                             {% csrf_token %}
-                            <input type="text" name="valor_realizado" value="{{ item.valor_realizado|default_if_none:'' }}" placeholder="—" aria-label="Valor realizado">
+                            <input type="text" inputmode="decimal" data-moeda-br name="valor_realizado" value="{{ item.valor_realizado|default_if_none:'' }}" placeholder="—" aria-label="Valor realizado">
                             <button class="app-link-btn" type="submit">salvar</button>
                         </form>
                     </td>

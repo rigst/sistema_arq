@@ -49,7 +49,7 @@ def garantir_tarefas_da_fase(fase, usuario=None):
 def garantir_tarefas_do_projeto(projeto, usuario=None):
     """Disponibiliza o planejamento técnico antes de cada fase ser aberta."""
     comerciais = {"briefing", "proposta", "contrato"}
-    for fase in projeto.fases.filter(tarefas_semeadas=False).exclude(
+    for fase in projeto.fases.filter(tarefas_semeadas=False).exclude(status="nao_iniciada").exclude(
         chave__in=comerciais
     ).order_by("ordem", "id"):
         garantir_tarefas_da_fase(fase, usuario)

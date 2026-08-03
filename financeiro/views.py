@@ -44,11 +44,11 @@ def dre_csv(request):
     writer = csv.writer(response, delimiter=";")
     writer.writerow(["DRE", f"{mes:02d}/{ano}"])
     writer.writerow([])
-    writer.writerow(["Tipo", "Categoria", "Valor"])
+    writer.writerow(["Tipo", "Descrição", "Valor"])
     for l in dados["entradas"]:
-        writer.writerow(["Entrada", l["categoria"], l["total"]])
+        writer.writerow(["Entrada", l["descricao"], l["total"]])
     for l in dados["saidas"]:
-        writer.writerow(["Saída", l["categoria"], l["total"]])
+        writer.writerow(["Saída", l["descricao"], l["total"]])
     writer.writerow([])
     writer.writerow(["Total entradas", "", dados["total_entradas"]])
     writer.writerow(["Total saídas", "", dados["total_saidas"]])

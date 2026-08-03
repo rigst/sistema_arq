@@ -5,6 +5,7 @@ from django.test import Client, TestCase
 
 from core.factories import criar_empresa_e_usuario
 from core.models import Empresa
+from core.pdf import _identidade_pdf, render_pdf
 from core.visitante_cleanup import limpar_dados_negocio
 from crm.models import Cliente
 from briefing.models import TemplateBriefing
@@ -124,6 +125,16 @@ class IdentidadeTests(TestCase):
         Image.new("RGB", (8, 8), (40, 80, 70)).save(buf, format="PNG")
         return SimpleUploadedFile(nome, buf.getvalue(), content_type="image/png")
 
+    def _png_transparente(self, nome="logo.png"):
+        import io
+
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from PIL import Image
+
+        buf = io.BytesIO()
+        Image.new("RGBA", (12, 8), (20, 20, 20, 0)).save(buf, format="PNG")
+        return SimpleUploadedFile(nome, buf.getvalue(), content_type="image/png")
+
     def test_envia_imagem_de_fundo_e_ela_entra_no_painel(self):
         resp = self.client.post(
             "/escritorio/identidade/",
@@ -153,3 +164,22 @@ class IdentidadeTests(TestCase):
         )
         self.assertFalse(Empresa.objects.get(grupo=self.grupo).imagem_fundo)
         self.assertNotContains(self.client.get("/"), "--fundo-escritorio")
+
+    def test_logo_transparente_e_preservada_no_menu_e_embutida_no_pdf(self):
+        resposta = self.client.post(
+            "/escritorio/identidade/",
+            {"nome": self.grupo.empresa_registro.nome, "logo": self._png_transparente()},
+        )
+        self.assertRedirects(resposta, "/escritorio/identidade/")
+
+        painel = self.client.get("/")
+        self.assertContains(painel, 'class="app-brand-logo"')
+        self.assertContains(painel, "/escritorio/identidade/logo/")
+
+        identidade = _identidade_pdf(self.user)
+        self.assertTrue(identidade["empresa_logo_data_uri"].startswith("data:image/png;base64,"))
+        pdf = render_pdf("pdf/base_pdf.html", {}, user=self.user)
+        self.assertEqual(pdf.status_code, 200)
+        self.assertTrue(pdf.content.startswith(b"%PDF"))
+
+        Empresa.objects.get(grupo=self.grupo).logo.delete(save=True)

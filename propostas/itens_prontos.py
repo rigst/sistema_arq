@@ -11,26 +11,26 @@ número redondo: convence a pessoa a não conferir.
 
 from fases import catalogo
 
-# (descrição, horas sugeridas). A ordem é a do fluxo.
+# (etapa, horas sugeridas, o que inclui). A ordem é a do fluxo contratado.
 FASES_DE_PROJETO = [
-    ("Levantamento e estudo de viabilidade", 12),
-    ("Briefing e programa de necessidades", 8),
-    ("Estudo preliminar", 40),
-    ("Anteprojeto", 60),
-    ("Projeto legal e aprovação em prefeitura", 30),
-    ("Projeto executivo", 80),
-    ("Detalhamento de marcenaria", 40),
-    ("Memorial descritivo e especificações", 16),
+    ("Briefing e programa de necessidades", 8, "Reunião de briefing, roteiro respondido e consolidação dos ambientes e metragens."),
+    ("Levantamento e estudo de viabilidade", 12, "Levantamento das informações disponíveis, condicionantes e análise inicial de viabilidade."),
+    ("Estudo preliminar", 40, "Conceito, referências, implantação ou layout inicial e apresentação para aprovação."),
+    ("Anteprojeto", 60, "Plantas, cortes, fachadas, volumetria e definição preliminar de materiais e sistemas."),
+    ("Projeto legal e aprovação em prefeitura", 30, "Peças gráficas e documentação técnica para protocolo; taxas e prazos do órgão não inclusos."),
+    ("Projeto executivo", 80, "Desenhos executivos cotados, detalhamentos construtivos e informações para execução."),
+    ("Detalhamento de marcenaria", 40, "Vistas, cortes, dimensões, materiais e ferragens dos móveis previstos no escopo."),
+    ("Memorial descritivo e especificações", 16, "Especificação de materiais, acabamentos, componentes e critérios de execução."),
 ]
 
 SERVICOS_AVULSOS = [
-    ("Coordenação de projetos complementares", 20),
-    ("Acompanhamento de obra (por visita)", 4),
-    ("Assessoria de compras e fornecedores", 12),
-    ("Projeto luminotécnico", 24),
-    ("Projeto de paisagismo", 20),
-    ("Maquete eletrônica e imagens", 30),
-    ("Reunião extra com o cliente", 3),
+    ("Coordenação de projetos complementares", 20, "Análise de interferências e consolidação das disciplinas contratadas à parte."),
+    ("Acompanhamento de obra (por visita)", 4, "Uma visita técnica e relatório; não inclui gerenciamento da obra."),
+    ("Assessoria de compras e fornecedores", 12, "Curadoria, cotações e apoio à escolha; compras e contratos são feitos pelo cliente."),
+    ("Projeto luminotécnico", 24, "Conceito, distribuição de luminárias, comandos e especificação básica."),
+    ("Projeto de paisagismo", 20, "Conceito, plano de massas, espécies e orientações de implantação."),
+    ("Maquete eletrônica e imagens", 30, "Modelagem tridimensional e imagens das vistas definidas no escopo."),
+    ("Reunião extra com o cliente", 3, "Uma reunião adicional, preparação, registro e encaminhamentos."),
 ]
 
 
@@ -55,4 +55,9 @@ def para_o_tipo(tipo_projeto):
         "anteprojeto": 60,
         "executivo": 80,
     }
-    return [(p.nome, horas.get(p.chave, 20)) for p in catalogo.PRINCIPAIS]
+    inclusoes = {nome: detalhe for nome, _, detalhe in FASES_DE_PROJETO}
+    return [
+        (p.nome, horas.get(p.chave, 20), inclusoes.get(p.nome, p.resumo))
+        for p in catalogo.PRINCIPAIS
+        if p.chave not in {"proposta", "contrato"}
+    ]

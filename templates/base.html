@@ -125,7 +125,7 @@
                 <span class="app-empresa-ico">{{ user.nome_empresa|slice:":1" }}</span>
                 <div class="app-empresa-info">
                     <strong>{{ user.nome_empresa }}</strong>
-                    <span>{{ user.get_username }}</span>
+                    <span>{{ user.get_full_name|default:user.nome_exibicao|default:user.get_username }}</span>
                 </div>
             </div>
             {% endif %}

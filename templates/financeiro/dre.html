@@ -8,7 +8,7 @@
         <div>
             <span class="ds-kicker">Financeiro</span>
             <h1 class="ds-h2 ds-display">DRE — {{ mes }}/{{ ano|unlocalize }}</h1>
-            <p class="page-sub">Demonstração de resultado do mês (realizado, por categoria).</p>
+            <p class="page-sub">Demonstração de resultado do mês pelos movimentos realizados, sem categorias.</p>
         </div>
         <div class="page-head-actions">
             <a class="ds-btn" href="{% url 'financeiro_painel' %}">Voltar</a>
@@ -21,7 +21,7 @@
             <h2 class="ds-display">Entradas</h2>
             <table class="data-table">
                 <tbody>
-                {% for l in dre.entradas %}<tr><td>{{ l.categoria }}</td><td class="valor valor--entrada">R$ {{ l.total }}</td></tr>{% empty %}<tr><td class="data-empty" colspan="2">Sem entradas.</td></tr>{% endfor %}
+                {% for l in dre.entradas %}<tr><td>{{ l.descricao }}</td><td class="valor valor--entrada">R$ {{ l.total }}</td></tr>{% empty %}<tr><td class="data-empty" colspan="2">Sem entradas.</td></tr>{% endfor %}
                 </tbody>
                 <tfoot><tr><th>Total</th><th class="valor--entrada">R$ {{ dre.total_entradas }}</th></tr></tfoot>
             </table>
@@ -30,7 +30,7 @@
             <h2 class="ds-display">Saídas</h2>
             <table class="data-table">
                 <tbody>
-                {% for l in dre.saidas %}<tr><td>{{ l.categoria }}</td><td class="valor valor--saida">R$ {{ l.total }}</td></tr>{% empty %}<tr><td class="data-empty" colspan="2">Sem saídas.</td></tr>{% endfor %}
+                {% for l in dre.saidas %}<tr><td>{{ l.descricao }}</td><td class="valor valor--saida">R$ {{ l.total }}</td></tr>{% empty %}<tr><td class="data-empty" colspan="2">Sem saídas.</td></tr>{% endfor %}
                 </tbody>
                 <tfoot><tr><th>Total</th><th class="valor--saida">R$ {{ dre.total_saidas }}</th></tr></tfoot>
             </table>

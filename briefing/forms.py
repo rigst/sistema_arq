@@ -1,6 +1,7 @@
 from django import forms
 
 from .models import AmbientePrograma, Briefing, TemplateBriefing
+from projetos.models import Projeto
 from core.forms import ArqModelForm
 
 
@@ -36,10 +37,13 @@ class BriefingForm(ArqModelForm):
 class AmbienteForm(ArqModelForm):
     class Meta:
         model = AmbientePrograma
-        fields = ["nome", "area_aprox", "uso"]
+        fields = ["nome", "area_aprox"]
 
 
 class TemplateBriefingForm(ArqModelForm):
+    tipo_projeto = forms.ChoiceField(
+        choices=[("", "Qualquer tipo"), *Projeto.TIPO_CHOICES], required=False
+    )
     class Meta:
         model = TemplateBriefing
         fields = ["nome", "tipo_projeto", "descricao", "ativo"]

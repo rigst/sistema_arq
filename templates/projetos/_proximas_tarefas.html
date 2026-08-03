@@ -51,7 +51,7 @@
             </a>
         </li>
         {% empty %}
-        <li class="data-empty">Todas as tarefas planejadas foram concluídas.</li>
+        <li class="data-empty">{% if tarefas_total %}Todas as tarefas planejadas foram concluídas.{% else %}Nenhuma tarefa de fase liberada no momento.{% endif %}</li>
         {% endfor %}
     </ul>
 

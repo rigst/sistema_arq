@@ -42,6 +42,10 @@ class Fase(EmpresaModel, Rastreavel):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=NAO_INICIADA)
 
     prazo = models.DateField(null=True, blank=True, help_text="Data combinada de entrega.")
+    dias_uteis_proposta = models.PositiveIntegerField(
+        "prazo na proposta (dias úteis)", null=True, blank=True,
+        help_text="Contados da assinatura do contrato, respeitando a sequência das fases.",
+    )
     iniciada_em = models.DateTimeField(null=True, blank=True, verbose_name="iniciada em")
     enviada_em = models.DateTimeField(null=True, blank=True, verbose_name="enviada em")
     respondida_em = models.DateTimeField(null=True, blank=True, verbose_name="respondida em")
@@ -272,7 +276,10 @@ def montar_fases(projeto, complementares=()):
         if p.opcional and p.chave not in complementares:
             continue
         novas.append(
-            Fase(empresa=projeto.empresa, projeto=projeto, chave=p.chave, ordem=ordem)
+            Fase(
+                empresa=projeto.empresa, projeto=projeto, chave=p.chave, ordem=ordem,
+                dias_uteis_proposta=catalogo.PRAZOS_UTEIS_PADRAO.get(p.chave),
+            )
         )
     Fase.objects.bulk_create(novas)
     # A primeira fase de um projeto novo já nasce ativa: não há nada antes dela
@@ -305,6 +312,7 @@ def criar_complementares_avulsos(projeto, texto):
         Fase(
             empresa=projeto.empresa, projeto=projeto,
             chave=catalogo.CHAVE_LIVRE, titulo_livre=nome, ordem=ordem + i,
+            dias_uteis_proposta=catalogo.PRAZOS_UTEIS_PADRAO.get(catalogo.CHAVE_LIVRE),
         )
         for i, nome in enumerate(nomes)
     ]

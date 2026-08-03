@@ -5,7 +5,6 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from datetime import date
 from decimal import Decimal, InvalidOperation
 
 from core.tenancy import queryset_da_empresa
@@ -28,6 +27,20 @@ def _reprecificar_itens(proposta):
         item.save(update_fields=["valor"])
 
 
+def _ordenar_itens(proposta):
+    """Mantém as etapas conhecidas na ordem do trabalho; serviços livres vêm depois."""
+    ordem_catalogo = {
+        descricao: indice
+        for indice, (descricao, _, _) in enumerate(itens_prontos.FASES_DE_PROJETO)
+    }
+    itens = list(proposta.itens.all())
+    itens.sort(key=lambda item: (ordem_catalogo.get(item.descricao, 10_000), item.ordem, item.pk))
+    for ordem, item in enumerate(itens):
+        if item.ordem != ordem:
+            item.ordem = ordem
+            item.save(update_fields=["ordem"])
+
+
 @login_required
 def detalhe_proposta(request, pk):
     proposta = get_object_or_404(
@@ -48,13 +61,23 @@ def detalhe_proposta(request, pk):
                 with transaction.atomic():
                     form_termos.save()
                     for fase, prazo in prazos:
-                        fase.prazo = prazo
-                        fase.save(update_fields=["prazo"])
+                        fase.dias_uteis_proposta = prazo
+                        fase.save(update_fields=["dias_uteis_proposta"])
                     if request.POST.get("acao") == "enviar":
                         _enviar_ao_cliente(request, proposta)
                     else:
                         messages.success(request, "Proposta salva.")
                 return redirect("proposta_detalhe", pk=proposta.pk)
+            if not form_termos.is_valid():
+                erros = "; ".join(
+                    f"{form_termos.fields[campo].label}: {' '.join(mensagens)}"
+                    for campo, mensagens in form_termos.errors.items()
+                    if campo in form_termos.fields
+                )
+                messages.error(
+                    request,
+                    f"A proposta não foi salva. {erros or 'Confira os campos obrigatórios.'}",
+                )
         else:
             form_termos = PropostaForm(instance=proposta, user=request.user)
     return render(
@@ -87,14 +110,19 @@ def _fases_de_entrega(proposta):
 def _prazos_do_post(request, fases):
     prazos = []
     for fase in fases:
-        campo = f"prazo_fase_{fase.pk}"
+        campo = f"dias_fase_{fase.pk}"
         if campo not in request.POST:
             continue
         valor = request.POST.get(campo, "").strip()
         try:
-            prazo = date.fromisoformat(valor) if valor else None
-        except ValueError:
-            messages.error(request, f"Confira a data prevista de {fase.nome}.")
+            prazo = int(valor) if valor else None
+            if prazo is not None and prazo < 1:
+                raise ValueError
+        except (TypeError, ValueError):
+            messages.error(
+                request,
+                f"A proposta não foi salva. Informe um número válido de dias úteis para {fase.nome}.",
+            )
             return False, []
         prazos.append((fase, prazo))
     return True, prazos
@@ -133,7 +161,9 @@ def definir_hora_tecnica(request, pk):
         )
     )
 
-    valor_manual = request.POST.get("valor_manual", "").strip().replace(",", ".")
+    valor_manual = request.POST.get("valor_manual", "").strip()
+    if "," in valor_manual:
+        valor_manual = valor_manual.replace(".", "").replace(",", ".")
     if valor_manual:
         try:
             hora_aplicada = Decimal(valor_manual)
@@ -177,7 +207,7 @@ def adicionar_prontos(request, pk):
     ordem = proposta.itens.count()
     criados = 0
     for _, itens in itens_prontos.por_grupo():
-        for descricao, horas in itens:
+        for descricao, horas, inclusoes in itens:
             if descricao not in escolhidos or descricao in ja_tem:
                 continue
             calc = precificar_etapa(
@@ -185,10 +215,12 @@ def adicionar_prontos(request, pk):
             )
             ItemProposta.objects.create(
                 empresa=proposta.empresa, proposta=proposta, descricao=descricao,
-                horas_estimadas=horas, valor=calc["total"], ordem=ordem + criados,
+                inclusoes=inclusoes, horas_estimadas=horas,
+                valor=calc["total"], ordem=ordem + criados,
             )
             criados += 1
     if criados:
+        _ordenar_itens(proposta)
         messages.success(request, f"{criados} item(ns) adicionados e precificados. Ajuste as horas.")
     else:
         messages.info(request, "Esses itens já estavam na proposta.")
@@ -213,9 +245,10 @@ def adicionar_item(request, pk):
         item.valor = calc["total"]
         item.ordem = proposta.itens.count()
         item.save()
+        _ordenar_itens(proposta)
         messages.success(request, "Item precificado e adicionado.")
     else:
-        messages.error(request, "Informe descrição e horas.")
+        messages.error(request, "O item não foi adicionado. Informe etapa, o que inclui e horas.")
     return _itens_ou_redirect(request, proposta)
 
 
@@ -245,9 +278,10 @@ def editar_item(request, pk):
             )
             item.valor = calc["total"]
             item.save()
+            _ordenar_itens(proposta)
             messages.success(request, f"“{item.descricao}” atualizado.")
             return _itens_ou_redirect(request, proposta)
-        messages.error(request, "Informe descrição e horas.")
+        messages.error(request, "O item não foi salvo. Informe etapa, o que inclui e horas.")
         return _itens_ou_redirect(request, proposta)
 
     # GET: devolve só a linha, em modo de edição.
@@ -361,7 +395,7 @@ def proposta_pdf(request, pk):
             "empresa_nome": request.user.nome_empresa,
             "hoje": timezone.now(),
         },
-        filename=f"proposta-{proposta.pk}.pdf",
+        filename=f"proposta-{proposta.pk}.pdf", user=request.user,
     )
 
 

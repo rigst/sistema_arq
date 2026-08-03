@@ -9,6 +9,57 @@
 
     var semMovimento = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+    /* Valores são escritos como o usuário brasileiro lê: 1.234,56. Antes do
+       envio, voltam ao decimal canônico aceito pelo servidor. */
+    function mascarasMonetarias() {
+        function centavosDoTexto(texto) {
+            var bruto = String(texto || "").trim();
+            if (!bruto) return null;
+            if (/^-?\d+(\.\d{1,2})$/.test(bruto) && bruto.indexOf(",") < 0) {
+                return Math.round(Number(bruto) * 100);
+            }
+            var negativo = bruto.indexOf("-") >= 0;
+            var digitos = bruto.replace(/\D/g, "");
+            if (!digitos) return null;
+            var valor = parseInt(digitos, 10);
+            return negativo ? -valor : valor;
+        }
+
+        function formatar(campo) {
+            var centavos = centavosDoTexto(campo.value);
+            if (centavos === null) { campo.value = ""; return; }
+            campo.value = new Intl.NumberFormat("pt-BR", {
+                minimumFractionDigits: 2, maximumFractionDigits: 2
+            }).format(centavos / 100);
+        }
+
+        function normalizar(campo) {
+            var centavos = centavosDoTexto(campo.value);
+            campo.value = centavos === null ? "" : (centavos / 100).toFixed(2);
+        }
+
+        function iniciarCampos(raiz) {
+            raiz.querySelectorAll("[data-moeda-br]").forEach(function (campo) {
+                if (campo.dataset.moedaAtiva === "1") return;
+                campo.dataset.moedaAtiva = "1";
+                formatar(campo);
+                campo.addEventListener("input", function () {
+                    var posicao = campo.selectionStart;
+                    formatar(campo);
+                    if (posicao !== null) campo.setSelectionRange(campo.value.length, campo.value.length);
+                });
+                campo.addEventListener("blur", function () { formatar(campo); });
+            });
+        }
+        iniciarCampos(document);
+        document.body.addEventListener("htmx:afterSwap", function (evento) {
+            iniciarCampos(evento.target);
+        });
+        document.addEventListener("submit", function (evento) {
+            evento.target.querySelectorAll("[data-moeda-br]").forEach(normalizar);
+        }, true);
+    }
+
     /* --- Números do painel contam até o valor, mantendo o formato --- */
     function contarNumeros() {
         document.querySelectorAll(".kpi-value").forEach(function (el) {
@@ -229,8 +280,9 @@
         var horas = raiz.querySelector("#id_horas_uteis_mes");
         var horaManual = raiz.querySelector("#id_hora_tecnica_manual");
         var margem = raiz.querySelector("#id_margem_seguranca_percent");
-        var reserva = raiz.querySelector("#id_reserva_percent");
-        if (!horas || !horaManual || !margem || !reserva) return;
+        var imposto = raiz.querySelector("#id_imposto_percent");
+        var lucro = raiz.querySelector("#id_lucro_previsto_percent");
+        if (!horas || !horaManual || !margem || !imposto || !lucro) return;
 
         function numero(valor) {
             var texto = String(valor || "").trim().replace(/\s/g, "");
@@ -250,8 +302,9 @@
             var custoHora = horasMes > 0 ? totalCustos / horasMes : 0;
             var manual = numero(horaManual.value);
             var horaBase = manual > 0 ? manual : custoHora;
-            var horaFinal = horaBase * (1 + numero(margem.value) / 100) *
-                            (1 + numero(reserva.value) / 100);
+            var baseComSeguranca = horaBase * (1 + numero(margem.value) / 100);
+            var horaFinal = baseComSeguranca *
+                            (1 + (numero(imposto.value) + numero(lucro.value)) / 100);
 
             var saidas = {
                 "[data-custo-hora]": moeda(custoHora),
@@ -267,7 +320,7 @@
             });
         }
 
-        [horas, horaManual, margem, reserva].forEach(function (campo) {
+        [horas, horaManual, margem, imposto, lucro].forEach(function (campo) {
             campo.addEventListener("input", atualizar);
         });
         atualizar();
@@ -301,7 +354,7 @@
 
     function iniciar() {
         contarNumeros(); preencherBarras(); marcarEnvio(); confirmarExclusaoHtmx();
-        aberturaEmPassos(); avisos(); modais(); cronometro(); precificacaoAoVivo();
+        aberturaEmPassos(); avisos(); modais(); mascarasMonetarias(); cronometro(); precificacaoAoVivo();
     }
 
     if (document.readyState === "loading") {

@@ -155,7 +155,7 @@ class ModeloContrato(EmpresaModel, Rastreavel):
         "{{data}}": "Data de hoje",
         "{{data_inicio}}": "Data prevista de início",
         "{{prazo}}": "Data prevista de entrega",
-        "{{cronograma}}": "Datas previstas por fase",
+        "{{cronograma}}": "Prazos em dias úteis por fase",
         "{{escopo}}": "Itens e valores da proposta",
         "{{endereco}}": "Endereço da obra",
         "{{area_terreno}}": "Área do terreno",
@@ -163,6 +163,10 @@ class ModeloContrato(EmpresaModel, Rastreavel):
     }
 
     nome = models.CharField(max_length=150)
+    tipo_projeto = models.CharField(
+        "tipo de projeto", max_length=20, blank=True, choices=Projeto.TIPO_CHOICES,
+        help_text="Deixe em branco para servir a qualquer tipo de projeto.",
+    )
     descricao = models.CharField("descrição", max_length=250, blank=True)
     corpo = models.TextField(
         help_text="Use marcadores como {{cliente}} e {{valor}}; eles são trocados ao gerar."

@@ -4,7 +4,8 @@ from django.test import TestCase
 
 from core.tenancy import obter_grupo_empresa_padrao
 from legal.testing import aceitar_documentos
-from precificacao.models import CustoFixo, FatorPrecificacao
+from precificacao.models import ConfiguracaoPrecificacao, CustoFixo, FatorPrecificacao
+from precificacao.services import precificar_etapa
 from usuarios.models import Usuario
 
 
@@ -42,3 +43,24 @@ class PrecificacaoTests(TestCase):
                 empresa=self.grupo, nome="Urgência"
             ).ativo
         )
+
+    def test_imposto_e_lucro_substituem_a_reserva_no_calculo(self):
+        ConfiguracaoPrecificacao.objects.update_or_create(
+            empresa=self.grupo,
+            defaults={
+                "hora_tecnica_manual": Decimal("100.00"),
+                "margem_seguranca_percent": Decimal("0.00"),
+                "imposto_percent": Decimal("6.00"),
+                "lucro_previsto_percent": Decimal("20.00"),
+            },
+        )
+
+        calculo = precificar_etapa(self.grupo, Decimal("1"))
+        self.assertEqual(calculo["imposto"], Decimal("6.00"))
+        self.assertEqual(calculo["lucro_previsto"], Decimal("20.00"))
+        self.assertEqual(calculo["total"], Decimal("126.00"))
+
+        pagina = self.client.get("/precificacao/")
+        self.assertContains(pagina, "Imposto")
+        self.assertContains(pagina, "Lucro previsto")
+        self.assertNotContains(pagina, "Reserva do escritório")

@@ -25,6 +25,10 @@ class PainelFinanceiroTests(TestCase):
         self.assertEqual(resposta.status_code, 200)
         self.assertContains(resposta, 'id="modal-novo-lancamento"')
         self.assertContains(resposta, 'data-abre="modal-novo-lancamento"')
+        self.assertNotContains(resposta, 'name="categoria"')
+        self.assertNotContains(resposta, 'name="projeto"')
+        self.assertContains(resposta, "Parcelas de projetos vêm dos respectivos contratos")
+        self.assertContains(resposta, "data-moeda-br")
 
     def test_post_invalido_reabre_modal_com_erros(self):
         resposta = self.client.post("/financeiro/", {"descricao": "Sem valor"})

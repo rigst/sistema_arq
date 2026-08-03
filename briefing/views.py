@@ -358,7 +358,7 @@ def briefing_pdf(request, projeto_pk):
             "ambientes": briefing.ambientes.all(),
             "empresa_nome": request.user.nome_empresa,
         },
-        filename=f"briefing-{projeto.pk}.pdf",
+        filename=f"briefing-{projeto.pk}.pdf", user=request.user,
     )
 
 

@@ -19,6 +19,7 @@
             <h2 class="secao-titulo ds-display" id="dados-minuta-titulo">Dados da minuta</h2>
             <div class="modelo-dados-form modelo-dados-form--contrato">
                 <p>{{ form.nome.label_tag }}{{ form.nome }}{{ form.nome.errors }}</p>
+                <p>{{ form.tipo_projeto.label_tag }}{{ form.tipo_projeto }}{{ form.tipo_projeto.errors }}</p>
                 <p>{{ form.descricao.label_tag }}{{ form.descricao }}{{ form.descricao.errors }}</p>
                 <label class="form-marcar form-marcar--simples">{{ form.padrao }}<span>{{ form.padrao.label }}</span></label>
                 <label class="form-marcar form-marcar--simples">{{ form.ativo }}<span>{{ form.ativo.label }}</span></label>

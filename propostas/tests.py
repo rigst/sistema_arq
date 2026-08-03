@@ -35,6 +35,7 @@ class ItensProntosTests(TestCase):
         self.assertEqual(len(itens), 2)
         self.assertTrue(all(i.valor > 0 for i in itens))
         self.assertTrue(all(i.horas_estimadas > 0 for i in itens))
+        self.assertTrue(all(i.inclusoes for i in itens))
 
     def test_nao_duplica_o_que_ja_esta_na_proposta(self):
         for _ in range(2):
@@ -203,7 +204,7 @@ class CicloDaPropostaTests(ItensProntosTests):
         self.assertEqual(self.proposta.cliente, self.cliente)
         self.assertEqual(self.proposta.tipo_projeto, "residencial")
 
-    def test_salva_datas_das_fases_e_dos_complementares_na_proposta(self):
+    def test_salva_dias_uteis_das_fases_e_dos_complementares_na_proposta(self):
         from fases.models import montar_fases
         from projetos.models import Projeto
 
@@ -217,7 +218,8 @@ class CicloDaPropostaTests(ItensProntosTests):
         eletrico = projeto.fases.get(chave="comp_eletrica")
 
         pagina = self.client.get(f"/propostas/{self.proposta.pk}/")
-        self.assertContains(pagina, "Datas previstas de entrega")
+        self.assertContains(pagina, "Prazos por etapa")
+        self.assertContains(pagina, "contagem começa na assinatura do contrato")
         self.assertContains(pagina, "Estudo preliminar")
         self.assertContains(pagina, "Projeto elétrico")
 
@@ -229,16 +231,16 @@ class CicloDaPropostaTests(ItensProntosTests):
                 "tipo_projeto": "residencial",
                 "validade": "",
                 "observacoes": "",
-                f"prazo_fase_{estudo.pk}": "2026-10-10",
-                f"prazo_fase_{eletrico.pk}": "2026-11-20",
+                f"dias_fase_{estudo.pk}": "18",
+                f"dias_fase_{eletrico.pk}": "12",
                 "acao": "salvar",
             },
         )
         self.assertRedirects(resposta, f"/propostas/{self.proposta.pk}/")
         estudo.refresh_from_db()
         eletrico.refresh_from_db()
-        self.assertEqual(str(estudo.prazo), "2026-10-10")
-        self.assertEqual(str(eletrico.prazo), "2026-11-20")
+        self.assertEqual(estudo.dias_uteis_proposta, 18)
+        self.assertEqual(eletrico.dias_uteis_proposta, 12)
 
         pdf = self.client.get(f"/propostas/{self.proposta.pk}/pdf/")
         self.assertEqual(pdf.status_code, 200)
@@ -359,3 +361,12 @@ class FatoresDaPropostaTests(ItensProntosTests):
         )
         self.assertRedirects(resposta, f"/propostas/{self.proposta.pk}/")
         self.assertEqual(list(self.proposta.fatores.all()), [self.urgencia])
+
+    def test_valor_manual_aceita_moeda_brasileira(self):
+        resposta = self.client.post(
+            f"/propostas/{self.proposta.pk}/hora-tecnica/",
+            {"valor_manual": "1.234,56"},
+        )
+        self.assertRedirects(resposta, f"/propostas/{self.proposta.pk}/")
+        self.proposta.refresh_from_db()
+        self.assertEqual(self.proposta.hora_tecnica_aplicada, Decimal("1234.56"))

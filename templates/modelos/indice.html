@@ -65,7 +65,7 @@
                     <span class="modelo-icone">{% include "core/_ico.html" with ico="contratos" %}</span>
                     <div class="modelo-id">
                         <a href="{% url 'contrato_modelo_editar' m.pk %}">{{ m.nome }}</a>
-                        <span class="modelo-meta">{{ m.descricao|default:"Minuta sem descrição." }}</span>
+                        <span class="modelo-meta">{% if m.tipo_projeto %}{{ m.get_tipo_projeto_display }} · {% else %}Qualquer projeto · {% endif %}{{ m.descricao|default:"Minuta sem descrição." }}</span>
                         {% if m.nome in contratos_padrao %}<span class="modelo-origem">Incluído pelo app</span>{% endif %}
                     </div>
                     <div class="modelo-acoes">

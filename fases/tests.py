@@ -449,26 +449,27 @@ class TarefasDaFaseTests(BaseFase):
         self.assertEqual(proxima.status, Fase.EM_ELABORACAO)
         fase.arquivos.first().arquivo.delete(save=False)
 
-    def test_ficha_do_projeto_resume_e_lista_as_tarefas_tecnicas(self):
+    def test_ficha_do_projeto_oculta_tarefas_das_fases_bloqueadas(self):
         fase = self.fase("estudo_preliminar")
         fase.prazo = date(2026, 9, 15)
         fase.save(update_fields=["prazo"])
 
         resposta = self.client.get(f"/projetos/{self.projeto.pk}/")
 
-        self.assertEqual(resposta.context["tarefas_total"], 9)
+        self.assertEqual(resposta.context["tarefas_total"], 0)
         self.assertEqual(resposta.context["tarefas_concluidas"], 0)
-        self.assertEqual(resposta.context["tarefas_pendentes"], 9)
-        self.assertEqual(len(resposta.context["proximas_tarefas"]), 5)
+        self.assertEqual(resposta.context["tarefas_pendentes"], 0)
+        self.assertEqual(len(resposta.context["proximas_tarefas"]), 0)
         self.assertContains(resposta, "Próximas tarefas")
         self.assertNotContains(resposta, "Horas projetadas × trabalhadas")
-        self.assertContains(resposta, "Apresentação de conceito e referências")
+        self.assertNotContains(resposta, "Apresentação de conceito e referências")
         estudo = next(f for f in resposta.context["fases"] if f.chave == "estudo_preliminar")
-        self.assertEqual(estudo.horas_tarefas, 28)
+        self.assertIsNone(estudo.horas_tarefas)
 
     def test_check_no_projeto_atualiza_contadores_inline(self):
+        fase = self.abrir_fase()
         self.client.get(f"/projetos/{self.projeto.pk}/")
-        tarefa = self.projeto.tarefas.filter(fase__isnull=False).first()
+        tarefa = self.projeto.tarefas.filter(fase=fase).first()
 
         resposta = self.client.post(
             f"/projetos/tarefa/{tarefa.pk}/alternar/", HTTP_HX_REQUEST="true"

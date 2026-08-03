@@ -8,22 +8,22 @@
     · Hora técnica: R$ {{ proposta.hora_tecnica_aplicada }}</p>
 
 <table>
-    <thead><tr><th>Ambiente / etapa</th><th>Horas</th><th class="total">Valor</th></tr></thead>
+    <thead><tr><th>Etapa / serviço e inclusões</th><th>Horas</th><th class="total">Valor</th></tr></thead>
     <tbody>
     {% for item in itens %}
-        <tr><td>{{ item.descricao }}</td><td>{{ item.horas_estimadas }}</td><td class="total">R$ {{ item.valor }}</td></tr>
+        <tr><td><strong>{{ item.descricao }}</strong><br><span class="muted">{{ item.inclusoes }}</span></td><td>{{ item.horas_estimadas|floatformat:"0" }} h</td><td class="total">R$ {{ item.valor }}</td></tr>
     {% endfor %}
     </tbody>
     <tfoot><tr><th>Total</th><th>{{ proposta.horas_totais|floatformat:"0" }} h</th><th class="total">R$ {{ proposta.valor_total }}<br><span class="muted">R$ {{ proposta.hora_tecnica_aplicada }}/h</span></th></tr></tfoot>
 </table>
 
 {% if fases_entrega %}
-<div class="bloco"><h3>Datas previstas de entrega</h3></div>
+<div class="bloco"><h3>Prazos por etapa</h3><p>Contados em dias úteis a partir da assinatura do contrato, seguindo a ordem das etapas.</p></div>
 <table>
-    <thead><tr><th>Fase / projeto complementar</th><th class="total">Data prevista</th></tr></thead>
+    <thead><tr><th>Fase / projeto complementar</th><th class="total">Duração</th></tr></thead>
     <tbody>
     {% for fase in fases_entrega %}
-        <tr><td>{{ fase.nome }}</td><td class="total">{{ fase.prazo|date:"d/m/Y"|default:"A definir" }}</td></tr>
+        <tr><td>{{ fase.nome }}</td><td class="total">{% if fase.dias_uteis_proposta %}{{ fase.dias_uteis_proposta }} dias úteis{% else %}A definir{% endif %}</td></tr>
     {% endfor %}
     </tbody>
 </table>

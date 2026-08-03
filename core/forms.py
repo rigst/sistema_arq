@@ -28,7 +28,18 @@ class NomeAcessivelMixin:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for campo in self.fields.values():
+        for nome, campo in self.fields.items():
+            if isinstance(campo, forms.DecimalField) and (
+                nome == "valor"
+                or nome.startswith("valor_")
+                or nome in {"saldo_inicial", "orcamento_previsto", "hora_tecnica_manual"}
+            ):
+                attrs = {
+                    chave: valor for chave, valor in campo.widget.attrs.items()
+                    if chave not in {"min", "max", "step"}
+                }
+                attrs.update({"inputmode": "decimal", "data-moeda-br": ""})
+                campo.widget = forms.TextInput(attrs=attrs)
             rotulo = campo.label
             if not rotulo or "aria-label" in campo.widget.attrs:
                 continue

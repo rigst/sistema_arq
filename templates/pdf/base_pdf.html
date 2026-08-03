@@ -3,33 +3,50 @@
 <head>
 <meta charset="utf-8">
 <style>
-    @page { size: A4; margin: 2cm; }
-    body { font-family: "Helvetica", "Arial", sans-serif; color: #1f2430; font-size: 12px; line-height: 1.5; }
-    .doc-head { border-bottom: 2px solid #2563eb; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
-    .doc-emp { font-size: 18px; font-weight: 700; color: #0f1115; }
-    .doc-tipo { text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; font-size: 11px; }
-    h1 { font-size: 20px; margin: 0 0 4px; }
-    .muted { color: #6b7280; }
-    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
-    th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #e7e9ee; }
-    th { font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
-    tfoot th { border-top: 2px solid #cfd3da; font-size: 13px; color: #0f1115; }
+    @page {
+        size: A4; margin: 2.1cm 1.8cm 1.8cm;
+        @bottom-right { content: "PÁGINA " counter(page) " / " counter(pages); font: 8px Helvetica, Arial, sans-serif; color: #777; letter-spacing: .08em; }
+    }
+    * { box-sizing: border-box; }
+    body { font-family: "Helvetica", "Arial", sans-serif; color: #111; font-size: 10.5px; line-height: 1.55; }
+    .doc-watermark { position: fixed; left: 18%; top: 31%; width: 64%; height: 34%; object-fit: contain; opacity: .035; z-index: -1; }
+    .doc-head { min-height: 72px; border-bottom: 2px solid #111; padding-bottom: 13px; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .doc-brand { display: flex; align-items: center; gap: 16px; }
+    .doc-logo { display: block; width: auto; max-width: 155px; height: 54px; object-fit: contain; }
+    .doc-emp { font-size: 17px; font-weight: 700; color: #050505; letter-spacing: -.02em; }
+    .doc-tipo { margin-top: 3px; text-transform: uppercase; letter-spacing: .16em; color: #555; font-size: 8px; font-weight: 700; }
+    .doc-data { color: #555; font-size: 9px; letter-spacing: .04em; }
+    h1 { font-size: 24px; line-height: 1.15; letter-spacing: -.035em; margin: 0 0 7px; color: #050505; }
+    p { orphans: 3; widows: 3; }
+    strong { color: #080808; }
+    .muted { color: #666; }
+    table { width: 100%; border-collapse: collapse; margin: 17px 0 24px; page-break-inside: auto; }
+    tr { page-break-inside: avoid; }
+    th, td { text-align: left; padding: 9px 7px; border-bottom: 1px solid #cfcfcf; vertical-align: top; }
+    thead th { background: #171717; color: #fff; border: 0; font-size: 8px; text-transform: uppercase; letter-spacing: .1em; font-weight: 700; }
+    tbody tr:nth-child(even) td { background: rgba(0, 0, 0, .025); }
+    tfoot th { border-top: 2px solid #111; border-bottom: 0; padding-top: 11px; font-size: 11px; color: #050505; }
     .total { text-align: right; }
-    .doc-foot { margin-top: 30px; color: #9ca3af; font-size: 10px; border-top: 1px solid #e7e9ee; padding-top: 8px; }
-    .bloco { margin: 14px 0; }
-    .bloco h3 { font-size: 12px; margin: 0 0 4px; color: #2563eb; }
+    .doc-foot { margin-top: 38px; color: #777; font-size: 8px; border-top: 1px solid #aaa; padding-top: 8px; text-transform: uppercase; letter-spacing: .08em; }
+    .bloco { margin: 22px 0 9px; page-break-inside: avoid; }
+    .bloco h3 { font-size: 10px; margin: 0 0 7px; padding-bottom: 5px; color: #111; border-bottom: 1px solid #777; text-transform: uppercase; letter-spacing: .12em; }
+    ul { padding-left: 18px; }
 </style>
 {% block extra_style %}{% endblock %}
 </head>
 <body>
-    <div class="doc-head">
-        <div>
-            <div class="doc-emp">{{ empresa_nome }}</div>
-            <div class="doc-tipo">{% block tipo %}Documento{% endblock %}</div>
+    {% if empresa_logo_data_uri %}<img class="doc-watermark" src="{{ empresa_logo_data_uri }}" alt="">{% endif %}
+    <header class="doc-head">
+        <div class="doc-brand">
+            {% if empresa_logo_data_uri %}<img class="doc-logo" src="{{ empresa_logo_data_uri }}" alt="Logo de {{ empresa_nome }}">{% endif %}
+            <div>
+                <div class="doc-emp">{{ empresa_nome }}</div>
+                <div class="doc-tipo">{% block tipo %}Documento{% endblock %}</div>
+            </div>
         </div>
-        <div class="muted">{{ hoje|date:"d/m/Y" }}</div>
-    </div>
-    {% block conteudo %}{% endblock %}
-    <div class="doc-foot">Gerado pelo A.R.Q. · {{ hoje|date:"d/m/Y H:i" }}</div>
+        <div class="doc-data">{{ hoje|date:"d/m/Y" }}</div>
+    </header>
+    <main>{% block conteudo %}{% endblock %}</main>
+    <footer class="doc-foot">Documento emitido por {{ empresa_nome }} · {{ hoje|date:"d/m/Y H:i" }}</footer>
 </body>
 </html>
