@@ -421,6 +421,11 @@ def proposta_pdf(request, pk):
     proposta = get_object_or_404(
         queryset_da_empresa(Proposta.objects.select_related("cliente"), request.user), pk=pk
     )
+    assinante_nome = (
+        request.user.get_full_name().strip()
+        or request.user.nome_exibicao
+        or request.user.get_username()
+    )
     return render_pdf(
         "pdf/proposta.html",
         {
@@ -429,6 +434,7 @@ def proposta_pdf(request, pk):
             "fases_entrega": _fases_de_entrega(proposta),
             "empresa_nome": request.user.nome_empresa,
             "hoje": timezone.now(),
+            "assinante_nome": assinante_nome,
         },
         filename=f"proposta-{proposta.pk}.pdf", user=request.user,
     )

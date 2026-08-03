@@ -32,9 +32,9 @@
             {% elif contrato.status == "enviado" %}
             Aguardando a resposta do cliente. O documento está bloqueado para manter a versão enviada.
             {% elif contrato.status == "aprovado" %}
-            Aprovado pelo cliente. Defina as parcelas para seguir ao financeiro.
+            Aprovado pelo cliente. Registre a assinatura para liberar parcelas e alterações contratuais.
             {% elif contrato.status == "ativo" %}
-            Parcelas lançadas no financeiro. Registre pagamentos e eventuais alterações de escopo.
+            Contrato assinado. Parcelas e alterações contratuais estão liberadas.
             {% else %}
             Este contrato não está disponível para edição.
             {% endif %}
@@ -83,7 +83,6 @@
             <p>{{ form.titulo.label_tag }}{{ form.titulo }}</p>
             <p>{{ form.numero.label_tag }}{{ form.numero }}</p>
             <p>{{ form.valor_total.label_tag }}{{ form.valor_total }}</p>
-            <p>{{ form.data_assinatura.label_tag }}{{ form.data_assinatura }}</p>
         </div>
         <p id="minuta">{{ form.corpo.label_tag }}{{ form.corpo }}</p>
         <p>{{ form.observacoes.label_tag }}{{ form.observacoes }}</p>
@@ -118,19 +117,31 @@
         {% if not contrato.pronto_para_envio %}<p class="ht-hint">O envio exige texto do contrato e valor total maior que zero.</p>{% endif %}
         {% elif contrato.status == "enviado" %}
         <p class="secao-sub">Registre a resposta do cliente para continuar.</p>
-        <div class="fecho-acoes">
-            <form method="post" action="{% url 'contrato_aprovar' contrato.pk %}" class="app-inline-form">
-                {% csrf_token %}<button class="ds-btn--acao" type="submit"><span>Cliente aprovou</span>{% include "core/_ico.html" with ico="ok" %}</button>
-            </form>
+        <div class="fecho-acoes fecho-acoes--direita">
             <form method="post" action="{% url 'contrato_retornar' contrato.pk %}" class="app-inline-form">
                 {% csrf_token %}<button class="ds-btn ds-btn--danger" type="submit">Cliente não aprovou</button>
             </form>
+            <form method="post" action="{% url 'contrato_aprovar' contrato.pk %}" class="app-inline-form">
+                {% csrf_token %}<button class="ds-btn--acao" type="submit"><span>Cliente aprovou</span>{% include "core/_ico.html" with ico="ok" %}</button>
+            </form>
         </div>
+        {% elif contrato.status == "aprovado" and not contrato.assinado %}
+        <p class="secao-sub">Informe a data em que o contrato foi assinado para liberar as parcelas e as alterações contratuais.</p>
+        <form method="post" action="{% url 'contrato_assinatura' contrato.pk %}" class="contrato-assinatura-form">
+            {% csrf_token %}
+            <label>
+                <span>{{ form_assinatura.data_assinatura.label }}</span>
+                {{ form_assinatura.data_assinatura }}
+            </label>
+            <button class="ds-btn--acao" type="submit"><span>Registrar assinatura</span>{% include "core/_ico.html" with ico="ok" %}</button>
+        </form>
         {% endif %}
     </section>
 
+    {% if contrato.assinado %}
     {% include "contratos/_parcelas.html" %}
     {% include "contratos/_alteracoes.html" %}
+    {% endif %}
     {% include "contratos/_documentos.html" %}
 </section>
 {% endblock %}

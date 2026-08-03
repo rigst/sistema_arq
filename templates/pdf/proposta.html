@@ -3,9 +3,11 @@
 
 {% block conteudo %}
 <h1>{{ proposta.titulo }}</h1>
-<p class="muted">Cliente: {{ proposta.cliente.nome }}
-    {% if proposta.validade %}· Validade: {{ proposta.validade|date:"d/m/Y" }}{% endif %}
-    · Hora técnica: R$ {{ proposta.hora_tecnica_aplicada }}</p>
+<div class="doc-meta">
+    <div><span>Cliente</span><strong>{{ proposta.cliente.nome }}</strong></div>
+    <div><span>Validade</span><strong>{{ proposta.validade_texto }}</strong></div>
+    <div><span>Hora técnica</span><strong>R$ {{ proposta.hora_tecnica_aplicada }}</strong></div>
+</div>
 
 <table>
     <thead><tr><th>Etapa / serviço e inclusões</th><th>Horas</th><th class="total">Valor</th></tr></thead>
@@ -32,4 +34,11 @@
 {% if proposta.observacoes %}
 <div class="bloco"><h3>Observações</h3><p>{{ proposta.observacoes|linebreaksbr }}</p></div>
 {% endif %}
+
+<div class="doc-assinatura">
+    <div class="doc-assinatura-linha">
+        <strong>{{ assinante_nome }}</strong>
+        <span>Assinatura digital do responsável</span>
+    </div>
+</div>
 {% endblock %}

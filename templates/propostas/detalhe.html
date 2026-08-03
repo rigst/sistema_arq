@@ -33,7 +33,7 @@
     <div class="fase-estado fase-estado--{{ proposta.status }}">
         <div class="fase-estado-topo">
             <span class="fase-selo fase-selo--{{ proposta.status }}">{{ proposta.get_status_display }}</span>
-            {% if proposta.validade %}<span class="fase-prazo">vale até {{ proposta.validade|date:"d/m/Y" }}</span>{% endif %}
+            <span class="fase-prazo">validade: {{ proposta.validade_texto }}</span>
         </div>
         <p class="fase-aviso">
             {% if proposta.status == "rascunho" %}
@@ -75,7 +75,7 @@
                 <p><label for="{{ form_termos.cliente.id_for_label }}">{{ form_termos.cliente.label }} <span class="campo-obrigatorio" aria-hidden="true">*</span></label>{{ form_termos.cliente }}</p>
                 <p><label for="{{ form_termos.tipo_projeto.id_for_label }}">{{ form_termos.tipo_projeto.label }} <span class="campo-obrigatorio" aria-hidden="true">*</span></label>{{ form_termos.tipo_projeto }}</p>
                 {% endif %}
-                <p>{{ form_termos.validade.label_tag }}{{ form_termos.validade }}</p>
+                <p><label for="{{ form_termos.validade_dias_uteis.id_for_label }}">{{ form_termos.validade_dias_uteis.label }} <span class="campo-obrigatorio" aria-hidden="true">*</span></label>{{ form_termos.validade_dias_uteis }}</p>
             </div>
             <p>{{ form_termos.observacoes.label_tag }}{{ form_termos.observacoes }}</p>
         </form>
@@ -83,7 +83,7 @@
         <dl class="peca-resumo">
             <div><dt>Cliente</dt><dd>{{ proposta.cliente.nome }}</dd></div>
             <div><dt>Tipo</dt><dd>{{ proposta.tipo_projeto }}</dd></div>
-            <div><dt>Validade</dt><dd>{{ proposta.validade|date:"d/m/Y"|default:"—" }}</dd></div>
+            <div><dt>Validade</dt><dd>{{ proposta.validade_texto }}</dd></div>
             {% if proposta.observacoes %}<div><dt>Observações</dt><dd>{{ proposta.observacoes|linebreaksbr }}</dd></div>{% endif %}
         </dl>
         {% endif %}
@@ -212,11 +212,11 @@
         {% if proposta.status == "rascunho" %}
         <p class="secao-sub">Confira o total antes de mandar — depois de enviada, a proposta trava.</p>
         <p class="proposta-salvar-aviso">Salve a proposta antes de enviar para garantir que a versão revisada seja a enviada ao cliente.</p>
-        <div class="fecho-acoes">
+        <div class="fecho-acoes fecho-acoes--proposta">
             <button class="ds-btn" type="submit" name="acao" value="salvar" form="proposta-termos-form">Salvar</button>
             <button class="ds-btn--acao" type="submit" name="acao" value="enviar"
                     form="proposta-termos-form" {% if not itens %}disabled{% endif %}>
-                <span>Enviar ao cliente</span>
+                <span>Salvar e enviar ao cliente</span>
                 {% include "core/_ico.html" with ico="seta" %}
             </button>
         </div>
@@ -224,17 +224,17 @@
 
         {% elif proposta.status == "enviada" %}
         <p class="secao-sub">Registre o que o cliente respondeu.</p>
-        <div class="fecho-acoes">
+        <div class="fecho-acoes fecho-acoes--direita">
+            <form method="post" action="{% url 'proposta_reabrir' proposta.pk %}" class="app-inline-form">
+                {% csrf_token %}
+                <button class="ds-btn ds-btn--danger" type="submit">Cliente não aprovou</button>
+            </form>
             <form method="post" action="{% url 'proposta_aprovar' proposta.pk %}" class="app-inline-form">
                 {% csrf_token %}
                 <button class="ds-btn--acao" type="submit">
                     <span>Cliente aprovou</span>
                     {% include "core/_ico.html" with ico="ok" %}
                 </button>
-            </form>
-            <form method="post" action="{% url 'proposta_reabrir' proposta.pk %}" class="app-inline-form">
-                {% csrf_token %}
-                <button class="ds-btn ds-btn--danger" type="submit">Cliente não aprovou</button>
             </form>
         </div>
 

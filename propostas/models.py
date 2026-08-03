@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.core.validators import MinValueValidator
 from django.db import models
 
 from core.models import EmpresaModel, Rastreavel
@@ -19,7 +20,11 @@ class Proposta(EmpresaModel, Rastreavel):
     tipo_projeto = models.CharField(max_length=20, default="residencial", verbose_name="tipo de projeto")
     hora_tecnica_aplicada = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="hora técnica aplicada")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="rascunho")
-    validade = models.DateField(null=True, blank=True)
+    validade_dias_uteis = models.PositiveSmallIntegerField(
+        default=10,
+        validators=[MinValueValidator(1)],
+        verbose_name="validade (dias úteis)",
+    )
     observacoes = models.TextField(blank=True, verbose_name="observações")
     # Fatores de projeto aplicados para chegar à hora técnica desta proposta.
     fatores = models.ManyToManyField(
@@ -58,6 +63,11 @@ class Proposta(EmpresaModel, Rastreavel):
     @property
     def aguardando_cliente(self):
         return self.status == "enviada"
+
+    @property
+    def validade_texto(self):
+        quantidade = self.validade_dias_uteis
+        return "1 dia útil" if quantidade == 1 else f"{quantidade} dias úteis"
 
 
 class ItemProposta(EmpresaModel):

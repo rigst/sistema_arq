@@ -8,7 +8,7 @@ solta embaixo: só assim "Ambiente" e "m²" caem exatamente sob as suas
 colunas. Os campos moram fora da tag <form> (não se põe <form> dentro de
 <tr>) e chegam nela pelo atributo form — que o FormData do htmx respeita.
 {% endcomment %}
-<div id="programa-bloco">
+<div id="programa-bloco" aria-live="polite">
     {% if editando %}
     <form id="programa-add"
           hx-post="{% url 'briefing_add_ambiente' projeto.pk %}"
@@ -18,24 +18,31 @@ colunas. Os campos moram fora da tag <form> (não se põe <form> dentro de
     </form>
     {% endif %}
 
+    <div class="programa-tabela-shell">
     <div class="table-scroll">
     <table class="data-table data-table--programa">
+        <colgroup>
+            <col class="programa-col-ambiente">
+            <col class="programa-col-area">
+            {% if editando %}<col class="programa-col-acoes">{% endif %}
+        </colgroup>
         <thead><tr>
             <th scope="col">Ambiente</th>
-            <th scope="col" class="num">m²</th>
+            <th scope="col" class="num">Área aproximada</th>
             {% if editando %}<th scope="col"><span class="ds-oculto">Ações</span></th>{% endif %}
         </tr></thead>
         <tbody>
         {% for a in ambientes %}
             <tr>
-                <td>{{ a.nome }}</td>
-                <td class="num">{{ a.area_aprox|default:"—" }}</td>
+                <td><strong class="programa-ambiente-nome">{{ a.nome }}</strong></td>
+                <td class="num"><span class="programa-area">{% if a.area_aprox %}{{ a.area_aprox }} <small>m²</small>{% else %}—{% endif %}</span></td>
                 {% if editando %}
-                <td>
+                <td class="programa-acoes">
                     <button class="linha-ico linha-ico--risco" type="button"
                             title="Remover" aria-label="Remover {{ a.nome }}"
                             hx-post="{% url 'briefing_remove_ambiente' a.pk %}"
                             hx-target="#programa-bloco" hx-swap="outerHTML"
+                            hx-confirm="Remover {{ a.nome }} do programa de necessidades?"
                             hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
                         {% include "core/_ico.html" with ico="excluir" %}
                     </button>
@@ -51,17 +58,23 @@ colunas. Os campos moram fora da tag <form> (não se põe <form> dentro de
         {% if editando %}
         <tr class="linha-add">
             <td>
-                <label class="ds-oculto" for="amb-nome">Ambiente</label>
-                <input type="text" name="nome" id="amb-nome" form="programa-add"
-                       placeholder="Ambiente" maxlength="100" required>
+                <label class="programa-campo" for="amb-nome">
+                    <span>Novo ambiente</span>
+                    <input type="text" name="nome" id="amb-nome" form="programa-add"
+                           placeholder="Ex.: Sala de reunião…" maxlength="100"
+                           autocomplete="off" required>
+                </label>
             </td>
             <td class="num">
-                <label class="ds-oculto" for="amb-area">Área em m²</label>
-                <input type="number" name="area_aprox" id="amb-area" form="programa-add"
-                       step="0.01" placeholder="0,00">
+                <label class="programa-campo programa-campo--area" for="amb-area">
+                    <span>Área em m²</span>
+                    <input type="number" name="area_aprox" id="amb-area" form="programa-add"
+                           step="0.01" min="0" inputmode="decimal" placeholder="0,00"
+                           autocomplete="off">
+                </label>
             </td>
-            <td>
-                <button class="linha-ico linha-ico--mais" type="submit" form="programa-add"
+            <td class="programa-acoes">
+                <button class="linha-ico linha-ico--mais programa-adicionar" type="submit" form="programa-add"
                         title="Adicionar ambiente" aria-label="Adicionar ambiente">
                     {% include "core/_ico.html" with ico="novo" %}
                 </button>
@@ -77,5 +90,6 @@ colunas. Os campos moram fora da tag <form> (não se põe <form> dentro de
         </tr></tfoot>
         {% endif %}
     </table>
+    </div>
     </div>
 </div>

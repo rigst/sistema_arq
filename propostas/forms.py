@@ -12,9 +12,11 @@ class PropostaForm(ArqModelForm):
 
     class Meta:
         model = Proposta
-        fields = ["titulo", "cliente", "tipo_projeto", "validade", "observacoes"]
+        fields = ["titulo", "cliente", "tipo_projeto", "validade_dias_uteis", "observacoes"]
         widgets = {
-            "validade": forms.DateInput(attrs={"type": "date"}),
+            "validade_dias_uteis": forms.NumberInput(
+                attrs={"min": "1", "step": "1", "inputmode": "numeric"}
+            ),
             "observacoes": forms.Textarea(attrs={"rows": 2}),
         }
 

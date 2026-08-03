@@ -1,5 +1,9 @@
+from datetime import date
 from decimal import Decimal
+from unittest.mock import patch
 
+from django.http import HttpResponse
+from django.template.loader import render_to_string
 from django.test import TestCase
 
 from crm.models import Cliente
@@ -98,7 +102,7 @@ class CicloDaPropostaTests(ItensProntosTests):
                 "titulo": "Proposta pronta para envio",
                 "cliente": self.cliente.pk,
                 "tipo_projeto": "residencial",
-                "validade": "2026-09-30",
+                "validade_dias_uteis": "10",
                 "observacoes": "Termos finais.",
                 "acao": "enviar",
             },
@@ -107,7 +111,59 @@ class CicloDaPropostaTests(ItensProntosTests):
         self.proposta.refresh_from_db()
         self.assertEqual(self.proposta.titulo, "Proposta pronta para envio")
         self.assertEqual(self.proposta.observacoes, "Termos finais.")
+        self.assertEqual(self.proposta.validade_dias_uteis, 10)
         self.assertEqual(self.proposta.status, "enviada")
+
+    def test_validade_aceita_apenas_quantidade_positiva_de_dias_uteis(self):
+        resposta = self.client.post(
+            f"/propostas/{self.proposta.pk}/",
+            {
+                "titulo": self.proposta.titulo,
+                "cliente": self.cliente.pk,
+                "tipo_projeto": "residencial",
+                "validade_dias_uteis": "0",
+                "observacoes": "",
+                "acao": "salvar",
+            },
+        )
+        self.assertEqual(resposta.status_code, 200)
+        self.assertContains(resposta, "A proposta não foi salva")
+        self.proposta.refresh_from_db()
+        self.assertEqual(self.proposta.validade_dias_uteis, 10)
+
+        self.proposta.validade_dias_uteis = 1
+        self.assertEqual(self.proposta.validade_texto, "1 dia útil")
+
+    def test_acoes_do_rodape_ficam_na_ordem_correta(self):
+        self._com_itens()
+        pagina = self.client.get(f"/propostas/{self.proposta.pk}/")
+        html = pagina.content.decode()
+        self.assertContains(pagina, "fecho-acoes--proposta")
+        self.assertLess(html.index('value="salvar"'), html.index('value="enviar"'))
+        self.assertContains(pagina, "Salvar e enviar ao cliente")
+
+        self.proposta.status = "enviada"
+        self.proposta.save(update_fields=["status"])
+        pagina = self.client.get(f"/propostas/{self.proposta.pk}/")
+        html = pagina.content.decode()
+        self.assertLess(html.index("Cliente não aprovou"), html.index("Cliente aprovou"))
+
+    def test_pdf_recebe_validade_e_nome_completo_para_assinatura(self):
+        self.user.first_name = "Ana"
+        self.user.last_name = "Arquiteta"
+        self.user.save(update_fields=["first_name", "last_name"])
+        self.proposta.validade_dias_uteis = 10
+        self.proposta.save(update_fields=["validade_dias_uteis"])
+
+        with patch("core.pdf.render_pdf", return_value=HttpResponse(content_type="application/pdf")) as gerar:
+            resposta = self.client.get(f"/propostas/{self.proposta.pk}/pdf/")
+
+        self.assertEqual(resposta.status_code, 200)
+        contexto = gerar.call_args.args[1]
+        self.assertEqual(contexto["proposta"].validade_dias_uteis, 10)
+        self.assertEqual(contexto["assinante_nome"], "Ana Arquiteta")
+        html = render_to_string("pdf/proposta.html", contexto)
+        self.assertIn("10 dias úteis", html)
 
     def test_enviada_recusa_mexer_nos_itens(self):
         item = self._com_itens()
@@ -191,7 +247,7 @@ class CicloDaPropostaTests(ItensProntosTests):
                 "titulo": "Proposta revisada",
                 "cliente": self.cliente.pk,
                 "tipo_projeto": "comercial",
-                "validade": "2026-09-15",
+                "validade_dias_uteis": "15",
                 "observacoes": "Condições e escopo revisados.",
             },
         )
@@ -200,6 +256,7 @@ class CicloDaPropostaTests(ItensProntosTests):
         self.proposta.refresh_from_db()
         self.assertEqual(self.proposta.titulo, "Proposta revisada")
         self.assertEqual(self.proposta.observacoes, "Condições e escopo revisados.")
+        self.assertEqual(self.proposta.validade_dias_uteis, 15)
         self.assertEqual(self.proposta.projeto_gerado, projeto)
         self.assertEqual(self.proposta.cliente, self.cliente)
         self.assertEqual(self.proposta.tipo_projeto, "residencial")
@@ -229,7 +286,7 @@ class CicloDaPropostaTests(ItensProntosTests):
                 "titulo": self.proposta.titulo,
                 "cliente": self.cliente.pk,
                 "tipo_projeto": "residencial",
-                "validade": "",
+                "validade_dias_uteis": "10",
                 "observacoes": "",
                 f"dias_fase_{estudo.pk}": "18",
                 f"dias_fase_{eletrico.pk}": "12",

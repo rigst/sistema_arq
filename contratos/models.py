@@ -53,6 +53,11 @@ class Contrato(EmpresaModel, Rastreavel):
     def pronto_para_envio(self):
         return bool(self.corpo.strip()) and self.valor_total > 0
 
+    @property
+    def assinado(self):
+        """A data registrada é o marco que libera a operação financeira."""
+        return self.data_assinatura is not None
+
 
 class Parcela(EmpresaModel):
     contrato = models.ForeignKey(Contrato, on_delete=models.CASCADE, related_name="parcelas")

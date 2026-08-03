@@ -322,11 +322,12 @@ a { color: var(--ds-blue-dark); }
 .contrato-cronograma-origem strong { font-weight: 500; }
 .contrato-cronograma-origem time { color: var(--ds-text-500); white-space: nowrap; }
 .contrato-modelo {
-    display: flex; align-items: end; justify-content: space-between; gap: 1rem;
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: end; gap: 1rem;
     margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--ds-line);
 }
 .contrato-modelo .secao-sub { margin-bottom: 0; }
-.contrato-modelo-controles { display: flex; align-items: center; gap: 0.5rem; min-width: min(100%, 30rem); }
+.contrato-modelo-controles { display: flex; align-items: center; gap: 0.5rem; min-width: 0; width: 100%; }
 .contrato-modelo-controles select {
     flex: 1; min-width: 12rem; padding: 0.6rem 0.8rem;
     border: 1px solid var(--ds-line-dash); border-radius: 0.5rem;
@@ -334,7 +335,7 @@ a { color: var(--ds-blue-dark); }
 }
 @media (max-width: 48rem) {
     .contrato-origem-resumo { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .contrato-modelo { align-items: stretch; flex-direction: column; }
+    .contrato-modelo { grid-template-columns: 1fr; align-items: stretch; }
     .contrato-modelo-controles { min-width: 0; flex-wrap: wrap; }
     .contrato-modelo-controles select { flex-basis: 100%; }
 }
@@ -817,12 +818,14 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .fator-check em { color: var(--ds-blue-dark); font-style: normal; font-weight: 600; }
 .ht-proposta-form .inline-add {
     margin-bottom: 0; padding: 0; border: 0; border-radius: 0;
-    background: none; box-shadow: none;
+    align-items: flex-end; background: none; box-shadow: none;
 }
 .proposta-hora-manual { display: flex; min-width: min(18rem, 100%); flex-direction: column; gap: 0.3rem; }
-.inline-add .proposta-hora-manual input[type="number"] {
+.inline-add .proposta-hora-manual input[type="number"],
+.inline-add .proposta-hora-manual input[type="text"] {
     width: 100%; height: 2.65rem; min-height: 2.65rem; flex: none;
 }
+.ht-proposta-form .inline-add > .ds-btn { min-height: 2.65rem; }
 @media (max-width: 42rem) {
     .proposta-hora-head { align-items: flex-start; flex-direction: column; gap: 0.65rem; }
     .proposta-hora-atual { align-items: flex-start; }
@@ -2794,14 +2797,106 @@ a.projeto-card:focus-visible {
 .form-error-summary ul { margin: 0.4rem 0 0; padding-left: 1.2rem; }
 
 /* Programa: cabeçalho, dados e linha de preenchimento têm funções visuais distintas. */
-.data-table--programa thead th { background: var(--ds-text-900); color: #fff; border-bottom: 0; }
+.programa-tabela-shell {
+    overflow: hidden; border: 1px solid var(--ds-line); border-radius: 0.75rem;
+    background: var(--ds-surface); box-shadow: 0 1px 0 rgba(20, 24, 26, 0.025);
+}
+.programa-tabela-shell .table-scroll { overflow-x: auto; }
+.table-scroll .data-table--programa { min-width: 32rem; table-layout: fixed; }
+.data-table--programa .programa-col-area { width: 11rem; }
+.data-table--programa .programa-col-acoes { width: 4rem; }
+.data-table--programa th,
+.data-table--programa td { padding: 0.78rem 1rem; }
+.data-table--programa th:first-child,
+.data-table--programa td:first-child { padding-left: 1rem; }
+.data-table--programa th:last-child,
+.data-table--programa td:last-child { padding-right: 1rem; }
+.data-table--programa thead th {
+    padding-top: 0.72rem; padding-bottom: 0.72rem;
+    background: color-mix(in srgb, var(--ds-blue) 5%, var(--ds-panel));
+    color: var(--ds-text-500); border: 0; border-bottom: 1px solid var(--ds-line);
+    font-family: var(--arq-font-mono); font-size: 0.65rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.11em;
+}
 .data-table--programa tbody tr:not(.linha-add) td { background: var(--ds-surface); }
-.data-table--programa .linha-add td { background: var(--ds-blue-50); border-top: 2px solid var(--ds-blue-light); }
+.data-table--programa tbody tr:not(.linha-add):hover td {
+    background: color-mix(in srgb, var(--ds-blue) 2.5%, var(--ds-surface));
+}
+.programa-ambiente-nome { font-weight: 550; overflow-wrap: anywhere; }
+.programa-area { color: var(--ds-text-700); font-variant-numeric: tabular-nums; }
+.programa-area small { color: var(--ds-text-400); font-size: 0.7rem; font-weight: 500; }
+.data-table--programa .programa-acoes { text-align: right; }
+.data-table--programa .programa-acoes .linha-ico { margin-left: auto; }
+.data-table--programa .linha-add td {
+    padding-top: 0.7rem; padding-bottom: 0.7rem;
+    background: color-mix(in srgb, var(--ds-blue) 4%, var(--ds-panel));
+    border-top: 1px solid var(--ds-line-dash); border-bottom: 0;
+}
+.programa-campo { display: block; margin: 0; text-align: left; }
+.programa-campo > span {
+    display: block; margin: 0 0 0.3rem;
+    color: var(--ds-text-500); font-family: var(--arq-font-mono);
+    font-size: 0.61rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em;
+}
+.data-table--programa .programa-campo input {
+    width: 100%; min-width: 0; box-sizing: border-box; padding: 0.6rem 0.7rem;
+    border: 1px solid var(--ds-line); border-radius: 0.5rem;
+    background: var(--ds-surface); color: var(--ds-text-900); font: inherit;
+    transition: border-color var(--arq-fast) ease, box-shadow var(--arq-fast) ease,
+        background var(--arq-fast) ease;
+}
+.data-table--programa .programa-campo input:hover { border-color: var(--ds-line-dash); }
+.data-table--programa .programa-campo input:focus-visible {
+    outline: none; border-color: var(--ds-blue-light); box-shadow: var(--ds-focus-ring);
+}
+.programa-campo--area input { text-align: right; font-variant-numeric: tabular-nums; }
+.data-table--programa .programa-adicionar {
+    width: 2.55rem; height: 2.55rem; margin-top: 1.05rem;
+    background: var(--ds-blue-dark); color: #fff; border-radius: 0.55rem;
+}
+.data-table--programa .programa-adicionar:hover,
+.data-table--programa .programa-adicionar:focus-visible {
+    background: var(--ds-blue); color: #fff; transform: translateY(-1px);
+    box-shadow: 0 5px 12px rgba(28, 106, 83, 0.18);
+}
+.data-table--programa tfoot th,
+.data-table--programa tfoot td {
+    padding-top: 0.82rem; padding-bottom: 0.82rem;
+    background: var(--ds-panel); border-top: 1px solid var(--ds-line); border-bottom: 0;
+    color: var(--ds-text-700); font-weight: 650;
+}
+.data-table--programa tfoot td { font-variant-numeric: tabular-nums; }
+@media (max-width: 40rem) {
+    .table-scroll .data-table--programa { min-width: 100%; }
+    .data-table--programa .programa-col-area { width: 7rem; }
+    .data-table--programa .programa-col-acoes { width: 3.2rem; }
+    .data-table--programa th, .data-table--programa td { padding-left: 0.55rem; padding-right: 0.55rem; }
+    .data-table--programa th:first-child, .data-table--programa td:first-child { padding-left: 0.55rem; }
+    .data-table--programa th:last-child, .data-table--programa td:last-child { padding-right: 0.55rem; }
+    .data-table--programa thead th { font-size: 0.58rem; letter-spacing: 0.07em; }
+    .programa-ambiente-nome { font-size: 0.84rem; line-height: 1.35; }
+    .programa-campo > span { white-space: nowrap; font-size: 0.55rem; letter-spacing: 0.05em; }
+    .data-table--programa .programa-campo input { padding-left: 0.55rem; padding-right: 0.55rem; }
+}
 .item-linha.is-editando input:focus { outline: none; border-bottom-color: var(--ds-blue); }
 .item-linha.is-editando td.num input { text-align: right; }
 .item-linha.is-editando form { display: contents; }
 .fecho-acoes { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.fecho-acoes--direita { justify-content: flex-end; }
+.fecho-acoes--proposta {
+    flex-direction: column; align-items: flex-end; justify-content: flex-start;
+}
 .fecho-acoes form { margin: 0; }
+.contrato-assinatura-form {
+    display: flex; align-items: flex-end; justify-content: flex-end;
+    gap: 0.7rem; flex-wrap: wrap;
+}
+.contrato-assinatura-form label { margin: 0; min-width: 12rem; }
+.contrato-assinatura-form label > span {
+    display: block; margin-bottom: 0.35rem; color: var(--ds-text-700);
+    font-size: 0.78rem; font-weight: 650;
+}
+.contrato-assinatura-form input { min-height: 2.65rem; }
 
 /* Tarefas da fase: uma única tabela de trabalho, sem caixas sobrepostas. */
 .fase-tarefas-contagem {

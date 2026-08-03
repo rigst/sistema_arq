@@ -81,7 +81,7 @@ class JornadaCompletaDaReleaseTests(TestCase):
                 "titulo": proposta.titulo,
                 "cliente": proposta.cliente_id,
                 "tipo_projeto": proposta.tipo_projeto,
-                "validade": "2026-09-01",
+                "validade_dias_uteis": "10",
                 "observacoes": "Proposta fictícia para teste E2E.",
                 "acao": "enviar",
             },
@@ -97,6 +97,10 @@ class JornadaCompletaDaReleaseTests(TestCase):
 
         self.client.post(f"/contratos/{contrato.pk}/enviar/")
         self.client.post(f"/contratos/{contrato.pk}/aprovar/")
+        self.client.post(
+            f"/contratos/{contrato.pk}/assinatura/",
+            {"data_assinatura": date(2026, 9, 5).isoformat()},
+        )
         self.client.post(
             f"/contratos/{contrato.pk}/parcelas/",
             {"quantidade": "2", "primeira_data": date(2026, 9, 10).isoformat()},

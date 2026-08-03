@@ -8,6 +8,7 @@ urlpatterns = [
     path("<int:pk>/enviar/", views.enviar_contrato, name="contrato_enviar"),
     path("<int:pk>/retornar/", views.retornar_para_ajustes, name="contrato_retornar"),
     path("<int:pk>/aprovar/", views.aprovar_contrato, name="contrato_aprovar"),
+    path("<int:pk>/assinatura/", views.registrar_assinatura, name="contrato_assinatura"),
     path("<int:pk>/pdf/", views.contrato_pdf, name="contrato_pdf"),
     path("<int:pk>/parcelas/", views.gerar_parcelas_view, name="contrato_gerar_parcelas"),
     path("<int:pk>/parcela/", views.adicionar_parcela, name="contrato_parcela_adicionar"),

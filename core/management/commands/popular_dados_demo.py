@@ -154,7 +154,7 @@ class Command(BaseCommand):
             defaults={
                 "cliente": clientes["Instituto Caminhos"], "tipo_projeto": "institucional",
                 "hora_tecnica_aplicada": Decimal("185.00"), "status": "enviada",
-                "validade": hoje + timedelta(days=15),
+                "validade_dias_uteis": 10,
                 "observacoes": "Honorários divididos conforme a sequência das etapas.",
                 "criado_por": usuario,
             },

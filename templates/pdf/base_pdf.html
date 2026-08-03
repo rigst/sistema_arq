@@ -33,12 +33,19 @@
     tbody tr:nth-child(even) td { background: rgba(233, 237, 235, .48); }
     tfoot th { border-top: 2px solid #1c6a53; border-bottom: 0; padding-top: 12px; font-size: 10.5px; color: #14181a; }
     .total { text-align: right; }
-    .doc-foot { margin-top: 38px; color: #63706c; font-size: 7.5px; border-top: 1px solid #c4ccc8; padding-top: 9px; text-transform: uppercase; letter-spacing: .08em; }
     .bloco { margin: 24px 0 9px; page-break-inside: avoid; }
     .bloco h3 { display: flex; align-items: center; font-size: 9px; margin: 0 0 8px; padding-bottom: 7px; color: #1c6a53; border-bottom: 1px solid #c4ccc8; text-transform: uppercase; letter-spacing: .12em; }
+    .doc-meta { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 1px; margin: 17px 0 23px; background: #dee3e0; border-top: 1px solid #c4ccc8; border-bottom: 1px solid #c4ccc8; }
+    .doc-meta > div { padding: 9px 10px; background: #f1f4f2; }
+    .doc-meta span { display: block; margin-bottom: 3px; color: #63706c; font-size: 7px; font-weight: 600; text-transform: uppercase; letter-spacing: .11em; }
+    .doc-meta strong { font-size: 9.5px; font-weight: 600; }
+    .doc-assinatura { width: 68%; margin: 62px auto 4px; padding-top: 54px; page-break-inside: avoid; text-align: center; }
+    .doc-assinatura-linha { border-top: 1px solid #39423f; padding-top: 8px; }
+    .doc-assinatura strong { display: block; font-size: 10px; }
+    .doc-assinatura span { display: block; margin-top: 2px; color: #63706c; font-size: 7px; text-transform: uppercase; letter-spacing: .1em; }
     ul { padding-left: 18px; }
+    {% block extra_style %}{% endblock %}
 </style>
-{% block extra_style %}{% endblock %}
 </head>
 <body>
     {% if empresa_logo_data_uri %}<img class="doc-watermark" src="{{ empresa_logo_data_uri }}" width="320" height="180" alt="">{% endif %}
@@ -53,6 +60,5 @@
         <div class="doc-data">{{ hoje|date:"d/m/Y" }}</div>
     </header>
     <main>{% block conteudo %}{% endblock %}</main>
-    <footer class="doc-foot">Documento emitido por {{ empresa_nome }} · {{ hoje|date:"d/m/Y H:i" }}</footer>
 </body>
 </html>

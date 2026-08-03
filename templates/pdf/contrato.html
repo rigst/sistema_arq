@@ -1,5 +1,24 @@
 {% extends "pdf/base_pdf.html" %}
 {% block tipo %}Contrato{% endblock %}
+{% block extra_style %}
+    body { font-size: 11pt; line-height: 1.52; }
+    .doc-emp { font-size: 14pt; }
+    .doc-tipo { font-size: 7.5pt; }
+    .doc-data { font-size: 8.5pt; }
+    h1 { font-size: 22pt; }
+    thead th { font-size: 8pt; }
+    tfoot th { font-size: 11pt; }
+    .bloco h3, .contrato-corpo-pdf h3 { font-size: 9pt; }
+    .doc-meta span { font-size: 7.5pt; }
+    .doc-meta strong { font-size: 10pt; }
+    .contrato-corpo-pdf { margin: 24px 0 9px; break-inside: auto; page-break-inside: auto; }
+    .contrato-corpo-pdf h3 {
+        display: flex; align-items: center; margin: 0 0 8px; padding-bottom: 7px;
+        color: #1c6a53; border-bottom: 1px solid #c4ccc8;
+        text-transform: uppercase; letter-spacing: .12em;
+    }
+    .contrato-corpo-pdf > p { margin-bottom: 0; }
+{% endblock %}
 
 {% block conteudo %}
 <h1>{{ contrato.titulo }}</h1>
@@ -28,7 +47,7 @@
 {% endif %}
 
 {% if contrato.corpo %}
-<div class="bloco"><h3>Contrato</h3><p>{{ contrato.corpo|linebreaksbr }}</p></div>
+<div class="contrato-corpo-pdf"><h3>Contrato</h3><p>{{ contrato.corpo|linebreaksbr }}</p></div>
 {% endif %}
 
 {% if alteracoes %}

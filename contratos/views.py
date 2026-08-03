@@ -15,6 +15,7 @@ from financeiro.models import ContaBancaria
 
 from .forms import (
     AlteracaoEscopoForm,
+    AssinaturaContratoForm,
     ContratoForm,
     DocumentoEdicaoForm,
     DocumentoForm,
@@ -119,7 +120,7 @@ def detalhe_contrato(request, pk):
                 return redirect("contrato_detalhe", pk=contrato.pk)
         else:
             form = ContratoForm(instance=contrato, user=request.user)
-    alteracoes = list(contrato.alteracoes.all())
+    alteracoes = list(contrato.alteracoes.all()) if contrato.assinado else []
     impacto_alteracoes = sum((a.valor_delta for a in alteracoes), Decimal("0"))
     return render(
         request,
@@ -127,7 +128,7 @@ def detalhe_contrato(request, pk):
         {
             "contrato": contrato,
             "form": form,
-            "parcelas": contrato.parcelas.all(),
+            "parcelas": contrato.parcelas.all() if contrato.assinado else [],
             "alteracoes": alteracoes,
             "impacto_alteracoes": impacto_alteracoes,
             "valor_atualizado": contrato.valor_total + impacto_alteracoes,
@@ -136,6 +137,9 @@ def detalhe_contrato(request, pk):
             "form_parcela": ParcelaForm(),
             "form_alteracao": AlteracaoEscopoForm(),
             "form_documento": DocumentoForm(),
+            "form_assinatura": AssinaturaContratoForm(
+                initial={"data_assinatura": timezone.localdate()}
+            ),
             "tem_conta": queryset_da_empresa(ContaBancaria.objects.all(), request.user).exists(),
             "modelos": modelos,
             "modelo_padrao": modelo_padrao,
@@ -173,13 +177,13 @@ def contrato_pdf(request, pk):
         queryset_da_empresa(Contrato.objects.select_related("projeto", "projeto__cliente"), request.user),
         pk=pk,
     )
-    alteracoes = list(contrato.alteracoes.all())
+    alteracoes = list(contrato.alteracoes.all()) if contrato.assinado else []
     impacto = sum((a.valor_delta for a in alteracoes), Decimal("0"))
     return render_pdf(
         "pdf/contrato.html",
         {
             "contrato": contrato,
-            "parcelas": contrato.parcelas.all(),
+            "parcelas": contrato.parcelas.all() if contrato.assinado else [],
             "alteracoes": alteracoes,
             "valor_atualizado": contrato.valor_total + impacto,
             "empresa_nome": request.user.nome_empresa,
@@ -193,6 +197,8 @@ def contrato_pdf(request, pk):
 @login_required
 def gerar_parcelas_view(request, pk):
     contrato = get_object_or_404(queryset_da_empresa(Contrato.objects.all(), request.user), pk=pk)
+    if not _exigir_contrato_assinado(request, contrato):
+        return redirect("contrato_detalhe", pk=contrato.pk)
     if contrato.parcelas_lancadas:
         messages.info(request, "As parcelas já foram lançadas no financeiro; refaça criando outro contrato.")
         return _parcelas_ou_redirect(request, contrato)
@@ -231,6 +237,8 @@ def _parcelas_ou_redirect(request, contrato, form_parcela=None):
 @login_required
 def adicionar_parcela(request, pk):
     contrato = get_object_or_404(queryset_da_empresa(Contrato.objects.all(), request.user), pk=pk)
+    if not _exigir_contrato_assinado(request, contrato):
+        return redirect("contrato_detalhe", pk=contrato.pk)
     form = ParcelaForm(request.POST)
     if form.is_valid():
         parcela = form.save(commit=False)
@@ -250,6 +258,8 @@ def editar_parcela(request, pk):
     parcela = get_object_or_404(
         queryset_da_empresa(Parcela.objects.select_related("contrato"), request.user), pk=pk
     )
+    if not _exigir_contrato_assinado(request, parcela.contrato):
+        return redirect("contrato_detalhe", pk=parcela.contrato_id)
     if request.method == "POST":
         form = ParcelaForm(request.POST, instance=parcela)
         if form.is_valid():
@@ -286,6 +296,8 @@ def remover_parcela(request, pk):
         queryset_da_empresa(Parcela.objects.select_related("contrato", "lancamento"), request.user), pk=pk
     )
     contrato = parcela.contrato
+    if not _exigir_contrato_assinado(request, contrato):
+        return redirect("contrato_detalhe", pk=contrato.pk)
     if parcela.lancamento_id:
         parcela.lancamento.delete()
     parcela.delete()
@@ -337,6 +349,8 @@ def _criar_lancamento_se_necessario(parcela):
 @login_required
 def lancar_financeiro(request, pk):
     contrato = get_object_or_404(queryset_da_empresa(Contrato.objects.all(), request.user), pk=pk)
+    if not _exigir_contrato_assinado(request, contrato):
+        return redirect("contrato_detalhe", pk=contrato.pk)
     if contrato.status not in {"aprovado", "ativo"}:
         messages.info(request, "Aguarde a aprovação do cliente antes de lançar no financeiro.")
         return redirect("contrato_detalhe", pk=contrato.pk)
@@ -359,6 +373,8 @@ def lancar_financeiro(request, pk):
 @login_required
 def registrar_alteracao(request, pk):
     contrato = get_object_or_404(queryset_da_empresa(Contrato.objects.all(), request.user), pk=pk)
+    if not _exigir_contrato_assinado(request, contrato):
+        return redirect("contrato_detalhe", pk=contrato.pk)
     form = AlteracaoEscopoForm(request.POST)
     formulario_valido = form.is_valid()
     if formulario_valido:
@@ -399,6 +415,8 @@ def editar_alteracao(request, pk):
     alteracao = get_object_or_404(
         queryset_da_empresa(AlteracaoEscopo.objects.select_related("contrato"), request.user), pk=pk
     )
+    if not _exigir_contrato_assinado(request, alteracao.contrato):
+        return redirect("contrato_detalhe", pk=alteracao.contrato_id)
     if request.method == "POST":
         form = AlteracaoEscopoForm(request.POST, instance=alteracao)
         if form.is_valid():
@@ -433,6 +451,8 @@ def remover_alteracao(request, pk):
         queryset_da_empresa(AlteracaoEscopo.objects.select_related("contrato"), request.user), pk=pk
     )
     contrato = alteracao.contrato
+    if not _exigir_contrato_assinado(request, contrato):
+        return redirect("contrato_detalhe", pk=contrato.pk)
     alteracao.delete()
     messages.success(request, "Alteração contratual excluída.")
     return _alteracoes_ou_redirect(request, contrato)
@@ -526,6 +546,8 @@ def remover_documento(request, pk):
 @login_required
 def alternar_parcela(request, pk):
     parcela = get_object_or_404(queryset_da_empresa(Parcela.objects.all(), request.user), pk=pk)
+    if not _exigir_contrato_assinado(request, parcela.contrato):
+        return redirect("contrato_detalhe", pk=parcela.contrato_id)
     parcela.paga = not parcela.paga
     parcela.save(update_fields=["paga"])
     # Reflete no lançamento do financeiro.
@@ -570,7 +592,7 @@ def aprovar_contrato(request, pk):
     if contrato.status != "enviado":
         messages.info(request, "Registre a aprovação somente depois do envio ao cliente.")
     else:
-        contrato.status = "aprovado"
+        contrato.status = "ativo" if contrato.assinado else "aprovado"
         contrato.save(update_fields=["status"])
         from fases.models import Fase
 
@@ -581,7 +603,38 @@ def aprovar_contrato(request, pk):
             fase.save(update_fields=["status", "respondida_em"])
             fase._abrir_seguintes(request.user)
             fase.projeto.tocar()
-        messages.success(request, "Contrato aprovado. Agora você pode gerar parcelas e lançar no financeiro.")
+        if contrato.assinado:
+            messages.success(request, "Contrato aprovado e assinatura registrada. Parcelas e alterações estão liberadas.")
+        else:
+            messages.success(request, "Contrato aprovado. Registre a assinatura para liberar parcelas e alterações.")
+    return redirect("contrato_detalhe", pk=contrato.pk)
+
+
+def _exigir_contrato_assinado(request, contrato):
+    if contrato.assinado:
+        return True
+    messages.error(
+        request,
+        "Registre a assinatura do contrato antes de acessar parcelas ou alterações contratuais.",
+    )
+    return False
+
+
+@require_POST
+@login_required
+def registrar_assinatura(request, pk):
+    contrato = get_object_or_404(queryset_da_empresa(Contrato.objects.all(), request.user), pk=pk)
+    if contrato.status != "aprovado":
+        messages.info(request, "A assinatura só pode ser registrada depois da aprovação do contrato.")
+        return redirect("contrato_detalhe", pk=contrato.pk)
+    form = AssinaturaContratoForm(request.POST)
+    if form.is_valid():
+        contrato.data_assinatura = form.cleaned_data["data_assinatura"]
+        contrato.status = "ativo"
+        contrato.save(update_fields=["data_assinatura", "status"])
+        messages.success(request, "Assinatura registrada. Parcelas e alterações contratuais estão liberadas.")
+    else:
+        messages.error(request, "Informe uma data de assinatura válida.")
     return redirect("contrato_detalhe", pk=contrato.pk)
 
 

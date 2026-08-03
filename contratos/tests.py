@@ -1,3 +1,4 @@
+from datetime import date
 from decimal import Decimal
 import os
 import tempfile
@@ -31,6 +32,9 @@ class FluxoContratoTests(TestCase):
         )
 
     def test_envio_trava_edicao_e_retorno_libera(self):
+        rascunho = self.client.get(f"/contratos/{self.contrato.pk}/")
+        self.assertNotContains(rascunho, 'name="data_assinatura"')
+
         self.client.post(f"/contratos/{self.contrato.pk}/enviar/")
         self.contrato.refresh_from_db()
         self.assertEqual(self.contrato.status, "enviado")
@@ -38,6 +42,7 @@ class FluxoContratoTests(TestCase):
 
         resposta = self.client.get(f"/contratos/{self.contrato.pk}/")
         self.assertEqual(resposta.status_code, 200)
+        self.assertNotContains(resposta, 'name="data_assinatura"')
         self.assertNotContains(resposta, 'name="corpo"')
         self.assertEqual(
             self.client.get(f"/contratos/{self.contrato.pk}/editar/").status_code,
@@ -65,7 +70,7 @@ class FluxoContratoTests(TestCase):
         self.assertTrue(modelo.ativo)
         self.assertRedirects(resposta, "/modelos/")
 
-    def test_aprovacao_libera_parcelas(self):
+    def test_assinatura_libera_parcelas(self):
         self.client.post(f"/contratos/{self.contrato.pk}/enviar/")
         self.client.post(f"/contratos/{self.contrato.pk}/aprovar/")
         self.contrato.refresh_from_db()
@@ -75,7 +80,36 @@ class FluxoContratoTests(TestCase):
             f"/contratos/{self.contrato.pk}/parcelas/",
             {"quantidade": 2, "primeira_data": "2026-08-10", "intervalo_dias": 30},
         )
+        self.assertEqual(self.contrato.parcelas.count(), 0)
+
+        self.client.post(
+            f"/contratos/{self.contrato.pk}/assinatura/",
+            {"data_assinatura": "2026-08-03"},
+        )
+        self.contrato.refresh_from_db()
+        self.assertEqual(self.contrato.status, "ativo")
+        self.assertEqual(self.contrato.data_assinatura, date(2026, 8, 3))
+
+        self.client.post(
+            f"/contratos/{self.contrato.pk}/parcelas/",
+            {"quantidade": 2, "primeira_data": "2026-08-10", "intervalo_dias": 30},
+        )
         self.assertEqual(self.contrato.parcelas.count(), 2)
+
+    def test_secoes_financeiras_so_aparecem_depois_da_assinatura(self):
+        self.contrato.status = "aprovado"
+        self.contrato.save(update_fields=["status"])
+        pagina = self.client.get(f"/contratos/{self.contrato.pk}/")
+        self.assertNotContains(pagina, 'id="parcelas-bloco"')
+        self.assertNotContains(pagina, 'id="alteracoes-bloco"')
+        self.assertContains(pagina, "Registrar assinatura")
+
+        self.contrato.data_assinatura = date(2026, 8, 3)
+        self.contrato.status = "ativo"
+        self.contrato.save(update_fields=["data_assinatura", "status"])
+        pagina = self.client.get(f"/contratos/{self.contrato.pk}/")
+        self.assertContains(pagina, 'id="parcelas-bloco"')
+        self.assertContains(pagina, 'id="alteracoes-bloco"')
 
     def test_nao_envia_sem_texto(self):
         self.contrato.corpo = ""
@@ -116,8 +150,9 @@ class FluxoContratoTests(TestCase):
         self.assertContains(pagina, "Minuta curta")
 
     def test_alteracoes_calculam_valor_atualizado_e_entram_nas_parcelas(self):
-        self.contrato.status = "aprovado"
-        self.contrato.save(update_fields=["status"])
+        self.contrato.status = "ativo"
+        self.contrato.data_assinatura = date(2026, 8, 3)
+        self.contrato.save(update_fields=["status", "data_assinatura"])
         self.client.post(
             f"/contratos/{self.contrato.pk}/alteracao/",
             {
@@ -151,14 +186,17 @@ class FluxoContratoTests(TestCase):
             Decimal("14500.00"),
         )
 
-    def test_rascunho_aceita_planejar_alteracao_contratual(self):
+    def test_rascunho_nao_aceita_alteracao_contratual(self):
         self.client.post(
             f"/contratos/{self.contrato.pk}/alteracao/",
             {"tipo": "alteracao", "descricao": "Tentativa", "valor_delta": "100"},
         )
-        self.assertTrue(AlteracaoEscopo.objects.exists())
+        self.assertFalse(AlteracaoEscopo.objects.exists())
 
     def test_parcelamento_mantem_o_dia_do_mes(self):
+        self.contrato.status = "ativo"
+        self.contrato.data_assinatura = date(2026, 8, 3)
+        self.contrato.save(update_fields=["status", "data_assinatura"])
         self.client.post(
             f"/contratos/{self.contrato.pk}/parcelas/",
             {"quantidade": 4, "primeira_data": "2026-01-31"},
@@ -226,8 +264,9 @@ class FluxoContratoTests(TestCase):
         self.assertFalse(Documento.objects.exists())
 
     def test_crud_inline_de_parcelas(self):
-        self.contrato.status = "aprovado"
-        self.contrato.save(update_fields=["status"])
+        self.contrato.status = "ativo"
+        self.contrato.data_assinatura = date(2026, 8, 3)
+        self.contrato.save(update_fields=["status", "data_assinatura"])
         resposta = self.client.post(
             f"/contratos/{self.contrato.pk}/parcela/",
             {"descricao": "Entrada", "valor": "3000.00", "vencimento": "2026-08-15"},
@@ -253,8 +292,9 @@ class FluxoContratoTests(TestCase):
         self.assertFalse(Parcela.objects.exists())
 
     def test_crud_inline_de_alteracoes(self):
-        self.contrato.status = "aprovado"
-        self.contrato.save(update_fields=["status"])
+        self.contrato.status = "ativo"
+        self.contrato.data_assinatura = date(2026, 8, 3)
+        self.contrato.save(update_fields=["status", "data_assinatura"])
         resposta = self.client.post(
             f"/contratos/{self.contrato.pk}/alteracao/",
             {"tipo": "aditivo", "descricao": "Novo ambiente", "valor_delta": "1800.00"},

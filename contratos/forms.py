@@ -10,9 +10,8 @@ from core.forms import ArqForm, ArqModelForm
 class ContratoForm(ArqModelForm):
     class Meta:
         model = Contrato
-        fields = ["projeto", "titulo", "numero", "valor_total", "data_assinatura", "corpo", "observacoes"]
+        fields = ["projeto", "titulo", "numero", "valor_total", "corpo", "observacoes"]
         widgets = {
-            "data_assinatura": forms.DateInput(attrs={"type": "date"}),
             "corpo": forms.Textarea(attrs={"rows": 24, "class": "contrato-corpo", "spellcheck": "true"}),
             "observacoes": forms.Textarea(attrs={"rows": 2}),
         }
@@ -36,6 +35,12 @@ class GerarParcelasForm(ArqForm):
     quantidade = forms.IntegerField(min_value=1, max_value=60, initial=1, label="Nº de parcelas")
     primeira_data = forms.DateField(
         label="1º vencimento", widget=forms.DateInput(attrs={"type": "date"})
+    )
+
+
+class AssinaturaContratoForm(ArqForm):
+    data_assinatura = forms.DateField(
+        label="Data da assinatura", widget=forms.DateInput(attrs={"type": "date"})
     )
 
 
