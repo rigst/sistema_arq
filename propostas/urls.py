@@ -14,4 +14,5 @@ urlpatterns = [
     path("item/<int:pk>/editar/", views.editar_item, name="proposta_item_editar"),
     path("item/<int:pk>/linha/", views.linha_item, name="proposta_item_linha"),
     path("item/<int:pk>/remover/", views.remover_item, name="proposta_remove_item"),
+    path("item/<int:pk>/mover/", views.mover_item, name="proposta_mover_item"),
 ]

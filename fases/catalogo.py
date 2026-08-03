@@ -26,7 +26,7 @@ class Passo:
 
 
 # --- O caminho principal ------------------------------------------------
-# Todo projeto passa por estas seis, na ordem.
+# Todo projeto passa por estas seis fases antes do grupo final de complementares.
 PRINCIPAIS = (
     Passo(
         chave="briefing",
@@ -96,14 +96,14 @@ PRINCIPAIS = (
 
 # --- Os complementares --------------------------------------------------
 # Opcionais e sob demanda: nem todo trabalho tem algum, quase nenhum tem todos.
-# Começam a partir do anteprojeto, porque é aí que existe planta para calcular.
+# Aparecem dentro do sétimo passo visual, sempre depois do projeto executivo.
 COMPLEMENTARES = (
     Passo(
         chave="comp_estrutural",
         nome="Projeto estrutural",
         resumo="Cálculo e detalhamento da estrutura.",
         entrega=("Lançamento estrutural", "Dimensionamento", "Detalhamento e ferragem"),
-        consome="O anteprojeto aprovado.",
+        consome="O projeto executivo aprovado.",
         opcional=True,
         grupo="complementar",
     ),
@@ -112,7 +112,7 @@ COMPLEMENTARES = (
         nome="Projeto elétrico",
         resumo="Pontos, circuitos, quadros e luminotécnico.",
         entrega=("Pontos e circuitos", "Quadro de cargas", "Luminotécnico"),
-        consome="O anteprojeto aprovado.",
+        consome="O projeto executivo aprovado.",
         opcional=True,
         grupo="complementar",
     ),
@@ -121,7 +121,7 @@ COMPLEMENTARES = (
         nome="Projeto hidrossanitário",
         resumo="Água fria e quente, esgoto e pluvial.",
         entrega=("Água fria e quente", "Esgoto e pluvial", "Reservação e detalhes"),
-        consome="O anteprojeto aprovado.",
+        consome="O projeto executivo aprovado.",
         opcional=True,
         grupo="complementar",
     ),
@@ -133,7 +133,7 @@ COMPLEMENTARES = (
         nome="Complementar",
         resumo="Um complementar específico deste projeto.",
         entrega=("Projeto e detalhamento", "Compatibilização com o arquitetônico"),
-        consome="O anteprojeto aprovado.",
+        consome="O projeto executivo aprovado.",
         opcional=True,
         grupo="complementar",
     ),
@@ -142,7 +142,7 @@ COMPLEMENTARES = (
         nome="Paisagismo",
         resumo="Massas vegetais, espécies e irrigação.",
         entrega=("Planta de paisagismo", "Lista de espécies", "Irrigação e drenagem"),
-        consome="O anteprojeto aprovado.",
+        consome="O projeto executivo aprovado.",
         opcional=True,
         grupo="complementar",
     ),
@@ -168,7 +168,7 @@ POR_CHAVE = {p.chave: p for p in TODAS}
 CHOICES = [(p.chave, p.nome) for p in TODAS]
 
 # A fase que precisa estar aprovada para cada complementar começar.
-PRE_REQUISITO_COMPLEMENTAR = "anteprojeto"
+PRE_REQUISITO_COMPLEMENTAR = "executivo"
 
 
 def passo(chave):

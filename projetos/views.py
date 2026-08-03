@@ -8,7 +8,7 @@ from django.views.decorators.http import require_POST
 from core.tenancy import queryset_da_empresa
 from fases.catalogo import COMPLEMENTARES_NOMEADOS
 from fases.forms import LembreteForm
-from fases.models import Fase
+from fases.models import Fase, montar_fases
 from fases.services import garantir_tarefas_do_projeto
 from tarefas.models import Tarefa
 
@@ -133,11 +133,20 @@ def detalhe_projeto(request, pk):
     projeto = get_object_or_404(
         queryset_da_empresa(Projeto.objects.select_related("cliente"), request.user), pk=pk
     )
+    # A ficha é a fonte visual do fluxo: recompõe fases principais que possam
+    # faltar em projetos antigos e normaliza a ordem antes de apresentá-las.
+    montar_fases(projeto)
     contrato = projeto.contratos.order_by("-criado_em").first()
     garantir_tarefas_do_projeto(projeto, request.user)
     # O roteiro mora aqui, e não numa página só dele: ter duas telas centrais
     # por projeto era o que fazia ninguém saber em qual delas olhar.
     roteiro = montar_roteiro(projeto)
+    fases = projeto.fases.select_related("fornecedor").annotate(
+        horas_tarefas=Sum("tarefas__horas_previstas")
+    ).order_by("ordem", "id")
+    fases_principais = [fase for fase in fases if not fase.complementar]
+    fases_complementares = [fase for fase in fases if fase.complementar]
+    executivo = next((fase for fase in fases_principais if fase.chave == "executivo"), None)
     contexto = {
         "projeto": projeto,
         "valor_contrato": contrato.valor_total if contrato else projeto.valor_contratado,
@@ -147,9 +156,10 @@ def detalhe_projeto(request, pk):
         "complementares_marcados": set(
             projeto.fases.values_list("chave", flat=True)
         ),
-        "fases": projeto.fases.select_related("fornecedor").annotate(
-            horas_tarefas=Sum("tarefas__horas_previstas")
-        ),
+        "fases": fases,
+        "fases_principais": fases_principais,
+        "fases_complementares": fases_complementares,
+        "complementares_liberados": bool(executivo and executivo.status == Fase.APROVADA),
         "complementares_todos": COMPLEMENTARES_NOMEADOS,
         "complementares_extras": projeto.fases.filter(chave="comp_outro"),
         "roteiro": roteiro,

@@ -4,6 +4,7 @@ import base64
 import mimetypes
 
 from django.http import HttpResponse
+from django.contrib.staticfiles import finders
 from django.template.loader import render_to_string
 
 
@@ -28,8 +29,20 @@ def _identidade_pdf(user):
                 conteudo = base64.b64encode(arquivo.read()).decode("ascii")
             mime = mimetypes.guess_type(empresa.logo.name)[0] or "image/png"
             dados["empresa_logo_data_uri"] = f"data:{mime};base64,{conteudo}"
+            dados["empresa_logo_alt"] = f"Logo de {dados['empresa_nome']}"
         except (OSError, ValueError):
             pass
+    if "empresa_logo_data_uri" not in dados:
+        marca_app = finders.find("img/arq-mark.svg")
+        if marca_app:
+            try:
+                with open(marca_app, "rb") as arquivo:
+                    conteudo = base64.b64encode(arquivo.read()).decode("ascii")
+                dados["empresa_logo_data_uri"] = f"data:image/svg+xml;base64,{conteudo}"
+                dados["empresa_logo_alt"] = "A.R.Q."
+                dados["usando_logo_app"] = True
+            except OSError:
+                pass
     return dados
 
 

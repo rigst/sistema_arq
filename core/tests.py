@@ -153,6 +153,13 @@ class IdentidadeTests(TestCase):
     def test_sem_imagem_o_painel_nao_declara_a_variavel(self):
         self.assertNotContains(self.client.get("/"), "--fundo-escritorio")
 
+    def test_pdf_sem_logo_do_escritorio_usa_a_marca_do_app(self):
+        identidade = _identidade_pdf(self.user)
+        self.assertTrue(identidade["empresa_logo_data_uri"].startswith("data:image/svg+xml;base64,"))
+        self.assertTrue(identidade["usando_logo_app"])
+        pdf = render_pdf("pdf/base_pdf.html", {}, user=self.user)
+        self.assertTrue(pdf.content.startswith(b"%PDF"))
+
     def test_remover_imagem_volta_para_o_padrao(self):
         self.client.post(
             "/escritorio/identidade/",

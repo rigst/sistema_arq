@@ -28,13 +28,8 @@ def _reprecificar_itens(proposta):
 
 
 def _ordenar_itens(proposta):
-    """Mantém as etapas conhecidas na ordem do trabalho; serviços livres vêm depois."""
-    ordem_catalogo = {
-        descricao: indice
-        for indice, (descricao, _, _) in enumerate(itens_prontos.FASES_DE_PROJETO)
-    }
-    itens = list(proposta.itens.all())
-    itens.sort(key=lambda item: (ordem_catalogo.get(item.descricao, 10_000), item.ordem, item.pk))
+    """Normaliza posições sem desfazer a ordem escolhida pelo usuário."""
+    itens = list(proposta.itens.order_by("ordem", "pk"))
     for ordem, item in enumerate(itens):
         if item.ordem != ordem:
             item.ordem = ordem
@@ -298,8 +293,17 @@ def linha_item(request, pk):
     item = get_object_or_404(
         queryset_da_empresa(ItemProposta.objects.select_related("proposta"), request.user), pk=pk
     )
+    itens = list(item.proposta.itens.order_by("ordem", "pk"))
+    indice = next(i for i, atual in enumerate(itens) if atual.pk == item.pk)
     return render(
-        request, "propostas/_item_linha.html", {"item": item, "proposta": item.proposta}
+        request,
+        "propostas/_item_linha.html",
+        {
+            "item": item,
+            "proposta": item.proposta,
+            "pode_subir": indice > 0,
+            "pode_descer": indice < len(itens) - 1,
+        },
     )
 
 
@@ -333,6 +337,37 @@ def remover_item(request, pk):
         messages.info(request, "Proposta enviada; volte-a para edição antes de mexer nos itens.")
         return redirect("proposta_detalhe", pk=proposta.pk)
     item.delete()
+    _ordenar_itens(proposta)
+    return _itens_ou_redirect(request, proposta)
+
+
+@require_POST
+@login_required
+def mover_item(request, pk):
+    """Move um serviço uma posição; a ordem também é usada no PDF."""
+    item = get_object_or_404(
+        queryset_da_empresa(ItemProposta.objects.select_related("proposta"), request.user),
+        pk=pk,
+    )
+    proposta = item.proposta
+    if not proposta.editavel:
+        messages.info(request, "Proposta enviada; volte-a para edição antes de reordenar os itens.")
+        return redirect("proposta_detalhe", pk=proposta.pk)
+
+    direcao = request.POST.get("direcao")
+    if direcao not in {"cima", "baixo"}:
+        messages.error(request, "Direção inválida para reordenar o serviço.")
+        return _itens_ou_redirect(request, proposta)
+
+    with transaction.atomic():
+        itens = list(proposta.itens.select_for_update().order_by("ordem", "pk"))
+        indice = next(i for i, atual in enumerate(itens) if atual.pk == item.pk)
+        destino = indice - 1 if direcao == "cima" else indice + 1
+        if 0 <= destino < len(itens):
+            itens[indice], itens[destino] = itens[destino], itens[indice]
+            for ordem, atual in enumerate(itens):
+                atual.ordem = ordem
+            ItemProposta.objects.bulk_update(itens, ["ordem"])
     return _itens_ou_redirect(request, proposta)
 
 

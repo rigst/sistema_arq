@@ -299,6 +299,30 @@ class EdicaoInlineDeItemTests(ItensProntosTests):
         self.assertContains(resposta, 'class="proposta-somatorio"')
         self.assertContains(resposta, "8 h")
 
+    def test_move_servicos_para_cima_e_para_baixo(self):
+        self.client.post(
+            f"/propostas/{self.proposta.pk}/prontos/",
+            {"prontos": ["Estudo preliminar", "Anteprojeto", "Projeto executivo"]},
+        )
+        itens = list(self.proposta.itens.order_by("ordem", "pk"))
+        ultimo = itens[-1]
+
+        resposta = self.client.post(
+            f"/propostas/item/{ultimo.pk}/mover/",
+            {"direcao": "cima"},
+            headers={"HX-Request": "true"},
+        )
+        ordem = list(self.proposta.itens.order_by("ordem", "pk").values_list("pk", flat=True))
+        self.assertEqual(ordem.index(ultimo.pk), 1)
+        self.assertContains(resposta, "Mover para cima")
+        self.assertContains(resposta, "Mover para baixo")
+
+        self.client.post(
+            f"/propostas/item/{ultimo.pk}/mover/", {"direcao": "baixo"}
+        )
+        ordem = list(self.proposta.itens.order_by("ordem", "pk").values_list("pk", flat=True))
+        self.assertEqual(ordem.index(ultimo.pk), 2)
+
 
 class FatoresDaPropostaTests(ItensProntosTests):
     def setUp(self):

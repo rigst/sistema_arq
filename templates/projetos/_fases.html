@@ -11,12 +11,12 @@ material tem e o que fazer agora — e é o link para a área de trabalho da fas
     </p>
 
     <ol class="fase-lista">
-        {% for f in fases %}
+        {% for f in fases_principais %}
         {% comment %}
         Fase bloqueada não é link: a ordem é obrigatória, e deixar clicável um
         caminho que o sistema vai recusar é convidar para uma porta fechada.
         {% endcomment %}
-        <li class="fase-linha fase-linha--{{ f.status }}{% if f.complementar %} is-complementar{% endif %}{% if f.bloqueada %} is-bloqueada{% endif %}">
+        <li class="fase-linha fase-linha--{{ f.status }}{% if f.bloqueada %} is-bloqueada{% endif %}">
             {% if f.bloqueada %}
             <span class="fase-linha-corpo" title="{{ f.impedimento }}">
                 <span class="fase-num num" aria-hidden="true">{{ forloop.counter }}</span>
@@ -49,13 +49,47 @@ material tem e o que fazer agora — e é o link para a área de trabalho da fas
             {% endif %}
         </li>
         {% endfor %}
-    </ol>
 
-    <div class="fases-rodape">
-        <button class="link-discreto" type="button" data-abre="modal-complementares" hidden>
-            Editar projetos complementares
-        </button>
-    </div>
+        <li class="fase-linha fase-linha--complementares{% if not complementares_liberados %} is-bloqueada{% endif %}">
+            <div class="fase-linha-corpo fase-complementares-cabecalho">
+                <span class="fase-num num" aria-hidden="true">7</span>
+                <span class="fase-id">
+                    <strong>Projetos complementares</strong>
+                    <span class="fase-resumo">Compatibilização das disciplinas após o projeto executivo.</span>
+                </span>
+                <span class="fase-situacao">
+                    {% if not complementares_liberados %}
+                    <span class="fase-selo">{% include "core/_ico.html" with ico="cadeado" ico_classe="fase-cadeado" %} Bloqueada</span>
+                    {% elif fases_complementares %}
+                    <span class="fase-selo fase-selo--em_elaboracao">{{ fases_complementares|length }} selecionado{{ fases_complementares|length|pluralize }}</span>
+                    {% else %}
+                    <span class="fase-selo">A definir</span>
+                    {% endif %}
+                    <button class="linha-ico" type="button" data-abre="modal-complementares" hidden
+                            title="Editar projetos complementares" aria-label="Editar projetos complementares">
+                        {% include "core/_ico.html" with ico="editar" %}
+                    </button>
+                </span>
+            </div>
+            {% if fases_complementares %}
+            <ul class="fase-complementares-lista" aria-label="Disciplinas complementares">
+                {% for f in fases_complementares %}
+                <li class="fase-complementar-item fase-linha--{{ f.status }}{% if f.bloqueada %} is-bloqueada{% endif %}">
+                    {% if f.bloqueada %}
+                    <span class="fase-complementar-link" title="{{ f.impedimento }}">
+                    {% else %}
+                    <a class="fase-complementar-link" href="{% url 'fase_detalhe' f.pk %}">
+                    {% endif %}
+                        <span class="fase-complementar-marca" aria-hidden="true"></span>
+                        <span><strong>{{ f.nome }}</strong><small>{{ f.rotulo_status }}</small></span>
+                        <span class="fase-num-arquivos num">{{ f.horas_tarefas|default_if_none:"0"|floatformat:"0" }} h · {{ f.arquivos.count }} arq.</span>
+                    {% if f.bloqueada %}</span>{% else %}</a>{% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </li>
+    </ol>
 
     <dialog class="ds-modal" id="modal-complementares" aria-labelledby="modal-complementares-titulo">
         <form method="dialog" class="ds-modal-fechar-form">
@@ -65,7 +99,7 @@ material tem e o que fazer agora — e é o link para a área de trabalho da fas
         </form>
         <h2 class="ds-modal-titulo ds-display" id="modal-complementares-titulo">Projetos complementares</h2>
         <p class="ds-modal-sub">
-            Marque os que este projeto terá. Cada um parte do anteprojeto aprovado.
+            Marque os que este projeto terá. O grupo é liberado após a aprovação do projeto executivo.
             Desmarcar ou remover um complementar também exclui os arquivos ligados a ele.
         </p>
         <div class="ds-modal-corpo">

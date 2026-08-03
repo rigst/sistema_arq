@@ -1692,6 +1692,24 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 .fase-linha--em_elaboracao .fase-id strong,
 .fase-linha--ajustes .fase-id strong { font-weight: 600; color: var(--ds-blue-dark); }
 .fase-linha.is-complementar .fase-num { border-style: dashed; }
+.fase-linha--complementares { border-bottom: 1px solid var(--ds-line); }
+.fase-linha--complementares .fase-num { border-style: dashed; }
+.fase-complementares-cabecalho:hover { background: transparent; }
+.fase-complementares-cabecalho .fase-situacao { flex-direction: row; align-items: center; }
+.fase-complementares-lista { list-style: none; margin: 0 0 0.75rem 3.6rem; padding: 0; border-left: 1px dashed var(--ds-line-dash); }
+.fase-complementar-item { margin: 0; }
+.fase-complementar-link {
+    display: grid; grid-template-columns: 0.8rem minmax(0, 1fr) auto; align-items: center;
+    gap: 0.75rem; padding: 0.55rem 0.75rem; color: inherit; text-decoration: none;
+    transition: background var(--arq-fast) ease;
+}
+a.fase-complementar-link:hover { background: var(--ds-panel); }
+.fase-complementar-marca { width: 0.42rem; height: 0.42rem; margin-left: -0.98rem; border-radius: 50%; background: var(--ds-line-dash); }
+.fase-complementar-link > span:nth-child(2) { display: flex; flex-direction: column; min-width: 0; }
+.fase-complementar-link strong { font-size: 0.84rem; font-weight: 500; }
+.fase-complementar-link small { color: var(--ds-text-500); font-size: 0.7rem; }
+.fase-complementar-item.fase-linha--aprovada .fase-complementar-marca { background: var(--ds-blue); }
+.fase-complementar-item.is-bloqueada { opacity: 0.78; }
 
 /* --- A área de trabalho da fase ---------------------------------- */
 /* Cartão contido, e não faixa larga: com o selo numa ponta e o botão na */
@@ -1783,6 +1801,9 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
     .arquivo { grid-template-columns: 3rem minmax(0, 1fr); }
     .arquivo-acoes { grid-column: 2; }
     .arquivo-principal { grid-template-columns: 3rem minmax(0, 1fr) auto; }
+    .fase-complementares-lista { margin-left: 2.6rem; }
+    .fase-complementar-link { grid-template-columns: 0.8rem minmax(0, 1fr); }
+    .fase-complementar-link .fase-num-arquivos { grid-column: 2; }
 }
 
 /* O programa de necessidades repetido dentro da fase que o consome. */
@@ -2738,12 +2759,13 @@ a.projeto-card:focus-visible {
 }
 .proposta-itens-tabela .col-horas { width: 7rem; }
 .proposta-itens-tabela .col-valor { width: 12rem; }
-.proposta-itens-tabela .col-acoes { width: 4rem; }
+.proposta-itens-tabela .col-acoes { width: 8rem; }
+.proposta-itens-tabela .linha-ico:disabled { opacity: 0.28; cursor: default; transform: none; background: transparent; }
 @media (max-width: 40rem) {
     .table-scroll .proposta-itens-tabela { min-width: 0; table-layout: fixed; font-size: 0.72rem; }
     .proposta-itens-tabela .col-horas { width: 3.7rem; }
     .proposta-itens-tabela .col-valor { width: 6.2rem; }
-    .proposta-itens-tabela .col-acoes { width: 3.4rem; }
+    .proposta-itens-tabela .col-acoes { width: 6.8rem; }
     .proposta-itens-tabela th, .proposta-itens-tabela td { padding: 0.58rem 0.2rem; }
     .proposta-itens-tabela th:first-child, .proposta-itens-tabela td:first-child { padding-left: 0; }
     .proposta-itens-tabela .linha-add td:nth-child(3) { font-size: 0.6rem; white-space: normal; }
@@ -2767,7 +2789,7 @@ a.projeto-card:focus-visible {
 .item-proposta-titulo, .item-proposta-inclusoes { display: block; }
 .item-proposta-inclusoes { margin-top: 0.2rem; color: var(--ds-text-500); font-size: 0.78rem; line-height: 1.4; }
 .campo-obrigatorio, .form-required-hint { color: var(--ds-danger); }
-.form-required-hint { margin: 0 0 0.6rem; font-size: 0.75rem; }
+.form-required-hint { display: block !important; margin: 0 0 0.6rem; font-size: 0.75rem; }
 .form-error-summary { margin-bottom: 1rem; padding: 0.8rem 1rem; border-left: 3px solid var(--ds-danger); background: color-mix(in srgb, var(--ds-danger) 7%, var(--ds-surface)); }
 .form-error-summary ul { margin: 0.4rem 0 0; padding-left: 1.2rem; }
 

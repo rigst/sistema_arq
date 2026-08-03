@@ -183,11 +183,10 @@ class Fase(EmpresaModel, Rastreavel):
 
     @property
     def bloqueada(self):
-        return self.status == self.NAO_INICIADA and not self.liberada
+        return self.status != self.APROVADA and not self.liberada
 
     def _abrir_seguintes(self, usuario=None):
-        """Aprovar uma fase acende a próxima — e os complementares, quando é o
-        anteprojeto que fecha."""
+        """Aprovar uma fase acende a próxima; complementares só após o executivo."""
         for outra in self.projeto.fases.filter(status=self.NAO_INICIADA):
             outra.abrir(usuario)
 
@@ -282,6 +281,25 @@ def montar_fases(projeto, complementares=()):
             )
         )
     Fase.objects.bulk_create(novas)
+    # Corrige também projetos antigos: as fases principais nunca mudam de
+    # posição e os complementares ficam, sem exceção, depois do executivo.
+    ordem_catalogo = {passo.chave: ordem for ordem, passo in enumerate(catalogo.TODAS)}
+    fases_ordenadas = sorted(
+        projeto.fases.all(),
+        key=lambda fase: (ordem_catalogo.get(fase.chave, len(ordem_catalogo)), fase.pk),
+    )
+    alteradas = []
+    for ordem, fase in enumerate(fases_ordenadas):
+        if fase.ordem != ordem:
+            fase.ordem = ordem
+            alteradas.append(fase)
+    if alteradas:
+        Fase.objects.bulk_update(alteradas, ["ordem"])
+    executivo = projeto.fases.filter(chave="executivo").first()
+    if executivo is not None and executivo.status != Fase.APROVADA:
+        projeto.fases.filter(chave__startswith="comp_").exclude(
+            status=Fase.APROVADA
+        ).update(status=Fase.NAO_INICIADA, iniciada_em=None)
     # A primeira fase de um projeto novo já nasce ativa: não há nada antes dela
     # para aprovar, e deixar tudo "não iniciada" faz o projeto parecer travado.
     primeira = projeto.fases.order_by("ordem").first()
@@ -307,7 +325,8 @@ def criar_complementares_avulsos(projeto, texto):
         vistos.add(nome.casefold())
         nomes.append(nome)
 
-    ordem = len(catalogo.TODAS)
+    ordem = projeto.fases.aggregate(maior=models.Max("ordem"))["maior"]
+    ordem = 0 if ordem is None else ordem + 1
     novas = [
         Fase(
             empresa=projeto.empresa, projeto=projeto,

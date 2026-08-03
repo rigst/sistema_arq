@@ -106,9 +106,31 @@ class FluxoTests(BaseFase):
         self.assertFalse(anteprojeto.concluir_sem_aprovacao(self.user))
         self.assertEqual(anteprojeto.status, Fase.EM_ELABORACAO)
 
-    def test_todos_os_complementares_dependem_do_anteprojeto(self):
+    def test_todos_os_complementares_dependem_do_projeto_executivo(self):
         for passo in catalogo.COMPLEMENTARES:
-            self.assertEqual(catalogo.anterior_de(passo.chave), "anteprojeto")
+            self.assertEqual(catalogo.anterior_de(passo.chave), "executivo")
+
+    def test_complementar_so_abre_depois_do_executivo(self):
+        montar_fases(self.projeto, complementares=["comp_eletrica"])
+        complementar = self.fase("comp_eletrica")
+        self.projeto.fases.exclude(chave__in=["executivo", "comp_eletrica"]).update(
+            status=Fase.APROVADA
+        )
+        self.assertFalse(complementar.abrir(self.user))
+        executivo = self.fase("executivo")
+        executivo.status = Fase.APROVADA
+        executivo.save(update_fields=["status"])
+        self.assertTrue(complementar.abrir(self.user))
+
+    def test_pagina_do_projeto_exibe_os_sete_passos_na_ordem(self):
+        resposta = self.client.get(f"/projetos/{self.projeto.pk}/")
+        html = resposta.content.decode()
+        nomes = [
+            "Briefing", "Proposta", "Contrato", "Estudo preliminar",
+            "Anteprojeto", "Projeto executivo", "Projetos complementares",
+        ]
+        posicoes = [html.index(nome) for nome in nomes]
+        self.assertEqual(posicoes, sorted(posicoes))
 
     def test_transicao_fora_de_ordem_nao_acontece(self):
         fase = self.fase("anteprojeto")
@@ -611,14 +633,14 @@ class ComplementarLivreTests(BaseFase):
         criar_complementares_avulsos(self.projeto, "Acústico, , acústico,  ")
         self.assertEqual(self.projeto.fases.filter(chave="comp_outro").count(), 1)
 
-    def test_depende_do_anteprojeto_como_os_outros(self):
+    def test_depende_do_projeto_executivo_como_os_outros(self):
         from fases.models import criar_complementares_avulsos
 
         criar_complementares_avulsos(self.projeto, "Acústico")
         fase = self.projeto.fases.get(chave="comp_outro")
         self.assertTrue(fase.complementar)
         self.assertFalse(fase.liberada)
-        self.assertIn("Anteprojeto", fase.impedimento)
+        self.assertIn("Projeto executivo", fase.impedimento)
 
 
 class TelasQueRespondemTests(BaseFase):

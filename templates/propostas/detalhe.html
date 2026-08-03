@@ -19,7 +19,7 @@
             <h1 class="ds-h2 ds-display">{{ proposta.titulo }}</h1>
             <p class="page-sub">{{ proposta.cliente.nome }} · <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ proposta.get_status_display }}</span></p>
         </div>
-        <a class="ds-btn proposta-pdf-topo" href="{% url 'proposta_pdf' proposta.pk %}" target="_blank">
+        <a class="ds-btn proposta-pdf-topo" href="{% url 'proposta_pdf' proposta.pk %}" target="_blank" rel="noopener">
             {% include "core/_ico.html" with ico="pdf" %}
             <span>Gerar PDF</span>
         </a>
