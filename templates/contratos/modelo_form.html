@@ -1,38 +1,52 @@
 {% extends "base.html" %}
-{% block title %}{% if modelo %}{{ modelo.nome }}{% else %}Novo modelo{% endif %}{% endblock %}
+{% block title %}{% if modelo %}{{ modelo.nome }}{% else %}Novo modelo de contrato{% endif %}{% endblock %}
 
 {% block content %}
 <section class="page">
-    <header class="page-head">
-        <span class="ds-kicker">Modelo de contrato</span>
-        <h1 class="ds-h2 ds-display">{% if modelo %}{{ modelo.nome }}{% else %}Novo modelo{% endif %}</h1>
-        <p class="page-sub">
-            Marcadores como <code>{% templatetag openvariable %}cliente{% templatetag closevariable %}</code>
-            são trocados pelos dados do projeto. O que ficar sem valor aparece como
-            [PREENCHER: ...] em vez de sumir.
-        </p>
+    <header class="page-head page-head--row page-head--foto page-head--comercial">
+        <div>
+            <span class="ds-kicker">Modelo de contrato</span>
+            <h1 class="ds-h2 ds-display">{% if modelo %}{{ modelo.nome }}{% else %}Nova minuta{% endif %}</h1>
+            <p class="page-sub">Defina a finalidade da minuta e revise o texto com os marcadores que serão preenchidos pelo projeto.</p>
+        </div>
+        <a class="ds-btn" href="{% url 'modelos' %}">Voltar aos modelos</a>
     </header>
 
-    <div class="detalhe-grid">
-        <form method="post" class="ds-card form-card">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <div class="form-actions">
-                <a class="ds-btn" href="{% url 'contratos_modelos' %}">Cancelar</a>
-                <button class="ds-btn ds-btn--solid" type="submit">Salvar modelo</button>
+    <form method="post" class="modelo-contrato-form">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <section class="secao modelo-configuracao" aria-labelledby="dados-minuta-titulo">
+            <h2 class="secao-titulo ds-display" id="dados-minuta-titulo">Dados da minuta</h2>
+            <div class="modelo-dados-form modelo-dados-form--contrato">
+                <p>{{ form.nome.label_tag }}{{ form.nome }}{{ form.nome.errors }}</p>
+                <p>{{ form.descricao.label_tag }}{{ form.descricao }}{{ form.descricao.errors }}</p>
+                <label class="form-marcar form-marcar--simples">{{ form.padrao }}<span>{{ form.padrao.label }}</span></label>
+                <label class="form-marcar form-marcar--simples">{{ form.ativo }}<span>{{ form.ativo.label }}</span></label>
             </div>
-        </form>
+        </section>
 
-        <div class="ds-card">
-            <h2 class="ds-display">Marcadores</h2>
-            <table class="data-table">
-                <tbody>
-                {% for marcador, rotulo in marcadores %}
-                <tr><td class="num">{{ marcador }}</td><td>{{ rotulo }}</td></tr>
-                {% endfor %}
-                </tbody>
-            </table>
+        <div class="modelo-editor-grid">
+            <section class="secao modelo-corpo" aria-labelledby="texto-minuta-titulo">
+                <h2 class="secao-titulo ds-display" id="texto-minuta-titulo">Texto do contrato</h2>
+                <p class="secao-sub">Os dados entre chaves são preenchidos ao gerar o contrato. Os campos entre colchetes continuam visíveis para revisão.</p>
+                {{ form.corpo }}{{ form.corpo.errors }}
+            </section>
+
+            <aside class="modelo-marcadores" aria-labelledby="marcadores-titulo">
+                <h2 class="secao-titulo ds-display" id="marcadores-titulo">Marcadores</h2>
+                <p class="secao-sub">Use exatamente como aparecem abaixo.</p>
+                <dl>
+                    {% for marcador, rotulo in marcadores %}
+                    <div><dt class="num">{{ marcador }}</dt><dd>{{ rotulo }}</dd></div>
+                    {% endfor %}
+                </dl>
+            </aside>
         </div>
-    </div>
+
+        <div class="form-actions modelo-form-actions">
+            <a class="ds-btn" href="{% url 'modelos' %}">Cancelar</a>
+            <button class="ds-btn ds-btn--solid" type="submit">Salvar modelo</button>
+        </div>
+    </form>
 </section>
 {% endblock %}

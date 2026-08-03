@@ -91,3 +91,8 @@ class ModeloContratoForm(ArqModelForm):
         model = ModeloContrato
         fields = ["nome", "descricao", "corpo", "padrao", "ativo"]
         widgets = {"corpo": forms.Textarea(attrs={"rows": 20, "spellcheck": "true"})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk is None:
+            del self.fields["ativo"]

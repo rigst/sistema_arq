@@ -23,3 +23,8 @@ class FornecedorForm(ArqModelForm):
             "observacoes",
         ]
         widgets = {"observacoes": forms.Textarea(attrs={"rows": 3})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk is None:
+            del self.fields["ativo"]

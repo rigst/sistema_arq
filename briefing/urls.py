@@ -10,10 +10,16 @@ urlpatterns = [
     path("roteiro/<int:pk>/", views.template_detalhe, name="briefing_template_detalhe"),
     path("roteiro/<int:pk>/pergunta/", views.template_add_pergunta, name="briefing_add_pergunta"),
     path(
+        "pergunta/<int:pk>/editar/",
+        views.template_editar_pergunta,
+        name="briefing_editar_pergunta",
+    ),
+    path(
         "pergunta/<int:pk>/remover/",
         views.template_remove_pergunta,
         name="briefing_remove_pergunta",
     ),
+    path("roteiro/<int:pk>/remover/", views.template_remover, name="briefing_template_remover"),
     # Briefing de um projeto.
     path("projeto/<int:projeto_pk>/", views.editar_briefing, name="briefing_projeto"),
     path("projeto/<int:projeto_pk>/responder/", views.responder, name="briefing_responder"),

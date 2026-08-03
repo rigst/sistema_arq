@@ -12,7 +12,9 @@ from .models import Cliente
 
 @login_required
 def lista_clientes(request):
-    clientes = queryset_da_empresa(Cliente.objects.all(), request.user)
+    todos = queryset_da_empresa(Cliente.objects.all(), request.user)
+    mostrando_inativos = request.GET.get("inativos") == "1"
+    clientes = todos.filter(ativo=not mostrando_inativos)
     fase = request.GET.get("fase", "")
     if fase:
         clientes = clientes.filter(fase=fase)
@@ -28,6 +30,8 @@ def lista_clientes(request):
             "form_cliente": ClienteForm(),
             "fases": Cliente.FASE_CHOICES,
             "fase_ativa": fase,
+            "mostrando_inativos": mostrando_inativos,
+            "total_inativos": todos.filter(ativo=False).count(),
         },
     )
 
@@ -40,6 +44,7 @@ def novo_cliente(request):
         cliente = form.save(commit=False)
         cliente.empresa = obter_grupo_empresa_ou_erro(request.user)
         cliente.criado_por = request.user
+        cliente.ativo = True
         cliente.save()
         messages.success(request, "Cliente cadastrado.")
     else:

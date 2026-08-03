@@ -2,65 +2,97 @@
 {% block title %}Modelos{% endblock %}
 
 {% block content %}
-<section class="page page--leitura">
-    <header class="page-head">
-        <span class="ds-kicker">Escritório</span>
-        <h1 class="ds-h2 ds-display">Modelos</h1>
-        <p class="page-sub">
-            O que o escritório escreve uma vez e reaproveita em todo projeto:
-            roteiros de briefing e minutas de contrato.
-        </p>
+<section class="page">
+    <header class="page-head page-head--row page-head--foto page-head--comercial">
+        <div>
+            <span class="ds-kicker">Escritório</span>
+            <h1 class="ds-h2 ds-display">Modelos do escritório</h1>
+            <p class="page-sub">Roteiros de briefing e minutas que partem de uma base consistente e podem ser adaptados ao modo de trabalhar do escritório.</p>
+        </div>
     </header>
 
-    <section class="secao">
-        <h2 class="secao-titulo ds-display">Roteiros de briefing</h2>
-        <p class="secao-sub">
-            Perguntas com respostas objetivas para marcar durante a reunião. O roteiro
-            aberto por padrão é o do tipo do projeto.
-        </p>
-
-        {% if briefings %}
-        <ul class="modelo-lista">
-            {% for t in briefings %}
-            <li class="modelo">
-                <div class="modelo-id">
-                    <a href="{% url 'briefing_template_detalhe' t.pk %}">{{ t.nome }}</a>
-                    <span class="modelo-meta">
-                        {{ t.perguntas.count }} pergunta(s){% if t.tipo_projeto %} · {{ t.get_tipo_projeto_display|default:t.tipo_projeto }}{% else %} · qualquer tipo{% endif %}
-                    </span>
+    <div class="modelos-grade">
+        <section class="secao modelos-tipo" aria-labelledby="modelos-briefing-titulo">
+            <header class="secao-head-inline">
+                <div>
+                    <span class="ds-kicker">Reunião e programa</span>
+                    <h2 class="secao-titulo ds-display" id="modelos-briefing-titulo">Roteiros de briefing</h2>
+                    <p class="secao-sub">Perguntas por tipo de projeto, organizadas em blocos e com respostas recorrentes já preparadas.</p>
                 </div>
-                {% if not t.ativo %}<span class="modelo-inativo">inativo</span>{% endif %}
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p class="data-empty">Nenhum roteiro ainda.</p>
-        {% endif %}
-        <p><a class="ds-btn" href="{% url 'briefing_templates' %}">Criar e editar roteiros</a></p>
-    </section>
+                <button class="ds-btn--novo" type="button" data-abre="modal-novo-briefing" hidden>
+                    {% include "core/_ico.html" with ico="novo" %}<span>Novo roteiro</span>
+                </button>
+            </header>
 
-    <section class="secao">
-        <h2 class="secao-titulo ds-display">Minutas de contrato</h2>
-        <p class="secao-sub">
-            Texto com marcadores entre chaves duplas, trocados pelos dados do projeto na
-            geração. O que faltar vira [PREENCHER: …] em vez de sumir.
-        </p>
+            <ul class="modelo-lista modelo-lista--gestao">
+                {% for t in briefings %}
+                <li class="modelo">
+                    <span class="modelo-icone">{% include "core/_ico.html" with ico="briefings" %}</span>
+                    <div class="modelo-id">
+                        <a href="{% url 'briefing_template_detalhe' t.pk %}">{{ t.nome }}</a>
+                        <span class="modelo-meta">{{ t.perguntas.count }} perguntas · {% if t.tipo_projeto %}{{ t.get_tipo_projeto_display|default:t.tipo_projeto }}{% else %}qualquer projeto{% endif %}</span>
+                        {% if t.nome in briefings_padrao %}<span class="modelo-origem">Incluído pelo app</span>{% endif %}
+                    </div>
+                    <div class="modelo-acoes">
+                        {% if not t.ativo %}<span class="modelo-inativo">inativo</span>{% endif %}
+                        <a class="linha-ico" href="{% url 'briefing_template_detalhe' t.pk %}" title="Editar" aria-label="Editar {{ t.nome }}">{% include "core/_ico.html" with ico="editar" %}</a>
+                        {% if t.nome not in briefings_padrao %}
+                        <form method="post" action="{% url 'briefing_template_remover' t.pk %}" data-confirmar-exclusao>
+                            {% csrf_token %}<button class="linha-ico linha-ico--risco" type="submit" title="Excluir" aria-label="Excluir {{ t.nome }}">{% include "core/_ico.html" with ico="excluir" %}</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
 
-        {% if contratos %}
-        <ul class="modelo-lista">
-            {% for m in contratos %}
-            <li class="modelo">
-                <div class="modelo-id">
-                    <a href="{% url 'contrato_modelo_editar' m.pk %}">{{ m.nome }}</a>
-                    <span class="modelo-meta">{{ m.corpo|truncatechars:90 }}</span>
+        <section class="secao modelos-tipo" aria-labelledby="modelos-contrato-titulo">
+            <header class="secao-head-inline">
+                <div>
+                    <span class="ds-kicker">Contratação</span>
+                    <h2 class="secao-titulo ds-display" id="modelos-contrato-titulo">Minutas de contrato</h2>
+                    <p class="secao-sub">Cláusulas com marcadores substituídos automaticamente pelos dados do projeto, da proposta e do cliente.</p>
                 </div>
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p class="data-empty">Nenhuma minuta ainda.</p>
-        {% endif %}
-        <p><a class="ds-btn" href="{% url 'contratos_modelos' %}">Criar e editar minutas</a></p>
-    </section>
+                <a class="ds-btn--novo" href="{% url 'contrato_modelo_novo' %}">
+                    {% include "core/_ico.html" with ico="novo" %}<span>Novo modelo</span>
+                </a>
+            </header>
+
+            <ul class="modelo-lista modelo-lista--gestao">
+                {% for m in contratos %}
+                <li class="modelo">
+                    <span class="modelo-icone">{% include "core/_ico.html" with ico="contratos" %}</span>
+                    <div class="modelo-id">
+                        <a href="{% url 'contrato_modelo_editar' m.pk %}">{{ m.nome }}</a>
+                        <span class="modelo-meta">{{ m.descricao|default:"Minuta sem descrição." }}</span>
+                        {% if m.nome in contratos_padrao %}<span class="modelo-origem">Incluído pelo app</span>{% endif %}
+                    </div>
+                    <div class="modelo-acoes">
+                        {% if m.padrao %}<span class="modelo-padrao">padrão</span>{% elif not m.ativo %}<span class="modelo-inativo">inativo</span>{% endif %}
+                        <a class="linha-ico" href="{% url 'contrato_modelo_editar' m.pk %}" title="Editar" aria-label="Editar {{ m.nome }}">{% include "core/_ico.html" with ico="editar" %}</a>
+                        {% if m.nome not in contratos_padrao %}
+                        <form method="post" action="{% url 'contrato_modelo_remover' m.pk %}" data-confirmar-exclusao>
+                            {% csrf_token %}<button class="linha-ico linha-ico--risco" type="submit" title="Excluir" aria-label="Excluir {{ m.nome }}">{% include "core/_ico.html" with ico="excluir" %}</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+    </div>
+
+    <dialog class="ds-modal ds-modal--amplo" id="modal-novo-briefing" aria-labelledby="modal-novo-briefing-titulo">
+        <form method="dialog" class="ds-modal-fechar-form"><button class="ds-modal-fechar" aria-label="Fechar">{% include "core/_ico.html" with ico="fechar" %}</button></form>
+        <h2 class="ds-modal-titulo ds-display" id="modal-novo-briefing-titulo">Novo roteiro de briefing</h2>
+        <p class="ds-modal-sub">Crie a estrutura básica; as perguntas serão organizadas na tela seguinte.</p>
+        <div class="ds-modal-corpo">
+            <form method="post" action="{% url 'briefing_template_novo' %}" class="form-card">
+                {% csrf_token %}{{ form_briefing.as_p }}
+                <div class="form-actions"><button class="ds-btn" type="submit" formmethod="dialog" formnovalidate>Cancelar</button><button class="ds-btn ds-btn--solid" type="submit">Criar roteiro</button></div>
+            </form>
+        </div>
+    </dialog>
 </section>
 {% endblock %}

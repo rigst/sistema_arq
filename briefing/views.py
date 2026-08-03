@@ -102,16 +102,7 @@ def _meus_templates(user):
 
 @login_required
 def templates_lista(request):
-    templates = _meus_templates(request.user).prefetch_related("perguntas")
-    return render(
-        request,
-        "briefing/templates.html",
-        {
-            "templates": templates,
-            "form": TemplateBriefingForm(),
-            "projetos": queryset_da_empresa(Projeto.objects.all(), request.user),
-        },
-    )
+    return redirect("modelos")
 
 
 @require_POST
@@ -125,7 +116,7 @@ def semear_padroes(request):
         )
     else:
         messages.info(request, "Os roteiros prontos já estavam cadastrados.")
-    return redirect("briefing_templates")
+    return redirect("modelos")
 
 
 @require_POST
@@ -136,11 +127,12 @@ def template_novo(request):
         template = form.save(commit=False)
         template.empresa = obter_grupo_empresa_ou_erro(request.user)
         template.criado_por = request.user
+        template.ativo = True
         template.save()
         messages.success(request, "Roteiro criado. Agora inclua as perguntas.")
         return redirect("briefing_template_detalhe", pk=template.pk)
     messages.error(request, "Dê um nome ao roteiro.")
-    return redirect("briefing_templates")
+    return redirect("modelos")
 
 
 @login_required
@@ -154,13 +146,19 @@ def template_detalhe(request, pk):
             return redirect("briefing_template_detalhe", pk=template.pk)
     else:
         form = TemplateBriefingForm(instance=template)
+    blocos = perguntas_por_bloco(template)
+    for bloco in blocos:
+        for pergunta in bloco["perguntas"]:
+            pergunta.opcoes_texto = "\n".join(
+                pergunta.opcoes.values_list("texto", flat=True)
+            )
     return render(
         request,
         "briefing/template_detalhe.html",
         {
             "template": template,
             "form": form,
-            "blocos": perguntas_por_bloco(template),
+            "blocos": blocos,
             "tipos": PerguntaTemplate.TIPO_CHOICES,
         },
     )
@@ -175,25 +173,53 @@ def template_add_pergunta(request, pk):
         messages.error(request, "Escreva a pergunta.")
         return redirect("briefing_template_detalhe", pk=template.pk)
 
-    pergunta = PerguntaTemplate.objects.create(
+    pergunta = PerguntaTemplate(
         empresa=template.empresa,
         template=template,
-        texto=texto,
-        bloco=(request.POST.get("bloco") or "").strip(),
-        tipo=request.POST.get("tipo") if request.POST.get("tipo") in dict(PerguntaTemplate.TIPO_CHOICES) else "opcao",
-        ajuda=(request.POST.get("ajuda") or "").strip(),
         ordem=template.perguntas.count(),
     )
-    # As opções chegam em um campo só, uma por linha — é como se escreve rápido.
-    linhas = [l.strip() for l in (request.POST.get("opcoes") or "").splitlines() if l.strip()]
-    OpcaoPergunta.objects.bulk_create(
-        [
-            OpcaoPergunta(empresa=template.empresa, pergunta=pergunta, texto=linha, ordem=i)
-            for i, linha in enumerate(linhas)
-        ]
-    )
+    _preencher_pergunta(pergunta, request.POST)
     messages.success(request, "Pergunta incluída.")
     return redirect("briefing_template_detalhe", pk=template.pk)
+
+
+def _preencher_pergunta(pergunta, dados):
+    pergunta.texto = (dados.get("texto") or "").strip()
+    pergunta.bloco = (dados.get("bloco") or "").strip()
+    tipo = dados.get("tipo")
+    pergunta.tipo = tipo if tipo in dict(PerguntaTemplate.TIPO_CHOICES) else "opcao"
+    pergunta.ajuda = (dados.get("ajuda") or "").strip()
+    pergunta.save()
+    pergunta.opcoes.all().delete()
+    linhas = [linha.strip() for linha in (dados.get("opcoes") or "").splitlines() if linha.strip()]
+    OpcaoPergunta.objects.bulk_create(
+        [
+            OpcaoPergunta(
+                empresa=pergunta.empresa,
+                pergunta=pergunta,
+                texto=linha,
+                ordem=ordem,
+            )
+            for ordem, linha in enumerate(linhas)
+        ]
+    )
+
+
+@require_POST
+@login_required
+def template_editar_pergunta(request, pk):
+    pergunta = get_object_or_404(
+        queryset_da_empresa(
+            PerguntaTemplate.objects.select_related("template"), request.user
+        ),
+        pk=pk,
+    )
+    if not (request.POST.get("texto") or "").strip():
+        messages.error(request, "Escreva a pergunta.")
+    else:
+        _preencher_pergunta(pergunta, request.POST)
+        messages.success(request, "Pergunta atualizada.")
+    return redirect("briefing_template_detalhe", pk=pergunta.template_id)
 
 
 @require_POST
@@ -205,6 +231,15 @@ def template_remove_pergunta(request, pk):
     template_pk = pergunta.template_id
     pergunta.delete()
     return redirect("briefing_template_detalhe", pk=template_pk)
+
+
+@require_POST
+@login_required
+def template_remover(request, pk):
+    template = get_object_or_404(_meus_templates(request.user), pk=pk)
+    template.delete()
+    messages.success(request, "Roteiro removido.")
+    return redirect("modelos")
 
 
 @require_POST
@@ -222,6 +257,7 @@ def aplicar_template(request, projeto_pk):
 @login_required
 def responder(request, projeto_pk):
     projeto, briefing = _get_briefing(request, projeto_pk)
+    semear_templates_padrao(projeto.empresa, request.user)
     template_pk = request.session.get(f"briefing_template_{briefing.pk}")
     template = _meus_templates(request.user).filter(pk=template_pk).first()
     if template is None:
@@ -340,4 +376,3 @@ def _salvar_respostas(request, briefing, template):
         )
         opcoes = pergunta.opcoes.filter(pk__in=[m for m in marcadas if m.isdigit()])
         resposta.opcoes.set(opcoes)
-

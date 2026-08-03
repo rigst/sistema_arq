@@ -3,67 +3,95 @@
 
 {% block content %}
 <section class="page">
-    <header class="page-head page-head--row">
+    <header class="page-head page-head--row page-head--foto page-head--comercial">
         <div>
             <span class="ds-kicker">Roteiro de briefing</span>
             <h1 class="ds-h2 ds-display">{{ template.nome }}</h1>
-            <p class="page-sub">{{ template.descricao|default:"Monte as perguntas e as respostas objetivas que o escritório usa nesta conversa." }}</p>
+            <p class="page-sub">Organize os dados gerais e as perguntas na ordem em que a conversa acontece.</p>
         </div>
-        <a class="ds-btn" href="{% url 'briefing_templates' %}">Voltar</a>
+        <a class="ds-btn" href="{% url 'modelos' %}">Voltar aos modelos</a>
     </header>
 
-    <div class="ds-card">
-        <h2 class="ds-display">Perguntas</h2>
-        {% for bloco in blocos %}
-        <h4 class="briefing-bloco">{{ bloco.nome }}</h4>
-        <ul class="pendencias">
-            {% for p in bloco.perguntas %}
-            <li class="briefing-pergunta-linha">
-                <span>
-                    <strong>{{ p.texto }}</strong>
-                    <span class="ds-kicker">{{ p.get_tipo_display }}{% if p.opcoes.count %} · {{ p.opcoes.count }} opções{% endif %}</span>
-                    {% if p.opcoes.count %}
-                    <span class="briefing-opcoes-preview">{% for o in p.opcoes.all %}{{ o.texto }}{% if not forloop.last %} · {% endif %}{% endfor %}</span>
-                    {% endif %}
-                </span>
-                <form method="post" action="{% url 'briefing_remove_pergunta' p.pk %}" class="app-inline-form">
-                    {% csrf_token %}<button class="app-link-btn" type="submit">remover</button>
-                </form>
-            </li>
-            {% endfor %}
-        </ul>
-        {% empty %}
-        <p class="data-empty">Nenhuma pergunta ainda.</p>
-        {% endfor %}
-    </div>
+    <section class="secao modelo-configuracao" aria-labelledby="dados-roteiro-titulo">
+        <h2 class="secao-titulo ds-display" id="dados-roteiro-titulo">Dados do roteiro</h2>
+        <form method="post" class="modelo-dados-form">
+            {% csrf_token %}
+            <p>{{ form.nome.label_tag }}{{ form.nome }}{{ form.nome.errors }}</p>
+            <p>{{ form.tipo_projeto.label_tag }}{{ form.tipo_projeto }}{{ form.tipo_projeto.errors }}</p>
+            <p class="modelo-dados-descricao">{{ form.descricao.label_tag }}{{ form.descricao }}{{ form.descricao.errors }}</p>
+            <label class="form-marcar form-marcar--simples">{{ form.ativo }}<span>{{ form.ativo.label }}</span></label>
+            <button class="ds-btn ds-btn--solid" type="submit">Salvar dados</button>
+        </form>
+    </section>
 
-    <div class="detalhe-grid">
-        <div class="ds-card form-card">
-            <h2 class="ds-display">Nova pergunta</h2>
-            <form method="post" action="{% url 'briefing_add_pergunta' template.pk %}">
+    <section class="secao modelo-perguntas" aria-labelledby="perguntas-titulo">
+        <header class="secao-head-inline">
+            <div>
+                <h2 class="secao-titulo ds-display" id="perguntas-titulo">Perguntas do roteiro</h2>
+                <p class="secao-sub">{{ template.perguntas.count }} pergunta{{ template.perguntas.count|pluralize }} agrupada{{ template.perguntas.count|pluralize }} por assunto.</p>
+            </div>
+            <button class="ds-btn--novo" type="button" data-abre="modal-nova-pergunta" hidden>{% include "core/_ico.html" with ico="novo" %}<span>Nova pergunta</span></button>
+        </header>
+
+        <div class="modelo-blocos">
+            {% for bloco in blocos %}
+            <section class="modelo-bloco">
+                <h3 class="bloco-titulo">{{ bloco.nome }}</h3>
+                <ul class="modelo-pergunta-lista">
+                    {% for p in bloco.perguntas %}
+                    <li class="modelo-pergunta">
+                        <div class="modelo-pergunta-id">
+                            <strong>{{ p.texto }}</strong>
+                            <span class="modelo-meta">{{ p.get_tipo_display }}{% if p.opcoes.count %} · {{ p.opcoes.count }} opções{% endif %}{% if p.ajuda %} · {{ p.ajuda }}{% endif %}</span>
+                            {% if p.opcoes.count %}<span class="briefing-opcoes-preview">{{ p.opcoes_texto|linebreaksbr }}</span>{% endif %}
+                        </div>
+                        <div class="modelo-acoes">
+                            <button class="linha-ico" type="button" data-abre="modal-pergunta-{{ p.pk }}" hidden title="Editar" aria-label="Editar {{ p.texto }}">{% include "core/_ico.html" with ico="editar" %}</button>
+                            <form method="post" action="{% url 'briefing_remove_pergunta' p.pk %}" data-confirmar-exclusao>
+                                {% csrf_token %}<button class="linha-ico linha-ico--risco" type="submit" title="Excluir" aria-label="Excluir {{ p.texto }}">{% include "core/_ico.html" with ico="excluir" %}</button>
+                            </form>
+                        </div>
+                    </li>
+                    <dialog class="ds-modal ds-modal--amplo" id="modal-pergunta-{{ p.pk }}" aria-labelledby="modal-pergunta-{{ p.pk }}-titulo">
+                        <form method="dialog" class="ds-modal-fechar-form"><button class="ds-modal-fechar" aria-label="Fechar">{% include "core/_ico.html" with ico="fechar" %}</button></form>
+                        <h2 class="ds-modal-titulo ds-display" id="modal-pergunta-{{ p.pk }}-titulo">Editar pergunta</h2>
+                        <p class="ds-modal-sub">Ajuste texto, bloco, tipo e respostas sugeridas.</p>
+                        <div class="ds-modal-corpo">
+                            <form method="post" action="{% url 'briefing_editar_pergunta' p.pk %}" class="form-card pergunta-form">
+                                {% csrf_token %}
+                                <p><label>Bloco<input type="text" name="bloco" value="{{ p.bloco }}" placeholder="Ex.: Rotina"></label></p>
+                                <p><label>Pergunta<input type="text" name="texto" value="{{ p.texto }}" required></label></p>
+                                <p><label>Tipo<select name="tipo">{% for valor, rotulo in tipos %}<option value="{{ valor }}"{% if p.tipo == valor %} selected{% endif %}>{{ rotulo }}</option>{% endfor %}</select></label></p>
+                                <p><label>Opções de resposta<textarea name="opcoes" rows="5" placeholder="Uma por linha">{{ p.opcoes_texto }}</textarea></label></p>
+                                <p><label>Texto de ajuda<input type="text" name="ajuda" value="{{ p.ajuda }}"></label></p>
+                                <div class="form-actions"><button class="ds-btn" type="submit" formmethod="dialog" formnovalidate>Cancelar</button><button class="ds-btn ds-btn--solid" type="submit">Salvar pergunta</button></div>
+                            </form>
+                        </div>
+                    </dialog>
+                    {% endfor %}
+                </ul>
+            </section>
+            {% empty %}
+            <p class="data-empty">Nenhuma pergunta ainda.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <dialog class="ds-modal ds-modal--amplo" id="modal-nova-pergunta" aria-labelledby="modal-nova-pergunta-titulo">
+        <form method="dialog" class="ds-modal-fechar-form"><button class="ds-modal-fechar" aria-label="Fechar">{% include "core/_ico.html" with ico="fechar" %}</button></form>
+        <h2 class="ds-modal-titulo ds-display" id="modal-nova-pergunta-titulo">Nova pergunta</h2>
+        <p class="ds-modal-sub">Use o bloco para manter a reunião em uma sequência fácil de seguir.</p>
+        <div class="ds-modal-corpo">
+            <form method="post" action="{% url 'briefing_add_pergunta' template.pk %}" class="form-card pergunta-form">
                 {% csrf_token %}
                 <p><label>Bloco<input type="text" name="bloco" placeholder="Ex.: Rotina"></label></p>
                 <p><label>Pergunta<input type="text" name="texto" required></label></p>
-                <p><label>Tipo
-                    <select name="tipo">
-                        {% for valor, rotulo in tipos %}<option value="{{ valor }}">{{ rotulo }}</option>{% endfor %}
-                    </select>
-                </label></p>
+                <p><label>Tipo<select name="tipo">{% for valor, rotulo in tipos %}<option value="{{ valor }}">{{ rotulo }}</option>{% endfor %}</select></label></p>
                 <p><label>Opções de resposta<textarea name="opcoes" rows="5" placeholder="Uma por linha"></textarea></label></p>
-                <p class="ht-hint">Deixe as opções em branco para perguntas de resposta escrita.</p>
                 <p><label>Texto de ajuda<input type="text" name="ajuda"></label></p>
-                <button class="ds-btn ds-btn--solid" type="submit">Incluir pergunta</button>
+                <div class="form-actions"><button class="ds-btn" type="submit" formmethod="dialog" formnovalidate>Cancelar</button><button class="ds-btn ds-btn--solid" type="submit">Incluir pergunta</button></div>
             </form>
         </div>
-
-        <div class="ds-card form-card">
-            <h2 class="ds-display">Dados do roteiro</h2>
-            <form method="post">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button class="ds-btn ds-btn--solid" type="submit">Salvar</button>
-            </form>
-        </div>
-    </div>
+    </dialog>
 </section>
 {% endblock %}

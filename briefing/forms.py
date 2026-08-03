@@ -44,3 +44,8 @@ class TemplateBriefingForm(ArqModelForm):
         model = TemplateBriefing
         fields = ["nome", "tipo_projeto", "descricao", "ativo"]
         widgets = {"descricao": forms.Textarea(attrs={"rows": 2})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk is None:
+            del self.fields["ativo"]

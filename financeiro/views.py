@@ -91,6 +91,7 @@ def importar_extrato(request):
 @login_required
 def painel_financeiro(request):
     grupo = obter_grupo_empresa_ou_erro(request.user)
+    abrir_modal_lancamento = False
 
     if request.method == "POST":
         form = LancamentoForm(request.POST, user=request.user)
@@ -101,6 +102,8 @@ def painel_financeiro(request):
             lancamento.save()
             messages.success(request, "Lançamento registrado.")
             return redirect("financeiro_painel")
+        abrir_modal_lancamento = True
+        messages.error(request, "Confira os dados do lançamento.")
     else:
         form = LancamentoForm(user=request.user)
 
@@ -129,6 +132,7 @@ def painel_financeiro(request):
             "saldos": saldos,
             "tem_conta": contas.exists(),
             "resumo": resumo_mensal(grupo),
+            "abrir_modal_lancamento": abrir_modal_lancamento,
         },
     )
 

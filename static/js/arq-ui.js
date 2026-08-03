@@ -216,6 +216,61 @@
                 if (!dentro) dlg.close();
             });
         });
+
+        document.querySelectorAll("dialog[data-modal-inicial]").forEach(function (dlg) {
+            if (typeof dlg.showModal === "function" && !dlg.open) dlg.showModal();
+        });
+    }
+
+    function precificacaoAoVivo() {
+        var raiz = document.querySelector("[data-precificacao]");
+        if (!raiz) return;
+
+        var horas = raiz.querySelector("#id_horas_uteis_mes");
+        var horaManual = raiz.querySelector("#id_hora_tecnica_manual");
+        var margem = raiz.querySelector("#id_margem_seguranca_percent");
+        var reserva = raiz.querySelector("#id_reserva_percent");
+        if (!horas || !horaManual || !margem || !reserva) return;
+
+        function numero(valor) {
+            var texto = String(valor || "").trim().replace(/\s/g, "");
+            if (texto.indexOf(",") >= 0) texto = texto.replace(/\./g, "").replace(",", ".");
+            return Number(texto) || 0;
+        }
+
+        function moeda(valor) {
+            return new Intl.NumberFormat("pt-BR", {
+                style: "currency", currency: "BRL"
+            }).format(valor);
+        }
+
+        function atualizar() {
+            var totalCustos = numero(raiz.dataset.totalCustos);
+            var horasMes = numero(horas.value);
+            var custoHora = horasMes > 0 ? totalCustos / horasMes : 0;
+            var manual = numero(horaManual.value);
+            var horaBase = manual > 0 ? manual : custoHora;
+            var horaFinal = horaBase * (1 + numero(margem.value) / 100) *
+                            (1 + numero(reserva.value) / 100);
+
+            var saidas = {
+                "[data-custo-hora]": moeda(custoHora),
+                "[data-hora-base]": moeda(horaBase),
+                "[data-hora-final]": moeda(horaFinal),
+                "[data-horas-mes]": String(horasMes || 0),
+                "[data-total-custos]": moeda(totalCustos),
+                "[data-hora-base-origem]": manual > 0 ? "valor manual" : "automatica pelo custo"
+            };
+            Object.keys(saidas).forEach(function (seletor) {
+                var alvo = raiz.querySelector(seletor);
+                if (alvo) alvo.textContent = saidas[seletor];
+            });
+        }
+
+        [horas, horaManual, margem, reserva].forEach(function (campo) {
+            campo.addEventListener("input", atualizar);
+        });
+        atualizar();
     }
 
     /* Cronômetro: o servidor manda os segundos já corridos e o navegador só
@@ -246,7 +301,7 @@
 
     function iniciar() {
         contarNumeros(); preencherBarras(); marcarEnvio(); confirmarExclusaoHtmx();
-        aberturaEmPassos(); avisos(); modais(); cronometro();
+        aberturaEmPassos(); avisos(); modais(); cronometro(); precificacaoAoVivo();
     }
 
     if (document.readyState === "loading") {

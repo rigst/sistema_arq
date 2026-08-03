@@ -17,12 +17,14 @@ def _meus(user):
 @login_required
 def lista(request):
     categoria = request.GET.get("categoria", "")
-    fornecedores = _meus(request.user)
+    todos = _meus(request.user)
+    mostrando_inativos = request.GET.get("inativos") == "1"
+    fornecedores = todos.filter(ativo=not mostrando_inativos)
     if categoria:
         fornecedores = fornecedores.filter(categoria=categoria)
 
     # Categorias que o escritório realmente usa — não a lista inteira de choices.
-    usadas = set(_meus(request.user).values_list("categoria", flat=True))
+    usadas = set(todos.values_list("categoria", flat=True))
     categorias = [(v, r) for v, r in Fornecedor.CATEGORIA_CHOICES if v in usadas]
 
     fornecedores = list(fornecedores)
@@ -38,6 +40,8 @@ def lista(request):
             "form_fornecedor": FornecedorForm(),
             "categorias": categorias,
             "categoria_ativa": categoria,
+            "mostrando_inativos": mostrando_inativos,
+            "total_inativos": todos.filter(ativo=False).count(),
         },
     )
 
@@ -77,6 +81,7 @@ def _editar(request, fornecedor):
         if fornecedor is None:
             novo_fornecedor.empresa = obter_grupo_empresa_ou_erro(request.user)
             novo_fornecedor.criado_por = request.user
+            novo_fornecedor.ativo = True
         novo_fornecedor.save()
         messages.success(request, "Fornecedor salvo.")
     else:

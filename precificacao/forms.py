@@ -7,7 +7,13 @@ from core.forms import ArqModelForm
 class CustoFixoForm(ArqModelForm):
     class Meta:
         model = CustoFixo
-        fields = ["descricao", "valor_mensal", "ativo"]
+        fields = ["descricao", "valor_mensal"]
+        widgets = {
+            "descricao": forms.TextInput(attrs={"placeholder": "Ex.: Aluguel"}),
+            "valor_mensal": forms.NumberInput(
+                attrs={"step": "0.01", "min": "0", "placeholder": "0,00"}
+            ),
+        }
 
 
 class ConfiguracaoPrecificacaoForm(ArqModelForm):
@@ -25,9 +31,23 @@ class ConfiguracaoPrecificacaoForm(ArqModelForm):
             "margem_seguranca_percent": "Margem de segurança (%)",
             "reserva_percent": "Reserva (%)",
         }
+        widgets = {
+            "horas_uteis_mes": forms.NumberInput(attrs={"min": "1", "step": "1"}),
+            "hora_tecnica_manual": forms.NumberInput(
+                attrs={"min": "0", "step": "0.01", "placeholder": "Automática pelos custos"}
+            ),
+            "margem_seguranca_percent": forms.NumberInput(
+                attrs={"min": "0", "step": "0.01"}
+            ),
+            "reserva_percent": forms.NumberInput(attrs={"min": "0", "step": "0.01"}),
+        }
 
 
 class FatorPrecificacaoForm(ArqModelForm):
     class Meta:
         model = FatorPrecificacao
-        fields = ["nome", "percentual", "ativo"]
+        fields = ["nome", "percentual"]
+        widgets = {
+            "nome": forms.TextInput(attrs={"placeholder": "Ex.: Urgência"}),
+            "percentual": forms.NumberInput(attrs={"step": "0.01", "placeholder": "+20 ou -10"}),
+        }

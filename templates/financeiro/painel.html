@@ -7,63 +7,83 @@
     <header class="page-head page-head--row page-head--foto page-head--gestao">
         <div>
             <span class="ds-kicker">Financeiro</span>
-            <h1 class="ds-h2 ds-display">Entradas, saídas e saldos</h1>
-            <p class="page-sub">Fechamento do mês {{ resumo.mes }}/{{ resumo.ano|unlocalize }}: entradas R$ {{ resumo.entradas }} · saídas R$ {{ resumo.saidas }} · saldo <strong>R$ {{ resumo.saldo }}</strong>.</p>
+            <h1 class="ds-h2 ds-display">Caixa do escritório</h1>
+            <p class="page-sub">Visão do realizado em {{ resumo.mes }}/{{ resumo.ano|unlocalize }}, saldos das contas e lançamentos previstos ou concluídos.</p>
         </div>
         <div class="page-head-actions">
+            {% if tem_conta %}<button class="ds-btn--novo" type="button" data-abre="modal-novo-lancamento" hidden>{% include "core/_ico.html" with ico="novo" %}<span>Novo lançamento</span></button>{% endif %}
             <a class="ds-btn" href="{% url 'financeiro_dre' %}">DRE</a>
             <a class="ds-btn" href="{% url 'financeiro_importar' %}">Importar extrato</a>
         </div>
     </header>
 
-    <div class="saldo-strip">
-        {% for s in saldos %}
-        <div class="ds-card saldo-card">
-            <span class="ds-kicker">{{ s.conta.nome }}{% if s.conta.pessoal %} · pessoal{% endif %}</span>
-            <strong>R$ {{ s.saldo }}</strong>
-        </div>
-        {% empty %}
-        <form method="post" action="{% url 'financeiro_nova_conta' %}" class="ds-card inline-add">
-            {% csrf_token %}
-            <p>Crie a primeira conta para começar:</p>
-            {{ form_conta.nome }}
-            {{ form_conta.saldo_inicial }}
-            <button class="ds-btn ds-btn--solid" type="submit">Criar conta</button>
-        </form>
-        {% endfor %}
+    <div class="financeiro-resumo" aria-label="Resumo do mês">
+        <div class="financeiro-metrica financeiro-metrica--entrada"><span>Entradas realizadas</span><strong class="num">R$ {{ resumo.entradas }}</strong><small>{{ resumo.mes }}/{{ resumo.ano|unlocalize }}</small></div>
+        <div class="financeiro-metrica financeiro-metrica--saida"><span>Saídas realizadas</span><strong class="num">R$ {{ resumo.saidas }}</strong><small>{{ resumo.mes }}/{{ resumo.ano|unlocalize }}</small></div>
+        <div class="financeiro-metrica financeiro-metrica--saldo"><span>Resultado do mês</span><strong class="num">R$ {{ resumo.saldo }}</strong><small>entradas menos saídas</small></div>
     </div>
 
+    <section class="secao contas-resumo" aria-labelledby="contas-titulo">
+        <h2 class="secao-titulo ds-display" id="contas-titulo">Saldos por conta</h2>
+        {% if saldos %}
+        <div class="contas-faixa">
+            {% for s in saldos %}
+            <div class="conta-saldo">
+                <span>{{ s.conta.nome }}{% if s.conta.pessoal %} · pessoal{% endif %}</span>
+                <strong class="num">R$ {{ s.saldo }}</strong>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <form method="post" action="{% url 'financeiro_nova_conta' %}" class="conta-inicial-form">
+            {% csrf_token %}
+            <div><strong>Crie a primeira conta</strong><span>Ela organiza os lançamentos e calcula o saldo disponível.</span></div>
+            {{ form_conta.nome }}{{ form_conta.saldo_inicial }}
+            <button class="ds-btn ds-btn--solid" type="submit">Criar conta</button>
+        </form>
+        {% endif %}
+    </section>
+
     {% if tem_conta %}
-    <div class="detalhe-grid">
-        <div class="ds-card">
-            <h2 class="ds-display">Lançamentos</h2>
-            <table class="data-table">
-                <thead><tr><th>Data</th><th>Descrição</th><th>Projeto</th><th>Tipo</th><th>Valor</th></tr></thead>
+    <section class="secao financeiro-lancamentos" aria-labelledby="lancamentos-titulo">
+        <header class="secao-head-inline">
+            <div>
+                <h2 class="secao-titulo ds-display" id="lancamentos-titulo">Lançamentos</h2>
+                <p class="secao-sub">Até 100 registros mais recentes, ordenados pela data financeira.</p>
+            </div>
+        </header>
+        <div class="table-scroll">
+            <table class="data-table financeiro-tabela">
+                <thead><tr><th>Data</th><th>Descrição</th><th>Projeto</th><th>Conta</th><th>Status</th><th>Valor</th></tr></thead>
                 <tbody>
                 {% for l in lancamentos %}
                     <tr>
-                        <td>{{ l.data|date:"d/m/y" }}</td>
-                        <td>{{ l.descricao }}</td>
+                        <td class="num">{{ l.data|date:"d/m/y" }}</td>
+                        <td><strong>{{ l.descricao }}</strong>{% if l.categoria %}<small>{{ l.categoria.nome }}</small>{% endif %}</td>
                         <td>{{ l.projeto.nome|default:"—" }}</td>
-                        <td>{{ l.get_tipo_display }}</td>
-                        <td class="valor valor--{{ l.tipo }}">R$ {{ l.valor }}</td>
+                        <td>{{ l.conta.nome }}</td>
+                        <td><span class="financeiro-status financeiro-status--{{ l.status }}">{{ l.get_status_display }}</span></td>
+                        <td class="valor valor--{{ l.tipo }} num">{% if l.tipo == "saida" %}− {% else %}+ {% endif %}R$ {{ l.valor }}</td>
                     </tr>
                 {% empty %}
-                    <tr><td colspan="5" class="data-empty">Nenhum lançamento ainda.</td></tr>
+                    <tr><td colspan="6" class="data-empty">Nenhum lançamento ainda.</td></tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
+    </section>
 
-        <div class="ds-card form-card">
-            <h2 class="ds-display">Novo lançamento</h2>
-            <form method="post">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button class="ds-btn ds-btn--solid" type="submit">Registrar</button>
+    <dialog class="ds-modal ds-modal--amplo" id="modal-novo-lancamento" aria-labelledby="modal-novo-lancamento-titulo"{% if abrir_modal_lancamento %} data-modal-inicial{% endif %}>
+        <form method="dialog" class="ds-modal-fechar-form"><button class="ds-modal-fechar" aria-label="Fechar">{% include "core/_ico.html" with ico="fechar" %}</button></form>
+        <h2 class="ds-modal-titulo ds-display" id="modal-novo-lancamento-titulo">Novo lançamento</h2>
+        <p class="ds-modal-sub">Registre uma entrada ou saída, realizada ou prevista.</p>
+        <div class="ds-modal-corpo">
+            <form method="post" class="form-card form-card--duas-colunas">
+                {% csrf_token %}{{ form.as_p }}
+                <div class="form-actions"><button class="ds-btn" type="submit" formmethod="dialog" formnovalidate>Cancelar</button><button class="ds-btn ds-btn--solid" type="submit">Registrar lançamento</button></div>
             </form>
         </div>
-    </div>
+    </dialog>
     {% endif %}
 </section>
 {% endblock %}

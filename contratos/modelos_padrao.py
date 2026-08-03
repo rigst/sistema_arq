@@ -133,4 +133,62 @@ _______________________________        _______________________________
 """,
 }
 
-MODELOS_PADRAO = [PROJETO_ARQUITETONICO, INTERIORES]
+COMERCIAL = {
+    "nome": "Projeto comercial — pessoa jurídica",
+    "descricao": "Projeto para loja, escritório ou serviço, com aprovações, sigilo e responsabilidades definidos.",
+    "padrao": False,
+    "corpo": """CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE ARQUITETURA
+
+CONTRATANTE: {{cliente}}, inscrito(a) no CPF/CNPJ sob o nº {{cliente_documento}}.
+CONTRATADA: {{escritorio}}.
+
+CLÁUSULA 1 — DO OBJETO E DO ESCOPO
+A CONTRATADA desenvolverá o projeto "{{projeto}}", no endereço {{endereco}}, conforme etapas, limites e entregáveis aprovados na proposta comercial.
+
+ESCOPO E HONORÁRIOS DA PROPOSTA
+{{escopo}}
+
+CLÁUSULA 2 — DOS ENTREGÁVEIS E DAS APROVAÇÕES
+Cada etapa será entregue para análise do CONTRATANTE. A etapa seguinte começa após aprovação formal da anterior. Arquivos editáveis, imagens adicionais e serviços não descritos na proposta não integram o escopo.
+
+CLÁUSULA 3 — DO CRONOGRAMA
+O início previsto é {{data_inicio}} e a conclusão prevista é {{prazo}}, condicionados ao recebimento de documentos, aprovações e pagamentos nas datas acordadas.
+
+CRONOGRAMA PREVISTO
+{{cronograma}}
+
+CLÁUSULA 4 — DOS HONORÁRIOS E PAGAMENTOS
+Os honorários totalizam {{valor}} e serão pagos conforme o parcelamento acordado. O atraso autoriza a suspensão dos serviços e a reprogramação das datas de entrega.
+
+CLÁUSULA 5 — DAS RESPONSABILIDADES DO CONTRATANTE
+O CONTRATANTE fornecerá documentos, levantamentos, regras do imóvel e informações operacionais corretas, indicará um responsável pelas decisões e responderá às solicitações em até [PRAZO] dias úteis.
+
+CLÁUSULA 6 — DAS APROVAÇÕES E LICENÇAS
+Taxas, emolumentos e prazos de órgãos públicos, condomínio, Corpo de Bombeiros, Vigilância Sanitária e concessionárias não estão incluídos, salvo indicação expressa na proposta.
+
+CLÁUSULA 7 — DAS ALTERAÇÕES CONTRATUAIS
+Mudanças de programa, área, operação ou decisões já aprovadas serão registradas como alteração de escopo ou aditivo, com eventual revisão de valor e prazo.
+
+CLÁUSULA 8 — DA RESPONSABILIDADE TÉCNICA
+A CONTRATADA emitirá o RRT correspondente aos serviços sob sua responsabilidade. Projetos complementares e execução terão responsáveis técnicos próprios quando não integrarem o escopo contratado.
+
+CLÁUSULA 9 — DOS DIREITOS AUTORAIS E DO USO
+O projeto destina-se exclusivamente ao imóvel deste contrato. Reprodução, alteração ou implantação em outro local depende de autorização escrita do autor, observadas as Leis 9.610/1998 e 12.378/2010.
+
+CLÁUSULA 10 — DO SIGILO E DA COMUNICAÇÃO
+As partes preservarão informações comerciais e operacionais confidenciais. Decisões, aprovações e solicitações relevantes serão formalizadas por escrito no canal acordado.
+
+CLÁUSULA 11 — DA RESCISÃO E DO ENCERRAMENTO
+A rescisão exige comunicação escrita com antecedência de [PRAZO]. Permanecem devidos os serviços concluídos e o proporcional da etapa em andamento, com entrega formal dos produtos já pagos.
+
+CLÁUSULA 12 — DO FORO
+Fica eleito o foro da comarca de [COMARCA], sem prejuízo de tentativa prévia de composição entre as partes.
+
+{{data}}
+
+_______________________________        _______________________________
+{{cliente}}                             {{escritorio}}
+""",
+}
+
+MODELOS_PADRAO = [PROJETO_ARQUITETONICO, INTERIORES, COMERCIAL]

@@ -2,67 +2,65 @@
 {% block title %}Identidade do escritório{% endblock %}
 
 {% block content %}
-<section class="page page--leitura">
-    {% include "core/_voltar.html" with url_voltar_nome="dashboard" rotulo_voltar="o painel" %}
-
-    <header class="page-head">
-        <span class="ds-kicker">Escritório</span>
-        <h1 class="ds-h2 ds-display">Identidade</h1>
-        <p class="page-sub">
-            A marca do escritório e a foto que abre o painel. Use uma obra da casa —
-            é o que faz o sistema parecer seu e não de prateleira.
-        </p>
+<section class="page">
+    <header class="page-head page-head--foto page-head--gestao">
+        <div>
+            <span class="ds-kicker">Escritório</span>
+            <h1 class="ds-h2 ds-display">Identidade do escritório</h1>
+            <p class="page-sub">Nome, marca e imagem que personalizam o painel e os documentos gerados pelo escritório.</p>
+        </div>
     </header>
 
-    <form method="post" enctype="multipart/form-data" class="form-card">
+    <form method="post" enctype="multipart/form-data" class="identidade-form">
         {% csrf_token %}
         {{ form.non_field_errors }}
 
-        <p>{{ form.nome.label_tag }}{{ form.nome }}</p>
+        <section class="secao identidade-basico" aria-labelledby="identidade-dados-titulo">
+            <header class="secao-head-inline">
+                <div>
+                    <h2 class="secao-titulo ds-display" id="identidade-dados-titulo">Dados da marca</h2>
+                    <p class="secao-sub">O nome aparece na navegação e a cor é aplicada aos documentos exportados.</p>
+                </div>
+            </header>
+            <div class="identidade-basico-campos">
+                <p>{{ form.nome.label_tag }}{{ form.nome }}{{ form.nome.errors }}</p>
+                <p class="identidade-cor">{{ form.cor_primaria.label_tag }}<span class="identidade-cor-controle">{{ form.cor_primaria }}<span>Cor de destaque</span></span>{{ form.cor_primaria.errors }}</p>
+            </div>
+        </section>
 
-        <div class="identidade-campo">
-            <div class="identidade-previa identidade-previa--logo">
-                {% if empresa.logo %}
-                    <img src="{{ empresa.logo.url }}" alt="Logo atual de {{ empresa.nome }}">
-                {% else %}
-                    <span class="identidade-vazio">sem logo</span>
-                {% endif %}
-            </div>
-            <div class="identidade-controle">
-                <p>{{ form.logo.label_tag }}{{ form.logo }}</p>
-                <p class="ht-hint">{{ form.logo.help_text }}</p>
-                {% if empresa.logo %}
-                <label class="form-marcar form-marcar--simples">{{ form.limpar_logo }}<span>{{ form.limpar_logo.label }}</span></label>
-                {% endif %}
-                {{ form.logo.errors }}
-            </div>
+        <div class="identidade-assets">
+            <section class="secao identidade-asset" aria-labelledby="identidade-logo-titulo">
+                <header>
+                    <h2 class="secao-titulo ds-display" id="identidade-logo-titulo">Logo</h2>
+                    <p class="secao-sub">Use uma versão nítida, de preferência com fundo transparente.</p>
+                </header>
+                <div class="identidade-previa identidade-previa--logo">
+                    {% if empresa.logo %}<img src="{{ empresa.logo.url }}" alt="Logo atual de {{ empresa.nome }}">{% else %}<span class="identidade-vazio">Sem logo cadastrada</span>{% endif %}
+                </div>
+                <div class="identidade-controle">
+                    <p>{{ form.logo.label_tag }}{{ form.logo }}{{ form.logo.errors }}</p>
+                    {% if form.logo.help_text %}<p class="field-help">{{ form.logo.help_text }}</p>{% endif %}
+                    {% if empresa.logo %}<label class="form-marcar form-marcar--simples">{{ form.limpar_logo }}<span>{{ form.limpar_logo.label }}</span></label>{% endif %}
+                </div>
+            </section>
+
+            <section class="secao identidade-asset" aria-labelledby="identidade-fundo-titulo">
+                <header>
+                    <h2 class="secao-titulo ds-display" id="identidade-fundo-titulo">Imagem do painel</h2>
+                    <p class="secao-sub">Uma obra do escritório cria reconhecimento imediato ao entrar no sistema.</p>
+                </header>
+                <div class="identidade-previa identidade-previa--fundo">
+                    {% if empresa.imagem_fundo %}<img src="{{ empresa.imagem_fundo.url }}" alt="Imagem atual do painel">{% else %}<span class="identidade-vazio">Imagem padrão do sistema</span>{% endif %}
+                </div>
+                <div class="identidade-controle">
+                    <p>{{ form.imagem_fundo.label_tag }}{{ form.imagem_fundo }}{{ form.imagem_fundo.errors }}</p>
+                    {% if form.imagem_fundo.help_text %}<p class="field-help">{{ form.imagem_fundo.help_text }}</p>{% endif %}
+                    {% if empresa.imagem_fundo %}<label class="form-marcar form-marcar--simples">{{ form.limpar_fundo }}<span>{{ form.limpar_fundo.label }}</span></label>{% endif %}
+                </div>
+            </section>
         </div>
 
-        <div class="identidade-campo">
-            <div class="identidade-previa identidade-previa--fundo">
-                {% if empresa.imagem_fundo %}
-                    <img src="{{ empresa.imagem_fundo.url }}" alt="Imagem de fundo atual do painel">
-                {% else %}
-                    <span class="identidade-vazio">imagem padrão</span>
-                {% endif %}
-            </div>
-            <div class="identidade-controle">
-                <p>{{ form.imagem_fundo.label_tag }}{{ form.imagem_fundo }}</p>
-                <p class="ht-hint">{{ form.imagem_fundo.help_text }}</p>
-                {% if empresa.imagem_fundo %}
-                <label class="form-marcar form-marcar--simples">{{ form.limpar_fundo }}<span>{{ form.limpar_fundo.label }}</span></label>
-                {% endif %}
-                {{ form.imagem_fundo.errors }}
-            </div>
-        </div>
-
-        <details class="abrir-campo">
-            <summary>Cor de destaque</summary>
-            <p>{{ form.cor_primaria.label_tag }}{{ form.cor_primaria }}</p>
-            <p class="ht-hint">Usada em documentos gerados. Deixe em branco para manter o verde do sistema.</p>
-        </details>
-
-        <button class="ds-btn ds-btn--solid" type="submit">Salvar identidade</button>
+        <div class="identidade-actions"><button class="ds-btn ds-btn--solid" type="submit">Salvar identidade</button></div>
     </form>
 </section>
 {% endblock %}

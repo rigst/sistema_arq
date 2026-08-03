@@ -558,15 +558,7 @@ def _meus_modelos(user):
 
 @login_required
 def modelos_lista(request):
-    return render(
-        request,
-        "contratos/modelos.html",
-        {
-            "modelos": _meus_modelos(request.user),
-            "form": ModeloContratoForm(),
-            "marcadores": ModeloContrato.MARCADORES.items(),
-        },
-    )
+    return redirect("modelos")
 
 
 @require_POST
@@ -585,7 +577,7 @@ def modelos_semear(request):
         messages.success(request, f"{criados} modelo(s) prontos adicionados. Revise o texto.")
     else:
         messages.info(request, "Os modelos prontos já estavam cadastrados.")
-    return redirect("contratos_modelos")
+    return redirect("modelos")
 
 
 @login_required
@@ -598,11 +590,30 @@ def modelo_editar(request, pk=None):
             if modelo is None:
                 salvo.empresa = obter_grupo_empresa_ou_erro(request.user)
                 salvo.criado_por = request.user
+                salvo.ativo = True
             salvo.save()
             messages.success(request, "Modelo salvo.")
-            return redirect("contratos_modelos")
+            return redirect("modelos")
     else:
-        form = ModeloContratoForm(instance=modelo)
+        initial = None
+        if modelo is None:
+            initial = {
+                "ativo": True,
+                "corpo": (
+                    "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE ARQUITETURA\n\n"
+                    "CONTRATANTE: {{cliente}}, CPF/CNPJ nº {{cliente_documento}}.\n"
+                    "CONTRATADA: {{escritorio}}.\n\n"
+                    "CLÁUSULA 1 — OBJETO E ESCOPO\n{{escopo}}\n\n"
+                    "CLÁUSULA 2 — PRAZOS E APROVAÇÕES\n{{cronograma}}\n\n"
+                    "CLÁUSULA 3 — HONORÁRIOS E PAGAMENTO\n{{valor}}.\n\n"
+                    "CLÁUSULA 4 — RESPONSABILIDADES E RRT\n[PREENCHER]\n\n"
+                    "CLÁUSULA 5 — ALTERAÇÕES DE ESCOPO\n[PREENCHER]\n\n"
+                    "CLÁUSULA 6 — DIREITOS AUTORAIS E USO\n[PREENCHER]\n\n"
+                    "CLÁUSULA 7 — RESCISÃO E FORO\n[PREENCHER]\n\n"
+                    "{{data}}"
+                ),
+            }
+        form = ModeloContratoForm(instance=modelo, initial=initial)
     return render(
         request,
         "contratos/modelo_form.html",
@@ -616,4 +627,4 @@ def modelo_remover(request, pk):
     modelo = get_object_or_404(_meus_modelos(request.user), pk=pk)
     modelo.delete()
     messages.success(request, "Modelo removido.")
-    return redirect("contratos_modelos")
+    return redirect("modelos")

@@ -2,12 +2,11 @@
 {% block title %}Fornecedores{% endblock %}
 
 {% block content %}
-<section class="page page--leitura">
-    {% include "core/_voltar.html" with url_voltar_nome="dashboard" rotulo_voltar="o painel" %}
+<section class="page">
     <header class="page-head page-head--row page-head--foto page-head--producao">
         <div>
             <span class="ds-kicker">Rede de execução</span>
-            <h1 class="ds-h2 ds-display">Fornecedores</h1>
+            <h1 class="ds-h2 ds-display">{% if mostrando_inativos %}Fornecedores inativos{% else %}Fornecedores{% endif %}</h1>
             <p class="page-sub">
                 Quem executa: marcenaria, serralheria, elétrica, mobiliário. Cada item do
                 orçamento aponta para o fornecedor que deu o preço, e a avaliação lembra
@@ -19,9 +18,9 @@
 
     {% if categorias %}
     <div class="filtro-chips">
-        <a class="chip {% if not categoria_ativa %}is-active{% endif %}" href="{% url 'fornecedores_lista' %}">Todas</a>
+        <a class="chip {% if not categoria_ativa %}is-active{% endif %}" href="{% url 'fornecedores_lista' %}{% if mostrando_inativos %}?inativos=1{% endif %}">Todas</a>
         {% for valor, rotulo in categorias %}
-        <a class="chip {% if categoria_ativa == valor %}is-active{% endif %}" href="?categoria={{ valor }}">{{ rotulo }}</a>
+        <a class="chip {% if categoria_ativa == valor %}is-active{% endif %}" href="?categoria={{ valor }}{% if mostrando_inativos %}&amp;inativos=1{% endif %}">{{ rotulo }}</a>
         {% endfor %}
     </div>
     {% endif %}
@@ -31,7 +30,7 @@
         <thead><tr><th>Nome</th><th>Categoria</th><th>Contato</th><th>Cidade</th><th>Avaliação</th><th></th></tr></thead>
         <tbody>
         {% for f in fornecedores %}
-            <tr {% if not f.ativo %}class="is-done"{% endif %}>
+            <tr>
                 <td>{{ f.nome }}</td>
                 <td>{{ f.get_categoria_display }}</td>
                 <td>{{ f.contato|default:"—" }}{% if f.telefone %} · {{ f.telefone }}{% endif %}</td>
@@ -40,10 +39,18 @@
                 <td class="cadastro-acoes"><button class="linha-ico" type="button" data-abre="modal-fornecedor-{{ f.pk }}" title="Editar" aria-label="Editar {{ f.nome }}">{% include "core/_ico.html" with ico="editar" %}</button><form method="post" action="{% url 'fornecedor_remover' f.pk %}" data-confirmar-exclusao>{% csrf_token %}<button class="linha-ico linha-ico--risco" type="submit" title="Excluir" aria-label="Excluir {{ f.nome }}">{% include "core/_ico.html" with ico="excluir" %}</button></form></td>
             </tr>
         {% empty %}
-            <tr><td colspan="6" class="data-empty">Nenhum fornecedor cadastrado. Comece pelos que você já usa em toda obra.</td></tr>
+            <tr><td colspan="6" class="data-empty">{% if mostrando_inativos %}Nenhum fornecedor inativo.{% else %}Nenhum fornecedor ativo cadastrado. Comece pelos que você já usa em toda obra.{% endif %}</td></tr>
         {% endfor %}
         </tbody>
     </table>
+    </div>
+
+    <div class="cadastro-rodape">
+        {% if mostrando_inativos %}
+        <a class="link-discreto" href="{% url 'fornecedores_lista' %}">Voltar aos fornecedores ativos</a>
+        {% else %}
+        <a class="link-discreto" href="?inativos=1">Ver fornecedores inativos{% if total_inativos %} ({{ total_inativos }}){% endif %}</a>
+        {% endif %}
     </div>
 
     <dialog class="ds-modal ds-modal--amplo" id="modal-fornecedor-novo" aria-labelledby="modal-fornecedor-novo-titulo">

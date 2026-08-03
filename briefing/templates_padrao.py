@@ -213,4 +213,110 @@ COMERCIAL = {
     ],
 }
 
-PADROES = [RESIDENCIAL, COMERCIAL]
+ARQUITETURA_RESIDENCIAL = {
+    "nome": "Residencial — arquitetura e reforma",
+    "tipo_projeto": "residencial",
+    "descricao": "Programa, terreno, restrições, orçamento e critérios de desempenho para casas e reformas.",
+    "perguntas": [
+        {
+            "bloco": "Pessoas e rotina",
+            "texto": "Quem usará a edificação agora e nos próximos anos?",
+            "tipo": "multipla",
+            "opcoes": [
+                "Adultos",
+                "Crianças",
+                "Idosos",
+                "Pessoa com mobilidade reduzida",
+                "Animais de estimação",
+                "Funcionários ou prestadores recorrentes",
+            ],
+        },
+        {
+            "bloco": "Programa",
+            "texto": "Quais usos precisam ter prioridade no programa?",
+            "tipo": "multipla",
+            "opcoes": [
+                "Convívio e receber",
+                "Trabalho em casa",
+                "Cozinhar",
+                "Descanso e privacidade",
+                "Lazer externo",
+                "Acessibilidade e permanência no imóvel",
+            ],
+        },
+        {
+            "bloco": "Programa",
+            "texto": "Há ambientes, equipamentos ou mobiliário que precisam ser preservados?",
+            "tipo": "texto",
+            "ajuda": "Registre dimensões, peças afetivas e equipamentos com requisitos específicos.",
+        },
+        {
+            "bloco": "Terreno e imóvel",
+            "texto": "Quais levantamentos e documentos já estão disponíveis?",
+            "tipo": "multipla",
+            "opcoes": [
+                "Matrícula atualizada",
+                "Levantamento topográfico",
+                "Sondagem",
+                "Plantas existentes",
+                "Regras de condomínio",
+                "Consulta de zoneamento",
+                "Nenhum ainda",
+            ],
+        },
+        {
+            "bloco": "Desempenho",
+            "texto": "Quais critérios de conforto são mais importantes?",
+            "tipo": "multipla",
+            "opcoes": [
+                "Iluminação natural",
+                "Ventilação natural",
+                "Conforto térmico",
+                "Conforto acústico",
+                "Baixa manutenção",
+                "Eficiência energética e hídrica",
+            ],
+        },
+        {
+            "bloco": "Escopo",
+            "texto": "Quais serviços o cliente espera contratar?",
+            "tipo": "multipla",
+            "opcoes": [
+                "Estudo preliminar",
+                "Anteprojeto",
+                "Projeto legal",
+                "Projeto executivo",
+                "Compatibilização de complementares",
+                "Orçamento",
+                "Acompanhamento da execução",
+            ],
+        },
+        {
+            "bloco": "Orçamento e prazo",
+            "texto": "Qual é a faixa de investimento disponível para a execução?",
+            "tipo": "texto",
+            "ajuda": "Diferencie orçamento da obra, honorários e itens adquiridos diretamente.",
+        },
+        {
+            "bloco": "Orçamento e prazo",
+            "texto": "Existe uma data externa que condiciona o cronograma?",
+            "tipo": "multipla",
+            "opcoes": [
+                "Mudança",
+                "Fim de locação",
+                "Financiamento",
+                "Aprovação pública",
+                "Evento",
+                "Não há data rígida",
+            ],
+        },
+        {
+            "bloco": "Decisão e comunicação",
+            "texto": "Quem aprova as decisões e como os retornos serão formalizados?",
+            "tipo": "texto",
+            "ajuda": "Defina responsáveis, canal e prazo esperado para aprovações.",
+        },
+    ],
+}
+
+PADROES = [ARQUITETURA_RESIDENCIAL, RESIDENCIAL, COMERCIAL]

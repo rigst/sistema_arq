@@ -49,6 +49,22 @@ class FluxoContratoTests(TestCase):
         self.assertEqual(self.contrato.status, "ajustes")
         self.assertTrue(self.contrato.editavel)
 
+    def test_modelo_novo_e_sempre_criado_ativo(self):
+        resposta = self.client.post(
+            "/contratos/modelos/novo/",
+            {
+                "nome": "Minuta própria",
+                "descricao": "Modelo de teste",
+                "corpo": "Contrato para {{cliente}}.",
+                "padrao": "",
+                "ativo": "",
+            },
+        )
+
+        modelo = ModeloContrato.objects.get(nome="Minuta própria")
+        self.assertTrue(modelo.ativo)
+        self.assertRedirects(resposta, "/modelos/")
+
     def test_aprovacao_libera_parcelas(self):
         self.client.post(f"/contratos/{self.contrato.pk}/enviar/")
         self.client.post(f"/contratos/{self.contrato.pk}/aprovar/")

@@ -19,6 +19,7 @@ class ClientesModalTests(TestCase):
         )
         self.assertRedirects(resposta, "/clientes/")
         cliente = Cliente.objects.get(nome="Ana")
+        self.assertTrue(cliente.ativo)
 
         pagina = self.client.get("/clientes/")
         self.assertContains(pagina, "modal-cliente-novo")
@@ -38,6 +39,36 @@ class ClientesModalTests(TestCase):
             self.client.post(f"/clientes/{cliente.pk}/remover/"), "/clientes/"
         )
         self.assertFalse(Cliente.objects.exists())
+
+    def test_clientes_inativos_ficam_em_lista_separada(self):
+        ativo = Cliente.objects.create(empresa=self.grupo, nome="Cliente ativo")
+        inativo = Cliente.objects.create(
+            empresa=self.grupo, nome="Cliente inativo", ativo=False
+        )
+
+        pagina_ativos = self.client.get("/clientes/")
+        self.assertContains(pagina_ativos, ativo.nome)
+        self.assertNotContains(pagina_ativos, inativo.nome)
+        self.assertContains(pagina_ativos, "Ver clientes inativos (1)")
+
+        pagina_inativos = self.client.get("/clientes/?inativos=1")
+        self.assertContains(pagina_inativos, inativo.nome)
+        self.assertNotContains(pagina_inativos, ativo.nome)
+        self.assertContains(pagina_inativos, "Voltar aos clientes ativos")
+
+    def test_cliente_novo_ignora_tentativa_de_criar_inativo(self):
+        self.client.post(
+            "/clientes/novo/",
+            {
+                "nome": "Novo cliente",
+                "email": "",
+                "telefone": "",
+                "origem": "outro",
+                "observacoes": "",
+                "ativo": "",
+            },
+        )
+        self.assertTrue(Cliente.objects.get(nome="Novo cliente").ativo)
 
     def test_exclusao_de_cliente_com_projeto_e_bloqueada(self):
         cliente = Cliente.objects.create(empresa=self.grupo, nome="Cliente com projeto")

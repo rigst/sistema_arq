@@ -1,92 +1,71 @@
 {% extends "base.html" %}
-
-{% block title %}Precificação{% endblock %}
+{% load l10n %}
+{% block title %}Hora técnica{% endblock %}
 
 {% block content %}
-<section class="page">
+<section class="page" data-precificacao data-total-custos="{{ total_custos|unlocalize }}">
     <header class="page-head page-head--foto page-head--gestao">
         <div>
             <span class="ds-kicker">Precificação</span>
             <h1 class="ds-h2 ds-display">Hora técnica do escritório</h1>
-            <p class="page-sub">Lance seus custos fixos e o sistema calcula quanto sua hora precisa custar para o escritório se pagar. Esse piso alimenta a margem de todo projeto e o valor de toda proposta.</p>
+            <p class="page-sub">Custos mensais e capacidade produtiva formam o piso. Margem de segurança e reserva mostram o valor efetivo usado na formação das propostas.</p>
         </div>
     </header>
 
-    <div class="ht-grid">
-        <div class="ds-card ht-destaque">
-            <span class="ds-kicker">Custo da hora (piso)</span>
-            <strong class="ht-valor">R$ {{ custo_hora }}</strong>
-            <p class="ht-formula">R$ {{ total_custos }} em custos ÷ {{ config.horas_uteis_mes }} h/mês</p>
-            <p class="ht-base">Hora-base cobrada: <strong>R$ {{ hora_base }}</strong>{% if config.hora_tecnica_manual %} (manual){% else %} (= custo){% endif %}</p>
+    <div class="precificacao-resumo" aria-label="Resumo da hora técnica">
+        <div class="precificacao-metrica precificacao-metrica--custo">
+            <span>Custo por hora</span><strong class="num" data-custo-hora>R$ {{ custo_hora }}</strong>
+            <small><span data-total-custos>R$ {{ total_custos }}</span> ÷ <span data-horas-mes>{{ config.horas_uteis_mes }}</span> h/mês</small>
         </div>
-
-        <form method="post" class="ds-card form-card">
-            {% csrf_token %}
-            <h2 class="ds-display">Parâmetros</h2>
-            {{ form_config.as_p }}
-            <button class="ds-btn ds-btn--solid" type="submit" name="salvar_config" value="1">Salvar parâmetros</button>
-        </form>
+        <div class="precificacao-metrica precificacao-metrica--base">
+            <span>Hora-base cobrada</span><strong class="num" data-hora-base>R$ {{ hora_base }}</strong>
+            <small data-hora-base-origem>{% if config.hora_tecnica_manual %}valor manual{% else %}automática pelo custo{% endif %}</small>
+        </div>
+        <div class="precificacao-metrica precificacao-metrica--final">
+            <span>Hora com reservas</span><strong class="num" data-hora-final>R$ {{ hora_com_reservas }}</strong>
+            <small>base + segurança + reserva</small>
+        </div>
     </div>
 
-    <div class="detalhe-grid">
-        <div class="ds-card">
-            <h2 class="ds-display">Custos fixos mensais</h2>
-            <form method="post" action="{% url 'precificacao_add_custo' %}" class="inline-add">
-                {% csrf_token %}
-                {{ form_custo.descricao }}
-                {{ form_custo.valor_mensal }}
-                <button class="ds-btn ds-btn--solid" type="submit">Adicionar</button>
-            </form>
-            <table class="data-table">
-                <thead><tr><th>Descrição</th><th>Valor</th><th></th></tr></thead>
-                <tbody>
-                {% for custo in custos %}
-                    <tr>
-                        <td>{{ custo.descricao }}</td>
-                        <td>R$ {{ custo.valor_mensal }}</td>
-                        <td>
-                            <form method="post" action="{% url 'precificacao_remove_custo' custo.pk %}">
-                                {% csrf_token %}
-                                <button class="app-link-btn" type="submit">remover</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% empty %}
-                    <tr><td colspan="3" class="data-empty">Nenhum custo cadastrado ainda.</td></tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    <section class="secao precificacao-parametros-secao" aria-labelledby="parametros-titulo">
+        <header class="secao-head-inline">
+            <div><h2 class="secao-titulo ds-display" id="parametros-titulo">Parâmetros</h2><p class="secao-sub">A prévia acima responde imediatamente às alterações; salve para aplicar nas próximas propostas.</p></div>
+        </header>
+        <form method="post" class="precificacao-parametros">
+            {% csrf_token %}
+            {% for field in form_config %}<p>{{ field.label_tag }}{{ field }}{% if field.help_text %}<span class="field-help">{{ field.help_text }}</span>{% endif %}{{ field.errors }}</p>{% endfor %}
+            <button class="ds-btn ds-btn--solid" type="submit" name="salvar_config" value="1">Salvar parâmetros</button>
+        </form>
+    </section>
 
-        <div class="ds-card">
-            <h2 class="ds-display">Fatores por projeto</h2>
-            <p class="page-sub">Variáveis que ajustam a hora técnica cobrada (ex.: urgência +30%, alta complexidade +25%, cliente recorrente −10%). Você escolhe quais aplicar em cada proposta.</p>
-            <form method="post" action="{% url 'precificacao_add_fator' %}" class="inline-add">
-                {% csrf_token %}
-                {{ form_fator.nome }}
-                {{ form_fator.percentual }}
-                <button class="ds-btn ds-btn--solid" type="submit">Adicionar</button>
+    <div class="precificacao-detalhes">
+        <section class="secao" aria-labelledby="custos-titulo">
+            <header class="secao-head-inline"><div><h2 class="secao-titulo ds-display" id="custos-titulo">Custos fixos mensais</h2><p class="secao-sub">Despesas recorrentes necessárias para manter o escritório operando.</p></div></header>
+            <form method="post" action="{% url 'precificacao_add_custo' %}" class="inline-add precificacao-inline">
+                {% csrf_token %}{{ form_custo.descricao }}{{ form_custo.valor_mensal }}
+                <button class="linha-ico linha-ico--mais" type="submit" title="Adicionar custo" aria-label="Adicionar custo">{% include "core/_ico.html" with ico="novo" %}</button>
             </form>
-            <table class="data-table">
-                <thead><tr><th>Fator</th><th>Ajuste</th><th></th></tr></thead>
-                <tbody>
-                {% for f in fatores %}
-                    <tr>
-                        <td>{{ f.nome }}</td>
-                        <td>{% if f.percentual >= 0 %}+{% endif %}{{ f.percentual }}%</td>
-                        <td>
-                            <form method="post" action="{% url 'precificacao_remove_fator' f.pk %}">
-                                {% csrf_token %}
-                                <button class="app-link-btn" type="submit">remover</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% empty %}
-                    <tr><td colspan="3" class="data-empty">Nenhum fator cadastrado.</td></tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
+            <div class="table-scroll precificacao-table-scroll">
+                <table class="data-table precificacao-tabela">
+                    <thead><tr><th>Descrição</th><th>Valor mensal</th><th></th></tr></thead>
+                    <tbody>{% for custo in custos %}<tr><td>{{ custo.descricao }}</td><td class="num">R$ {{ custo.valor_mensal }}</td><td><form method="post" action="{% url 'precificacao_remove_custo' custo.pk %}" data-confirmar-exclusao>{% csrf_token %}<button class="linha-ico linha-ico--risco" type="submit" title="Excluir" aria-label="Excluir {{ custo.descricao }}">{% include "core/_ico.html" with ico="excluir" %}</button></form></td></tr>{% empty %}<tr><td colspan="3" class="data-empty">Adicione os custos recorrentes do escritório.</td></tr>{% endfor %}</tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="secao" aria-labelledby="fatores-titulo">
+            <header class="secao-head-inline"><div><h2 class="secao-titulo ds-display" id="fatores-titulo">Fatores por projeto</h2><p class="secao-sub">Ajustes opcionais aplicados na proposta, como urgência, complexidade ou recorrência.</p></div></header>
+            <form method="post" action="{% url 'precificacao_add_fator' %}" class="inline-add precificacao-inline">
+                {% csrf_token %}{{ form_fator.nome }}{{ form_fator.percentual }}
+                <button class="linha-ico linha-ico--mais" type="submit" title="Adicionar fator" aria-label="Adicionar fator">{% include "core/_ico.html" with ico="novo" %}</button>
+            </form>
+            <div class="table-scroll precificacao-table-scroll">
+                <table class="data-table precificacao-tabela">
+                    <thead><tr><th>Fator</th><th>Ajuste</th><th></th></tr></thead>
+                    <tbody>{% for f in fatores %}<tr><td>{{ f.nome }}</td><td class="num">{% if f.percentual >= 0 %}+{% endif %}{{ f.percentual }}%</td><td><form method="post" action="{% url 'precificacao_remove_fator' f.pk %}" data-confirmar-exclusao>{% csrf_token %}<button class="linha-ico linha-ico--risco" type="submit" title="Excluir" aria-label="Excluir {{ f.nome }}">{% include "core/_ico.html" with ico="excluir" %}</button></form></td></tr>{% empty %}<tr><td colspan="3" class="data-empty">Nenhum fator cadastrado.</td></tr>{% endfor %}</tbody>
+                </table>
+            </div>
+        </section>
     </div>
 </section>
 {% endblock %}

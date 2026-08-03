@@ -7,7 +7,13 @@ from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 
 from .forms import ConfiguracaoPrecificacaoForm, CustoFixoForm, FatorPrecificacaoForm
 from .models import CustoFixo, FatorPrecificacao
-from .services import custo_hora, hora_tecnica_base, obter_configuracao, total_custos_fixos
+from .services import (
+    custo_hora,
+    hora_tecnica_base,
+    obter_configuracao,
+    precificar_etapa,
+    total_custos_fixos,
+)
 
 
 @login_required
@@ -26,6 +32,8 @@ def painel_precificacao(request):
 
     custos = queryset_da_empresa(CustoFixo.objects.all(), request.user)
     fatores = queryset_da_empresa(FatorPrecificacao.objects.all(), request.user)
+    custo = custo_hora(grupo)
+    hora_base = hora_tecnica_base(grupo)
     return render(
         request,
         "precificacao/painel.html",
@@ -35,8 +43,11 @@ def painel_precificacao(request):
             "form_custo": CustoFixoForm(),
             "form_config": form_config,
             "form_fator": FatorPrecificacaoForm(),
-            "custo_hora": custo_hora(grupo),
-            "hora_base": hora_tecnica_base(grupo),
+            "custo_hora": custo,
+            "hora_base": hora_base,
+            "hora_com_reservas": precificar_etapa(
+                grupo, 1, hora_tecnica=hora_base
+            )["total"],
             "total_custos": total_custos_fixos(grupo),
             "config": config,
         },

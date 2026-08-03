@@ -3,6 +3,7 @@ from django.test import TestCase
 
 from briefing.models import Briefing, RespostaBriefing, TemplateBriefing
 from briefing.services import semear_templates_padrao
+from briefing.templates_padrao import PADROES
 from core.tenancy import obter_grupo_empresa_padrao
 from crm.models import Cliente
 from legal.testing import aceitar_documentos
@@ -25,9 +26,23 @@ class TemplatesTests(TestCase):
 
     def test_semear_padroes_e_idempotente(self):
         primeiros = semear_templates_padrao(self.grupo, self.user)
-        self.assertEqual(len(primeiros), 2)
+        self.assertEqual(len(primeiros), len(PADROES))
         self.assertEqual(semear_templates_padrao(self.grupo, self.user), [])
-        self.assertEqual(TemplateBriefing.objects.filter(empresa=self.grupo).count(), 2)
+        self.assertEqual(
+            TemplateBriefing.objects.filter(empresa=self.grupo).count(), len(PADROES)
+        )
+
+    def test_pagina_de_modelos_recompoe_roteiro_padrao_excluido(self):
+        semear_templates_padrao(self.grupo, self.user)
+        TemplateBriefing.objects.filter(
+            empresa=self.grupo, nome=PADROES[0]["nome"]
+        ).delete()
+
+        resposta = self.client.get("/modelos/")
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertContains(resposta, PADROES[0]["nome"])
+        self.assertContains(resposta, 'id="modal-novo-briefing"')
 
     def test_padroes_trazem_perguntas_com_opcoes(self):
         template = semear_templates_padrao(self.grupo, self.user)[0]
@@ -75,4 +90,41 @@ class TemplatesTests(TestCase):
             [o.texto for o in pergunta.opcoes.all()], ["Clean", "Clássico", "Rústico"]
         )
 
+    def test_edicao_de_pergunta_substitui_dados_e_opcoes(self):
+        template = semear_templates_padrao(self.grupo, self.user)[0]
+        pergunta = template.perguntas.first()
 
+        resposta = self.client.post(
+            f"/briefing/pergunta/{pergunta.pk}/editar/",
+            {
+                "bloco": "Decisão",
+                "texto": "Quem aprova cada etapa?",
+                "tipo": "opcao",
+                "opcoes": "Uma pessoa\nCasal\nComitê",
+                "ajuda": "Registre o decisor principal.",
+            },
+        )
+
+        self.assertRedirects(resposta, f"/briefing/roteiro/{template.pk}/")
+        pergunta.refresh_from_db()
+        self.assertEqual(pergunta.bloco, "Decisão")
+        self.assertEqual(pergunta.texto, "Quem aprova cada etapa?")
+        self.assertEqual(
+            list(pergunta.opcoes.values_list("texto", flat=True)),
+            ["Uma pessoa", "Casal", "Comitê"],
+        )
+
+    def test_roteiro_novo_e_sempre_criado_ativo(self):
+        resposta = self.client.post(
+            "/briefing/roteiro/novo/",
+            {
+                "nome": "Roteiro próprio",
+                "tipo_projeto": "",
+                "descricao": "Teste",
+                "ativo": "",
+            },
+        )
+
+        roteiro = TemplateBriefing.objects.get(nome="Roteiro próprio")
+        self.assertTrue(roteiro.ativo)
+        self.assertRedirects(resposta, f"/briefing/roteiro/{roteiro.pk}/")

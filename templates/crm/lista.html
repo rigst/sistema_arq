@@ -6,16 +6,16 @@
     <header class="page-head page-head--row page-head--foto page-head--comercial">
         <div>
             <span class="ds-kicker">CRM</span>
-            <h1 class="ds-h2 ds-display">Clientes</h1>
+            <h1 class="ds-h2 ds-display">{% if mostrando_inativos %}Clientes inativos{% else %}Clientes{% endif %}</h1>
             <p class="page-sub">Cada contato com fase, origem e histórico de conversa. É daqui que sai a proposta — e para cá que volta o projeto fechado.</p>
         </div>
         <button class="ds-btn--novo" type="button" data-abre="modal-cliente-novo">{% include "core/_ico.html" with ico="novo" %}<span>Novo cliente</span></button>
     </header>
 
     <div class="filtro-chips">
-        <a class="chip {% if not fase_ativa %}is-active{% endif %}" href="{% url 'crm_lista' %}">Todos</a>
+        <a class="chip {% if not fase_ativa %}is-active{% endif %}" href="{% url 'crm_lista' %}{% if mostrando_inativos %}?inativos=1{% endif %}">Todos</a>
         {% for valor, rotulo in fases %}
-        <a class="chip {% if fase_ativa == valor %}is-active{% endif %}" href="?fase={{ valor }}">{{ rotulo }}</a>
+        <a class="chip {% if fase_ativa == valor %}is-active{% endif %}" href="?fase={{ valor }}{% if mostrando_inativos %}&amp;inativos=1{% endif %}">{{ rotulo }}</a>
         {% endfor %}
     </div>
 
@@ -39,10 +39,18 @@
                     </td>
                 </tr>
             {% empty %}
-                <tr><td colspan="5" class="data-empty">Nenhum cliente cadastrado ainda.</td></tr>
+                <tr><td colspan="5" class="data-empty">{% if mostrando_inativos %}Nenhum cliente inativo.{% else %}Nenhum cliente ativo cadastrado ainda.{% endif %}</td></tr>
             {% endfor %}
             </tbody>
         </table>
+    </div>
+
+    <div class="cadastro-rodape">
+        {% if mostrando_inativos %}
+        <a class="link-discreto" href="{% url 'crm_lista' %}">Voltar aos clientes ativos</a>
+        {% else %}
+        <a class="link-discreto" href="?inativos=1">Ver clientes inativos{% if total_inativos %} ({{ total_inativos }}){% endif %}</a>
+        {% endif %}
     </div>
 
     <dialog class="ds-modal" id="modal-cliente-novo" aria-labelledby="modal-cliente-novo-titulo">
