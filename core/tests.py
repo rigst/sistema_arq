@@ -183,3 +183,25 @@ class IdentidadeTests(TestCase):
         self.assertTrue(pdf.content.startswith(b"%PDF"))
 
         Empresa.objects.get(grupo=self.grupo).logo.delete(save=True)
+
+
+class DadosDemoTests(TestCase):
+    def test_comando_popula_a_empresa_certa_sem_duplicar(self):
+        import io
+
+        from django.core.management import call_command
+        from precificacao.models import ConfiguracaoPrecificacao
+
+        usuario, grupo = criar_empresa_e_usuario(username="admin_demo")
+        saida = io.StringIO()
+        call_command("popular_dados_demo", usuario=usuario.username, stdout=saida)
+        primeira_contagem = Projeto.objects.filter(empresa=grupo).count()
+        call_command("popular_dados_demo", usuario=usuario.username, stdout=saida)
+
+        self.assertEqual(primeira_contagem, 4)
+        self.assertEqual(Projeto.objects.filter(empresa=grupo).count(), 4)
+        self.assertTrue(Projeto.objects.filter(empresa=grupo, tipo="urbanismo").exists())
+        self.assertEqual(
+            ConfiguracaoPrecificacao.objects.get(empresa=grupo).imposto_percent,
+            Decimal("6.00"),
+        )

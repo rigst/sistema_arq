@@ -21,5 +21,5 @@ class FatorPrecificacaoAdmin(admin.ModelAdmin):
 class ConfiguracaoPrecificacaoAdmin(admin.ModelAdmin):
     list_display = (
         "empresa", "horas_uteis_mes", "hora_tecnica_manual",
-        "margem_seguranca_percent", "imposto_percent", "lucro_previsto_percent",
+        "margem_seguranca_percent", "imposto_percent",
     )

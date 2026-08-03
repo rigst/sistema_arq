@@ -44,21 +44,25 @@ class PrecificacaoTests(TestCase):
             ).ativo
         )
 
-    def test_imposto_e_lucro_substituem_a_reserva_no_calculo(self):
+    def test_imposto_e_descontado_da_hora_para_calcular_o_lucro(self):
         ConfiguracaoPrecificacao.objects.update_or_create(
             empresa=self.grupo,
             defaults={
                 "hora_tecnica_manual": Decimal("100.00"),
                 "margem_seguranca_percent": Decimal("0.00"),
                 "imposto_percent": Decimal("6.00"),
-                "lucro_previsto_percent": Decimal("20.00"),
             },
+        )
+        CustoFixo.objects.create(
+            empresa=self.grupo, descricao="Operação", valor_mensal=Decimal("1600.00")
         )
 
         calculo = precificar_etapa(self.grupo, Decimal("1"))
         self.assertEqual(calculo["imposto"], Decimal("6.00"))
-        self.assertEqual(calculo["lucro_previsto"], Decimal("20.00"))
-        self.assertEqual(calculo["total"], Decimal("126.00"))
+        self.assertEqual(calculo["receita_liquida"], Decimal("94.00"))
+        self.assertEqual(calculo["custo_operacional"], Decimal("10.00"))
+        self.assertEqual(calculo["lucro_previsto"], Decimal("84.00"))
+        self.assertEqual(calculo["total"], Decimal("100.00"))
 
         pagina = self.client.get("/precificacao/")
         self.assertContains(pagina, "Imposto")

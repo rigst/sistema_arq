@@ -22,11 +22,6 @@ class ConfiguracaoPrecificacao(EmpresaModel):
         help_text="Percentual estimado de impostos incidente sobre o serviço.",
         verbose_name="imposto (%)",
     )
-    lucro_previsto_percent = models.DecimalField(
-        max_digits=5, decimal_places=2, default=Decimal("20.00"),
-        help_text="Lucro desejado sobre o custo do serviço.",
-        verbose_name="lucro previsto (%)",
-    )
     hora_tecnica_manual = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True,
         help_text="Se preenchida, é a hora técnica-base cobrada (sobrepõe o cálculo por custos). "

@@ -8,7 +8,7 @@
         <div>
             <span class="ds-kicker">Precificação</span>
             <h1 class="ds-h2 ds-display">Hora técnica do escritório</h1>
-            <p class="page-sub">Custos mensais e capacidade produtiva formam o piso. Imposto e lucro previsto compõem o valor comercial das propostas.</p>
+            <p class="page-sub">Custos mensais e capacidade produtiva formam o piso. O imposto é descontado da hora cobrada para calcular o lucro previsto.</p>
         </div>
     </header>
 
@@ -22,8 +22,8 @@
             <small data-hora-base-origem>{% if config.hora_tecnica_manual %}valor manual{% else %}automática pelo custo{% endif %}</small>
         </div>
         <div class="precificacao-metrica precificacao-metrica--final">
-            <span>Hora comercial</span><strong class="num" data-hora-final>R$ {{ hora_final }}</strong>
-            <small>base + segurança + imposto + lucro</small>
+            <span>Lucro previsto por hora</span><strong class="num" data-lucro-hora>R$ {{ lucro_hora }}</strong>
+            <small>hora cobrada − <span data-imposto-hora>R$ {{ imposto_hora }}</span> de imposto − custo</small>
         </div>
     </div>
 

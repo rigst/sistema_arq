@@ -281,8 +281,7 @@
         var horaManual = raiz.querySelector("#id_hora_tecnica_manual");
         var margem = raiz.querySelector("#id_margem_seguranca_percent");
         var imposto = raiz.querySelector("#id_imposto_percent");
-        var lucro = raiz.querySelector("#id_lucro_previsto_percent");
-        if (!horas || !horaManual || !margem || !imposto || !lucro) return;
+        if (!horas || !horaManual || !margem || !imposto) return;
 
         function numero(valor) {
             var texto = String(valor || "").trim().replace(/\s/g, "");
@@ -303,13 +302,15 @@
             var manual = numero(horaManual.value);
             var horaBase = manual > 0 ? manual : custoHora;
             var baseComSeguranca = horaBase * (1 + numero(margem.value) / 100);
-            var horaFinal = baseComSeguranca *
-                            (1 + (numero(imposto.value) + numero(lucro.value)) / 100);
+            var impostoHora = baseComSeguranca * numero(imposto.value) / 100;
+            var custoComSeguranca = custoHora * (1 + numero(margem.value) / 100);
+            var lucroHora = baseComSeguranca - impostoHora - custoComSeguranca;
 
             var saidas = {
                 "[data-custo-hora]": moeda(custoHora),
                 "[data-hora-base]": moeda(horaBase),
-                "[data-hora-final]": moeda(horaFinal),
+                "[data-imposto-hora]": moeda(impostoHora),
+                "[data-lucro-hora]": moeda(lucroHora),
                 "[data-horas-mes]": String(horasMes || 0),
                 "[data-total-custos]": moeda(totalCustos),
                 "[data-hora-base-origem]": manual > 0 ? "valor manual" : "automatica pelo custo"
@@ -320,7 +321,7 @@
             });
         }
 
-        [horas, horaManual, margem, imposto, lucro].forEach(function (campo) {
+        [horas, horaManual, margem, imposto].forEach(function (campo) {
             campo.addEventListener("input", atualizar);
         });
         atualizar();

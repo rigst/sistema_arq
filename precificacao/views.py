@@ -34,6 +34,7 @@ def painel_precificacao(request):
     fatores = queryset_da_empresa(FatorPrecificacao.objects.all(), request.user)
     custo = custo_hora(grupo)
     hora_base = hora_tecnica_base(grupo)
+    previa = precificar_etapa(grupo, 1, hora_tecnica=hora_base)
     return render(
         request,
         "precificacao/painel.html",
@@ -45,9 +46,8 @@ def painel_precificacao(request):
             "form_fator": FatorPrecificacaoForm(),
             "custo_hora": custo,
             "hora_base": hora_base,
-            "hora_final": precificar_etapa(
-                grupo, 1, hora_tecnica=hora_base
-            )["total"],
+            "imposto_hora": previa["imposto"],
+            "lucro_hora": previa["lucro_previsto"],
             "total_custos": total_custos_fixos(grupo),
             "config": config,
         },
