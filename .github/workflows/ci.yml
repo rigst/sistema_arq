@@ -28,6 +28,8 @@ jobs:
         DJANGO_ENV=production
         DJANGO_SECRET_KEY=ci-only-0a1B2c3D4e5F6g7H8i9J-kLmNoPqRsTuVwXyZ-abcdefghij
         DJANGO_ALLOWED_HOSTS=example.com
+        # Os settings recusam origem não-HTTPS quando DJANGO_ENV=production.
+        DJANGO_CSRF_TRUSTED_ORIGINS=https://example.com
         DATABASE_URL=postgres://postgres:postgres@localhost:5432/postgres
         DJANGO_REDIS_CACHE_URL=redis://localhost:6379/1
         CELERY_BROKER_URL=redis://localhost:6379/2
