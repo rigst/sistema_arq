@@ -64,6 +64,7 @@ jobs:
       # recusa curinga; os testes batem em localhost e levavam 400 em toda view.
       test-env: |
         DJANGO_ENV=development
+        DATABASE_URL=
         DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,testserver
         DJANGO_DB_SSL_REQUIRE=false
         DJANGO_DB_CONN_MAX_AGE=0
