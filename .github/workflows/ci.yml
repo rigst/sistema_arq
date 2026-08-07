@@ -60,8 +60,11 @@ jobs:
       # em desenvolvimento. Evita subir um Redis só para o CI.
       # CONN_MAX_AGE=0 porque conexão persistente entre testes reaparece fechada
       # ("the connection is closed") quando o pytest-django troca de transação.
+      # ALLOWED_HOSTS: o django-env usa example.com porque o check --deploy
+      # recusa curinga; os testes batem em localhost e levavam 400 em toda view.
       test-env: |
         DJANGO_ENV=development
+        DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,testserver
         DJANGO_DB_SSL_REQUIRE=false
         DJANGO_DB_CONN_MAX_AGE=0
         DJANGO_REDIS_CACHE_URL=
