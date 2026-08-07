@@ -1,5 +1,10 @@
 # A.R.Q.
 
+[![CI](https://github.com/rigst/sistema_arq/actions/workflows/ci.yml/badge.svg)](https://github.com/rigst/sistema_arq/actions/workflows/ci.yml)
+[![Licença: AGPL v3](https://img.shields.io/badge/licen%C3%A7a-AGPL--3.0-blue.svg)](LICENSE)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/)
+[![Django 6](https://img.shields.io/badge/django-6.0-092E20.svg)](https://www.djangoproject.com/)
+
 Sistema web de gestão para escritórios de arquitetura e interiores. A jornada
 principal conecta briefing, proposta, aprovação comercial, contrato, fases de
 projeto, tarefas, arquivos, agenda e financeiro sem duplicar o projeto.
@@ -68,9 +73,25 @@ Antes de abrir o acesso:
 - revisar os textos legais com assessoria jurídica e preencher a lista real de
   fornecedores de infraestrutura.
 
-## Segurança e licença
+## Contribuindo
 
-Política de reporte e controles: [SECURITY.md](SECURITY.md).
+Veja [CONTRIBUTING.md](CONTRIBUTING.md). O CI é o pipeline compartilhado de
+[rigst/ci](https://github.com/rigst/ci) e precisa passar antes do merge.
 
-Software proprietário, copyright Rodrigo Stölben. Consulte [LICENSE](LICENSE)
-e [LICENCAS.md](LICENCAS.md) para dependências e ativos de terceiros.
+## Segurança
+
+Política de reporte e controles: [SECURITY.md](SECURITY.md). Não abra issue
+pública para vulnerabilidade.
+
+## Licença
+
+[**AGPL-3.0**](LICENSE) — Copyright (C) 2026 Rodrigo Caballero Stölben.
+
+Você pode usar, estudar, modificar e redistribuir. A cláusula que caracteriza a
+AGPL: se você rodar uma versão modificada como serviço acessível pela rede, os
+usuários desse serviço têm direito ao código-fonte correspondente. Para um
+sistema de gestão que normalmente é oferecido como SaaS, é essa cláusula que
+mantém as melhorias públicas.
+
+Dependências e ativos de terceiros seguem suas próprias licenças, inventariadas
+em [LICENCAS.md](LICENCAS.md).

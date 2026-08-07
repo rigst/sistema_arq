@@ -1,8 +1,11 @@
 # Licenças de terceiros
 
-O código original do A.R.Q. é proprietário conforme [LICENSE](LICENSE). Este
-arquivo registra componentes de terceiros usados pela release atual; não
-substitui os textos oficiais de cada projeto.
+O código original do A.R.Q. é licenciado sob [AGPL-3.0](LICENSE). Este arquivo
+registra componentes de terceiros usados pela release atual; não substitui os
+textos oficiais de cada projeto.
+
+Nota de compatibilidade: `psycopg` é LGPL-3.0-only, compatível com a AGPL-3.0 —
+é usado como biblioteca, sem modificação, e permanece sob a própria licença.
 
 ## Dependências diretas
 

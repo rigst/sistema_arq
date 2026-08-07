@@ -8,11 +8,17 @@ dados reais, credenciais ou detalhes exploráveis antes da correção.
 
 ## Escopo suportado
 
-Somente a versão implantada mais recente recebe correções. Dependências devem
-ser auditadas antes de cada release com:
+Somente a versão implantada mais recente recebe correções.
 
-    pip-audit -r requirements.txt
-    python manage.py check --deploy
+## Verificações automáticas
+
+Todo push e PR passa pelo pipeline de [rigst/ci](https://github.com/rigst/ci):
+`bandit` no código, `pip-audit` nas dependências, `gitleaks` sobre todo o
+histórico e `django check --deploy`. Para reproduzir localmente:
+
+    pip-audit
+    bandit -r agenda arquivos briefing config contratos core crm fases financeiro
+    python manage.py check --deploy --fail-level WARNING
 
 ## Controles atuais
 

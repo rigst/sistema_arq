@@ -1,0 +1,38 @@
+name: CI
+
+# O pipeline vive em github.com/rigst/ci. Ajuste lá vale para todos os projetos.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: rigst/ci/.github/workflows/python-django.yml@v1
+    secrets: inherit
+    with:
+      python-version: "3.12"
+      django-settings-module: config.settings
+      source-paths: >-
+        agenda arquivos briefing config contratos core crm diagnostico fases
+        financeiro fornecedores jornada legal modelos notificacoes obras
+        orcamentos precificacao projetos propostas regulatorio tarefas usuarios
+
+      # Valores fictícios, só para os settings carregarem no CI.
+      # Nenhum segredo real entra aqui — os de verdade ficam em Secrets.
+      django-env: |
+        DJANGO_ENV=production
+        DJANGO_SECRET_KEY=ci-only-0a1B2c3D4e5F6g7H8i9J-kLmNoPqRsTuVwXyZ-abcdefghij
+        DJANGO_ALLOWED_HOSTS=example.com
+        DATABASE_URL=postgres://postgres:postgres@localhost:5432/postgres
+        DJANGO_REDIS_CACHE_URL=redis://localhost:6379/1
+        CELERY_BROKER_URL=redis://localhost:6379/2
+        CELERY_RESULT_BACKEND=redis://localhost:6379/2
+        DJANGO_STATIC_ROOT=/tmp/static
+        DJANGO_MEDIA_ROOT=/tmp/media
+
+      soft-fail: "mypy,pytest"
