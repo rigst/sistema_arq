@@ -50,7 +50,12 @@ jobs:
       # reporta enquanto o passivo é zerado — tire da lista conforme resolver.
       #
       #   bandit      3 achados
-      #   pytest    projeto ainda usa `manage.py test`
+      #   pytest      8 falhas, todas em contratos/tests.py::FluxoContratoTests.
+      #              A suíte passa 232/232 em SQLite e falha só no PostgreSQL,
+      #              com "the connection is closed" já no setUp: algum teste
+      #              anterior deixa a transação abortada, o que o SQLite tolera
+      #              e o Postgres não. O CI fica no Postgres de propósito, que é
+      #              o banco de produção — a falha é sinal, não ruído.
       #   mypy      código ainda não tipado
       # Só no job de testes: em production os settings exigem TLS no banco
       # (DJANGO_DB_SSL_REQUIRE herda IS_PRODUCTION) e o Postgres do runner não
@@ -58,13 +63,12 @@ jobs:
       # Esvaziar as URLs do Redis não é gambiarra: os settings já caem em
       # LocMemCache e Celery eager quando elas faltam, que é como o projeto roda
       # em desenvolvimento. Evita subir um Redis só para o CI.
-      # CONN_MAX_AGE=0 porque conexão persistente entre testes reaparece fechada
-      # ("the connection is closed") quando o pytest-django troca de transação.
+      # CONN_MAX_AGE=0 é o default do Django e evita conexão persistente entre
+      # testes.
       # ALLOWED_HOSTS: o django-env usa example.com porque o check --deploy
       # recusa curinga; os testes batem em localhost e levavam 400 em toda view.
       test-env: |
         DJANGO_ENV=development
-        DATABASE_URL=
         DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,testserver
         DJANGO_DB_SSL_REQUIRE=false
         DJANGO_DB_CONN_MAX_AGE=0
