@@ -55,8 +55,17 @@ jobs:
       # Só no job de testes: em production os settings exigem TLS no banco
       # (DJANGO_DB_SSL_REQUIRE herda IS_PRODUCTION) e o Postgres do runner não
       # tem TLS. Os testes seguem no Postgres, igual à produção, só sem SSL.
+      # Esvaziar as URLs do Redis não é gambiarra: os settings já caem em
+      # LocMemCache e Celery eager quando elas faltam, que é como o projeto roda
+      # em desenvolvimento. Evita subir um Redis só para o CI.
+      # CONN_MAX_AGE=0 porque conexão persistente entre testes reaparece fechada
+      # ("the connection is closed") quando o pytest-django troca de transação.
       test-env: |
         DJANGO_ENV=development
         DJANGO_DB_SSL_REQUIRE=false
+        DJANGO_DB_CONN_MAX_AGE=0
+        DJANGO_REDIS_CACHE_URL=
+        CELERY_BROKER_URL=
+        CELERY_RESULT_BACKEND=
 
       soft-fail: "mypy,pytest,bandit,pip-audit"
