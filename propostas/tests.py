@@ -11,6 +11,7 @@ from precificacao.models import ConfiguracaoPrecificacao, FatorPrecificacao
 from precificacao.services import precificar_etapa
 from propostas.models import Proposta
 
+
 class ItensProntosTests(TestCase):
     """A proposta trava na folha em branco, não no cálculo."""
 
@@ -200,7 +201,6 @@ class CicloDaPropostaTests(ItensProntosTests):
 
     def test_proposta_nascida_num_projeto_nao_cria_outro(self):
         """Ela já tem o seu: aprovar de novo duplicaria o mesmo trabalho."""
-        from datetime import date
 
         from fases.models import montar_fases
         from projetos.models import Projeto

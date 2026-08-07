@@ -40,7 +40,7 @@ def limpar_dados_negocio(grupo):
     for func in list(_LIMPADORES):
         try:
             func(grupo)
-        except Exception:  # noqa: BLE001 — um módulo com falha não pode travar a limpeza
+        except Exception:
             logger.exception(
                 "Falha ao limpar dados de visitante", extra={"limpador": repr(func)}
             )

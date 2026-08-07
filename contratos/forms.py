@@ -1,10 +1,10 @@
 from django import forms
 
+from core.forms import ArqForm, ArqModelForm
 from core.tenancy import queryset_da_empresa
 from projetos.models import Projeto
 
 from .models import AlteracaoEscopo, Contrato, Documento, ModeloContrato, Parcela
-from core.forms import ArqForm, ArqModelForm
 
 
 class ContratoForm(ArqModelForm):

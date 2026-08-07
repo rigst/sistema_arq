@@ -1,10 +1,10 @@
 from django import forms
 
-from crm.models import Cliente
+from core.forms import ArqModelForm
 from core.tenancy import queryset_da_empresa
+from crm.models import Cliente
 
 from .models import Projeto
-from core.forms import ArqModelForm
 
 
 class ProjetoForm(ArqModelForm):

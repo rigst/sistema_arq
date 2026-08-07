@@ -8,7 +8,7 @@ from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 from financeiro.models import ContaBancaria
 
 from .forms import EtapaObraForm, MedicaoForm, ObraForm, VisitaTecnicaForm
-from .models import EtapaObra, Medicao, Obra, VisitaTecnica, criar_etapas_obra_padrao
+from .models import EtapaObra, Medicao, Obra, criar_etapas_obra_padrao
 from .services import aprovar_medicao
 
 

@@ -5,7 +5,7 @@ Grade e lista precisam dizer o mesmo dia. Quando divergiam, o compromisso das
 das duas acreditar.
 """
 
-from datetime import datetime, timezone as utc
+from datetime import UTC, datetime
 
 from django.test import TestCase
 from django.utils import timezone
@@ -32,7 +32,7 @@ class DiaLocalTests(TestCase):
             empresa=self.grupo,
             criado_por=self.user,
             titulo="Reunião de briefing",
-            inicio=datetime(2026, 8, 4, 1, 25, tzinfo=utc.utc),
+            inicio=datetime(2026, 8, 4, 1, 25, tzinfo=UTC),
         )
 
     def test_dia_local_e_o_do_fuso_do_escritorio(self):

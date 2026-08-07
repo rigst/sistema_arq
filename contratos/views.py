@@ -644,8 +644,8 @@ def registrar_assinatura(request, pk):
 
 
 from .forms import ModeloContratoForm  # noqa: E402
-from .models import ModeloContrato  # noqa: E402
 from .modelos_padrao import MODELOS_PADRAO  # noqa: E402
+from .models import ModeloContrato  # noqa: E402
 
 
 def _meus_modelos(user):

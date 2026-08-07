@@ -1,8 +1,9 @@
 from django import forms
 
-from .models import AmbientePrograma, Briefing, TemplateBriefing
-from projetos.models import Projeto
 from core.forms import ArqModelForm
+from projetos.models import Projeto
+
+from .models import AmbientePrograma, Briefing, TemplateBriefing
 
 
 class BriefingForm(ArqModelForm):

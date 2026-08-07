@@ -3,8 +3,8 @@
 import base64
 import mimetypes
 
-from django.http import HttpResponse
 from django.contrib.staticfiles import finders
+from django.http import HttpResponse
 from django.template.loader import render_to_string
 
 

@@ -39,6 +39,7 @@ def garantir_modelos_padrao(empresa, usuario=None):
 def contexto_do_contrato(contrato):
     """Dados acumulados desde o cadastro do cliente até a proposta aprovada."""
     from django.utils import timezone
+
     from propostas.models import Proposta
 
     projeto = contrato.projeto

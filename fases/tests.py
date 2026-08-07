@@ -734,6 +734,7 @@ class LembreteDoProjetoTests(BaseFase):
 
     def test_lembrete_de_outra_empresa_nao_pode_ser_editado(self):
         from django.contrib.auth.models import Group
+
         from fases.models import Lembrete
 
         outro = Group.objects.create(name="Vizinho 5")

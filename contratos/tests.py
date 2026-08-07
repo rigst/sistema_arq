@@ -1,7 +1,7 @@
-from datetime import date
-from decimal import Decimal
 import os
 import tempfile
+from datetime import date
+from decimal import Decimal
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase

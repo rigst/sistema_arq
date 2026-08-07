@@ -1,11 +1,12 @@
 from django import forms
 
+from core.forms import ArqModelForm
 from core.tenancy import queryset_da_empresa
 from crm.models import Cliente
 from projetos.models import Projeto
 
 from .models import ItemProposta, Proposta
-from core.forms import ArqModelForm
+
 
 class PropostaForm(ArqModelForm):
     tipo_projeto = forms.ChoiceField(choices=Projeto.TIPO_CHOICES)

@@ -1,10 +1,11 @@
 from django import forms
 from django.utils import timezone
 
+from core.forms import ArqForm, ArqModelForm
 from core.tenancy import queryset_da_empresa
 from core.uploads import validar_extrato
+
 from .models import ContaBancaria, Lancamento
-from core.forms import ArqForm, ArqModelForm
 
 
 class LancamentoForm(ArqModelForm):

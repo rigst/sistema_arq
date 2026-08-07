@@ -2,7 +2,6 @@ from django.db import transaction
 
 from tarefas.models import Tarefa
 
-
 HORAS_USUAIS = {
     "estudo_preliminar": (8, 16, 4),
     "anteprojeto": (24, 16, 8),

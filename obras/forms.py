@@ -1,11 +1,11 @@
 from django import forms
 from django.db.models import Q
 
+from core.forms import ArqModelForm
 from core.tenancy import queryset_da_empresa
 from projetos.models import Projeto
 
 from .models import EtapaObra, Medicao, Obra, VisitaTecnica
-from core.forms import ArqModelForm
 
 
 class ObraForm(ArqModelForm):

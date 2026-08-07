@@ -15,7 +15,6 @@ from django.views.decorators.http import require_POST
 
 from core.tenancy import definir_empresa_ativa, obter_empresa_ativa_usuario
 
-
 FRASES_MOTIVACIONAIS = (
     "Cada projeto avança quando o próximo passo fica claro.",
     "Um bom briefing abre caminho para decisões melhores.",
@@ -55,7 +54,7 @@ def healthz(request):
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1")
             cursor.fetchone()
-    except Exception:  # noqa: BLE001
+    except Exception:
         return JsonResponse({"status": "indisponivel"}, status=503)
     return JsonResponse({"status": "ok"})
 

@@ -4,9 +4,9 @@ from django.test import Client, TestCase
 from django.utils import timezone
 
 from core.factories import criar_empresa_e_usuario
+from legal.testing import aceitar_documentos
 
 from .models import ObrigacaoTecnica
-from legal.testing import aceitar_documentos
 
 
 class ObrigacaoModelTests(TestCase):

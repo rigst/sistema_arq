@@ -1,10 +1,10 @@
 from django import forms
 
+from core.forms import ArqModelForm
 from core.tenancy import queryset_da_empresa
 from projetos.models import Projeto
 
 from .models import ObrigacaoTecnica
-from core.forms import ArqModelForm
 
 
 class ObrigacaoTecnicaForm(ArqModelForm):

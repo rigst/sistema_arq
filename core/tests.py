@@ -1,25 +1,24 @@
+from datetime import date, datetime
 from decimal import Decimal
-from datetime import date
-from datetime import datetime
 from unittest.mock import patch
 
 from django.test import Client, TestCase
 from django.utils import timezone
 
-from core.factories import criar_empresa_e_usuario
-from core.views import FRASES_MOTIVACIONAIS, _primeiro_nome_usuario, _saudacao_do_dia
-from core.models import Empresa
-from core.pdf import _identidade_pdf, render_pdf
-from core.visitante_cleanup import limpar_dados_negocio
-from crm.models import Cliente
 from briefing.models import TemplateBriefing
 from contratos.models import ModeloContrato
-from notificacoes.models import Notificacao
+from core.factories import criar_empresa_e_usuario
+from core.models import Empresa
+from core.pdf import _identidade_pdf, render_pdf
+from core.views import FRASES_MOTIVACIONAIS, _primeiro_nome_usuario, _saudacao_do_dia
+from core.visitante_cleanup import limpar_dados_negocio
+from crm.models import Cliente
 from financeiro.models import ContaBancaria, Lancamento
+from legal.testing import aceitar_documentos
+from notificacoes.models import Notificacao
 from obras.models import EtapaObra, Obra
 from projetos.models import Projeto
 from regulatorio.models import ObrigacaoTecnica
-from legal.testing import aceitar_documentos
 from usuarios.models import Usuario
 
 
@@ -220,6 +219,7 @@ class DadosDemoTests(TestCase):
         import io
 
         from django.core.management import call_command
+
         from precificacao.models import ConfiguracaoPrecificacao
 
         usuario, grupo = criar_empresa_e_usuario(username="admin_demo")

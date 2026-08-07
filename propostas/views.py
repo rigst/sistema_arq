@@ -1,11 +1,11 @@
+from decimal import Decimal, InvalidOperation
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
-
-from decimal import Decimal, InvalidOperation
 
 from core.tenancy import queryset_da_empresa
 from precificacao.models import FatorPrecificacao

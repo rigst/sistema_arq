@@ -1,11 +1,11 @@
 from django import forms
 
+from core.forms import ArqModelForm
 from core.tenancy import queryset_da_empresa
 from crm.models import Cliente
 from projetos.models import Projeto
 
 from .models import Compromisso
-from core.forms import ArqModelForm
 
 
 class CompromissoForm(ArqModelForm):

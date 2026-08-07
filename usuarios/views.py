@@ -10,8 +10,8 @@ from django.core.cache import cache
 from django.shortcuts import redirect
 from django.urls import reverse
 
-from core.tenancy import nome_grupo_visitante
 from core.request import ip_cliente
+from core.tenancy import nome_grupo_visitante
 
 from .models import Usuario
 from .visitantes import (

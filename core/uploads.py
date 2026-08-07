@@ -2,7 +2,6 @@ from pathlib import Path
 
 from django.core.exceptions import ValidationError
 
-
 DOCUMENT_EXTENSIONS = {
     "csv", "doc", "docx", "dwg", "dxf", "ifc", "jpeg", "jpg", "ods", "odt",
     "ofx", "pdf", "png", "ppt", "pptx", "rtf", "txt", "webp", "xls", "xlsx", "zip",

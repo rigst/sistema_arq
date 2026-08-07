@@ -1,7 +1,8 @@
 from django import forms
 
-from .models import ConfiguracaoPrecificacao, CustoFixo, FatorPrecificacao
 from core.forms import ArqModelForm
+
+from .models import ConfiguracaoPrecificacao, CustoFixo, FatorPrecificacao
 
 
 class CustoFixoForm(ArqModelForm):

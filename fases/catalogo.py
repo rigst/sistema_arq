@@ -10,7 +10,7 @@ anteprojeto que o cliente ainda não aprovou — desenhar em cima de decisão n�
 confirmada é o retrabalho mais caro do escritório.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)

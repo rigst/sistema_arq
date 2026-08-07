@@ -49,7 +49,7 @@ jobs:
       # (nenhum segredo no histórico) e as checagens do Django. O resto roda e
       # reporta enquanto o passivo é zerado — tire da lista conforme resolver.
       #
-      #   ruff      219 achados (47 com --fix automático)
+      #   ruff      172 achados restantes + `ruff format` pendente
       #   bandit      3 achados
       #   pytest    projeto ainda usa `manage.py test`
       #   mypy      código ainda não tipado

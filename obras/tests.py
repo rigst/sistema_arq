@@ -5,11 +5,11 @@ from django.test import Client, TestCase
 from core.factories import criar_empresa_e_usuario
 from crm.models import Cliente
 from financeiro.models import ContaBancaria, Lancamento
+from legal.testing import aceitar_documentos
 from projetos.models import Projeto
 
 from .models import EtapaObra, Medicao, Obra
 from .services import aprovar_medicao
-from legal.testing import aceitar_documentos
 
 
 class ObraModelTests(TestCase):

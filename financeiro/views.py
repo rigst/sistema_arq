@@ -71,7 +71,7 @@ def importar_extrato(request):
                     transacoes = parse_ofx(arquivo)
                 else:
                     transacoes = parse_csv(arquivo)
-            except Exception:  # noqa: BLE001
+            except Exception:
                 messages.error(request, "Não foi possível ler o arquivo. Confira o formato (OFX ou CSV).")
                 return redirect("financeiro_importar")
             if not transacoes:

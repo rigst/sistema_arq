@@ -1,9 +1,9 @@
-from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
 from core.models import EmpresaModel, Rastreavel
 from crm.models import Cliente
+
 
 # Etapas padrão por tipo (base NBR 13532). Usadas para instanciar as etapas de um
 # projeto novo — templates editáveis por empresa ficam para fase futura.

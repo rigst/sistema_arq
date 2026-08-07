@@ -1,16 +1,14 @@
+from datetime import timedelta
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
+from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from core.contexto import projeto_do_pedido
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 
-from datetime import timedelta
-
-from .forms import ApontamentoForm, TarefaForm
+from .forms import ApontamentoForm
 
 
 def _de_onde_veio(request):

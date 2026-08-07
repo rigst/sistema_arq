@@ -1,4 +1,3 @@
-from django.contrib.auth.models import Group
 from django.core.cache import cache
 from django.test import TestCase
 

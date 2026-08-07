@@ -1,7 +1,8 @@
 from django import forms
 
-from .models import Cliente, Interacao
 from core.forms import ArqModelForm
+
+from .models import Cliente, Interacao
 
 
 class ClienteForm(ArqModelForm):

@@ -1,7 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from core.tenancy import queryset_da_empresa
@@ -82,7 +81,6 @@ def remover_ambiente(request, pk):
 # Seção de briefings — templates, aplicação ao projeto e apoio de IA
 # =====================================================================
 
-from django.http import Http404  # noqa: E402
 
 from core.tenancy import obter_grupo_empresa_ou_erro  # noqa: E402
 
