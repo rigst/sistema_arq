@@ -52,4 +52,11 @@ jobs:
       #   bandit      3 achados
       #   pytest    projeto ainda usa `manage.py test`
       #   mypy      código ainda não tipado
+      # Só no job de testes: em production os settings exigem TLS no banco
+      # (DJANGO_DB_SSL_REQUIRE herda IS_PRODUCTION) e o Postgres do runner não
+      # tem TLS. Os testes seguem no Postgres, igual à produção, só sem SSL.
+      test-env: |
+        DJANGO_ENV=development
+        DJANGO_DB_SSL_REQUIRE=false
+
       soft-fail: "mypy,pytest,bandit,pip-audit"
