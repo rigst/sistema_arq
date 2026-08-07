@@ -28,9 +28,9 @@ class IdentidadeEmpresaForm(ArqModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["logo"].help_text = (
-            "PNG, JPG ou WebP, até 10 MB. Aparece na barra lateral e nos documentos."
-        )
+        self.fields[
+            "logo"
+        ].help_text = "PNG, JPG ou WebP, até 10 MB. Aparece na barra lateral e nos documentos."
         self.fields["cor_primaria"].required = False
 
     def save(self, commit=True):

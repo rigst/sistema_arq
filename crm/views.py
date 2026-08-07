@@ -24,9 +24,7 @@ def lista_clientes(request):
         "crm/lista.html",
         {
             "clientes": clientes,
-            "clientes_com_form": [
-                (cliente, ClienteForm(instance=cliente)) for cliente in clientes
-            ],
+            "clientes_com_form": [(cliente, ClienteForm(instance=cliente)) for cliente in clientes],
             "form_cliente": ClienteForm(),
             "fases": Cliente.FASE_CHOICES,
             "fase_ativa": fase,

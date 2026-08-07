@@ -57,7 +57,9 @@ class Orcamento(EmpresaModel, Rastreavel):
 
     @property
     def total_realizado(self):
-        return sum((item.valor_realizado or Decimal("0") for item in self.itens.all()), Decimal("0"))
+        return sum(
+            (item.valor_realizado or Decimal("0") for item in self.itens.all()), Decimal("0")
+        )
 
     @property
     def desvio(self):
@@ -117,7 +119,9 @@ class ItemOrcamento(EmpresaModel):
     descricao = models.CharField("descrição", max_length=250)
     unidade = models.CharField(max_length=5, choices=UNIDADE_CHOICES, default="un")
     quantidade = models.DecimalField(max_digits=12, decimal_places=3, default=1)
-    valor_unitario = models.DecimalField("valor unitário", max_digits=12, decimal_places=2, default=0)
+    valor_unitario = models.DecimalField(
+        "valor unitário", max_digits=12, decimal_places=2, default=0
+    )
     fornecedor = models.ForeignKey(
         "fornecedores.Fornecedor",
         on_delete=models.SET_NULL,

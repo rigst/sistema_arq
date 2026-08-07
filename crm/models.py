@@ -52,7 +52,7 @@ class Interacao(EmpresaModel):
 
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name="interacoes")
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default="nota")
-    descricao = models.TextField( verbose_name="descrição")
+    descricao = models.TextField(verbose_name="descrição")
     autor = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )

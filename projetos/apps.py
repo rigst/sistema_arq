@@ -11,6 +11,7 @@ class ProjetosConfig(AppConfig):
 
         def _limpar(grupo):
             from .models import Projeto, Tag
+
             Projeto.objects.filter(empresa=grupo).delete()
             Tag.objects.filter(empresa=grupo).delete()
 

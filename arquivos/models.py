@@ -50,7 +50,10 @@ class Arquivo(EmpresaModel, Rastreavel):
     )
     fase = models.ForeignKey(
         "fases.Fase",
-        on_delete=models.CASCADE, null=True, blank=True, related_name="arquivos",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="arquivos",
         help_text="A fase a que este arquivo pertence. Sem ela, o arquivo é do projeto todo.",
     )
     fornecedor = models.ForeignKey(

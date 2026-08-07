@@ -9,9 +9,7 @@ from usuarios.models import Usuario
 class PainelFinanceiroTests(TestCase):
     def setUp(self):
         self.grupo = obter_grupo_empresa_padrao()
-        self.user = Usuario.objects.create_user(
-            username="financeiro", password="senha-de-teste"
-        )
+        self.user = Usuario.objects.create_user(username="financeiro", password="senha-de-teste")
         self.user.groups.add(self.grupo)
         aceitar_documentos(self.user)
         self.client.force_login(self.user)
@@ -54,7 +52,5 @@ class PainelFinanceiroTests(TestCase):
 
         self.assertRedirects(resposta, "/financeiro/")
         self.assertTrue(
-            Lancamento.objects.filter(
-                empresa=self.grupo, descricao="Entrada de contrato"
-            ).exists()
+            Lancamento.objects.filter(empresa=self.grupo, descricao="Entrada de contrato").exists()
         )

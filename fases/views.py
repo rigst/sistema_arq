@@ -120,18 +120,21 @@ def responder(request, pk):
     aprovada = request.POST.get("decisao") == "aprovar"
     if fase.registrar_resposta(aprovada, parecer, request.user):
         if aprovada:
-            messages.success(request, f"Cliente aprovou {fase.nome} de {fase.projeto.nome}. A próxima fase está liberada.")
+            messages.success(
+                request,
+                f"Cliente aprovou {fase.nome} de {fase.projeto.nome}. A próxima fase está liberada.",
+            )
             proxima = (
-                fase.projeto.fases.filter(
-                    ordem__gt=fase.ordem, status=Fase.EM_ELABORACAO
-                )
+                fase.projeto.fases.filter(ordem__gt=fase.ordem, status=Fase.EM_ELABORACAO)
                 .order_by("ordem", "id")
                 .first()
             )
             if proxima is not None:
                 return redirect("fase_detalhe", pk=proxima.pk)
         else:
-            messages.success(request, f"Cliente pediu ajustes em {fase.nome} de {fase.projeto.nome}.")
+            messages.success(
+                request, f"Cliente pediu ajustes em {fase.nome} de {fase.projeto.nome}."
+            )
     return redirect(_voltar(fase))
 
 
@@ -153,8 +156,7 @@ def _tarefas_ou_redirect(request, fase, form=None):
                 "fase": fase,
                 "tarefas": tarefas,
                 "tarefas_horas": tarefas.aggregate(total=Sum("horas_previstas"))["total"] or 0,
-                "form_tarefa": form
-                or FaseTarefaForm(form_id=f"nova-tarefa-{fase.pk}"),
+                "form_tarefa": form or FaseTarefaForm(form_id=f"nova-tarefa-{fase.pk}"),
             },
         )
     return redirect(_voltar(fase) + "#tarefas-fase")
@@ -202,9 +204,7 @@ def editar_tarefa(request, pk):
 @login_required
 def linha_tarefa(request, pk):
     tarefa = _tarefa_da_fase(request.user, pk)
-    return render(
-        request, "fases/_tarefa_linha.html", {"fase": tarefa.fase, "tarefa": tarefa}
-    )
+    return render(request, "fases/_tarefa_linha.html", {"fase": tarefa.fase, "tarefa": tarefa})
 
 
 @require_POST
@@ -318,9 +318,8 @@ def editar_complementares(request, projeto_pk):
     )
     marcados = set(request.POST.getlist("complementares"))
     atuais = {
-        f.chave for f in projeto.fases.filter(chave__startswith="comp_").exclude(
-            chave=catalogo.CHAVE_LIVRE
-        )
+        f.chave
+        for f in projeto.fases.filter(chave__startswith="comp_").exclude(chave=catalogo.CHAVE_LIVRE)
     }
     livres_marcados = set(request.POST.getlist("complementares_livres"))
 
@@ -330,9 +329,7 @@ def editar_complementares(request, projeto_pk):
             arquivo.arquivo.delete(save=False)
         fase.delete()
 
-    for fase in projeto.fases.filter(chave=catalogo.CHAVE_LIVRE).exclude(
-        pk__in=livres_marcados
-    ):
+    for fase in projeto.fases.filter(chave=catalogo.CHAVE_LIVRE).exclude(pk__in=livres_marcados):
         for arquivo in fase.arquivos.all():
             arquivo.arquivo.delete(save=False)
         fase.delete()

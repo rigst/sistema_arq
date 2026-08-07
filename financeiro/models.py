@@ -6,7 +6,9 @@ from projetos.models import Projeto
 
 class ContaBancaria(EmpresaModel):
     nome = models.CharField(max_length=100)
-    saldo_inicial = models.DecimalField(max_digits=14, decimal_places=2, default=0, verbose_name="saldo inicial")
+    saldo_inicial = models.DecimalField(
+        max_digits=14, decimal_places=2, default=0, verbose_name="saldo inicial"
+    )
     pessoal = models.BooleanField(
         default=False, help_text="Marque para separar o caixa pessoal do escritório."
     )

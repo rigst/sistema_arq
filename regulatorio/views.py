@@ -49,9 +49,7 @@ def nova_obrigacao(request):
             return redirect("regulatorio_lista")
     else:
         form = ObrigacaoTecnicaForm(user=request.user)
-    return render(
-        request, "regulatorio/form.html", {"form": form, "titulo": "Nova obrigação"}
-    )
+    return render(request, "regulatorio/form.html", {"form": form, "titulo": "Nova obrigação"})
 
 
 @login_required
@@ -69,9 +67,7 @@ def editar_obrigacao(request, pk):
             return redirect("regulatorio_lista")
     else:
         form = ObrigacaoTecnicaForm(instance=obrigacao, user=request.user)
-    return render(
-        request, "regulatorio/form.html", {"form": form, "titulo": "Editar obrigação"}
-    )
+    return render(request, "regulatorio/form.html", {"form": form, "titulo": "Editar obrigação"})
 
 
 @require_POST

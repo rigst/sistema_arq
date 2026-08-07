@@ -20,6 +20,9 @@ class FatorPrecificacaoAdmin(admin.ModelAdmin):
 @admin.register(ConfiguracaoPrecificacao)
 class ConfiguracaoPrecificacaoAdmin(admin.ModelAdmin):
     list_display = (
-        "empresa", "horas_uteis_mes", "hora_tecnica_manual",
-        "margem_seguranca_percent", "imposto_percent",
+        "empresa",
+        "horas_uteis_mes",
+        "hora_tecnica_manual",
+        "margem_seguranca_percent",
+        "imposto_percent",
     )

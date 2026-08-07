@@ -13,7 +13,9 @@ class CompromissoForm(ArqModelForm):
         model = Compromisso
         fields = ["titulo", "tipo", "inicio", "fim", "local", "cliente", "projeto", "observacoes"]
         widgets = {
-            "inicio": forms.DateTimeInput(attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
+            "inicio": forms.DateTimeInput(
+                attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
+            ),
             "fim": forms.DateTimeInput(attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
             "observacoes": forms.Textarea(attrs={"rows": 2}),
         }

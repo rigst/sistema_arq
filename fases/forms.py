@@ -33,8 +33,11 @@ class LembreteForm(ArqModelForm):
     class Meta:
         model = Lembrete
         fields = ["texto"]
-        widgets = {"texto": forms.Textarea(attrs={"rows": 4, "placeholder":
-                   "O que foi combinado, decidido ou pedido."})}
+        widgets = {
+            "texto": forms.Textarea(
+                attrs={"rows": 4, "placeholder": "O que foi combinado, decidido ou pedido."}
+            )
+        }
         labels = {"texto": "Lembrete"}
 
 

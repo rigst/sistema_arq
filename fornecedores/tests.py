@@ -13,9 +13,18 @@ class FornecedoresModalTests(TestCase):
 
     def test_lista_expoe_modais_e_crud(self):
         dados = {
-            "nome": "Marcenaria", "categoria": "marcenaria", "contato": "",
-            "telefone": "", "email": "", "site": "", "documento": "", "cidade": "",
-            "prazo_medio_dias": "", "avaliacao": "", "ativo": "on", "observacoes": "",
+            "nome": "Marcenaria",
+            "categoria": "marcenaria",
+            "contato": "",
+            "telefone": "",
+            "email": "",
+            "site": "",
+            "documento": "",
+            "cidade": "",
+            "prazo_medio_dias": "",
+            "avaliacao": "",
+            "ativo": "on",
+            "observacoes": "",
         }
         self.assertRedirects(self.client.post("/fornecedores/novo/", dados), "/fornecedores/")
         fornecedor = Fornecedor.objects.get()

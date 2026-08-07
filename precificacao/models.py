@@ -9,21 +9,29 @@ class ConfiguracaoPrecificacao(EmpresaModel):
     """Parâmetros de precificação do escritório (um registro por empresa)."""
 
     horas_uteis_mes = models.PositiveIntegerField(
-        default=160, help_text="Horas realmente trabalhadas no mês (base da hora técnica).",
+        default=160,
+        help_text="Horas realmente trabalhadas no mês (base da hora técnica).",
         verbose_name="horas úteis por mês",
     )
     margem_seguranca_percent = models.DecimalField(
-        max_digits=5, decimal_places=2, default=Decimal("10.00"),
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("10.00"),
         help_text="Margem de segurança sobre as horas estimadas.",
         verbose_name="margem de segurança (%)",
     )
     imposto_percent = models.DecimalField(
-        max_digits=5, decimal_places=2, default=Decimal("0.00"),
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("0.00"),
         help_text="Percentual estimado de impostos incidente sobre o serviço.",
         verbose_name="imposto (%)",
     )
     hora_tecnica_manual = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True,
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
         help_text="Se preenchida, é a hora técnica-base cobrada (sobrepõe o cálculo por custos). "
         "O valor por custos continua sendo o piso usado no cálculo de margem.",
         verbose_name="hora técnica manual",
@@ -43,7 +51,8 @@ class FatorPrecificacao(EmpresaModel):
 
     nome = models.CharField(max_length=80)
     percentual = models.DecimalField(
-        max_digits=6, decimal_places=2,
+        max_digits=6,
+        decimal_places=2,
         help_text="Ajuste sobre a hora técnica-base, em %. Aceita valores negativos.",
     )
     ativo = models.BooleanField(default=True)

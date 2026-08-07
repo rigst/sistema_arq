@@ -20,7 +20,9 @@ class Contrato(EmpresaModel, Rastreavel):
     projeto = models.ForeignKey(Projeto, on_delete=models.CASCADE, related_name="contratos")
     numero = models.CharField(max_length=40, blank=True, verbose_name="número")
     titulo = models.CharField(max_length=200, verbose_name="título")
-    valor_total = models.DecimalField(max_digits=14, decimal_places=2, default=0, verbose_name="valor total")
+    valor_total = models.DecimalField(
+        max_digits=14, decimal_places=2, default=0, verbose_name="valor total"
+    )
     data_assinatura = models.DateField(null=True, blank=True, verbose_name="data de assinatura")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="rascunho")
     observacoes = models.TextField(blank=True, verbose_name="observações")
@@ -93,9 +95,12 @@ class AlteracaoEscopo(EmpresaModel):
 
     contrato = models.ForeignKey(Contrato, on_delete=models.CASCADE, related_name="alteracoes")
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default="alteracao")
-    descricao = models.TextField( verbose_name="descrição")
+    descricao = models.TextField(verbose_name="descrição")
     valor_delta = models.DecimalField(
-        max_digits=14, decimal_places=2, default=0, help_text="Impacto no valor (+/-).",
+        max_digits=14,
+        decimal_places=2,
+        default=0,
+        help_text="Impacto no valor (+/-).",
         verbose_name="variação de valor",
     )
     registrado_por = models.ForeignKey(
@@ -169,7 +174,10 @@ class ModeloContrato(EmpresaModel, Rastreavel):
 
     nome = models.CharField(max_length=150)
     tipo_projeto = models.CharField(
-        "tipo de projeto", max_length=20, blank=True, choices=Projeto.TIPO_CHOICES,
+        "tipo de projeto",
+        max_length=20,
+        blank=True,
+        choices=Projeto.TIPO_CHOICES,
         help_text="Deixe em branco para servir a qualquer tipo de projeto.",
     )
     descricao = models.CharField("descrição", max_length=250, blank=True)

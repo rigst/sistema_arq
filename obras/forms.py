@@ -12,8 +12,13 @@ class ObraForm(ArqModelForm):
     class Meta:
         model = Obra
         fields = [
-            "projeto", "endereco", "responsavel_tecnico", "status",
-            "data_inicio", "data_prevista_fim", "observacoes",
+            "projeto",
+            "endereco",
+            "responsavel_tecnico",
+            "status",
+            "data_inicio",
+            "data_prevista_fim",
+            "observacoes",
         ]
         labels = {
             "responsavel_tecnico": "Responsável técnico",
@@ -45,8 +50,13 @@ class EtapaObraForm(ArqModelForm):
     class Meta:
         model = EtapaObra
         fields = [
-            "nome", "ordem", "data_prevista_inicio", "data_prevista_fim",
-            "percentual_previsto", "percentual_real", "valor",
+            "nome",
+            "ordem",
+            "data_prevista_inicio",
+            "data_prevista_fim",
+            "percentual_previsto",
+            "percentual_real",
+            "valor",
         ]
         widgets = {
             "data_prevista_inicio": forms.DateInput(attrs={"type": "date"}),

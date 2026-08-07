@@ -34,8 +34,7 @@ def lista(request):
         {
             "fornecedores": fornecedores,
             "fornecedores_com_form": [
-                (fornecedor, FornecedorForm(instance=fornecedor))
-                for fornecedor in fornecedores
+                (fornecedor, FornecedorForm(instance=fornecedor)) for fornecedor in fornecedores
             ],
             "form_fornecedor": FornecedorForm(),
             "categorias": categorias,

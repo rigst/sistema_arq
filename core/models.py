@@ -27,7 +27,9 @@ class Empresa(models.Model):
         validators=[validar_imagem],
         help_text="Foto larga que abre o painel. Sem ela, entra a imagem padrão.",
     )
-    cor_primaria = models.CharField(max_length=7, blank=True, default="", verbose_name="cor primária")
+    cor_primaria = models.CharField(
+        max_length=7, blank=True, default="", verbose_name="cor primária"
+    )
     criada_em = models.DateTimeField(auto_now_add=True)
     atualizada_em = models.DateTimeField(auto_now=True)
 

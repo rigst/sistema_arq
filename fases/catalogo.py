@@ -44,9 +44,7 @@ PRINCIPAIS = (
         chave="proposta",
         nome="Proposta",
         resumo="Honorários, escopo e prazo apresentados para aprovação do cliente.",
-        entrega=(
-            "Proposta de honorários com datas por fase",
-        ),
+        entrega=("Proposta de honorários com datas por fase",),
         consome="O programa de necessidades, que define o tamanho do trabalho.",
     ),
     Passo(

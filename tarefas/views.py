@@ -9,6 +9,7 @@ from django.views.decorators.http import require_POST
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 
 from .forms import ApontamentoForm
+from .models import ApontamentoHora, Tarefa
 
 
 def _de_onde_veio(request):
@@ -27,7 +28,6 @@ def _de_onde_veio(request):
     ):
         return destino
     return "dashboard"
-from .models import ApontamentoHora, Tarefa
 
 
 @require_POST
@@ -79,14 +79,18 @@ def iniciar_timer(request):
     tarefa = None
     tarefa_id = request.POST.get("tarefa")
     if tarefa_id:
-        tarefa = queryset_da_empresa(Tarefa.objects.all(), request.user).filter(pk=tarefa_id).first()
+        tarefa = (
+            queryset_da_empresa(Tarefa.objects.all(), request.user).filter(pk=tarefa_id).first()
+        )
 
     projeto = None
     projeto_id = request.POST.get("projeto")
     if projeto_id:
         from projetos.models import Projeto
 
-        projeto = queryset_da_empresa(Projeto.objects.all(), request.user).filter(pk=projeto_id).first()
+        projeto = (
+            queryset_da_empresa(Projeto.objects.all(), request.user).filter(pk=projeto_id).first()
+        )
 
     descricao = request.POST.get("descricao", "").strip()
     if not descricao:

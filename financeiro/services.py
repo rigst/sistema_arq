@@ -30,11 +30,9 @@ def calcular_margem_projeto(projeto):
     horas = _soma_horas_projeto(projeto)
     custo_horas = (hora_tecnica * horas).quantize(Decimal("0.01"))
 
-    despesas = (
-        Lancamento.objects.filter(empresa=projeto.empresa, projeto=projeto, tipo="saida")
-        .aggregate(t=Sum("valor"))["t"]
-        or Decimal("0")
-    )
+    despesas = Lancamento.objects.filter(
+        empresa=projeto.empresa, projeto=projeto, tipo="saida"
+    ).aggregate(t=Sum("valor"))["t"] or Decimal("0")
     contratado = Decimal(projeto.valor_contratado or 0)
     margem = (contratado - custo_horas - despesas).quantize(Decimal("0.01"))
     percent = (margem / contratado * CEM).quantize(Decimal("0.1")) if contratado else Decimal("0")
@@ -60,14 +58,16 @@ def dre(grupo, ano, mes):
     def _movimentos(tipo):
         return [
             {"descricao": row["descricao"], "total": row["total"]}
-            for row in qs.filter(tipo=tipo).values("descricao")
-            .annotate(total=Sum("valor")).order_by("-total", "descricao")
+            for row in qs.filter(tipo=tipo)
+            .values("descricao")
+            .annotate(total=Sum("valor"))
+            .order_by("-total", "descricao")
         ]
 
     entradas = _movimentos("entrada")
     saidas = _movimentos("saida")
-    total_entradas = sum((l["total"] for l in entradas), Decimal("0"))
-    total_saidas = sum((l["total"] for l in saidas), Decimal("0"))
+    total_entradas = sum((linha["total"] for linha in entradas), Decimal("0"))
+    total_saidas = sum((linha["total"] for linha in saidas), Decimal("0"))
     return {
         "ano": ano,
         "mes": mes,
@@ -92,4 +92,10 @@ def resumo_mensal(grupo, ano=None, mes=None):
     )
     entradas = qs.filter(tipo="entrada").aggregate(t=Sum("valor"))["t"] or Decimal("0")
     saidas = qs.filter(tipo="saida").aggregate(t=Sum("valor"))["t"] or Decimal("0")
-    return {"ano": ano, "mes": mes, "entradas": entradas, "saidas": saidas, "saldo": entradas - saidas}
+    return {
+        "ano": ano,
+        "mes": mes,
+        "entradas": entradas,
+        "saidas": saidas,
+        "saldo": entradas - saidas,
+    }

@@ -25,8 +25,10 @@ class VarreduraTests(TestCase):
 
     def test_tarefa_atrasada_gera_notificacao_critica(self):
         Tarefa.objects.create(
-            empresa=self.grupo, titulo="Enviar planta",
-            prazo=timezone.localdate() - timedelta(days=2), status="aberta",
+            empresa=self.grupo,
+            titulo="Enviar planta",
+            prazo=timezone.localdate() - timedelta(days=2),
+            status="aberta",
         )
         varrer_empresa(self.grupo)
         n = Notificacao.objects.get(empresa=self.grupo)
@@ -44,17 +46,21 @@ class VarreduraTests(TestCase):
     def test_obra_em_desvio_gera_alerta(self):
         obra = Obra.objects.create(empresa=self.grupo, projeto=self.projeto)
         EtapaObra.objects.create(
-            empresa=self.grupo, obra=obra, nome="Estrutura",
-            percentual_previsto=80, percentual_real=40, valor=Decimal("1000"),
+            empresa=self.grupo,
+            obra=obra,
+            nome="Estrutura",
+            percentual_previsto=80,
+            percentual_real=40,
+            valor=Decimal("1000"),
         )
         varrer_empresa(self.grupo)
-        self.assertTrue(
-            Notificacao.objects.filter(chave=f"obra-desvio-{obra.pk}").exists()
-        )
+        self.assertTrue(Notificacao.objects.filter(chave=f"obra-desvio-{obra.pk}").exists())
 
     def test_obrigacao_vencida_gera_critico(self):
         o = ObrigacaoTecnica.objects.create(
-            empresa=self.grupo, tipo="art", status="registrada",
+            empresa=self.grupo,
+            tipo="art",
+            status="registrada",
             vencimento=timezone.localdate() - timedelta(days=1),
         )
         varrer_empresa(self.grupo)
@@ -63,8 +69,10 @@ class VarreduraTests(TestCase):
 
     def test_varredura_e_idempotente(self):
         Tarefa.objects.create(
-            empresa=self.grupo, titulo="X",
-            prazo=timezone.localdate() - timedelta(days=1), status="aberta",
+            empresa=self.grupo,
+            titulo="X",
+            prazo=timezone.localdate() - timedelta(days=1),
+            status="aberta",
         )
         varrer_empresa(self.grupo)
         varrer_empresa(self.grupo)

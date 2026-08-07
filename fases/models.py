@@ -36,14 +36,18 @@ class Fase(EmpresaModel, Rastreavel):
     chave = models.CharField(max_length=30, choices=catalogo.CHOICES)
     ordem = models.PositiveIntegerField(default=0)
     titulo_livre = models.CharField(
-        "nome do complementar", max_length=120, blank=True,
+        "nome do complementar",
+        max_length=120,
+        blank=True,
         help_text="Só para complementar fora da lista — acústico, automação, luminotécnico.",
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=NAO_INICIADA)
 
     prazo = models.DateField(null=True, blank=True, help_text="Data combinada de entrega.")
     dias_uteis_proposta = models.PositiveIntegerField(
-        "prazo na proposta (dias úteis)", null=True, blank=True,
+        "prazo na proposta (dias úteis)",
+        null=True,
+        blank=True,
         help_text="Contados da assinatura do contrato, respeitando a sequência das fases.",
     )
     iniciada_em = models.DateTimeField(null=True, blank=True, verbose_name="iniciada em")
@@ -57,7 +61,10 @@ class Fase(EmpresaModel, Rastreavel):
     # Complementar quase sempre sai do escritório; a fase guarda quem assina.
     fornecedor = models.ForeignKey(
         "fornecedores.Fornecedor",
-        on_delete=models.SET_NULL, null=True, blank=True, related_name="fases",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="fases",
         verbose_name="projetista responsável",
     )
 
@@ -225,8 +232,11 @@ class Fase(EmpresaModel, Rastreavel):
         """Anotação da fase escrita à mão. Registro automático não passa por
         aqui: o que o sistema fez mora no histórico de avisos."""
         return Lembrete.objects.create(
-            empresa=self.empresa, projeto=self.projeto, fase=self,
-            texto=texto, autor=usuario,
+            empresa=self.empresa,
+            projeto=self.projeto,
+            fase=self,
+            texto=texto,
+            autor=usuario,
         )
 
 
@@ -244,7 +254,11 @@ class Lembrete(EmpresaModel):
 
     projeto = models.ForeignKey(Projeto, on_delete=models.CASCADE, related_name="lembretes")
     fase = models.ForeignKey(
-        Fase, on_delete=models.CASCADE, related_name="registros", null=True, blank=True,
+        Fase,
+        on_delete=models.CASCADE,
+        related_name="registros",
+        null=True,
+        blank=True,
         help_text="Vazio quando o lembrete é do projeto inteiro.",
     )
     texto = models.TextField()
@@ -276,7 +290,10 @@ def montar_fases(projeto, complementares=()):
             continue
         novas.append(
             Fase(
-                empresa=projeto.empresa, projeto=projeto, chave=p.chave, ordem=ordem,
+                empresa=projeto.empresa,
+                projeto=projeto,
+                chave=p.chave,
+                ordem=ordem,
                 dias_uteis_proposta=catalogo.PRAZOS_UTEIS_PADRAO.get(p.chave),
             )
         )
@@ -297,9 +314,9 @@ def montar_fases(projeto, complementares=()):
         Fase.objects.bulk_update(alteradas, ["ordem"])
     executivo = projeto.fases.filter(chave="executivo").first()
     if executivo is not None and executivo.status != Fase.APROVADA:
-        projeto.fases.filter(chave__startswith="comp_").exclude(
-            status=Fase.APROVADA
-        ).update(status=Fase.NAO_INICIADA, iniciada_em=None)
+        projeto.fases.filter(chave__startswith="comp_").exclude(status=Fase.APROVADA).update(
+            status=Fase.NAO_INICIADA, iniciada_em=None
+        )
     # A primeira fase de um projeto novo já nasce ativa: não há nada antes dela
     # para aprovar, e deixar tudo "não iniciada" faz o projeto parecer travado.
     primeira = projeto.fases.order_by("ordem").first()
@@ -314,10 +331,10 @@ def criar_complementares_avulsos(projeto, texto):
     Nome vazio ou repetido é descartado em silêncio: o campo é de texto livre e
     quem digita "elétrico, elétrico" quis dizer um.
     """
-    nomes, vistos = [], {
-        f.titulo_livre.casefold()
-        for f in projeto.fases.filter(chave=catalogo.CHAVE_LIVRE)
-    }
+    nomes, vistos = (
+        [],
+        {f.titulo_livre.casefold() for f in projeto.fases.filter(chave=catalogo.CHAVE_LIVRE)},
+    )
     for bruto in (texto or "").split(","):
         nome = bruto.strip()
         if not nome or nome.casefold() in vistos:
@@ -329,8 +346,11 @@ def criar_complementares_avulsos(projeto, texto):
     ordem = 0 if ordem is None else ordem + 1
     novas = [
         Fase(
-            empresa=projeto.empresa, projeto=projeto,
-            chave=catalogo.CHAVE_LIVRE, titulo_livre=nome, ordem=ordem + i,
+            empresa=projeto.empresa,
+            projeto=projeto,
+            chave=catalogo.CHAVE_LIVRE,
+            titulo_livre=nome,
+            ordem=ordem + i,
             dias_uteis_proposta=catalogo.PRAZOS_UTEIS_PADRAO.get(catalogo.CHAVE_LIVRE),
         )
         for i, nome in enumerate(nomes)

@@ -14,7 +14,7 @@ def _emitir(grupo, chave, titulo, mensagem, nivel="alerta", url=""):
     """Cria a notificação se ainda não existir uma não-lida com a mesma chave."""
     from .models import Notificacao
 
-    obj, criado = Notificacao.objects.get_or_create(
+    _obj, criado = Notificacao.objects.get_or_create(
         empresa=grupo,
         chave=chave,
         lida=False,
@@ -37,9 +37,9 @@ def varrer_empresa(grupo):
 
     # 1) Tarefas com prazo vencido ou próximo.
     limite = hoje + timedelta(days=DIAS_TAREFA_PROXIMA)
-    tarefas = Tarefa.objects.filter(
-        empresa=grupo, prazo__isnull=False, prazo__lte=limite
-    ).exclude(status="concluida")
+    tarefas = Tarefa.objects.filter(empresa=grupo, prazo__isnull=False, prazo__lte=limite).exclude(
+        status="concluida"
+    )
     for t in tarefas:
         atrasada = t.prazo < hoje
         criadas += _emitir(
@@ -53,9 +53,7 @@ def varrer_empresa(grupo):
 
     # 2) Projetos ativos parados há muito tempo.
     corte = timezone.now() - timedelta(days=DIAS_PROJETO_PARADO)
-    projetos = Projeto.objects.filter(
-        empresa=grupo, status="ativo", ultima_atualizacao__lt=corte
-    )
+    projetos = Projeto.objects.filter(empresa=grupo, status="ativo", ultima_atualizacao__lt=corte)
     for p in projetos:
         criadas += _emitir(
             grupo,

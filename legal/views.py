@@ -21,9 +21,7 @@ def _documento_publico(request, tipo):
 
 
 def _outro_tipo(tipo):
-    alvo = (
-        DocumentoLegal.PRIVACIDADE if tipo == DocumentoLegal.TERMOS else DocumentoLegal.TERMOS
-    )
+    alvo = DocumentoLegal.PRIVACIDADE if tipo == DocumentoLegal.TERMOS else DocumentoLegal.TERMOS
     return documento_vigente(alvo)
 
 

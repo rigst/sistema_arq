@@ -8,6 +8,4 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         total = limpar_visitantes_expirados()
-        self.stdout.write(
-            self.style.SUCCESS(f"Limpeza concluída. Visitantes removidos: {total}.")
-        )
+        self.stdout.write(self.style.SUCCESS(f"Limpeza concluída. Visitantes removidos: {total}."))

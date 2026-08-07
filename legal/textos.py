@@ -190,9 +190,7 @@ pessoais (previstos na Política de Privacidade) e qualquer relato de problema o
 falha de segurança.
 """
 
-TERMOS_V11 = TERMOS_V1.replace(
-    "## Lei aplicável", _LICENCA_E_CONTATO + "\n## Lei aplicável"
-)
+TERMOS_V11 = TERMOS_V1.replace("## Lei aplicável", _LICENCA_E_CONTATO + "\n## Lei aplicável")
 
 PRIVACIDADE_V11 = PRIVACIDADE_V1.replace(
     "## Quem trata os dados\n\nQuem opera esta instalação do A.R.Q. é o controlador",
@@ -272,23 +270,27 @@ quando aplicável, comunicados à ANPD e aos titulares no prazo regulamentar. Re
 segurança devem ser enviados para rodrigo@stolben.com.
 """
 
-PRIVACIDADE_V12 = PRIVACIDADE_V11.replace(
-    "## Com quem compartilhamos\n\nCom a infraestrutura que hospeda o sistema, no limite "
-    "necessário para ele funcionar. Com autoridades, quando houver obrigação legal. Fora "
-    "disso, não compartilhamos.",
-    _COMPARTILHAMENTO_V12.strip(),
-).replace(
-    "## Por quanto tempo guardamos\n\nDados de conta e de negócio: enquanto a conta "
-    "existir, e por até 5 anos depois do encerramento quando houver necessidade de defesa "
-    "em processo.\n\nEscritório visitante: apagado automaticamente 24 horas depois da "
-    "criação, junto com tudo que foi cadastrado nele.\n\nRegistros de aceite: mantidos "
-    "enquanto forem necessários como prova do consentimento ao contrato.",
-    _RETENCAO_V12.strip(),
-).replace(
-    "## Segurança\n\nUsamos conexão criptografada, senhas guardadas com hash, separação "
-    "de dados por escritório e cabeçalhos de segurança no navegador. Nenhum sistema é "
-    "infalível — se houver incidente relevante, comunicamos os afetados e a ANPD.",
-    _SEGURANCA_V12.strip(),
+PRIVACIDADE_V12 = (
+    PRIVACIDADE_V11.replace(
+        "## Com quem compartilhamos\n\nCom a infraestrutura que hospeda o sistema, no limite "
+        "necessário para ele funcionar. Com autoridades, quando houver obrigação legal. Fora "
+        "disso, não compartilhamos.",
+        _COMPARTILHAMENTO_V12.strip(),
+    )
+    .replace(
+        "## Por quanto tempo guardamos\n\nDados de conta e de negócio: enquanto a conta "
+        "existir, e por até 5 anos depois do encerramento quando houver necessidade de defesa "
+        "em processo.\n\nEscritório visitante: apagado automaticamente 24 horas depois da "
+        "criação, junto com tudo que foi cadastrado nele.\n\nRegistros de aceite: mantidos "
+        "enquanto forem necessários como prova do consentimento ao contrato.",
+        _RETENCAO_V12.strip(),
+    )
+    .replace(
+        "## Segurança\n\nUsamos conexão criptografada, senhas guardadas com hash, separação "
+        "de dados por escritório e cabeçalhos de segurança no navegador. Nenhum sistema é "
+        "infalível — se houver incidente relevante, comunicamos os afetados e a ANPD.",
+        _SEGURANCA_V12.strip(),
+    )
 )
 
 # O texto legado usa continuação de linha e chega aqui sem quebras internas.

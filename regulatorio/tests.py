@@ -15,7 +15,9 @@ class ObrigacaoModelTests(TestCase):
 
     def test_vencida(self):
         o = ObrigacaoTecnica.objects.create(
-            empresa=self.grupo, tipo="art", status="registrada",
+            empresa=self.grupo,
+            tipo="art",
+            status="registrada",
             vencimento=timezone.localdate() - timedelta(days=1),
         )
         self.assertTrue(o.vencida)
@@ -23,7 +25,9 @@ class ObrigacaoModelTests(TestCase):
 
     def test_vencendo_dentro_da_janela(self):
         o = ObrigacaoTecnica.objects.create(
-            empresa=self.grupo, tipo="rrt", status="registrada",
+            empresa=self.grupo,
+            tipo="rrt",
+            status="registrada",
             vencimento=timezone.localdate() + timedelta(days=10),
         )
         self.assertTrue(o.vencendo)
@@ -31,7 +35,9 @@ class ObrigacaoModelTests(TestCase):
 
     def test_baixada_nao_alerta(self):
         o = ObrigacaoTecnica.objects.create(
-            empresa=self.grupo, tipo="art", status="baixada",
+            empresa=self.grupo,
+            tipo="art",
+            status="baixada",
             vencimento=timezone.localdate() - timedelta(days=5),
         )
         self.assertFalse(o.vencida)

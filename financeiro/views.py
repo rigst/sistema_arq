@@ -31,7 +31,9 @@ def _periodo(request):
 def dre_view(request):
     grupo = obter_grupo_empresa_ou_erro(request.user)
     ano, mes = _periodo(request)
-    return render(request, "financeiro/dre.html", {"dre": dre(grupo, ano, mes), "ano": ano, "mes": mes})
+    return render(
+        request, "financeiro/dre.html", {"dre": dre(grupo, ano, mes), "ano": ano, "mes": mes}
+    )
 
 
 @login_required
@@ -45,10 +47,10 @@ def dre_csv(request):
     writer.writerow(["DRE", f"{mes:02d}/{ano}"])
     writer.writerow([])
     writer.writerow(["Tipo", "Descrição", "Valor"])
-    for l in dados["entradas"]:
-        writer.writerow(["Entrada", l["descricao"], l["total"]])
-    for l in dados["saidas"]:
-        writer.writerow(["Saída", l["descricao"], l["total"]])
+    for linha in dados["entradas"]:
+        writer.writerow(["Entrada", linha["descricao"], linha["total"]])
+    for linha in dados["saidas"]:
+        writer.writerow(["Saída", linha["descricao"], linha["total"]])
     writer.writerow([])
     writer.writerow(["Total entradas", "", dados["total_entradas"]])
     writer.writerow(["Total saídas", "", dados["total_saidas"]])
@@ -72,7 +74,9 @@ def importar_extrato(request):
                 else:
                     transacoes = parse_csv(arquivo)
             except Exception:
-                messages.error(request, "Não foi possível ler o arquivo. Confira o formato (OFX ou CSV).")
+                messages.error(
+                    request, "Não foi possível ler o arquivo. Confira o formato (OFX ou CSV)."
+                )
                 return redirect("financeiro_importar")
             if not transacoes:
                 messages.error(request, "Nenhuma transação encontrada no arquivo.")

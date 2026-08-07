@@ -17,9 +17,21 @@ class ProjetoForm(ArqModelForm):
     class Meta:
         model = Projeto
         fields = [
-            "nome", "cliente", "tipo", "status",
-            "endereco", "cidade", "uf", "cep", "area_terreno", "area_construida",
-            "valor_contratado", "data_inicio", "data_prevista", "tem_execucao", "tags",
+            "nome",
+            "cliente",
+            "tipo",
+            "status",
+            "endereco",
+            "cidade",
+            "uf",
+            "cep",
+            "area_terreno",
+            "area_construida",
+            "valor_contratado",
+            "data_inicio",
+            "data_prevista",
+            "tem_execucao",
+            "tags",
         ]
         widgets = {
             "data_inicio": forms.DateInput(attrs={"type": "date"}),

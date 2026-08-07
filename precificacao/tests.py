@@ -12,9 +12,7 @@ from usuarios.models import Usuario
 class PrecificacaoTests(TestCase):
     def setUp(self):
         self.grupo = obter_grupo_empresa_padrao()
-        self.user = Usuario.objects.create_user(
-            username="precificacao", password="senha-de-teste"
-        )
+        self.user = Usuario.objects.create_user(username="precificacao", password="senha-de-teste")
         self.user.groups.add(self.grupo)
         aceitar_documentos(self.user)
         self.client.force_login(self.user)
@@ -38,11 +36,7 @@ class PrecificacaoTests(TestCase):
         )
 
         self.assertRedirects(resposta, "/precificacao/")
-        self.assertTrue(
-            FatorPrecificacao.objects.get(
-                empresa=self.grupo, nome="Urgência"
-            ).ativo
-        )
+        self.assertTrue(FatorPrecificacao.objects.get(empresa=self.grupo, nome="Urgência").ativo)
 
     def test_imposto_e_descontado_da_hora_para_calcular_o_lucro(self):
         ConfiguracaoPrecificacao.objects.update_or_create(

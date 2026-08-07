@@ -193,6 +193,7 @@ _______________________________        _______________________________
 """,
 }
 
+
 def _modelo_por_tipo(tipo, rotulo, objeto, requisitos):
     return {
         "nome": f"{rotulo} — prestação de serviços",
@@ -240,15 +241,21 @@ _______________________________        _______________________________
 
 
 EMPRESARIAL = _modelo_por_tipo(
-    "empresarial", "Projeto empresarial", "sede ou ambiente empresarial",
+    "empresarial",
+    "Projeto empresarial",
+    "sede ou ambiente empresarial",
     "fluxos de equipes, infraestrutura tecnológica, segurança, acústica e continuidade da operação",
 )
 INSTITUCIONAL = _modelo_por_tipo(
-    "institucional", "Projeto institucional", "equipamento de uso coletivo",
+    "institucional",
+    "Projeto institucional",
+    "equipamento de uso coletivo",
     "acessibilidade, segurança, normas setoriais, fluxos de público e validações institucionais",
 )
 URBANISMO = _modelo_por_tipo(
-    "urbanismo", "Projeto de urbanismo", "planejamento e desenho urbano da área de intervenção",
+    "urbanismo",
+    "Projeto de urbanismo",
+    "planejamento e desenho urbano da área de intervenção",
     "legislação urbanística, mobilidade, infraestrutura, meio ambiente, participação e fases de implantação",
 )
 

@@ -36,8 +36,12 @@ class DashboardTests(TestCase):
         )
         obra = Obra.objects.create(empresa=self.grupo, projeto=projeto)
         EtapaObra.objects.create(
-            empresa=self.grupo, obra=obra, nome="Estrutura",
-            percentual_previsto=80, percentual_real=30, valor=Decimal("1000"),
+            empresa=self.grupo,
+            obra=obra,
+            nome="Estrutura",
+            percentual_previsto=80,
+            percentual_real=30,
+            valor=Decimal("1000"),
         )
         resp = self.client.get("/")
         self.assertEqual(resp.status_code, 200)
@@ -54,7 +58,9 @@ class DashboardTests(TestCase):
             resp = self.client.get("/")
 
         self.assertContains(resp, "Bom dia, Marina.")
-        self.assertContains(resp, FRASES_MOTIVACIONAIS[agora.date().toordinal() % len(FRASES_MOTIVACIONAIS)])
+        self.assertContains(
+            resp, FRASES_MOTIVACIONAIS[agora.date().toordinal() % len(FRASES_MOTIVACIONAIS)]
+        )
 
     def test_saudacao_muda_por_periodo_e_primeiro_nome_tem_fallback(self):
         self.assertEqual(_saudacao_do_dia(datetime(2026, 8, 3, 11, 59))[0], "Bom dia")
@@ -177,7 +183,9 @@ class IdentidadeTests(TestCase):
 
     def test_pdf_sem_logo_do_escritorio_usa_a_marca_do_app(self):
         identidade = _identidade_pdf(self.user)
-        self.assertTrue(identidade["empresa_logo_data_uri"].startswith("data:image/svg+xml;base64,"))
+        self.assertTrue(
+            identidade["empresa_logo_data_uri"].startswith("data:image/svg+xml;base64,")
+        )
         self.assertTrue(identidade["usando_logo_app"])
         pdf = render_pdf("pdf/base_pdf.html", {}, user=self.user)
         self.assertTrue(pdf.content.startswith(b"%PDF"))

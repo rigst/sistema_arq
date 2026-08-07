@@ -1,4 +1,3 @@
-
 from django.test import TestCase
 
 from briefing.models import Briefing, RespostaBriefing, TemplateBriefing
@@ -28,15 +27,11 @@ class TemplatesTests(TestCase):
         primeiros = semear_templates_padrao(self.grupo, self.user)
         self.assertEqual(len(primeiros), len(PADROES))
         self.assertEqual(semear_templates_padrao(self.grupo, self.user), [])
-        self.assertEqual(
-            TemplateBriefing.objects.filter(empresa=self.grupo).count(), len(PADROES)
-        )
+        self.assertEqual(TemplateBriefing.objects.filter(empresa=self.grupo).count(), len(PADROES))
 
     def test_pagina_de_modelos_recompoe_roteiro_padrao_excluido(self):
         semear_templates_padrao(self.grupo, self.user)
-        TemplateBriefing.objects.filter(
-            empresa=self.grupo, nome=PADROES[0]["nome"]
-        ).delete()
+        TemplateBriefing.objects.filter(empresa=self.grupo, nome=PADROES[0]["nome"]).delete()
 
         resposta = self.client.get("/modelos/")
 
@@ -86,9 +81,7 @@ class TemplatesTests(TestCase):
             {"texto": "Qual o estilo?", "tipo": "opcao", "opcoes": "Clean\nClássico\n\nRústico"},
         )
         pergunta = template.perguntas.get()
-        self.assertEqual(
-            [o.texto for o in pergunta.opcoes.all()], ["Clean", "Clássico", "Rústico"]
-        )
+        self.assertEqual([o.texto for o in pergunta.opcoes.all()], ["Clean", "Clássico", "Rústico"])
 
     def test_edicao_de_pergunta_substitui_dados_e_opcoes(self):
         template = semear_templates_padrao(self.grupo, self.user)[0]

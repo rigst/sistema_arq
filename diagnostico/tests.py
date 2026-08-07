@@ -17,7 +17,7 @@ class DiagnosticoScoreTests(TestCase):
         self.assertEqual(faixa, "Inicial")
 
     def test_respostas_invalidas_sao_ignoradas(self):
-        pontos, faixa, _ = avaliar({"projetos": "x", "prazos": None})
+        pontos, _faixa, _ = avaliar({"projetos": "x", "prazos": None})
         self.assertEqual(pontos, 0)
 
 

@@ -15,15 +15,20 @@ class Briefing(EmpresaModel, Rastreavel):
         blank=True, help_text="Quem ocupa o espaço e a rotina do dia a dia."
     )
     # Bloco 3 — orçamento e prazo
-    orcamento_previsto = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True, verbose_name="orçamento previsto")
+    orcamento_previsto = models.DecimalField(
+        max_digits=14, decimal_places=2, null=True, blank=True, verbose_name="orçamento previsto"
+    )
     prazo_desejado = models.DateField(null=True, blank=True, verbose_name="prazo desejado")
     # Bloco 4 — restrições do terreno / legais
     restricoes = models.TextField(
-        blank=True, help_text="Recuos, gabarito, taxa de ocupação, infraestrutura.",
+        blank=True,
+        help_text="Recuos, gabarito, taxa de ocupação, infraestrutura.",
         verbose_name="restrições",
     )
     # Bloco 5 — referências e estilo
-    referencias = models.TextField(blank=True, help_text="Links/observações de referências.", verbose_name="referências")
+    referencias = models.TextField(
+        blank=True, help_text="Links/observações de referências.", verbose_name="referências"
+    )
     estilo = models.CharField(max_length=200, blank=True, help_text="Prioridades estéticas.")
 
     atualizado_em = models.DateTimeField(auto_now=True)
@@ -42,7 +47,11 @@ class AmbientePrograma(EmpresaModel):
     briefing = models.ForeignKey(Briefing, on_delete=models.CASCADE, related_name="ambientes")
     nome = models.CharField(max_length=100)
     area_aprox = models.DecimalField(
-        max_digits=8, decimal_places=2, null=True, blank=True, help_text="Área aproximada (m²).",
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Área aproximada (m²).",
         verbose_name="área aproximada",
     )
     uso = models.CharField(max_length=200, blank=True)
@@ -131,9 +140,7 @@ class PerguntaTemplate(EmpresaModel):
 class OpcaoPergunta(EmpresaModel):
     """Resposta objetiva pré-pronta. É o que se marca na reunião."""
 
-    pergunta = models.ForeignKey(
-        PerguntaTemplate, on_delete=models.CASCADE, related_name="opcoes"
-    )
+    pergunta = models.ForeignKey(PerguntaTemplate, on_delete=models.CASCADE, related_name="opcoes")
     texto = models.CharField(max_length=200)
     ordem = models.PositiveIntegerField(default=0)
 

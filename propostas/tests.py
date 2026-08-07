@@ -27,7 +27,9 @@ class ItensProntosTests(TestCase):
         self.client.force_login(self.user)
         self.cliente = Cliente.objects.create(empresa=self.grupo, nome="Cliente")
         self.proposta = Proposta.objects.create(
-            empresa=self.grupo, cliente=self.cliente, titulo="Proposta",
+            empresa=self.grupo,
+            cliente=self.cliente,
+            titulo="Proposta",
             hora_tecnica_aplicada=Decimal("150"),
         )
 
@@ -57,9 +59,7 @@ class ItensProntosTests(TestCase):
         from django.contrib.auth.models import Group
 
         outro = Group.objects.create(name="Vizinho prop")
-        alheia = Proposta.objects.create(
-            empresa=outro, cliente=self.cliente, titulo="Alheia"
-        )
+        alheia = Proposta.objects.create(empresa=outro, cliente=self.cliente, titulo="Alheia")
         self.assertEqual(
             self.client.post(
                 f"/propostas/{alheia.pk}/prontos/", {"prontos": ["Anteprojeto"]}
@@ -77,9 +77,7 @@ class CicloDaPropostaTests(ItensProntosTests):
     """
 
     def _com_itens(self):
-        self.client.post(
-            f"/propostas/{self.proposta.pk}/prontos/", {"prontos": ["Anteprojeto"]}
-        )
+        self.client.post(f"/propostas/{self.proposta.pk}/prontos/", {"prontos": ["Anteprojeto"]})
         return self.proposta.itens.get()
 
     def test_rascunho_e_editavel_e_enviada_nao_e(self):
@@ -156,7 +154,9 @@ class CicloDaPropostaTests(ItensProntosTests):
         self.proposta.validade_dias_uteis = 10
         self.proposta.save(update_fields=["validade_dias_uteis"])
 
-        with patch("core.pdf.render_pdf", return_value=HttpResponse(content_type="application/pdf")) as gerar:
+        with patch(
+            "core.pdf.render_pdf", return_value=HttpResponse(content_type="application/pdf")
+        ) as gerar:
             resposta = self.client.get(f"/propostas/{self.proposta.pk}/pdf/")
 
         self.assertEqual(resposta.status_code, 200)
@@ -196,7 +196,9 @@ class CicloDaPropostaTests(ItensProntosTests):
     def test_enviada_nao_recebe_novos_itens(self):
         self._com_itens()
         self.client.post(f"/propostas/{self.proposta.pk}/finalizar/")
-        self.client.post(f"/propostas/{self.proposta.pk}/prontos/", {"prontos": ["Estudo preliminar"]})
+        self.client.post(
+            f"/propostas/{self.proposta.pk}/prontos/", {"prontos": ["Estudo preliminar"]}
+        )
         self.assertEqual(self.proposta.itens.count(), 1)
 
     def test_proposta_nascida_num_projeto_nao_cria_outro(self):
@@ -328,9 +330,7 @@ class EdicaoInlineDeItemTests(ItensProntosTests):
         self.assertNotContains(resposta, "Termos da proposta")
 
     def test_mudar_as_horas_reprecifica_a_linha(self):
-        self.client.post(
-            f"/propostas/{self.proposta.pk}/prontos/", {"prontos": ["Anteprojeto"]}
-        )
+        self.client.post(f"/propostas/{self.proposta.pk}/prontos/", {"prontos": ["Anteprojeto"]})
         item = self.proposta.itens.get()
         antes = item.valor
         self.client.post(
@@ -343,9 +343,7 @@ class EdicaoInlineDeItemTests(ItensProntosTests):
         self.assertLess(item.valor, antes)
 
     def test_htmx_recebe_o_bloco_todo_para_o_total_acompanhar(self):
-        self.client.post(
-            f"/propostas/{self.proposta.pk}/prontos/", {"prontos": ["Anteprojeto"]}
-        )
+        self.client.post(f"/propostas/{self.proposta.pk}/prontos/", {"prontos": ["Anteprojeto"]})
         item = self.proposta.itens.get()
         resposta = self.client.post(
             f"/propostas/item/{item.pk}/editar/",
@@ -374,9 +372,7 @@ class EdicaoInlineDeItemTests(ItensProntosTests):
         self.assertContains(resposta, "Mover para cima")
         self.assertContains(resposta, "Mover para baixo")
 
-        self.client.post(
-            f"/propostas/item/{ultimo.pk}/mover/", {"direcao": "baixo"}
-        )
+        self.client.post(f"/propostas/item/{ultimo.pk}/mover/", {"direcao": "baixo"})
         ordem = list(self.proposta.itens.order_by("ordem", "pk").values_list("pk", flat=True))
         self.assertEqual(ordem.index(ultimo.pk), 2)
 
@@ -411,9 +407,9 @@ class FatoresDaPropostaTests(ItensProntosTests):
             set(self.proposta.fatores.values_list("pk", flat=True)),
             {self.urgencia.pk, self.complexidade.pk},
         )
-        esperado = precificar_etapa(
-            self.grupo, Decimal("10"), hora_tecnica=Decimal("130.00")
-        )["total"]
+        esperado = precificar_etapa(self.grupo, Decimal("10"), hora_tecnica=Decimal("130.00"))[
+            "total"
+        ]
         self.assertEqual(self.proposta.itens.get().valor, esperado)
 
     def test_ignora_fator_inativo_e_de_outra_empresa(self):

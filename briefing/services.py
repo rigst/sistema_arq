@@ -28,9 +28,7 @@ def semear_templates_padrao(grupo, usuario=None):
             )
             OpcaoPergunta.objects.bulk_create(
                 [
-                    OpcaoPergunta(
-                        empresa=grupo, pergunta=pergunta, texto=texto, ordem=indice
-                    )
+                    OpcaoPergunta(empresa=grupo, pergunta=pergunta, texto=texto, ordem=indice)
                     for indice, texto in enumerate(dados.get("opcoes", []))
                 ]
             )
@@ -49,5 +47,3 @@ def perguntas_por_bloco(template):
             blocos.append(indice[nome])
         indice[nome]["perguntas"].append(pergunta)
     return blocos
-
-

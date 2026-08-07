@@ -60,8 +60,11 @@ class CronometroTests(BaseHoras):
     def test_pausa_nao_entra_na_conta(self):
         agora = timezone.now()
         ap = ApontamentoHora.objects.create(
-            empresa=self.grupo, usuario=self.user, projeto=self.projeto,
-            descricao="Detalhe", inicio=agora - timedelta(hours=2),
+            empresa=self.grupo,
+            usuario=self.user,
+            projeto=self.projeto,
+            descricao="Detalhe",
+            inicio=agora - timedelta(hours=2),
         )
         # Uma hora rodando, uma hora parada.
         ap.pausado_em = agora - timedelta(hours=1)
@@ -71,8 +74,11 @@ class CronometroTests(BaseHoras):
 
     def test_retomar_soma_a_pausa_e_volta_a_andar(self):
         ap = ApontamentoHora.objects.create(
-            empresa=self.grupo, usuario=self.user, projeto=self.projeto,
-            descricao="Detalhe", inicio=timezone.now() - timedelta(hours=1),
+            empresa=self.grupo,
+            usuario=self.user,
+            projeto=self.projeto,
+            descricao="Detalhe",
+            inicio=timezone.now() - timedelta(hours=1),
         )
         ap.pausado_em = timezone.now() - timedelta(minutes=30)
         ap.save(update_fields=["pausado_em"])
@@ -125,9 +131,7 @@ class ApontamentoManualTests(BaseHoras):
             "/tarefas/timer/iniciar/", {"projeto": self.projeto.pk, "descricao": "Planta"}
         )
         ap = ApontamentoHora.objects.get()
-        self.client.post(
-            f"/tarefas/horas/{ap.pk}/editar/", {"descricao": "Trapaça", "horas": "40"}
-        )
+        self.client.post(f"/tarefas/horas/{ap.pk}/editar/", {"descricao": "Trapaça", "horas": "40"})
         ap.refresh_from_db()
         self.assertEqual(ap.descricao, "Planta")
         self.assertTrue(ap.em_andamento)
@@ -146,9 +150,10 @@ class ApontamentoManualTests(BaseHoras):
 
         outro = Group.objects.create(name="Vizinho horas")
         alheio = ApontamentoHora.objects.create(
-            empresa=outro, usuario=self.user, descricao="Alheio",
-            inicio=timezone.now() - timedelta(hours=1), fim=timezone.now(),
+            empresa=outro,
+            usuario=self.user,
+            descricao="Alheio",
+            inicio=timezone.now() - timedelta(hours=1),
+            fim=timezone.now(),
         )
-        self.assertEqual(
-            self.client.post(f"/tarefas/horas/{alheio.pk}/remover/").status_code, 404
-        )
+        self.assertEqual(self.client.post(f"/tarefas/horas/{alheio.pk}/remover/").status_code, 404)

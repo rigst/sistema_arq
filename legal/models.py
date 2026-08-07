@@ -93,12 +93,12 @@ class AceiteLegal(models.Model):
     """Prova de que uma pessoa aceitou uma versão específica de um documento."""
 
     usuario = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="aceites_legais",
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="aceites_legais",
         verbose_name="usuário",
     )
-    documento = models.ForeignKey(
-        DocumentoLegal, on_delete=models.PROTECT, related_name="aceites"
-    )
+    documento = models.ForeignKey(DocumentoLegal, on_delete=models.PROTECT, related_name="aceites")
     aceito_em = models.DateTimeField("aceito em", default=timezone.now)
     ip = models.GenericIPAddressField("IP", null=True, blank=True)
     user_agent = models.CharField("navegador", max_length=400, blank=True)

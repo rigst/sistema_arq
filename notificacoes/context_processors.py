@@ -9,9 +9,7 @@ def notificacoes_context(request):
     from .models import Notificacao
 
     try:
-        total = queryset_da_empresa(
-            Notificacao.objects.filter(lida=False), user
-        ).count()
+        total = queryset_da_empresa(Notificacao.objects.filter(lida=False), user).count()
     except Exception:
         total = 0
     return {"notificacoes_nao_lidas": total}

@@ -6,7 +6,16 @@ from .services import documentos_pendentes
 
 # Caminhos que continuam acessíveis com aceite pendente: a própria tela de
 # aceite, os documentos, sair, o admin e os arquivos servidos pelo Django.
-PREFIXOS_LIVRES = ("/aceite/", "/termos/", "/privacidade/", "/logout/", "/login/", "/admin/", "/static/", "/media/")
+PREFIXOS_LIVRES = (
+    "/aceite/",
+    "/termos/",
+    "/privacidade/",
+    "/logout/",
+    "/login/",
+    "/admin/",
+    "/static/",
+    "/media/",
+)
 
 
 class AceiteLegalMiddleware:

@@ -16,19 +16,25 @@ class ObraModelTests(TestCase):
     def setUp(self):
         self.user, self.grupo = criar_empresa_e_usuario()
         self.cliente = Cliente.objects.create(empresa=self.grupo, nome="Cliente X")
-        self.projeto = Projeto.objects.create(
-            empresa=self.grupo, nome="Casa", cliente=self.cliente
-        )
+        self.projeto = Projeto.objects.create(empresa=self.grupo, nome="Casa", cliente=self.cliente)
         self.obra = Obra.objects.create(empresa=self.grupo, projeto=self.projeto)
 
     def test_avanco_e_desvio_ponderados_por_valor(self):
         EtapaObra.objects.create(
-            empresa=self.grupo, obra=self.obra, nome="Fundação",
-            percentual_previsto=100, percentual_real=100, valor=Decimal("10000"),
+            empresa=self.grupo,
+            obra=self.obra,
+            nome="Fundação",
+            percentual_previsto=100,
+            percentual_real=100,
+            valor=Decimal("10000"),
         )
         EtapaObra.objects.create(
-            empresa=self.grupo, obra=self.obra, nome="Estrutura",
-            percentual_previsto=50, percentual_real=10, valor=Decimal("10000"),
+            empresa=self.grupo,
+            obra=self.obra,
+            nome="Estrutura",
+            percentual_previsto=50,
+            percentual_real=10,
+            valor=Decimal("10000"),
         )
         # Previsto: (100*10000 + 50*10000)/20000 = 75; Real: (100+10)/2 => 55
         self.assertEqual(self.obra.avanco_previsto, Decimal("75.0"))
@@ -45,9 +51,7 @@ class MedicaoServiceTests(TestCase):
     def setUp(self):
         self.user, self.grupo = criar_empresa_e_usuario()
         self.cliente = Cliente.objects.create(empresa=self.grupo, nome="Cliente Y")
-        self.projeto = Projeto.objects.create(
-            empresa=self.grupo, nome="Loft", cliente=self.cliente
-        )
+        self.projeto = Projeto.objects.create(empresa=self.grupo, nome="Loft", cliente=self.cliente)
         self.obra = Obra.objects.create(empresa=self.grupo, projeto=self.projeto)
         self.etapa = EtapaObra.objects.create(
             empresa=self.grupo, obra=self.obra, nome="Acabamento", valor=Decimal("5000")
@@ -56,8 +60,10 @@ class MedicaoServiceTests(TestCase):
 
     def test_aprovar_medicao_cria_lancamento_previsto(self):
         medicao = Medicao.objects.create(
-            empresa=self.grupo, etapa=self.etapa,
-            percentual_medido=Decimal("40"), valor_liberado=Decimal("2000"),
+            empresa=self.grupo,
+            etapa=self.etapa,
+            percentual_medido=Decimal("40"),
+            valor_liberado=Decimal("2000"),
         )
         lanc = aprovar_medicao(medicao, self.conta)
         medicao.refresh_from_db()
@@ -73,8 +79,10 @@ class MedicaoServiceTests(TestCase):
 
     def test_aprovar_medicao_e_idempotente(self):
         medicao = Medicao.objects.create(
-            empresa=self.grupo, etapa=self.etapa,
-            percentual_medido=Decimal("40"), valor_liberado=Decimal("2000"),
+            empresa=self.grupo,
+            etapa=self.etapa,
+            percentual_medido=Decimal("40"),
+            valor_liberado=Decimal("2000"),
         )
         aprovar_medicao(medicao, self.conta)
         aprovar_medicao(medicao, self.conta)
@@ -93,9 +101,7 @@ class ObraViewTests(TestCase):
         )
 
     def test_abrir_obra_cria_etapas_padrao(self):
-        resp = self.client.post(
-            "/obras/nova/", {"projeto": self.projeto.pk, "status": "planejada"}
-        )
+        resp = self.client.post("/obras/nova/", {"projeto": self.projeto.pk, "status": "planejada"})
         self.assertEqual(resp.status_code, 302)
         obra = Obra.objects.get(projeto=self.projeto)
         self.assertEqual(obra.etapas.count(), 6)

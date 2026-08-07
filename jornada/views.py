@@ -59,8 +59,10 @@ class AberturaForm(ArqForm):
     nome = forms.CharField(label="Nome do projeto", max_length=200)
     tipo = forms.ChoiceField(label="Tipo de projeto", choices=Projeto.TIPO_CHOICES)
     cidade = forms.CharField(label="Cidade", max_length=120, required=False)
-    uf = forms.ChoiceField(label="Estado", required=False, choices=[("", "—")] + UF_CHOICES)
-    endereco = forms.CharField(label="Endereço ou referência do terreno", max_length=200, required=False)
+    uf = forms.ChoiceField(label="Estado", required=False, choices=[("", "—"), *UF_CHOICES])
+    endereco = forms.CharField(
+        label="Endereço ou referência do terreno", max_length=200, required=False
+    )
     complementares = forms.MultipleChoiceField(
         label="Projetos complementares",
         required=False,
@@ -72,7 +74,7 @@ class AberturaForm(ArqForm):
         max_length=120,
         required=False,
         help_text="Para o que não está na lista — acústico, luminotécnico, automação. "
-                  "Separe por vírgula se for mais de um.",
+        "Separe por vírgula se for mais de um.",
     )
     tem_execucao = forms.BooleanField(
         label="O escritório também acompanha a execução da obra",

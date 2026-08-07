@@ -13,11 +13,13 @@ class LoginSecurityTests(TestCase):
     def test_bloqueia_depois_de_oito_falhas(self):
         for _ in range(8):
             self.client.post(
-                "/login/", {"username": self.user.username, "password": "errada"},
+                "/login/",
+                {"username": self.user.username, "password": "errada"},
                 REMOTE_ADDR="203.0.113.10",
             )
         resposta = self.client.post(
-            "/login/", {"username": self.user.username, "password": "errada"},
+            "/login/",
+            {"username": self.user.username, "password": "errada"},
             REMOTE_ADDR="203.0.113.10",
         )
         self.assertEqual(resposta.status_code, 429)

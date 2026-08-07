@@ -9,7 +9,8 @@ from .models import Usuario
 
 @admin.register(Usuario)
 class UsuarioAdmin(UserAdmin):
-    add_fieldsets = UserAdmin.add_fieldsets + (
+    add_fieldsets = (
+        *UserAdmin.add_fieldsets,
         (
             "Identificação e acesso",
             {
@@ -25,7 +26,8 @@ class UsuarioAdmin(UserAdmin):
             },
         ),
     )
-    fieldsets = UserAdmin.fieldsets + (
+    fieldsets = (
+        *UserAdmin.fieldsets,
         (
             "Informações adicionais",
             {"fields": ("perfil", "nome_exibicao", "criado_em", "atualizado_em")},

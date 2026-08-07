@@ -45,6 +45,7 @@ class TemplateBriefingForm(ArqModelForm):
     tipo_projeto = forms.ChoiceField(
         choices=[("", "Qualquer tipo"), *Projeto.TIPO_CHOICES], required=False
     )
+
     class Meta:
         model = TemplateBriefing
         fields = ["nome", "tipo_projeto", "descricao", "ativo"]

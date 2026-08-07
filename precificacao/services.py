@@ -23,9 +23,9 @@ def obter_configuracao(grupo):
 
 
 def total_custos_fixos(grupo):
-    total = (
-        CustoFixo.objects.filter(empresa=grupo, ativo=True).aggregate(t=Sum("valor_mensal"))["t"]
-    )
+    total = CustoFixo.objects.filter(empresa=grupo, ativo=True).aggregate(t=Sum("valor_mensal"))[
+        "t"
+    ]
     return total or Decimal("0")
 
 

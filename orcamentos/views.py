@@ -21,9 +21,7 @@ def lista(request):
     projeto = projeto_do_pedido(request)
     if projeto is not None:
         orcamentos = orcamentos.filter(projeto=projeto)
-    return render(
-        request, "orcamentos/lista.html", {"orcamentos": orcamentos, "projeto": projeto}
-    )
+    return render(request, "orcamentos/lista.html", {"orcamentos": orcamentos, "projeto": projeto})
 
 
 @login_required

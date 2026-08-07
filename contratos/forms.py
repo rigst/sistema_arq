@@ -12,7 +12,9 @@ class ContratoForm(ArqModelForm):
         model = Contrato
         fields = ["projeto", "titulo", "numero", "valor_total", "corpo", "observacoes"]
         widgets = {
-            "corpo": forms.Textarea(attrs={"rows": 24, "class": "contrato-corpo", "spellcheck": "true"}),
+            "corpo": forms.Textarea(
+                attrs={"rows": 24, "class": "contrato-corpo", "spellcheck": "true"}
+            ),
             "observacoes": forms.Textarea(attrs={"rows": 2}),
         }
 
@@ -63,17 +65,15 @@ class AlteracaoEscopoForm(ArqModelForm):
             "descricao": forms.Textarea(
                 attrs={"rows": 1, "placeholder": "Descreva o que mudou e o que foi acordado"}
             ),
-            "valor_delta": forms.NumberInput(
-                attrs={"step": "0.01", "placeholder": "0,00"}
-            ),
+            "valor_delta": forms.NumberInput(attrs={"step": "0.01", "placeholder": "0,00"}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["valor_delta"].label = "Impacto financeiro"
-        self.fields["valor_delta"].help_text = (
-            "Use 0,00 quando não houver impacto; valor positivo aumenta e negativo reduz."
-        )
+        self.fields[
+            "valor_delta"
+        ].help_text = "Use 0,00 quando não houver impacto; valor positivo aumenta e negativo reduz."
 
 
 class DocumentoForm(ArqModelForm):

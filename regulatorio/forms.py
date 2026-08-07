@@ -11,8 +11,16 @@ class ObrigacaoTecnicaForm(ArqModelForm):
     class Meta:
         model = ObrigacaoTecnica
         fields = [
-            "tipo", "projeto", "numero", "responsavel_tecnico", "status",
-            "data_registro", "vencimento", "valor", "arquivo", "observacoes",
+            "tipo",
+            "projeto",
+            "numero",
+            "responsavel_tecnico",
+            "status",
+            "data_registro",
+            "vencimento",
+            "valor",
+            "arquivo",
+            "observacoes",
         ]
         labels = {
             "responsavel_tecnico": "Responsável técnico",

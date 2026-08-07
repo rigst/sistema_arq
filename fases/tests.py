@@ -75,8 +75,11 @@ class FluxoTests(BaseFase):
         proposta = self.liberar_ate("proposta")
         proposta.abrir(self.user)
         Arquivo.objects.create(
-            empresa=self.grupo, projeto=self.projeto, fase=proposta,
-            titulo="Proposta", arquivo=_png("p.png"),
+            empresa=self.grupo,
+            projeto=self.projeto,
+            fase=proposta,
+            titulo="Proposta",
+            arquivo=_png("p.png"),
         )
         proposta.enviar_ao_cliente(self.user)
         proposta.registrar_resposta(True, "Pode seguir", self.user)
@@ -126,8 +129,13 @@ class FluxoTests(BaseFase):
         resposta = self.client.get(f"/projetos/{self.projeto.pk}/")
         html = resposta.content.decode()
         nomes = [
-            "Briefing", "Proposta", "Contrato", "Estudo preliminar",
-            "Anteprojeto", "Projeto executivo", "Projetos complementares",
+            "Briefing",
+            "Proposta",
+            "Contrato",
+            "Estudo preliminar",
+            "Anteprojeto",
+            "Projeto executivo",
+            "Projetos complementares",
         ]
         posicoes = [html.index(nome) for nome in nomes]
         self.assertEqual(posicoes, sorted(posicoes))
@@ -157,8 +165,11 @@ class FluxoTests(BaseFase):
         proposta = self.liberar_ate("proposta")
         proposta.abrir(self.user)
         Arquivo.objects.create(
-            empresa=self.grupo, projeto=self.projeto, fase=proposta,
-            titulo="Proposta", arquivo=_png("p2.png"),
+            empresa=self.grupo,
+            projeto=self.projeto,
+            fase=proposta,
+            titulo="Proposta",
+            arquivo=_png("p2.png"),
         )
         proposta.enviar_ao_cliente(self.user)
         proposta.registrar_resposta(True, "", self.user)
@@ -221,7 +232,12 @@ class ViewsTests(BaseFase):
         fase = self.liberar_ate("estudo_preliminar")
         self.client.post(
             f"/fases/{fase.pk}/anexar/",
-            {"titulo": "Planta baixa", "arquivo": _png(), "categoria": "projeto", "fluxo": "interno"},
+            {
+                "titulo": "Planta baixa",
+                "arquivo": _png(),
+                "categoria": "projeto",
+                "fluxo": "interno",
+            },
         )
         self.assertEqual(fase.arquivos.count(), 1)
         fase.arquivos.first().arquivo.delete(save=False)
@@ -229,8 +245,11 @@ class ViewsTests(BaseFase):
     def test_arquivo_e_servido_pelo_sistema_e_nao_pela_pasta(self):
         fase = self.fase("estudo_preliminar")
         arquivo = Arquivo.objects.create(
-            empresa=self.grupo, projeto=self.projeto, fase=fase,
-            titulo="Fachada", arquivo=_png("f.png"),
+            empresa=self.grupo,
+            projeto=self.projeto,
+            fase=fase,
+            titulo="Fachada",
+            arquivo=_png("f.png"),
         )
         resp = self.client.get(f"/fases/arquivo/{arquivo.pk}/")
         self.assertEqual(resp.status_code, 200)
@@ -256,8 +275,11 @@ class ViewsTests(BaseFase):
     def test_renomear_arquivo_deixa_rastro(self):
         fase = self.fase("anteprojeto")
         arquivo = Arquivo.objects.create(
-            empresa=self.grupo, projeto=self.projeto, fase=fase,
-            titulo="Sem nome", arquivo=_png("x.png"),
+            empresa=self.grupo,
+            projeto=self.projeto,
+            fase=fase,
+            titulo="Sem nome",
+            arquivo=_png("x.png"),
         )
         self.client.post(
             f"/fases/arquivo/{arquivo.pk}/editar/",
@@ -286,9 +308,7 @@ class ViewsTests(BaseFase):
         arquivo.refresh_from_db()
         self.assertTrue(arquivo.favorito)
         self.assertContains(resposta, 'aria-pressed="true"')
-        self.assertContains(
-            self.client.get(f"/projetos/{self.projeto.pk}/"), "Planta aprovada"
-        )
+        self.assertContains(self.client.get(f"/projetos/{self.projeto.pk}/"), "Planta aprovada")
 
         resposta = self.client.post(
             f"/fases/arquivo/{arquivo.pk}/favorito/",
@@ -331,8 +351,11 @@ class ViewsTests(BaseFase):
         fase = self.liberar_ate("proposta")
         fase.abrir(self.user)
         Arquivo.objects.create(
-            empresa=self.grupo, projeto=self.projeto, fase=fase,
-            titulo="Proposta", arquivo=_png("pr.png"),
+            empresa=self.grupo,
+            projeto=self.projeto,
+            fase=fase,
+            titulo="Proposta",
+            arquivo=_png("pr.png"),
         )
         self.client.post(f"/fases/{fase.pk}/enviar/")
         self.client.post(
@@ -371,9 +394,7 @@ class TarefasDaFaseTests(BaseFase):
         self.assertContains(resposta, "Tarefas desta fase")
         self.assertContains(resposta, "3 tarefas · 28 h")
         self.assertNotContains(resposta, "Do briefing")
-        self.assertEqual(
-            list(fase.tarefas.values_list("titulo", flat=True)), list(fase.entrega)
-        )
+        self.assertEqual(list(fase.tarefas.values_list("titulo", flat=True)), list(fase.entrega))
         self.assertTrue(fase.tarefas.filter(prazo=date(2026, 9, 15)).exists())
         self.assertFalse(fase.tarefas.filter(horas_previstas=0).exists())
 
@@ -386,9 +407,7 @@ class TarefasDaFaseTests(BaseFase):
 
         self.client.get(f"/fases/{fase.pk}/")
 
-        self.assertEqual(
-            list(fase.tarefas.values_list("titulo", flat=True)), list(fase.entrega)
-        )
+        self.assertEqual(list(fase.tarefas.values_list("titulo", flat=True)), list(fase.entrega))
 
     def test_crud_e_check_da_tarefa_funcionam_inline(self):
         fase = self.abrir_fase()
@@ -426,15 +445,11 @@ class TarefasDaFaseTests(BaseFase):
         self.assertContains(resposta, "Compatibilizar implantação e acessos")
         self.assertEqual(tarefa.horas_previstas, 8)
 
-        self.client.post(
-            f"/fases/tarefa/{tarefa.pk}/alternar/", **cabecalho_htmx
-        )
+        self.client.post(f"/fases/tarefa/{tarefa.pk}/alternar/", **cabecalho_htmx)
         tarefa.refresh_from_db()
         self.assertEqual(tarefa.status, "concluida")
 
-        resposta = self.client.post(
-            f"/fases/tarefa/{tarefa.pk}/remover/", **cabecalho_htmx
-        )
+        resposta = self.client.post(f"/fases/tarefa/{tarefa.pk}/remover/", **cabecalho_htmx)
         self.assertEqual(resposta.status_code, 200)
         self.assertFalse(Tarefa.objects.filter(pk=tarefa.pk).exists())
 
@@ -585,9 +600,7 @@ class NavegacaoPorProjetoTests(BaseFase):
             self.client.get(f"/projetos/{self.projeto.pk}/"),
             f"/orcamentos/?projeto={self.projeto.pk}",
         )
-        obra = Obra.objects.create(
-            empresa=self.grupo, projeto=self.projeto, endereco="Rua A, 100"
-        )
+        obra = Obra.objects.create(empresa=self.grupo, projeto=self.projeto, endereco="Rua A, 100")
         self.assertContains(
             self.client.get(f"/obras/{obra.pk}/"), f"/orcamentos/?projeto={self.projeto.pk}"
         )
@@ -596,9 +609,14 @@ class NavegacaoPorProjetoTests(BaseFase):
         """Menu é para o que atravessa projetos. Ter os dois caminhos fazia
         parecer que eram coisas diferentes."""
         nav = self.client.get("/").content.decode()
-        nav = nav[nav.index('<nav class="app-nav"'):nav.index("</nav>")]
-        for rota in ['href="/arquivos/"', 'href="/orcamentos/"', 'href="/propostas/"',
-                     'href="/contratos/"', 'href="/regulatorio/"']:
+        nav = nav[nav.index('<nav class="app-nav"') : nav.index("</nav>")]
+        for rota in [
+            'href="/arquivos/"',
+            'href="/orcamentos/"',
+            'href="/propostas/"',
+            'href="/contratos/"',
+            'href="/regulatorio/"',
+        ]:
             self.assertNotIn(rota, nav)
         for rota in ['href="/"', 'href="/projetos/"', 'href="/modelos/"', 'href="/financeiro/"']:
             self.assertIn(rota, nav)
@@ -662,11 +680,21 @@ class TelasQueRespondemTests(BaseFase):
         fase = self.liberar_ate("estudo_preliminar")
         fase.abrir(self.user)
         rotas = [
-            "/", "/agenda/", "/notificacoes/", "/modelos/",
-            "/projetos/", "/clientes/", "/fornecedores/",
-            "/financeiro/", "/precificacao/", "/escritorio/identidade/",
-            "/orcamentos/", "/regulatorio/", "/projeto-novo/novo/",
-            f"/projetos/{self.projeto.pk}/", f"/fases/{fase.pk}/",
+            "/",
+            "/agenda/",
+            "/notificacoes/",
+            "/modelos/",
+            "/projetos/",
+            "/clientes/",
+            "/fornecedores/",
+            "/financeiro/",
+            "/precificacao/",
+            "/escritorio/identidade/",
+            "/orcamentos/",
+            "/regulatorio/",
+            "/projeto-novo/novo/",
+            f"/projetos/{self.projeto.pk}/",
+            f"/fases/{fase.pk}/",
             f"/briefing/projeto/{self.projeto.pk}/responder/",
         ]
         for rota in rotas:
@@ -685,17 +713,19 @@ class TelasQueRespondemTests(BaseFase):
         template = semear_templates_padrao(self.grupo, self.user)[0]
         briefing = Briefing.objects.create(projeto=self.projeto, empresa=self.grupo)
         RespostaBriefing.objects.create(
-            briefing=briefing, empresa=self.grupo,
-            pergunta=template.perguntas.first(), texto="Casal com dois filhos",
+            briefing=briefing,
+            empresa=self.grupo,
+            pergunta=template.perguntas.first(),
+            texto="Casal com dois filhos",
         )
         resposta = self.client.get(f"/briefing/projeto/{self.projeto.pk}/responder/")
         self.assertFalse(resposta.context["editando"])
         self.assertContains(resposta, "Editar briefing")
         # E com ?editar=1 volta ao formulário.
         self.assertTrue(
-            self.client.get(
-                f"/briefing/projeto/{self.projeto.pk}/responder/?editar=1"
-            ).context["editando"]
+            self.client.get(f"/briefing/projeto/{self.projeto.pk}/responder/?editar=1").context[
+                "editando"
+            ]
         )
 
     def test_rota_antiga_dos_blocos_encaminha_para_a_tela_unica(self):
@@ -741,9 +771,7 @@ class LembreteDoProjetoTests(BaseFase):
         alheio = Projeto.objects.create(
             empresa=outro, cliente=self.cliente, nome="Alheio 5", tipo="comercial"
         )
-        lembrete = Lembrete.objects.create(
-            empresa=outro, projeto=alheio, texto="Sigiloso"
-        )
+        lembrete = Lembrete.objects.create(empresa=outro, projeto=alheio, texto="Sigiloso")
         self.assertEqual(
             self.client.post(
                 f"/fases/lembrete/{lembrete.pk}/editar/", {"texto": "invadido"}
@@ -778,8 +806,11 @@ class ComplementaresEmLoteTests(BaseFase):
         )
         fase = self.projeto.fases.get(chave="comp_estrutural")
         Arquivo.objects.create(
-            empresa=self.grupo, projeto=self.projeto, fase=fase,
-            titulo="Cálculo", arquivo=_png("c.png"),
+            empresa=self.grupo,
+            projeto=self.projeto,
+            fase=fase,
+            titulo="Cálculo",
+            arquivo=_png("c.png"),
         )
         self.client.post(
             f"/fases/projeto/{self.projeto.pk}/complementares/", {"complementares": []}
@@ -824,8 +855,11 @@ class AvisoDetalhadoTests(BaseFase):
         fase = self.liberar_ate("estudo_preliminar")
         fase.abrir(self.user)
         Arquivo.objects.create(
-            empresa=self.grupo, projeto=self.projeto, fase=fase,
-            titulo="Planta", arquivo=_png("pl.png"),
+            empresa=self.grupo,
+            projeto=self.projeto,
+            fase=fase,
+            titulo="Planta",
+            arquivo=_png("pl.png"),
         )
         self.client.post(f"/fases/{fase.pk}/enviar/")
         aviso = AvisoSistema.objects.filter(empresa=self.grupo).first()
@@ -839,8 +873,11 @@ class AvisoDetalhadoTests(BaseFase):
         fase = self.liberar_ate("estudo_preliminar")
         fase.abrir(self.user)
         Arquivo.objects.create(
-            empresa=self.grupo, projeto=self.projeto, fase=fase,
-            titulo="Planta", arquivo=_png("pl2.png"),
+            empresa=self.grupo,
+            projeto=self.projeto,
+            fase=fase,
+            titulo="Planta",
+            arquivo=_png("pl2.png"),
         )
         self.client.post(f"/fases/{fase.pk}/enviar/")
         resposta = self.client.get("/notificacoes/")
@@ -875,7 +912,10 @@ class BriefingUnicoTests(BaseFase):
                 f"t{pergunta.pk}": "Casal com um filho.",
                 "perfil_usuarios": "Trabalham em casa duas tardes.",
                 "restricoes": "Recuo lateral de 1,5 m.",
-                "referencias": "", "estilo": "", "orcamento_previsto": "", "prazo_desejado": "",
+                "referencias": "",
+                "estilo": "",
+                "orcamento_previsto": "",
+                "prazo_desejado": "",
             },
         )
         proposta = self.projeto.proposta_origem
@@ -889,9 +929,15 @@ class BriefingUnicoTests(BaseFase):
         pergunta = self.template.perguntas.first()
         self.client.post(
             f"/briefing/projeto/{self.projeto.pk}/responder/",
-            {f"t{pergunta.pk}": "Resposta", "perfil_usuarios": "",
-             "restricoes": "", "referencias": "", "estilo": "",
-             "orcamento_previsto": "", "prazo_desejado": ""},
+            {
+                f"t{pergunta.pk}": "Resposta",
+                "perfil_usuarios": "",
+                "restricoes": "",
+                "referencias": "",
+                "estilo": "",
+                "orcamento_previsto": "",
+                "prazo_desejado": "",
+            },
         )
         self.assertEqual(self.fase("briefing").status, Fase.APROVADA)
         self.assertEqual(self.fase("proposta").status, Fase.EM_ELABORACAO)

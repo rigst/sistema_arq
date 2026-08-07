@@ -29,22 +29,23 @@ class ClientesModalTests(TestCase):
         self.client.post(
             f"/clientes/{cliente.pk}/editar/",
             {
-                "nome": "Ana Silva", "email": "ana@example.com", "telefone": "",
-                "origem": "indicacao", "fase": "contato", "observacoes": "", "ativo": "on",
+                "nome": "Ana Silva",
+                "email": "ana@example.com",
+                "telefone": "",
+                "origem": "indicacao",
+                "fase": "contato",
+                "observacoes": "",
+                "ativo": "on",
             },
         )
         cliente.refresh_from_db()
         self.assertEqual(cliente.nome, "Ana Silva")
-        self.assertRedirects(
-            self.client.post(f"/clientes/{cliente.pk}/remover/"), "/clientes/"
-        )
+        self.assertRedirects(self.client.post(f"/clientes/{cliente.pk}/remover/"), "/clientes/")
         self.assertFalse(Cliente.objects.exists())
 
     def test_clientes_inativos_ficam_em_lista_separada(self):
         ativo = Cliente.objects.create(empresa=self.grupo, nome="Cliente ativo")
-        inativo = Cliente.objects.create(
-            empresa=self.grupo, nome="Cliente inativo", ativo=False
-        )
+        inativo = Cliente.objects.create(empresa=self.grupo, nome="Cliente inativo", ativo=False)
 
         pagina_ativos = self.client.get("/clientes/")
         self.assertContains(pagina_ativos, ativo.nome)

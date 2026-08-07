@@ -230,7 +230,9 @@ class FluxoContratoTests(TestCase):
                 f"/contratos/{self.contrato.pk}/documento/",
                 {
                     "titulo": "Contrato assinado",
-                    "arquivo": SimpleUploadedFile("assinado.pdf", b"pdf de teste", "application/pdf"),
+                    "arquivo": SimpleUploadedFile(
+                        "assinado.pdf", b"pdf de teste", "application/pdf"
+                    ),
                 },
             )
             documento = Documento.objects.get()

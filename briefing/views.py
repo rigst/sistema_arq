@@ -147,9 +147,7 @@ def template_detalhe(request, pk):
     blocos = perguntas_por_bloco(template)
     for bloco in blocos:
         for pergunta in bloco["perguntas"]:
-            pergunta.opcoes_texto = "\n".join(
-                pergunta.opcoes.values_list("texto", flat=True)
-            )
+            pergunta.opcoes_texto = "\n".join(pergunta.opcoes.values_list("texto", flat=True))
     return render(
         request,
         "briefing/template_detalhe.html",
@@ -207,9 +205,7 @@ def _preencher_pergunta(pergunta, dados):
 @login_required
 def template_editar_pergunta(request, pk):
     pergunta = get_object_or_404(
-        queryset_da_empresa(
-            PerguntaTemplate.objects.select_related("template"), request.user
-        ),
+        queryset_da_empresa(PerguntaTemplate.objects.select_related("template"), request.user),
         pk=pk,
     )
     if not (request.POST.get("texto") or "").strip():
@@ -356,7 +352,8 @@ def briefing_pdf(request, projeto_pk):
             "ambientes": briefing.ambientes.all(),
             "empresa_nome": request.user.nome_empresa,
         },
-        filename=f"briefing-{projeto.pk}.pdf", user=request.user,
+        filename=f"briefing-{projeto.pk}.pdf",
+        user=request.user,
     )
 
 

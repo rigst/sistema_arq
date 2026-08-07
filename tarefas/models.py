@@ -26,15 +26,24 @@ class Tarefa(EmpresaModel, Rastreavel):
         "fases.Fase", on_delete=models.SET_NULL, null=True, blank=True, related_name="tarefas"
     )
     responsavel = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="tarefas",
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tarefas",
         verbose_name="responsável",
     )
     fornecedor = models.ForeignKey(
         "fornecedores.Fornecedor",
-        on_delete=models.SET_NULL, null=True, blank=True, related_name="tarefas",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tarefas",
         help_text="Quando quem faz é de fora do escritório.",
     )
-    criterio_pronto = models.CharField(max_length=200, blank=True, verbose_name="critério de pronto")
+    criterio_pronto = models.CharField(
+        max_length=200, blank=True, verbose_name="critério de pronto"
+    )
     prazo = models.DateField(null=True, blank=True)
     horas_previstas = models.DecimalField(
         max_digits=8, decimal_places=2, default=0, verbose_name="horas previstas"
@@ -69,7 +78,10 @@ class ApontamentoHora(EmpresaModel):
     """
 
     usuario = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="apontamentos",
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="apontamentos",
         verbose_name="usuário",
     )
     projeto = models.ForeignKey(

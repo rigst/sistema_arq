@@ -37,9 +37,7 @@ class ConfiguracaoPrecificacaoForm(ArqModelForm):
             "hora_tecnica_manual": forms.NumberInput(
                 attrs={"min": "0", "step": "0.01", "placeholder": "Automática pelos custos"}
             ),
-            "margem_seguranca_percent": forms.NumberInput(
-                attrs={"min": "0", "step": "0.01"}
-            ),
+            "margem_seguranca_percent": forms.NumberInput(attrs={"min": "0", "step": "0.01"}),
             "imposto_percent": forms.NumberInput(attrs={"min": "0", "step": "0.01"}),
         }
 

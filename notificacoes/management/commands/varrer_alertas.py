@@ -8,4 +8,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         total = varrer_todas()
-        self.stdout.write(self.style.SUCCESS(f"Varredura concluída. Notificações criadas: {total}."))
+        self.stdout.write(
+            self.style.SUCCESS(f"Varredura concluída. Notificações criadas: {total}.")
+        )

@@ -18,11 +18,15 @@ class ApontamentoForm(forms.Form):
     """
 
     descricao = forms.CharField(
-        label="Descrição", max_length=200,
+        label="Descrição",
+        max_length=200,
         widget=forms.TextInput(attrs={"placeholder": "O que foi feito"}),
     )
     horas = forms.DecimalField(
-        label="Horas", max_digits=8, decimal_places=2, min_value=Decimal("0.01"),
+        label="Horas",
+        max_digits=8,
+        decimal_places=2,
+        min_value=Decimal("0.01"),
         widget=forms.NumberInput(attrs={"placeholder": "0,00", "step": "any", "min": "0.01"}),
     )
 
@@ -31,8 +35,15 @@ class TarefaForm(ArqModelForm):
     class Meta:
         model = Tarefa
         fields = [
-            "titulo", "descricao", "projeto", "fase", "responsavel", "fornecedor",
-            "criterio_pronto", "prazo", "status",
+            "titulo",
+            "descricao",
+            "projeto",
+            "fase",
+            "responsavel",
+            "fornecedor",
+            "criterio_pronto",
+            "prazo",
+            "status",
         ]
         widgets = {
             "descricao": forms.Textarea(attrs={"rows": 2}),

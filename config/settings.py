@@ -191,9 +191,7 @@ else:
 # ---------------------------------------------------------------------------
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "").strip()
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", CELERY_BROKER_URL).strip()
-CELERY_TASK_ALWAYS_EAGER = env_bool(
-    "CELERY_TASK_ALWAYS_EAGER", default=not bool(CELERY_BROKER_URL)
-)
+CELERY_TASK_ALWAYS_EAGER = env_bool("CELERY_TASK_ALWAYS_EAGER", default=not bool(CELERY_BROKER_URL))
 CELERY_TASK_EAGER_PROPAGATES = True
 CELERY_TIMEZONE = "America/Sao_Paulo"
 
@@ -234,9 +232,7 @@ USE_MANIFEST_STATICFILES = env_bool("DJANGO_USE_MANIFEST_STATICFILES", default=I
 if USE_MANIFEST_STATICFILES:
     STORAGES = {
         "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-        "staticfiles": {
-            "BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
-        },
+        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"},
     }
 
 MEDIA_URL = "/media/"
@@ -258,9 +254,7 @@ X_FRAME_OPTIONS = "DENY"
 SECURE_REFERRER_POLICY = os.getenv("DJANGO_SECURE_REFERRER_POLICY", "same-origin")
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
 
-EMAIL_BACKEND = os.getenv(
-    "DJANGO_EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
-)
+EMAIL_BACKEND = os.getenv("DJANGO_EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
 EMAIL_HOST = os.getenv("DJANGO_EMAIL_HOST", "localhost")
 EMAIL_PORT = int(os.getenv("DJANGO_EMAIL_PORT", "587"))
 EMAIL_HOST_USER = os.getenv("DJANGO_EMAIL_HOST_USER", "")

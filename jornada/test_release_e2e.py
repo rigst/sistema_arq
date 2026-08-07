@@ -65,9 +65,7 @@ class JornadaCompletaDaReleaseTests(TestCase):
         proposta = Proposta.objects.get(projeto_gerado=projeto)
         self.assertRedirects(briefing, f"/propostas/{proposta.pk}/")
 
-        self.client.post(
-            f"/propostas/{proposta.pk}/hora-tecnica/", {"fatores": [self.fator.pk]}
-        )
+        self.client.post(f"/propostas/{proposta.pk}/hora-tecnica/", {"fatores": [self.fator.pk]})
         proposta.refresh_from_db()
         self.assertEqual(proposta.hora_tecnica_aplicada, Decimal("120.00"))
 

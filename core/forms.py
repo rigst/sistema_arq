@@ -35,7 +35,8 @@ class NomeAcessivelMixin:
                 or nome in {"saldo_inicial", "orcamento_previsto", "hora_tecnica_manual"}
             ):
                 attrs = {
-                    chave: valor for chave, valor in campo.widget.attrs.items()
+                    chave: valor
+                    for chave, valor in campo.widget.attrs.items()
                     if chave not in {"min", "max", "step"}
                 }
                 attrs.update({"inputmode": "decimal", "data-moeda-br": ""})
@@ -43,8 +44,9 @@ class NomeAcessivelMixin:
             rotulo = campo.label
             if not rotulo or "aria-label" in campo.widget.attrs:
                 continue
-            if isinstance(campo.widget, (forms.CheckboxInput, forms.RadioSelect,
-                                         forms.CheckboxSelectMultiple)):
+            if isinstance(
+                campo.widget, (forms.CheckboxInput, forms.RadioSelect, forms.CheckboxSelectMultiple)
+            ):
                 # Marcações vêm sempre com rótulo visível ao lado; repetir aqui
                 # faria o leitor de tela anunciar o texto duas vezes.
                 continue

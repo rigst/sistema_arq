@@ -32,8 +32,8 @@ class AjustesDeProducaoTests(TestCase):
         resposta = self.client.get("/projetos/")
         self.assertContains(resposta, "Ana Altemann")
         self.assertNotContains(resposta, ">login.ana</span>")
-        self.assertContains(resposta, f'/projetos/{projeto.pk}/editar/')
-        self.assertContains(resposta, f'/projetos/{projeto.pk}/remover/')
+        self.assertContains(resposta, f"/projetos/{projeto.pk}/editar/")
+        self.assertContains(resposta, f"/projetos/{projeto.pk}/remover/")
 
     def test_ha_um_roteiro_e_uma_minuta_para_cada_tipo(self):
         roteiros = semear_templates_padrao(self.empresa, self.usuario)
@@ -48,4 +48,3 @@ class AjustesDeProducaoTests(TestCase):
         self.assertEqual(categorias["servicos_engenharia"], "Serviços de engenharia")
         self.assertEqual(categorias["freelancer"], "Freelancer")
         self.assertEqual(dict(Projeto.TIPO_CHOICES)["urbanismo"], "Urbanismo")
-

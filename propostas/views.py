@@ -146,7 +146,9 @@ def definir_hora_tecnica(request, pk):
     de projeto aplicados sobre a hora-base. Reprecifica os itens existentes."""
     proposta = get_object_or_404(queryset_da_empresa(Proposta.objects.all(), request.user), pk=pk)
     if not proposta.editavel:
-        messages.info(request, "Proposta enviada; retorne-a para edição antes de alterar a hora técnica.")
+        messages.info(
+            request, "Proposta enviada; retorne-a para edição antes de alterar a hora técnica."
+        )
         return redirect("proposta_detalhe", pk=proposta.pk)
 
     fatores_ids = request.POST.getlist("fatores")
@@ -176,9 +178,7 @@ def definir_hora_tecnica(request, pk):
         proposta.hora_tecnica_aplicada = hora_aplicada
         proposta.save(update_fields=["hora_tecnica_aplicada"])
         _reprecificar_itens(proposta)
-    messages.success(
-        request, f"Hora técnica desta proposta: R$ {proposta.hora_tecnica_aplicada}."
-    )
+    messages.success(request, f"Hora técnica desta proposta: R$ {proposta.hora_tecnica_aplicada}.")
     return redirect("proposta_detalhe", pk=proposta.pk)
 
 
@@ -209,14 +209,20 @@ def adicionar_prontos(request, pk):
                 proposta.empresa, horas, hora_tecnica=proposta.hora_tecnica_aplicada
             )
             ItemProposta.objects.create(
-                empresa=proposta.empresa, proposta=proposta, descricao=descricao,
-                inclusoes=inclusoes, horas_estimadas=horas,
-                valor=calc["total"], ordem=ordem + criados,
+                empresa=proposta.empresa,
+                proposta=proposta,
+                descricao=descricao,
+                inclusoes=inclusoes,
+                horas_estimadas=horas,
+                valor=calc["total"],
+                ordem=ordem + criados,
             )
             criados += 1
     if criados:
         _ordenar_itens(proposta)
-        messages.success(request, f"{criados} item(ns) adicionados e precificados. Ajuste as horas.")
+        messages.success(
+            request, f"{criados} item(ns) adicionados e precificados. Ajuste as horas."
+        )
     else:
         messages.info(request, "Esses itens já estavam na proposta.")
     return _itens_ou_redirect(request, proposta)
@@ -268,7 +274,8 @@ def editar_item(request, pk):
         if form.is_valid():
             item = form.save(commit=False)
             calc = precificar_etapa(
-                proposta.empresa, item.horas_estimadas,
+                proposta.empresa,
+                item.horas_estimadas,
                 hora_tecnica=proposta.hora_tecnica_aplicada,
             )
             item.valor = calc["total"]
@@ -436,7 +443,8 @@ def proposta_pdf(request, pk):
             "hoje": timezone.now(),
             "assinante_nome": assinante_nome,
         },
-        filename=f"proposta-{proposta.pk}.pdf", user=request.user,
+        filename=f"proposta-{proposta.pk}.pdf",
+        user=request.user,
     )
 
 
@@ -468,9 +476,7 @@ def aprovar_proposta(request, pk):
         contrato = criar_contrato_da_proposta(proposta, request.user)
         return redirect("contrato_detalhe", pk=contrato.pk)
 
-    horas_estimadas = sum(
-        (item.horas_estimadas for item in proposta.itens.all()), Decimal("0")
-    )
+    horas_estimadas = sum((item.horas_estimadas for item in proposta.itens.all()), Decimal("0"))
     with transaction.atomic():
         projeto = Projeto.objects.create(
             empresa=proposta.empresa,

@@ -32,9 +32,9 @@ def documentos_pendentes(usuario):
     if not vigentes:
         return []
     ja_aceitos = set(
-        AceiteLegal.objects.filter(
-            usuario=usuario, documento__in=vigentes
-        ).values_list("documento_id", flat=True)
+        AceiteLegal.objects.filter(usuario=usuario, documento__in=vigentes).values_list(
+            "documento_id", flat=True
+        )
     )
     return [d for d in vigentes if d.pk not in ja_aceitos]
 

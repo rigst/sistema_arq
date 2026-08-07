@@ -41,11 +41,15 @@ class Projeto(EmpresaModel, Rastreavel):
         "acompanha a execução",
         default=False,
         help_text="Marque se o escritório também acompanha a obra. Muitos trabalhos "
-                  "terminam no projeto entregue.",
+        "terminam no projeto entregue.",
     )
-    valor_contratado = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="valor contratado")
+    valor_contratado = models.DecimalField(
+        max_digits=12, decimal_places=2, default=0, verbose_name="valor contratado"
+    )
     horas_estimadas = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0,
+        max_digits=10,
+        decimal_places=2,
+        default=0,
         help_text="Horas previstas (vindas da proposta). Comparadas com as trabalhadas.",
         verbose_name="horas estimadas",
     )
@@ -61,7 +65,9 @@ class Projeto(EmpresaModel, Rastreavel):
     )
     data_inicio = models.DateField(null=True, blank=True, verbose_name="data de início")
     data_prevista = models.DateField(null=True, blank=True, verbose_name="data prevista")
-    ultima_atualizacao = models.DateTimeField(default=timezone.now, verbose_name="última atualização")
+    ultima_atualizacao = models.DateTimeField(
+        default=timezone.now, verbose_name="última atualização"
+    )
     tags = models.ManyToManyField(Tag, blank=True, related_name="projetos")
 
     class Meta:
@@ -81,8 +87,10 @@ class Projeto(EmpresaModel, Rastreavel):
     def fase_atual(self):
         """Onde o projeto está agora: a primeira fase aberta, ou a próxima a abrir."""
         abertas = self.fases.exclude(status="aprovada").order_by("ordem")
-        return abertas.filter(status__in=["em_elaboracao", "aguardando_cliente", "ajustes"]).first() \
+        return (
+            abertas.filter(status__in=["em_elaboracao", "aguardando_cliente", "ajustes"]).first()
             or abertas.first()
+        )
 
     @property
     def localizacao(self):

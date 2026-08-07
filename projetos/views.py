@@ -44,9 +44,7 @@ def editar_projeto(request, pk):
             return redirect("projeto_detalhe", pk=projeto.pk)
     else:
         form = ProjetoForm(instance=projeto, user=request.user)
-    return render(
-        request, "projetos/form.html", {"form": form, "titulo": f"Editar {projeto.nome}"}
-    )
+    return render(request, "projetos/form.html", {"form": form, "titulo": f"Editar {projeto.nome}"})
 
 
 @require_POST
@@ -74,9 +72,7 @@ def atualizar_planejamento(request, pk):
 
 
 def _contexto_tarefas(projeto):
-    tarefas = projeto.tarefas.filter(fase__isnull=False).exclude(
-        fase__status=Fase.NAO_INICIADA
-    )
+    tarefas = projeto.tarefas.filter(fase__isnull=False).exclude(fase__status=Fase.NAO_INICIADA)
     totais = tarefas.aggregate(
         total=Count("id"),
         concluidas=Count("id", filter=Q(status="concluida")),
@@ -105,9 +101,7 @@ def contexto_arquivos_principais(projeto, contrato=None):
     contrato = contrato or projeto.contratos.order_by("-criado_em").first()
     briefing = Briefing.objects.filter(projeto=projeto).first()
     proposta = Proposta.objects.filter(projeto_gerado=projeto).first()
-    documentos = list(
-        Documento.objects.filter(projeto=projeto).select_related("contrato")
-    )
+    documentos = list(Documento.objects.filter(projeto=projeto).select_related("contrato"))
     favoritos = list(
         projeto.arquivos.filter(favorito=True, fase__isnull=False).select_related(
             "fase", "criado_por"
@@ -141,9 +135,11 @@ def detalhe_projeto(request, pk):
     # O roteiro mora aqui, e não numa página só dele: ter duas telas centrais
     # por projeto era o que fazia ninguém saber em qual delas olhar.
     roteiro = montar_roteiro(projeto)
-    fases = projeto.fases.select_related("fornecedor").annotate(
-        horas_tarefas=Sum("tarefas__horas_previstas")
-    ).order_by("ordem", "id")
+    fases = (
+        projeto.fases.select_related("fornecedor")
+        .annotate(horas_tarefas=Sum("tarefas__horas_previstas"))
+        .order_by("ordem", "id")
+    )
     fases_principais = [fase for fase in fases if not fase.complementar]
     fases_complementares = [fase for fase in fases if fase.complementar]
     executivo = next((fase for fase in fases_principais if fase.chave == "executivo"), None)
@@ -153,9 +149,7 @@ def detalhe_projeto(request, pk):
         "lembretes": projeto.lembretes.filter(fase__isnull=True).select_related("autor"),
         "form_lembrete": LembreteForm(),
         "acao_lembrete": reverse("projeto_lembrete", kwargs={"projeto_pk": projeto.pk}),
-        "complementares_marcados": set(
-            projeto.fases.values_list("chave", flat=True)
-        ),
+        "complementares_marcados": set(projeto.fases.values_list("chave", flat=True)),
         "fases": fases,
         "fases_principais": fases_principais,
         "fases_complementares": fases_complementares,
@@ -179,9 +173,7 @@ def detalhe_projeto(request, pk):
 @login_required
 def alternar_tarefa(request, pk):
     tarefa = get_object_or_404(
-        queryset_da_empresa(
-            Tarefa.objects.select_related("projeto", "fase"), request.user
-        ),
+        queryset_da_empresa(Tarefa.objects.select_related("projeto", "fase"), request.user),
         pk=pk,
         projeto__isnull=False,
         fase__isnull=False,

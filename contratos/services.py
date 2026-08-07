@@ -51,12 +51,14 @@ def contexto_do_contrato(contrato):
         proposta = getattr(projeto, "proposta_origem", None)
 
     fases = list(
-        projeto.fases.exclude(chave__in=("briefing", "proposta", "contrato"))
-        .order_by("ordem", "id")
+        projeto.fases.exclude(chave__in=("briefing", "proposta", "contrato")).order_by(
+            "ordem", "id"
+        )
     )
     cronograma = "\n".join(
         f"- {fase.nome}: {fase.dias_uteis_proposta} dias úteis"
-        if fase.dias_uteis_proposta else f"- {fase.nome}: prazo a definir"
+        if fase.dias_uteis_proposta
+        else f"- {fase.nome}: prazo a definir"
         for fase in fases
     )
     escopo = ""
@@ -78,9 +80,7 @@ def contexto_do_contrato(contrato):
         "tipo_projeto": projeto.get_tipo_display(),
         "escritorio": contrato.empresa.name,
         "valor": _moeda(contrato.valor_total),
-        "horas": _horas(
-            proposta.horas_totais if proposta is not None else projeto.horas_estimadas
-        ),
+        "horas": _horas(proposta.horas_totais if proposta is not None else projeto.horas_estimadas),
         "data": timezone.localdate().strftime("%d/%m/%Y"),
         "data_inicio": projeto.data_inicio.strftime("%d/%m/%Y") if projeto.data_inicio else "",
         "prazo": projeto.data_prevista.strftime("%d/%m/%Y") if projeto.data_prevista else "",

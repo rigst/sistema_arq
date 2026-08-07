@@ -3,8 +3,27 @@ from pathlib import Path
 from django.core.exceptions import ValidationError
 
 DOCUMENT_EXTENSIONS = {
-    "csv", "doc", "docx", "dwg", "dxf", "ifc", "jpeg", "jpg", "ods", "odt",
-    "ofx", "pdf", "png", "ppt", "pptx", "rtf", "txt", "webp", "xls", "xlsx", "zip",
+    "csv",
+    "doc",
+    "docx",
+    "dwg",
+    "dxf",
+    "ifc",
+    "jpeg",
+    "jpg",
+    "ods",
+    "odt",
+    "ofx",
+    "pdf",
+    "png",
+    "ppt",
+    "pptx",
+    "rtf",
+    "txt",
+    "webp",
+    "xls",
+    "xlsx",
+    "zip",
 }
 IMAGE_EXTENSIONS = {"jpeg", "jpg", "png", "webp"}
 MAX_DOCUMENT_SIZE = 25 * 1024 * 1024

@@ -18,7 +18,11 @@ def parse_ofx(arquivo):
     for conta in ofx.accounts:
         for t in conta.statement.transactions:
             transacoes.append(
-                {"data": t.date.date(), "descricao": (t.memo or t.payee or "").strip(), "valor": Decimal(str(t.amount))}
+                {
+                    "data": t.date.date(),
+                    "descricao": (t.memo or t.payee or "").strip(),
+                    "valor": Decimal(str(t.amount)),
+                }
             )
     return transacoes
 
@@ -38,7 +42,11 @@ def parse_csv(arquivo):
         if data is None:  # provavelmente cabeçalho
             continue
         try:
-            valor = Decimal(linha[2].strip().replace(".", "").replace(",", ".")) if "," in linha[2] else Decimal(linha[2].strip())
+            valor = (
+                Decimal(linha[2].strip().replace(".", "").replace(",", "."))
+                if "," in linha[2]
+                else Decimal(linha[2].strip())
+            )
         except (InvalidOperation, ValueError):
             continue
         transacoes.append({"data": data, "descricao": linha[1].strip(), "valor": valor})
@@ -70,9 +78,13 @@ def conciliar(grupo, conta, transacoes):
     for tx in transacoes:
         tipo = "entrada" if tx["valor"] >= 0 else "saida"
         valor = abs(tx["valor"])
-        previsto = Lancamento.objects.filter(
-            empresa=grupo, conta=conta, status="previsto", tipo=tipo, valor=valor
-        ).order_by("data").first()
+        previsto = (
+            Lancamento.objects.filter(
+                empresa=grupo, conta=conta, status="previsto", tipo=tipo, valor=valor
+            )
+            .order_by("data")
+            .first()
+        )
         if previsto is not None:
             previsto.status = "realizado"
             previsto.data = tx["data"]
@@ -80,9 +92,13 @@ def conciliar(grupo, conta, transacoes):
             conciliados += 1
         else:
             Lancamento.objects.create(
-                empresa=grupo, conta=conta, tipo=tipo,
+                empresa=grupo,
+                conta=conta,
+                tipo=tipo,
                 descricao=tx["descricao"] or "Extrato importado",
-                valor=valor, data=tx["data"], status="realizado",
+                valor=valor,
+                data=tx["data"],
+                status="realizado",
                 origem_tipo="extrato",
             )
             criados += 1

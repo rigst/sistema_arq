@@ -97,7 +97,9 @@ def adicionar_fator(request):
 @require_POST
 @login_required
 def remover_fator(request, pk):
-    fator = get_object_or_404(queryset_da_empresa(FatorPrecificacao.objects.all(), request.user), pk=pk)
+    fator = get_object_or_404(
+        queryset_da_empresa(FatorPrecificacao.objects.all(), request.user), pk=pk
+    )
     fator.delete()
     messages.success(request, "Fator removido.")
     return redirect("precificacao")

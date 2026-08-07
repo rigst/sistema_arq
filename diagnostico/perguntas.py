@@ -55,9 +55,24 @@ PERGUNTAS = [
 ]
 
 FAIXAS = [
-    (0, 3, "Inicial", "A gestão ainda depende de memória e improviso. Pequenas estruturas já destravam muito: um painel de projetos e uma hora técnica calculada."),
-    (4, 7, "Intermediário", "Você já tem controle parcial. O ganho agora está em unificar projetos, financeiro e prazos num lugar só, com alertas."),
-    (8, 10, "Avançado", "Sua operação é madura. O sistema serve para escalar sem perder a visão de margem e de conformidade."),
+    (
+        0,
+        3,
+        "Inicial",
+        "A gestão ainda depende de memória e improviso. Pequenas estruturas já destravam muito: um painel de projetos e uma hora técnica calculada.",
+    ),
+    (
+        4,
+        7,
+        "Intermediário",
+        "Você já tem controle parcial. O ganho agora está em unificar projetos, financeiro e prazos num lugar só, com alertas.",
+    ),
+    (
+        8,
+        10,
+        "Avançado",
+        "Sua operação é madura. O sistema serve para escalar sem perder a visão de margem e de conformidade.",
+    ),
 ]
 
 PONTOS_MAXIMO = len(PERGUNTAS) * 2

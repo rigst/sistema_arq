@@ -106,7 +106,9 @@ def adicionar_etapa(request, pk):
 def atualizar_avanco(request, pk):
     etapa = get_object_or_404(queryset_da_empresa(EtapaObra.objects.all(), request.user), pk=pk)
     try:
-        etapa.percentual_previsto = _clamp(request.POST.get("percentual_previsto", etapa.percentual_previsto))
+        etapa.percentual_previsto = _clamp(
+            request.POST.get("percentual_previsto", etapa.percentual_previsto)
+        )
         etapa.percentual_real = _clamp(request.POST.get("percentual_real", etapa.percentual_real))
         etapa.save(update_fields=["percentual_previsto", "percentual_real"])
         messages.success(request, f"Avanço de “{etapa.nome}” atualizado.")

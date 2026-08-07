@@ -41,6 +41,4 @@ def limpar_dados_negocio(grupo):
         try:
             func(grupo)
         except Exception:
-            logger.exception(
-                "Falha ao limpar dados de visitante", extra={"limpador": repr(func)}
-            )
+            logger.exception("Falha ao limpar dados de visitante", extra={"limpador": repr(func)})

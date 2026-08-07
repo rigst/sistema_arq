@@ -45,7 +45,10 @@ def agenda(request):
                 compromisso.projeto = projeto
             compromisso.save()
             quando = timezone.localtime(compromisso.inicio)
-            messages.success(request, f"{compromisso.get_tipo_display()} “{compromisso.titulo}” agendada para {quando:%d/%m às %H:%M}.")
+            messages.success(
+                request,
+                f"{compromisso.get_tipo_display()} “{compromisso.titulo}” agendada para {quando:%d/%m às %H:%M}.",
+            )
             return redirect(f"{reverse('agenda')}?ano={ano}&mes={mes}")
         messages.error(request, "Confira os campos do compromisso.")
     else:
@@ -63,10 +66,10 @@ def agenda(request):
     do_periodo = base.filter(inicio__date__gte=primeiro, inicio__date__lte=ultimo)
 
     fases_tecnicas = queryset_da_empresa(
-        Fase.objects.select_related("projeto").filter(tarefas_semeadas=False)
-        .exclude(status=Fase.NAO_INICIADA).exclude(
-            chave__in={"briefing", "proposta", "contrato"}
-        ),
+        Fase.objects.select_related("projeto")
+        .filter(tarefas_semeadas=False)
+        .exclude(status=Fase.NAO_INICIADA)
+        .exclude(chave__in={"briefing", "proposta", "contrato"}),
         request.user,
     )
     if projeto is not None:
@@ -75,17 +78,15 @@ def agenda(request):
         garantir_tarefas_da_fase(fase, request.user)
 
     tarefas = queryset_da_empresa(
-        Tarefa.objects.select_related("projeto", "fase").filter(
-            fase__isnull=False, prazo__gte=primeiro, prazo__lte=ultimo
-        ).exclude(fase__status=Fase.NAO_INICIADA),
+        Tarefa.objects.select_related("projeto", "fase")
+        .filter(fase__isnull=False, prazo__gte=primeiro, prazo__lte=ultimo)
+        .exclude(fase__status=Fase.NAO_INICIADA),
         request.user,
     )
     if projeto is not None:
         tarefas = tarefas.filter(projeto=projeto)
     tarefas = tarefas.order_by("prazo", "fase__ordem", "ordem", "id")
-    semanas = calendario.montar_mes(
-        ano, mes, [*do_periodo, *tarefas], hoje
-    )
+    semanas = calendario.montar_mes(ano, mes, [*do_periodo, *tarefas], hoje)
 
     anterior, seguinte = calendario.vizinhos(ano, mes)
     return render(
@@ -127,8 +128,7 @@ def editar_compromisso(request, pk):
         quando = timezone.localtime(compromisso.inicio)
         messages.success(
             request,
-            f"Compromisso “{compromisso.titulo}” atualizado para "
-            f"{quando:%d/%m às %H:%M}.",
+            f"Compromisso “{compromisso.titulo}” atualizado para {quando:%d/%m às %H:%M}.",
         )
     else:
         messages.error(request, "Confira os campos do compromisso.")

@@ -29,8 +29,12 @@ class RoteiroTests(TestCase):
         self.assertEqual(
             [e.chave for e in etapas],
             [
-                "briefing", "proposta", "contrato", "estudo_preliminar",
-                "anteprojeto", "executivo",
+                "briefing",
+                "proposta",
+                "contrato",
+                "estudo_preliminar",
+                "anteprojeto",
+                "executivo",
             ],
         )
         self.assertEqual(proxima_etapa(etapas).chave, "briefing")
@@ -68,9 +72,7 @@ class RoteiroTests(TestCase):
         )
         projeto = Projeto.objects.get(nome="Apartamento Vila Nova")
         # Depois de criado, o primeiro trabalho real é o briefing.
-        self.assertRedirects(
-            resposta, f"/briefing/projeto/{projeto.pk}/responder/"
-        )
+        self.assertRedirects(resposta, f"/briefing/projeto/{projeto.pk}/responder/")
         self.assertEqual(projeto.status, "ativo")
         self.assertEqual(projeto.cliente.nome, "João Pereira")
         self.assertEqual(projeto.empresa, self.grupo)
@@ -131,9 +133,7 @@ class RoteiroTests(TestCase):
 
     def test_formulario_aberto_do_projeto_ja_vem_preenchido(self):
         """O ganho todo do contexto: não redigitar o que o sistema já sabe."""
-        self.projeto.fases.filter(chave__in=("briefing", "proposta")).update(
-            status=Fase.APROVADA
-        )
+        self.projeto.fases.filter(chave__in=("briefing", "proposta")).update(status=Fase.APROVADA)
         resposta = self.client.get(f"/contratos/novo/?projeto={self.projeto.pk}")
         form = resposta.context["form"]
         self.assertEqual(form.fields["projeto"].initial, self.projeto.pk)
@@ -150,7 +150,6 @@ class RoteiroTests(TestCase):
         self.assertIsNotNone(proposta)
         self.assertEqual(proposta.cliente, self.projeto.cliente)
         self.assertRedirects(resposta, f"/propostas/{proposta.pk}/")
-
 
     def test_projeto_de_outra_empresa_nao_vira_contexto(self):
         outro_grupo = Group.objects.create(name="Escritório vizinho")

@@ -60,7 +60,10 @@ class AvisoSistema(EmpresaModel):
     onde = models.CharField("onde", max_length=160, blank=True)
     url = models.CharField(max_length=300, blank=True)
     usuario = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name="+",
     )
     criado_em = models.DateTimeField(auto_now_add=True)
