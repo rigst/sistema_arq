@@ -49,7 +49,9 @@ jobs:
       # (nenhum segredo no histórico) e as checagens do Django. O resto roda e
       # reporta enquanto o passivo é zerado — tire da lista conforme resolver.
       #
-      #   ruff      172 achados restantes + `ruff format` pendente
+      #   ruff       15 achados restantes; além disso `ruff format` nunca foi
+      #              rodado, e reformataria 88 arquivos — enquanto isso o job
+      #              segue vermelho mesmo com os 15 zerados
       #   bandit      3 achados
       #   pytest    projeto ainda usa `manage.py test`
       #   mypy      código ainda não tipado
