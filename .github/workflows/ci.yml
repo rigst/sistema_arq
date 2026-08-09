@@ -77,3 +77,7 @@ jobs:
         CELERY_RESULT_BACKEND=
 
       soft-fail: "mypy,pytest,bandit,pip-audit"
+
+      run-sonar: true
+      sonar-project-key: rigst_sistema_arq
+      sonar-organization: rigst
