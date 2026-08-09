@@ -22,3 +22,9 @@ celerybeat.pid
 .vscode/
 *.swp
 .DS_Store
+
+# Artefatos de cobertura (gerados pelo pytest --cov)
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
