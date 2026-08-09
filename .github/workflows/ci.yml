@@ -76,7 +76,7 @@ jobs:
         CELERY_BROKER_URL=
         CELERY_RESULT_BACKEND=
 
-      soft-fail: "mypy,pytest,bandit,pip-audit"
+      soft-fail: "mypy,bandit,pip-audit"
 
       run-sonar: true
       sonar-project-key: rigst_sistema_arq
