@@ -54,12 +54,13 @@ global enxerga todos os escritórios.
 ## Verificação
 
     python manage.py check
-    python manage.py test
+    pytest                              # 232 testes
     python manage.py makemigrations --check
-    pip-audit -r requirements.txt
+    pip-audit
 
 Os testes cobrem isolamento entre empresas, fluxo briefing → proposta →
 contrato, operações inline, financeiro, arquivos protegidos e autenticação.
+No CI rodam em PostgreSQL, igual à produção.
 
 ## Produção
 
@@ -75,10 +76,32 @@ Antes de abrir o acesso:
 - revisar os textos legais com assessoria jurídica e preencher a lista real de
   fornecedores de infraestrutura.
 
+## Qualidade
+
+O CI é o pipeline compartilhado de [rigst/ci](https://github.com/rigst/ci) e
+precisa passar antes do merge. Todo push roda, em paralelo:
+
+| Etapa | Ferramenta | Estado |
+|---|---|---|
+| Lint e formatação | `ruff` | bloqueia |
+| Testes e cobertura | `pytest` em PostgreSQL | bloqueia |
+| Segurança do código | `bandit` | bloqueia a partir de severidade alta |
+| Dependências | `pip-audit` | bloqueia |
+| Segredos | `gitleaks` (histórico completo) | bloqueia |
+| Django | `check --deploy` + `makemigrations --check` | bloqueia |
+| Agregação | SonarQube Cloud | bloqueia |
+| Tipos | `mypy` | reporta, ainda não bloqueia |
+
+Cobertura no [Codecov](https://codecov.io/gh/rigst/sistema_arq); bugs, code
+smells e duplicação no
+[SonarQube Cloud](https://sonarcloud.io/summary/new_code?id=rigst_sistema_arq).
+
+A proteção de branch deve exigir um único check, `CI` — ele consolida todos os
+outros.
+
 ## Contribuindo
 
-Veja [CONTRIBUTING.md](CONTRIBUTING.md). O CI é o pipeline compartilhado de
-[rigst/ci](https://github.com/rigst/ci) e precisa passar antes do merge.
+Veja [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Segurança
 

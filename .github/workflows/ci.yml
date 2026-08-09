@@ -76,7 +76,10 @@ jobs:
         CELERY_BROKER_URL=
         CELERY_RESULT_BACKEND=
 
-      soft-fail: "mypy,bandit,pip-audit"
+      # Só o mypy ainda não bloqueia — o código não está tipado. O bandit saiu
+      # do soft-fail porque o portão agora é por severidade (zero achados
+      # altos); o pip-audit saiu porque não há CVE aberta.
+      soft-fail: "mypy"
 
       run-sonar: true
       sonar-project-key: rigst_sistema_arq

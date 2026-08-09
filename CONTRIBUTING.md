@@ -30,17 +30,52 @@ O pipeline é o compartilhado de [rigst/ci](https://github.com/rigst/ci). Para
 rodar as mesmas checagens localmente antes de subir:
 
 ```bash
-pip install ruff mypy bandit pip-audit
-ruff check .                              # precisa passar
-ruff format --check .                     # precisa passar
-python manage.py makemigrations --check --dry-run
-python manage.py check --deploy --fail-level WARNING
-bandit -r agenda arquivos briefing config contratos core crm fases financeiro
-pip-audit
+pip install ruff mypy bandit pip-audit pytest pytest-django pytest-cov
+APPS="agenda arquivos briefing config contratos core crm fases financeiro"
+
+ruff check .                              # bloqueia
+ruff format --check .                     # bloqueia
+pytest --cov --cov-report=term-missing    # bloqueia
+bandit -r $APPS --severity-level high     # bloqueia a partir de "high"
+pip-audit                                 # bloqueia
+python manage.py makemigrations --check --dry-run   # bloqueia
+python manage.py check --deploy --fail-level ERROR
+
+mypy $APPS                                # ainda não bloqueia
 ```
 
-`mypy` e `pytest` estão em `soft-fail`: rodam e reportam, mas não derrubam o
-build ainda.
+**Só o `mypy` está em `soft-fail`** — roda e reporta sem derrubar o build. Todo
+o resto bloqueia.
+
+O `check --deploy` roda com `--fail-level ERROR`, e não `WARNING`, porque os
+avisos de HSTS (`security.W005` e `security.W021`) são escolha deliberada
+documentada em `.env.production.example`. Forjar variáveis só para calar o aviso
+produziria um verde falso.
+
+O `bandit` imprime o relatório inteiro, mas só reprova a partir de severidade
+**alta**.
+
+Os testes rodam com `pytest` (configuração em `pytest.ini`), **em PostgreSQL no
+CI**, igual à produção. A convenção de nomes aqui é `tests.py` e `tests_*.py`,
+não `test_*.py`.
+
+```bash
+pytest                    # suíte completa (232 testes)
+pytest contratos          # só um app
+pytest --cov              # com cobertura
+```
+
+Cobertura acompanhada no [Codecov](https://codecov.io/gh/rigst/sistema_arq) e no
+[SonarQube Cloud](https://sonarcloud.io/summary/new_code?id=rigst_sistema_arq).
+
+### Uma armadilha ao escrever testes
+
+Não chame `response.close()` dentro de uma `TestCase`. Isso dispara o signal
+`request_finished`, que fecha a conexão do banco dentro do `atomic` do teste —
+e todo teste seguinte da mesma classe morre com `the connection is closed`. Em
+SQLite o sintoma não aparece, então passa despercebido até rodar no PostgreSQL.
+Para consumir um `FileResponse`, itere `response.streaming_content`. Isso já
+custou 8 falhas nesta suíte.
 
 ## Cuidados específicos deste projeto
 
