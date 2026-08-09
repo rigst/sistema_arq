@@ -1,5 +1,13 @@
 # Primeiro deploy
 
+> **Dois caminhos.** Este guia cobre a implantação de referência em Docker
+> Compose, indicada para quem for adotar o projeto. A instância mantida pelo
+> autor **não usa Docker**: roda systemd + Gunicorn com virtualenv em
+> `/var/www/sistema_arq/current`. O deploy de rotina dessa instalação está na
+> seção [Atualização em instalação systemd](#atualização-em-instalação-systemd)
+> e, em forma genérica, no
+> [runbook do CI compartilhado](https://github.com/rigst/ci/blob/main/RUNBOOK.md).
+
 Este guia descreve a implantação de host único incluída em
 docker-compose.production.yml. O proxy/TLS público pode ser fornecido pela
 plataforma ou por um proxy externo apontando para a porta 8080.
@@ -70,3 +78,41 @@ Antes de atualizar, gere backup. Depois:
 Para rollback, volte à imagem/tag anterior. Não reverta migrações sem confirmar
 que são reversíveis; quando houver mudança destrutiva, restaure banco e mídia do
 mesmo ponto. O rollback deve ser testado em staging antes da primeira release.
+
+## Atualização em instalação systemd
+
+Caminho usado pela instância do autor. Layout: código em
+`/var/www/sistema_arq/current`, virtualenv em `/var/www/sistema_arq/venv`,
+ambiente em `/var/www/sistema_arq/shared/.env`.
+
+Antes de puxar, verifique o que vem no lote e anote o ponto de rollback:
+
+    D=/var/www/sistema_arq/current
+    git -C $D fetch origin
+    git -C $D rev-parse --short HEAD                                    # rollback
+    git -C $D diff --name-only HEAD..origin/main -- '*/migrations/*'    # vazio = sem migração
+    git -C $D diff --name-only HEAD..origin/main -- requirements.txt    # vazio = sem pip install
+
+Havendo migração, gere backup do banco antes (seção anterior). Depois:
+
+    git -C $D pull --ff-only origin main
+    cd $D
+    set -a && . /var/www/sistema_arq/shared/.env && set +a
+    /var/www/sistema_arq/venv/bin/python manage.py check --deploy --fail-level ERROR
+    /var/www/sistema_arq/venv/bin/python manage.py migrate --check
+
+O `--fail-level ERROR` é intencional: `security.W005` e `security.W021` (HSTS)
+são escolha documentada em `.env.production.example`, e forjar variável só para
+calar o aviso produziria um verde falso. O `migrate --check` sai diferente de
+zero se houver migração não aplicada.
+
+Se `static/` mudou, rode `collectstatic --noinput`. Por fim:
+
+    sudo systemctl restart sistema_arq.service sistema_arq_celery.service sistema_arq_celerybeat.service
+    systemctl is-active sistema_arq.service
+    curl -s -o /dev/null -w "%{http_code}\n" https://arq.stolben.com
+
+Rollback sem migração no meio é voltar o código e reiniciar:
+
+    git -C $D reset --hard SHA_ANOTADO
+    sudo systemctl restart sistema_arq.service sistema_arq_celery.service sistema_arq_celerybeat.service
