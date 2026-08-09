@@ -239,7 +239,13 @@ class FluxoContratoTests(TestCase):
             resposta = self.client.get(f"/contratos/documento/{documento.pk}/baixar/")
             self.assertEqual(resposta.status_code, 200)
             self.assertIn("attachment", resposta["Content-Disposition"])
-            resposta.close()
+            # Fecha o arquivo direto, e não com resposta.close(): esse dispara o
+            # signal request_finished, cujo receiver close_old_connections
+            # derruba a conexão do banco por ela estar sem autocommit dentro do
+            # atomic da TestCase. O Django não reconecta dentro do atomic, então
+            # o resto da classe morre com "the connection is closed". No SQLite
+            # o sintoma não aparece porque fechar um banco em memória é no-op.
+            resposta.file_to_stream.close()
 
             from django.contrib.auth.models import Group
 
