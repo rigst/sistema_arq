@@ -1,6 +1,8 @@
-from django.test import TestCase, override_settings
+from django.http import HttpResponse
+from django.test import RequestFactory, TestCase, override_settings
 from django.utils import timezone
 
+from legal.middleware import PREFIXOS_LIVRES, AceiteLegalMiddleware
 from legal.models import AceiteLegal, DocumentoLegal
 from legal.services import documento_vigente, documentos_pendentes
 from usuarios.models import Usuario
@@ -109,6 +111,40 @@ class AceiteTests(TestCase):
         self.client.post("/aceite/", {"aceito": "1"})
         self.client.post("/aceite/", {"aceito": "1"})
         self.assertEqual(AceiteLegal.objects.filter(usuario=self.usuario).count(), 2)
+
+
+class AllowlistExtraTests(TestCase):
+    """LEGAL_ALLOWLIST_EXTRA acrescenta prefixos livres sem editar o módulo.
+
+    Os testes instanciam o middleware direto em vez de usar o client: os
+    prefixos são resolvidos no __init__, que roda uma única vez quando a
+    cadeia de middlewares é montada. O override_settings do client não
+    remonta essa cadeia, então passaria verde sem exercitar nada.
+    """
+
+    def setUp(self):
+        self.usuario = Usuario.objects.create_user(username="bia", password="senha-de-teste-2")
+
+    def montar(self):
+        return AceiteLegalMiddleware(lambda request: HttpResponse("segue"))
+
+    def pedir(self, middleware, caminho):
+        pedido = RequestFactory().get(caminho)
+        pedido.user = self.usuario
+        return middleware(pedido)
+
+    @override_settings(LEGAL_ALLOWLIST_EXTRA=("/webhook/",))
+    def test_prefixo_extra_passa_com_aceite_pendente(self):
+        self.assertEqual(self.pedir(self.montar(), "/webhook/pagamento/").content, b"segue")
+
+    @override_settings(LEGAL_ALLOWLIST_EXTRA=("/webhook/",))
+    def test_prefixo_extra_nao_libera_o_resto(self):
+        self.assertEqual(self.pedir(self.montar(), "/contratos/").status_code, 302)
+
+    def test_sem_a_setting_o_comportamento_nao_muda(self):
+        middleware = self.montar()
+        self.assertEqual(middleware.prefixos, PREFIXOS_LIVRES)
+        self.assertEqual(self.pedir(middleware, "/contratos/").status_code, 302)
 
 
 class VisitanteAceiteTests(TestCase):
