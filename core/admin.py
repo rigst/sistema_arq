@@ -8,7 +8,10 @@ def acesso_admin_restrito(request):
     return bool(request.user.is_active and request.user.is_superuser)
 
 
-admin.site.has_permission = acesso_admin_restrito
+# Troca deliberada de um método da instância global do admin — é assim que se
+# restringe o acesso sem subclassear AdminSite e reconfigurar as URLs. O ignore
+# é do código exato dessa troca, não uma supressão ampla.
+admin.site.has_permission = acesso_admin_restrito  # type: ignore[method-assign]
 admin.site.site_header = "Administração do A.R.Q."
 admin.site.site_title = "A.R.Q. Admin"
 admin.site.index_title = "Cadastros e configuração"

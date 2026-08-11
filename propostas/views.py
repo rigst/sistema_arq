@@ -65,7 +65,7 @@ def detalhe_proposta(request, pk):
                 return redirect("proposta_detalhe", pk=proposta.pk)
             if not form_termos.is_valid():
                 erros = "; ".join(
-                    f"{form_termos.fields[campo].label}: {' '.join(mensagens)}"
+                    f"{form_termos.fields[campo].label}: {' '.join(str(m) for m in mensagens)}"
                     for campo, mensagens in form_termos.errors.items()
                     if campo in form_termos.fields
                 )

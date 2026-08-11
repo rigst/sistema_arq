@@ -1,3 +1,6 @@
+from typing import cast
+
+from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
@@ -27,7 +30,9 @@ class UsuarioAdmin(UserAdmin):
         ),
     )
     fieldsets = (
-        *UserAdmin.fieldsets,
+        # `or ()` porque a assinatura de ModelAdmin declara fieldsets como
+        # opcional; o UserAdmin sempre define, mas o desempacotamento não sabe.
+        *(UserAdmin.fieldsets or ()),
         (
             "Informações adicionais",
             {"fields": ("perfil", "nome_exibicao", "criado_em", "atualizado_em")},
@@ -51,11 +56,16 @@ class UsuarioAdmin(UserAdmin):
             return queryset.none()
         return queryset.filter(pk=grupo.pk)
 
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        # `change` entra explícito só para casar com a assinatura de
+        # ModelAdmin.get_form; segue sendo repassado por kwargs, como antes.
+        form = super().get_form(request, obj, change=change, **kwargs)
         if "groups" in form.base_fields:
-            form.base_fields["groups"].queryset = self.grupos_empresa_queryset(request)
-            form.base_fields["groups"].label = "Empresa"
+            # base_fields é dict[str, Field]; queryset só existe no campo de
+            # relação que este de fato é.
+            grupos = cast(forms.ModelMultipleChoiceField, form.base_fields["groups"])
+            grupos.queryset = self.grupos_empresa_queryset(request)
+            grupos.label = "Empresa"
         return form
 
     def get_queryset(self, request):

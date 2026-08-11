@@ -1,6 +1,6 @@
 from django import forms
 
-from core.forms import ArqModelForm
+from core.forms import ArqModelForm, campo_relacionado
 from core.tenancy import queryset_da_empresa
 from crm.models import Cliente
 from projetos.models import Projeto
@@ -24,7 +24,9 @@ class PropostaForm(ArqModelForm):
     def __init__(self, *args, user=None, projeto=None, **kwargs):
         super().__init__(*args, **kwargs)
         if user is not None:
-            self.fields["cliente"].queryset = queryset_da_empresa(Cliente.objects.all(), user)
+            campo_relacionado(self, "cliente").queryset = queryset_da_empresa(
+                Cliente.objects.all(), user
+            )
         if self.instance and self.instance.pk and self.instance.projeto_gerado_id:
             self.fields["cliente"].disabled = True
             self.fields["tipo_projeto"].disabled = True

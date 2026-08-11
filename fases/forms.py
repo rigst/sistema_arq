@@ -1,6 +1,6 @@
 from django import forms
 
-from core.forms import ArqForm, ArqModelForm
+from core.forms import ArqForm, ArqModelForm, campo_relacionado
 from core.tenancy import queryset_da_empresa
 from tarefas.models import Tarefa
 
@@ -20,10 +20,10 @@ class FaseAjusteForm(ArqModelForm):
         super().__init__(*args, **kwargs)
         from fornecedores.models import Fornecedor
 
-        self.fields["fornecedor"].queryset = queryset_da_empresa(
+        campo_relacionado(self, "fornecedor").queryset = queryset_da_empresa(
             Fornecedor.objects.filter(ativo=True), user
         )
-        self.fields["fornecedor"].empty_label = "— equipe do escritório —"
+        campo_relacionado(self, "fornecedor").empty_label = "— equipe do escritório —"
 
 
 class LembreteForm(ArqModelForm):

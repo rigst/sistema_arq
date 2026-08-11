@@ -121,7 +121,9 @@ class ApontamentoHora(EmpresaModel):
     def segundos(self):
         """Tempo efetivamente trabalhado, sem as pausas."""
         fim = self.fim or timezone.now()
-        parado = self.segundos_pausa
+        # float desde o início: a pausa aberta abaixo soma total_seconds(), e o
+        # retorno é sempre em segundos fracionários.
+        parado = float(self.segundos_pausa)
         if self.pausado_em:
             # Pausa ainda aberta: conta até agora, ou até o fim se foi parado
             # sem retomar antes.
@@ -138,7 +140,9 @@ class ApontamentoHora(EmpresaModel):
             self.save(update_fields=["pausado_em"])
 
     def retomar(self):
-        if self.pausado:
+        # O `pausado_em is not None` repete o que `pausado` já garante, mas a
+        # garantia mora numa property e não chega até a subtração.
+        if self.pausado and self.pausado_em is not None:
             self.segundos_pausa += int((timezone.now() - self.pausado_em).total_seconds())
             self.pausado_em = None
             self.save(update_fields=["segundos_pausa", "pausado_em"])

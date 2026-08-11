@@ -1,6 +1,8 @@
+from typing import cast
+
 from django import forms
 
-from core.forms import ArqModelForm
+from core.forms import ArqModelForm, campo_relacionado
 from core.tenancy import queryset_da_empresa
 from crm.models import Cliente
 from projetos.models import Projeto
@@ -22,10 +24,16 @@ class CompromissoForm(ArqModelForm):
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["inicio"].input_formats = ["%Y-%m-%dT%H:%M"]
-        self.fields["fim"].input_formats = ["%Y-%m-%dT%H:%M"]
+        # input_formats existe em DateTimeField, não no Field genérico que a
+        # dict `fields` declara.
+        for nome in ("inicio", "fim"):
+            cast(forms.DateTimeField, self.fields[nome]).input_formats = ["%Y-%m-%dT%H:%M"]
         if user is not None:
-            self.fields["cliente"].queryset = queryset_da_empresa(Cliente.objects.all(), user)
+            campo_relacionado(self, "cliente").queryset = queryset_da_empresa(
+                Cliente.objects.all(), user
+            )
             self.fields["cliente"].required = False
-            self.fields["projeto"].queryset = queryset_da_empresa(Projeto.objects.all(), user)
+            campo_relacionado(self, "projeto").queryset = queryset_da_empresa(
+                Projeto.objects.all(), user
+            )
             self.fields["projeto"].required = False

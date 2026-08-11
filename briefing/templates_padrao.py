@@ -5,7 +5,27 @@ começar de uma folha em branco: as opções cobrem as respostas que aparecem em
 90% das reuniões, e o campo de complemento guarda o resto.
 """
 
-RESIDENCIAL = {
+from typing import NotRequired, TypedDict
+
+
+class PerguntaPadrao(TypedDict):
+    bloco: str
+    texto: str
+    tipo: str
+    # Só as perguntas de escolha trazem opções; as dissertativas, não. E a
+    # ajuda aparece apenas onde o enunciado sozinho não basta.
+    opcoes: NotRequired[list[str]]
+    ajuda: NotRequired[str]
+
+
+class TemplatePadrao(TypedDict):
+    nome: str
+    tipo_projeto: str
+    descricao: str
+    perguntas: list[PerguntaPadrao]
+
+
+RESIDENCIAL: TemplatePadrao = {
     "nome": "Residencial — interiores",
     "tipo_projeto": "residencial",
     "descricao": "Roteiro para reforma ou interiores de residência, do perfil do morador ao estilo.",
@@ -144,7 +164,7 @@ RESIDENCIAL = {
     ],
 }
 
-COMERCIAL = {
+COMERCIAL: TemplatePadrao = {
     "nome": "Comercial — loja e escritório",
     "tipo_projeto": "comercial",
     "descricao": "Roteiro para ponto comercial, com operação, público e identidade.",
@@ -219,7 +239,7 @@ COMERCIAL = {
     ],
 }
 
-ARQUITETURA_RESIDENCIAL = {
+ARQUITETURA_RESIDENCIAL: TemplatePadrao = {
     "nome": "Residencial — arquitetura e reforma",
     "tipo_projeto": "residencial",
     "descricao": "Programa, terreno, restrições, orçamento e critérios de desempenho para casas e reformas.",
@@ -325,7 +345,7 @@ ARQUITETURA_RESIDENCIAL = {
     ],
 }
 
-EMPRESARIAL = {
+EMPRESARIAL: TemplatePadrao = {
     "nome": "Empresarial — escritórios e sedes",
     "tipo_projeto": "empresarial",
     "descricao": "Roteiro para sedes e ambientes corporativos, com foco em equipes, fluxos e cultura.",
@@ -392,7 +412,7 @@ EMPRESARIAL = {
     ],
 }
 
-INSTITUCIONAL = {
+INSTITUCIONAL: TemplatePadrao = {
     "nome": "Institucional — equipamentos coletivos",
     "tipo_projeto": "institucional",
     "descricao": "Roteiro para escolas, espaços culturais, públicos, assistenciais e comunitários.",
@@ -451,7 +471,7 @@ INSTITUCIONAL = {
     ],
 }
 
-URBANISMO = {
+URBANISMO: TemplatePadrao = {
     "nome": "Urbanismo — planejamento e desenho urbano",
     "tipo_projeto": "urbanismo",
     "descricao": "Roteiro para loteamentos, espaços públicos e planos urbanos, da escala territorial à implantação.",
@@ -519,4 +539,10 @@ URBANISMO = {
     ],
 }
 
-PADROES = [ARQUITETURA_RESIDENCIAL, COMERCIAL, EMPRESARIAL, INSTITUCIONAL, URBANISMO]
+PADROES: list[TemplatePadrao] = [
+    ARQUITETURA_RESIDENCIAL,
+    COMERCIAL,
+    EMPRESARIAL,
+    INSTITUCIONAL,
+    URBANISMO,
+]

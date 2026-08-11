@@ -1,6 +1,6 @@
 from django import forms
 
-from core.forms import ArqForm, ArqModelForm
+from core.forms import ArqForm, ArqModelForm, campo_relacionado
 from core.tenancy import queryset_da_empresa
 from projetos.models import Projeto
 
@@ -21,7 +21,9 @@ class ContratoForm(ArqModelForm):
     def __init__(self, *args, user=None, projeto=None, **kwargs):
         super().__init__(*args, **kwargs)
         if user is not None:
-            self.fields["projeto"].queryset = queryset_da_empresa(Projeto.objects.all(), user)
+            campo_relacionado(self, "projeto").queryset = queryset_da_empresa(
+                Projeto.objects.all(), user
+            )
         if self.instance and self.instance.pk:
             # Um contrato não troca de projeto durante a revisão da minuta.
             self.fields["projeto"].disabled = True

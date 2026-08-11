@@ -1,4 +1,5 @@
 from decimal import Decimal
+from typing import Any
 
 from django.db import models
 
@@ -64,15 +65,22 @@ class Orcamento(EmpresaModel, Rastreavel):
     @property
     def desvio(self):
         """Quanto o realizado passou do orçado, em reais. Negativo é economia."""
-        realizados = [i for i in self.itens.all() if i.valor_realizado is not None]
+        # Os pares saem já emparelhados do filtro para que valor_realizado
+        # chegue como Decimal, e não Decimal | None: o `is not None` da
+        # comprehension não acompanha o item até a soma seguinte.
+        realizados = [
+            (i.total, i.valor_realizado) for i in self.itens.all() if i.valor_realizado is not None
+        ]
         if not realizados:
             return None
-        orcado = sum((i.total for i in realizados), Decimal("0"))
-        return sum((i.valor_realizado for i in realizados), Decimal("0")) - orcado
+        orcado = sum((total for total, _ in realizados), Decimal("0"))
+        return sum((valor for _, valor in realizados), Decimal("0")) - orcado
 
     def por_categoria(self):
         """Soma por categoria, para o resumo do orçamento."""
-        acumulado = {}
+        # Any, e não um tipo fechado: a entrada mistura rótulo (str), total
+        # (Decimal) e contagem (int) na mesma dict.
+        acumulado: dict[str, dict[str, Any]] = {}
         for item in self.itens.select_related("fornecedor"):
             entrada = acumulado.setdefault(
                 item.categoria,

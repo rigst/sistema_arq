@@ -1,3 +1,5 @@
+from typing import Any
+
 from .models import OpcaoPergunta, PerguntaTemplate, TemplateBriefing
 from .templates_padrao import PADROES
 
@@ -39,7 +41,8 @@ def semear_templates_padrao(grupo, usuario=None):
 def perguntas_por_bloco(template):
     """Agrupa as perguntas na ordem em que os blocos aparecem."""
     blocos = []
-    indice = {}
+    # A entrada mistura o nome do bloco (str) com a lista de perguntas.
+    indice: dict[str, dict[str, Any]] = {}
     for pergunta in template.perguntas.prefetch_related("opcoes"):
         nome = pergunta.bloco or "Geral"
         if nome not in indice:

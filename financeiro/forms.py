@@ -1,7 +1,7 @@
 from django import forms
 from django.utils import timezone
 
-from core.forms import ArqForm, ArqModelForm
+from core.forms import ArqForm, ArqModelForm, campo_relacionado
 from core.tenancy import queryset_da_empresa
 from core.uploads import validar_extrato
 
@@ -21,9 +21,10 @@ class LancamentoForm(ArqModelForm):
             self.fields["data"].initial = timezone.localdate()
             self.fields["status"].initial = "realizado"
         if user is not None:
-            self.fields["conta"].queryset = queryset_da_empresa(ContaBancaria.objects.all(), user)
+            contas = queryset_da_empresa(ContaBancaria.objects.all(), user)
+            campo_relacionado(self, "conta").queryset = contas
             if not self.is_bound:
-                primeira_conta = self.fields["conta"].queryset.first()
+                primeira_conta = contas.first()
                 if primeira_conta is not None:
                     self.fields["conta"].initial = primeira_conta.pk
 
@@ -41,4 +42,6 @@ class ImportarExtratoForm(ArqForm):
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
         if user is not None:
-            self.fields["conta"].queryset = queryset_da_empresa(ContaBancaria.objects.all(), user)
+            campo_relacionado(self, "conta").queryset = queryset_da_empresa(
+                ContaBancaria.objects.all(), user
+            )

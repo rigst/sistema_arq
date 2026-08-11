@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
@@ -336,7 +338,8 @@ def briefing_pdf(request, projeto_pk):
     )
     briefing = get_object_or_404(Briefing.objects.all(), projeto=projeto)
     blocos = []
-    por_nome = {}
+    # A entrada mistura o nome do bloco (str) com a lista de respostas.
+    por_nome: dict[str, dict[str, Any]] = {}
     for resposta in briefing.respostas.select_related("pergunta").prefetch_related("opcoes"):
         nome = resposta.pergunta.bloco or "Geral"
         if nome not in por_nome:

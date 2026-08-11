@@ -8,6 +8,7 @@ URL própria, para poder ser guardado nos favoritos ou enviado para alguém.
 import calendar
 from dataclasses import dataclass, field
 from datetime import date
+from typing import Any
 
 from django.utils import timezone
 
@@ -73,7 +74,9 @@ def montar_mes(ano, mes, compromissos, hoje=None):
     """
     hoje = hoje or date.today()
 
-    por_dia = {}
+    # Any no valor porque `compromissos` chega sem tipo: a função aceita tanto
+    # o queryset quanto uma lista montada nos testes.
+    por_dia: dict[date, list[Any]] = {}
     for c in compromissos:
         por_dia.setdefault(dia_local(c), []).append(c)
 

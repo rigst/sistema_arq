@@ -138,13 +138,15 @@ class Documento(EmpresaModel):
     def nome_arquivo(self):
         from pathlib import Path
 
-        return Path(self.arquivo.name).name
+        # `or ""` porque FileField.name é None enquanto nenhum arquivo foi
+        # atribuído — e Path(None) levanta TypeError em vez de devolver vazio.
+        return Path(self.arquivo.name or "").name
 
     @property
     def extensao(self):
         from pathlib import Path
 
-        return Path(self.arquivo.name).suffix.removeprefix(".").upper() or "ARQ"
+        return Path(self.arquivo.name or "").suffix.removeprefix(".").upper() or "ARQ"
 
 
 class ModeloContrato(EmpresaModel, Rastreavel):

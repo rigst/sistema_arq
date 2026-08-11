@@ -76,10 +76,10 @@ jobs:
         CELERY_BROKER_URL=
         CELERY_RESULT_BACKEND=
 
-      # Só o mypy ainda não bloqueia — o código não está tipado. O bandit saiu
-      # do soft-fail porque o portão agora é por severidade (zero achados
-      # altos); o pip-audit saiu porque não há CVE aberta.
-      soft-fail: "mypy"
+      # Nada em soft-fail: toda etapa bloqueia. O mypy foi o último a sair,
+      # depois que o plugin do django-stubs entrou no pipeline compartilhado e
+      # os 64 erros restantes foram resolvidos um a um.
+      soft-fail: ""
 
       run-sonar: true
       sonar-project-key: rigst_sistema_arq

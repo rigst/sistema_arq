@@ -124,7 +124,8 @@ class Arquivo(EmpresaModel, Rastreavel):
     @property
     def tamanho_legivel(self):
         try:
-            n = self.arquivo.size
+            # float porque a divisão por 1024 abaixo já produz fracionário.
+            n = float(self.arquivo.size)
         except (ValueError, OSError):
             return ""
         for unidade in ("B", "kB", "MB", "GB"):

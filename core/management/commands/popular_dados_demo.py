@@ -180,14 +180,14 @@ class Command(BaseCommand):
 
         residencia = projetos["Residência Alameda"]
         fases_residencia = list(residencia.fases.order_by("ordem"))
-        for indice, fase in enumerate(fases_residencia):
+        for indice, fase_projeto in enumerate(fases_residencia):
             if indice < 4:
                 novo_status = Fase.APROVADA
             elif indice == 4:
                 novo_status = Fase.EM_ELABORACAO
             else:
                 novo_status = Fase.NAO_INICIADA
-            Fase.objects.filter(pk=fase.pk).update(
+            Fase.objects.filter(pk=fase_projeto.pk).update(
                 status=novo_status,
                 prazo=hoje + timedelta(days=14 + indice * 9),
             )
@@ -294,7 +294,7 @@ class Command(BaseCommand):
         for numero, (dias, paga) in enumerate(
             ((-30, True), (0, True), (30, False), (60, False)), 1
         ):
-            valor = Decimal("10500.00")
+            valor_parcela = Decimal("10500.00")
             lancamento, _ = Lancamento.objects.update_or_create(
                 empresa=grupo,
                 descricao=f"Contrato DEMO-2026-001 — parcela {numero}",
@@ -302,7 +302,7 @@ class Command(BaseCommand):
                     "conta": conta,
                     "tipo": "entrada",
                     "projeto": residencia,
-                    "valor": valor,
+                    "valor": valor_parcela,
                     "data": hoje + timedelta(days=dias),
                     "status": "realizado" if paga else "previsto",
                     "criado_por": usuario,
@@ -314,7 +314,7 @@ class Command(BaseCommand):
                 numero=numero,
                 defaults={
                     "descricao": f"Parcela {numero}/4",
-                    "valor": valor,
+                    "valor": valor_parcela,
                     "vencimento": hoje + timedelta(days=dias),
                     "paga": paga,
                     "lancamento": lancamento,

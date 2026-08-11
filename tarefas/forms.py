@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django import forms
 
-from core.forms import ArqModelForm
+from core.forms import ArqModelForm, campo_relacionado
 from core.tenancy import queryset_da_empresa
 from projetos.models import Projeto
 
@@ -53,24 +53,26 @@ class TarefaForm(ArqModelForm):
     def __init__(self, *args, user=None, projeto=None, **kwargs):
         super().__init__(*args, **kwargs)
         if user is not None:
-            self.fields["projeto"].queryset = queryset_da_empresa(Projeto.objects.all(), user)
+            campo_relacionado(self, "projeto").queryset = queryset_da_empresa(
+                Projeto.objects.all(), user
+            )
             self.fields["projeto"].required = False
 
             from core.tenancy import obter_grupo_empresa_usuario
 
             grupo = obter_grupo_empresa_usuario(user)
             if grupo is not None:
-                self.fields["responsavel"].queryset = grupo.user_set.all()
+                campo_relacionado(self, "responsavel").queryset = grupo.user_set.all()
             self.fields["responsavel"].required = False
 
             # Nem toda tarefa é da equipe: detalhamento de marcenaria, cálculo
             # estrutural e afins saem para quem executa.
             from fornecedores.models import Fornecedor
 
-            self.fields["fornecedor"].queryset = queryset_da_empresa(
+            campo_relacionado(self, "fornecedor").queryset = queryset_da_empresa(
                 Fornecedor.objects.filter(ativo=True), user
             )
-            self.fields["fornecedor"].empty_label = "— equipe interna —"
+            campo_relacionado(self, "fornecedor").empty_label = "— equipe interna —"
             self.fields["fornecedor"].required = False
 
         if projeto is not None:
@@ -78,15 +80,15 @@ class TarefaForm(ArqModelForm):
             # são as dele, não as de todos os projetos da empresa.
             self.fields["projeto"].initial = projeto.pk
             self.fields["projeto"].disabled = True
-            self.fields["fase"].queryset = projeto.fases.all()
-            self.fields["fase"].empty_label = "— sem fase específica —"
+            campo_relacionado(self, "fase").queryset = projeto.fases.all()
+            campo_relacionado(self, "fase").empty_label = "— sem fase específica —"
         elif user is not None:
             from fases.models import Fase
 
-            self.fields["fase"].queryset = queryset_da_empresa(
+            campo_relacionado(self, "fase").queryset = queryset_da_empresa(
                 Fase.objects.select_related("projeto"), user
             )
-            self.fields["fase"].empty_label = "— sem fase específica —"
+            campo_relacionado(self, "fase").empty_label = "— sem fase específica —"
         self.fields["fase"].required = False
 
         # Tarefa nova nasce aberta; status é acompanhamento, não cadastro.

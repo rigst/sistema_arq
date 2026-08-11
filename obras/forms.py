@@ -1,7 +1,7 @@
 from django import forms
 from django.db.models import Q
 
-from core.forms import ArqModelForm
+from core.forms import ArqModelForm, campo_relacionado
 from core.tenancy import queryset_da_empresa
 from projetos.models import Projeto
 
@@ -40,7 +40,7 @@ class ObraForm(ArqModelForm):
                 qs = qs.filter(Q(obra__isnull=True) | Q(pk=self.instance.projeto_id))
             else:
                 qs = qs.filter(obra__isnull=True)
-            self.fields["projeto"].queryset = qs
+            campo_relacionado(self, "projeto").queryset = qs
         if projeto is not None:
             self.fields["projeto"].initial = projeto.pk
             self.fields["projeto"].disabled = True
@@ -81,7 +81,7 @@ class VisitaTecnicaForm(ArqModelForm):
     def __init__(self, *args, obra=None, **kwargs):
         super().__init__(*args, **kwargs)
         if obra is not None:
-            self.fields["etapa"].queryset = obra.etapas.all()
+            campo_relacionado(self, "etapa").queryset = obra.etapas.all()
             self.fields["etapa"].required = False
 
 
@@ -95,4 +95,4 @@ class MedicaoForm(ArqModelForm):
     def __init__(self, *args, obra=None, **kwargs):
         super().__init__(*args, **kwargs)
         if obra is not None:
-            self.fields["etapa"].queryset = obra.etapas.all()
+            campo_relacionado(self, "etapa").queryset = obra.etapas.all()

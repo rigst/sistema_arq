@@ -1,6 +1,6 @@
 from django import forms
 
-from core.forms import ArqModelForm
+from core.forms import ArqModelForm, campo_relacionado
 from core.tenancy import queryset_da_empresa
 from fornecedores.models import Fornecedor
 
@@ -35,7 +35,7 @@ class ItemOrcamentoForm(ArqModelForm):
         super().__init__(*args, **kwargs)
         # O select de fornecedor só pode oferecer fornecedores da própria empresa.
         base = Fornecedor.objects.filter(ativo=True)
-        self.fields["fornecedor"].queryset = (
+        campo_relacionado(self, "fornecedor").queryset = (
             queryset_da_empresa(base, user) if user else Fornecedor.objects.none()
         )
-        self.fields["fornecedor"].empty_label = "Sem fornecedor definido"
+        campo_relacionado(self, "fornecedor").empty_label = "Sem fornecedor definido"

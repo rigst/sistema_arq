@@ -1,4 +1,17 @@
+from typing import TYPE_CHECKING, cast
+
 from django import forms
+
+
+def campo_relacionado(formulario: forms.BaseForm, nome: str) -> forms.ModelChoiceField:
+    """O campo de escolha por relação, para ajustar `queryset` e `empty_label`.
+
+    `formulario.fields` é `dict[str, Field]`, e esses dois atributos só existem
+    em `ModelChoiceField`. O formulário sabe qual campo é qual; o verificador de
+    tipos, não. Esta função é onde essa afirmação fica escrita uma vez, em vez
+    de repetida em cada `__init__` que restringe um select por empresa.
+    """
+    return cast(forms.ModelChoiceField, formulario.fields[nome])
 
 
 class SemDoisPontosMixin:
@@ -25,6 +38,12 @@ class NomeAcessivelMixin:
     Onde o rótulo visível existe, o `for`/`id` continua valendo e o aria-label
     apenas repete o mesmo texto, sem conflito.
     """
+
+    if TYPE_CHECKING:
+        # Quem traz `fields` é o Form ao lado do qual este mixin sempre entra.
+        # Declarar aqui deixa o corpo do __init__ ser verificado sem herdar de
+        # Form — herança que criaria MRO errado e mudaria o comportamento.
+        fields: dict[str, forms.Field]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

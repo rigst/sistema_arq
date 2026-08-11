@@ -1,3 +1,5 @@
+from typing import cast
+
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -5,7 +7,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from core.estados import UF_CHOICES
-from core.forms import ArqForm
+from core.forms import ArqForm, campo_relacionado
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 from crm.models import Cliente
 from fases.models import criar_complementares_avulsos, montar_fases
@@ -84,15 +86,19 @@ class AberturaForm(ArqForm):
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["cliente_existente"].queryset = queryset_da_empresa(
+        campo_relacionado(self, "cliente_existente").queryset = queryset_da_empresa(
             Cliente.objects.filter(ativo=True), user
         )
         from fases.catalogo import COMPLEMENTARES_NOMEADOS as COMPLEMENTARES
 
-        self.fields["complementares"].choices = [(p.chave, p.nome) for p in COMPLEMENTARES]
+        campo_complementares = cast(forms.ChoiceField, self.fields["complementares"])
+        campo_complementares.choices = [(p.chave, p.nome) for p in COMPLEMENTARES]
 
     def clean(self):
-        dados = super().clean()
+        # `or {}` porque Form.clean() pode devolver None quando uma subclasse
+        # esquece o return — e aí o .get() abaixo estouraria em AttributeError
+        # no meio da validação, escondendo o erro real do formulário.
+        dados = super().clean() or {}
         if not dados.get("cliente_existente") and not (dados.get("cliente_nome") or "").strip():
             raise forms.ValidationError(
                 "Escolha um cliente já cadastrado ou informe o nome de um novo."

@@ -1,6 +1,6 @@
 from django import forms
 
-from core.forms import ArqModelForm
+from core.forms import ArqModelForm, campo_relacionado
 from core.tenancy import queryset_da_empresa
 from crm.models import Cliente
 
@@ -43,12 +43,12 @@ class ProjetoForm(ArqModelForm):
         if self.instance.pk is None:
             del self.fields["status"]
         if user is not None:
-            self.fields["cliente"].queryset = queryset_da_empresa(
+            campo_relacionado(self, "cliente").queryset = queryset_da_empresa(
                 Cliente.objects.filter(ativo=True), user
             )
             from .models import Tag
 
-            self.fields["tags"].queryset = queryset_da_empresa(Tag.objects.all(), user)
+            campo_relacionado(self, "tags").queryset = queryset_da_empresa(Tag.objects.all(), user)
 
 
 class PlanejamentoProjetoForm(ArqModelForm):

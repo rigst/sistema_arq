@@ -1,6 +1,6 @@
 from django import forms
 
-from core.forms import ArqModelForm
+from core.forms import ArqModelForm, campo_relacionado
 from core.tenancy import queryset_da_empresa
 from projetos.models import Projeto
 
@@ -36,5 +36,7 @@ class ObrigacaoTecnicaForm(ArqModelForm):
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
         if user is not None:
-            self.fields["projeto"].queryset = queryset_da_empresa(Projeto.objects.all(), user)
+            campo_relacionado(self, "projeto").queryset = queryset_da_empresa(
+                Projeto.objects.all(), user
+            )
         self.fields["projeto"].required = False

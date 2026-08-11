@@ -41,7 +41,9 @@ def varrer_empresa(grupo):
         status="concluida"
     )
     for t in tarefas:
-        atrasada = t.prazo < hoje
+        # O `is not None` repete a garantia do prazo__isnull=False acima: o
+        # filtro está no queryset, longe daqui, e não acompanha o item.
+        atrasada = t.prazo is not None and t.prazo < hoje
         criadas += _emitir(
             grupo,
             chave=f"tarefa-prazo-{t.pk}",

@@ -19,10 +19,12 @@ Uso, no `apps.py` de cada módulo de negócio:
 """
 
 import logging
+from collections.abc import Callable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
-_LIMPADORES = []
+_LIMPADORES: list[Callable[[Any], Any]] = []
 
 
 def registrar_limpeza(func):

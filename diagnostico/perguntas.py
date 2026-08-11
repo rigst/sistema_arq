@@ -1,7 +1,19 @@
 """Questionário público de maturidade em gestão (stateless, sem persistência).
 5 perguntas × 4 dimensões, 0–2 pontos por resposta, máximo 10 pontos."""
 
-PERGUNTAS = [
+from typing import TypedDict
+
+
+class Pergunta(TypedDict):
+    id: str
+    dimensao: str
+    texto: str
+    # Cada opção é (texto, pontos). Sem esta anotação o verificador de tipos vê
+    # a dict inteira como str e a soma de pontos vira "int + str".
+    opcoes: list[tuple[str, int]]
+
+
+PERGUNTAS: list[Pergunta] = [
     {
         "id": "projetos",
         "dimensao": "Controle de projetos",
