@@ -28,7 +28,10 @@ else:
 
 ENV = os.getenv("DJANGO_ENV", "development").lower()
 IS_PRODUCTION = ENV == "production"
-IS_TEST = "test" in sys.argv
+# `manage.py test` põe "test" no argv; o pytest não põe nada parecido. Sem a
+# segunda condição o bloco `if IS_TEST` mais abaixo nunca valia para a suíte
+# que o CI roda de verdade, que é a do pytest.
+IS_TEST = "test" in sys.argv or Path(sys.argv[0]).name.startswith(("pytest", "py.test"))
 
 
 def env_bool(nome, default=False):
@@ -290,7 +293,7 @@ if IS_PRODUCTION:
     CSRF_COOKIE_SAMESITE = "Lax"
 
 if IS_TEST:
-    PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
+    PASSWORD_HASHERS = ["core.hashers.PBKDF2RapidoParaTestes"]
     EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 
 LOGGING = {
