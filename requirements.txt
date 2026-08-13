@@ -3,7 +3,7 @@ Django==6.0.7
 dj-database-url==3.0.1
 psycopg[binary]==3.2.12
 pillow==12.3.0
-celery==5.4.0
+celery==5.6.3
 redis==5.2.1
 gunicorn==23.0.0
 sqlparse==0.5.5
