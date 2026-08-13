@@ -66,7 +66,7 @@ class AceiteTests(TestCase):
         self.client.post(
             "/aceite/",
             {"aceito": "1"},
-            REMOTE_ADDR="10.0.0.1",
+            REMOTE_ADDR="192.0.2.1",
             HTTP_X_FORWARDED_FOR="198.51.100.4, 203.0.113.9",
         )
         self.assertEqual(AceiteLegal.objects.first().ip, "198.51.100.4")
