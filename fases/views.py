@@ -6,7 +6,7 @@ from django.db.models import Max, Sum
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_safe
 
 from core.tenancy import queryset_da_empresa
 from projetos.models import Projeto
@@ -24,6 +24,15 @@ from .models import Fase, Lembrete, criar_complementares_avulsos, montar_fases
 from .services import garantir_tarefas_da_fase
 
 
+def _voltar_para_fases(projeto_pk):
+    """Volta ao projeto já rolado até a lista de fases.
+
+    Os quatro pontos que redirecionam para cá repetiam o reverse mais a âncora;
+    errar a âncora num deles jogava o usuário no topo da página sem aviso.
+    """
+    return redirect(reverse("projeto_detalhe", kwargs={"pk": projeto_pk}) + "#fases")
+
+
 def _minhas(user):
     return queryset_da_empresa(
         Fase.objects.select_related("projeto", "projeto__cliente", "fornecedor"), user
@@ -34,13 +43,14 @@ def _voltar(fase):
     return reverse("fase_detalhe", kwargs={"pk": fase.pk})
 
 
+@require_safe
 @login_required
 def detalhe(request, pk):
     """A área de trabalho da fase: o que produzir, o material e o histórico."""
     fase = get_object_or_404(_minhas(request.user), pk=pk)
     if fase.bloqueada:
         messages.error(request, fase.impedimento)
-        return redirect(reverse("projeto_detalhe", kwargs={"pk": fase.projeto_id}) + "#fases")
+        return _voltar_para_fases(fase.projeto_id)
     if fase.chave == "briefing":
         # O briefing não tem material solto nem tarefa: ele É a conversa. Ter
         # uma tela intermediária com arquivos vazios só somava um clique.
@@ -48,7 +58,7 @@ def detalhe(request, pk):
     if fase.chave == "proposta":
         return _fase_proposta(request, fase)
     if fase.chave == "contrato":
-        return _fase_contrato(request, fase)
+        return _fase_contrato(fase)
     garantir_tarefas_da_fase(fase, request.user)
     arquivos = list(fase.arquivos.select_related("criado_por").order_by("-criado_em"))
     tarefas = fase.tarefas.all()
@@ -79,7 +89,7 @@ def _fase_proposta(request, fase):
     return redirect("proposta_detalhe", pk=proposta.pk)
 
 
-def _fase_contrato(request, fase):
+def _fase_contrato(fase):
     """O contrato só fica acessível quando a proposta já foi aprovada."""
     contrato = fase.projeto.contratos.order_by("-criado_em").first()
     if contrato is not None:
@@ -201,6 +211,7 @@ def editar_tarefa(request, pk):
     )
 
 
+@require_safe
 @login_required
 def linha_tarefa(request, pk):
     tarefa = _tarefa_da_fase(request.user, pk)
@@ -337,7 +348,7 @@ def editar_complementares(request, projeto_pk):
     montar_fases(projeto, complementares=marcados - atuais)
     criar_complementares_avulsos(projeto, request.POST.get("complementar_outro", ""))
     messages.success(request, f"Complementares de {projeto.nome} atualizados.")
-    return redirect(reverse("projeto_detalhe", kwargs={"pk": projeto.pk}) + "#fases")
+    return _voltar_para_fases(projeto.pk)
 
 
 @require_POST
@@ -355,7 +366,7 @@ def ativar_complementar(request, projeto_pk):
         messages.success(request, f"{passo.nome} adicionado ao projeto.")
     else:
         messages.info(request, f"{passo.nome} já estava no projeto.")
-    return redirect(reverse("projeto_detalhe", kwargs={"pk": projeto.pk}) + "#fases")
+    return _voltar_para_fases(projeto.pk)
 
 
 @require_POST
@@ -371,7 +382,7 @@ def remover_complementar(request, pk):
         arquivo.arquivo.delete(save=False)
     fase.delete()
     messages.success(request, f"{nome} removido do projeto.")
-    return redirect(reverse("projeto_detalhe", kwargs={"pk": projeto_pk}) + "#fases")
+    return _voltar_para_fases(projeto_pk)
 
 
 # ------------------------------------------------------------- arquivos
@@ -425,6 +436,7 @@ def alternar_favorito_arquivo(request, pk):
     return redirect(_voltar(arquivo.fase))
 
 
+@require_safe
 @login_required
 def ver_arquivo(request, pk):
     """Serve o arquivo pelo sistema, e não pela pasta de mídia.

@@ -3,7 +3,7 @@ from typing import Any
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_safe
 
 from core.tenancy import queryset_da_empresa
 from projetos.models import Projeto
@@ -22,6 +22,7 @@ def _get_briefing(request, projeto_pk):
     return projeto, briefing
 
 
+@require_safe
 @login_required
 def editar_briefing(request, projeto_pk):
     """Rota antiga dos "blocos NBR", que agora moram na mesma tela do roteiro.
@@ -100,6 +101,7 @@ def _meus_templates(user):
     return queryset_da_empresa(TemplateBriefing.objects.all(), user)
 
 
+@require_safe
 @login_required
 def templates_lista(request):
     return redirect("modelos")
@@ -328,6 +330,7 @@ def responder(request, projeto_pk):
     )
 
 
+@require_safe
 @login_required
 def briefing_pdf(request, projeto_pk):
     from core.pdf import render_pdf

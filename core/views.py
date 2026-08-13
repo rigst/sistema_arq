@@ -11,7 +11,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_safe
 
 from core.tenancy import definir_empresa_ativa, obter_empresa_ativa_usuario
 
@@ -44,6 +44,7 @@ def _primeiro_nome_usuario(usuario):
     return nome.split()[0] if nome else ""
 
 
+@require_safe
 def healthz(request):
     healthz_token = getattr(settings, "HEALTHZ_TOKEN", "")
     if healthz_token:
@@ -59,6 +60,7 @@ def healthz(request):
     return JsonResponse({"status": "ok"})
 
 
+@require_safe
 @login_required
 def dashboard(request):
     """Painel inicial — cockpit: indicadores do escritório, próximo passo da
@@ -224,6 +226,7 @@ def identidade(request):
     return render(request, "core/identidade.html", {"form": form, "empresa": empresa})
 
 
+@require_safe
 @login_required
 def imagem_identidade(request, tipo):
     empresa = obter_empresa_ativa_usuario(request.user)

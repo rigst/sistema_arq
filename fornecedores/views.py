@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import ProtectedError
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_safe
 
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 
@@ -14,6 +14,7 @@ def _meus(user):
     return queryset_da_empresa(Fornecedor.objects.all(), user)
 
 
+@require_safe
 @login_required
 def lista(request):
     categoria = request.GET.get("categoria", "")

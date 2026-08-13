@@ -7,7 +7,7 @@ from django.db.models import Case, IntegerField, Max, When
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_safe
 
 from core.contexto import projeto_do_pedido
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
@@ -155,6 +155,7 @@ def detalhe_contrato(request, pk):
     )
 
 
+@require_safe
 @login_required
 def baixar_documento(request, pk):
     documento = get_object_or_404(
@@ -173,6 +174,7 @@ def baixar_documento(request, pk):
     return resposta
 
 
+@require_safe
 @login_required
 def contrato_pdf(request, pk):
     from django.utils import timezone
@@ -280,12 +282,12 @@ def editar_parcela(request, pk):
             return _parcelas_ou_redirect(request, parcela.contrato)
         return render(
             request,
-            "contratos/_parcela_linha.html",
+            TEMPLATE_PARCELA_LINHA,
             {"contrato": parcela.contrato, "parcela": parcela, "form_edicao": form},
         )
     return render(
         request,
-        "contratos/_parcela_linha.html",
+        TEMPLATE_PARCELA_LINHA,
         {
             "contrato": parcela.contrato,
             "parcela": parcela,
@@ -294,13 +296,14 @@ def editar_parcela(request, pk):
     )
 
 
+@require_safe
 @login_required
 def linha_parcela(request, pk):
     parcela = get_object_or_404(
         queryset_da_empresa(Parcela.objects.select_related("contrato"), request.user), pk=pk
     )
     return render(
-        request, "contratos/_parcela_linha.html", {"contrato": parcela.contrato, "parcela": parcela}
+        request, TEMPLATE_PARCELA_LINHA, {"contrato": parcela.contrato, "parcela": parcela}
     )
 
 
@@ -448,6 +451,7 @@ def editar_alteracao(request, pk):
     )
 
 
+@require_safe
 @login_required
 def linha_alteracao(request, pk):
     alteracao = get_object_or_404(
@@ -529,6 +533,7 @@ def editar_documento(request, pk):
     )
 
 
+@require_safe
 @login_required
 def linha_documento(request, pk):
     documento = get_object_or_404(
@@ -675,11 +680,14 @@ from .forms import ModeloContratoForm  # noqa: E402
 from .modelos_padrao import MODELOS_PADRAO  # noqa: E402
 from .models import ModeloContrato  # noqa: E402
 
+TEMPLATE_PARCELA_LINHA = "contratos/_parcela_linha.html"
+
 
 def _meus_modelos(user):
     return queryset_da_empresa(ModeloContrato.objects.all(), user)
 
 
+@require_safe
 @login_required
 def modelos_lista(request):
     return redirect("modelos")

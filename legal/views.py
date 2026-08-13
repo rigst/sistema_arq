@@ -4,6 +4,7 @@ from django.http import Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_safe
 
 from .models import DocumentoLegal
 from .services import documento_vigente, documentos_pendentes, registrar_aceites
@@ -25,10 +26,12 @@ def _outro_tipo(tipo):
     return documento_vigente(alvo)
 
 
+@require_safe
 def termos(request):
     return _documento_publico(request, DocumentoLegal.TERMOS)
 
 
+@require_safe
 def privacidade(request):
     return _documento_publico(request, DocumentoLegal.PRIVACIDADE)
 

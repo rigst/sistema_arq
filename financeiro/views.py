@@ -7,7 +7,7 @@ from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_safe
 
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 
@@ -27,6 +27,7 @@ def _periodo(request):
     return ano, mes
 
 
+@require_safe
 @login_required
 def dre_view(request):
     grupo = obter_grupo_empresa_ou_erro(request.user)
@@ -36,6 +37,7 @@ def dre_view(request):
     )
 
 
+@require_safe
 @login_required
 def dre_csv(request):
     grupo = obter_grupo_empresa_ou_erro(request.user)

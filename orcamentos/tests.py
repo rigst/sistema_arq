@@ -64,7 +64,7 @@ class OrcamentoTests(TestCase):
         fornecedor = Fornecedor.objects.create(empresa=self.grupo, nome="Marcenaria Silva")
         self._item(descricao="Armário", fornecedor=fornecedor)
 
-        self.client.get(f"/orcamentos/projeto/{self.projeto.pk}/novo/")
+        self.client.post(f"/orcamentos/projeto/{self.projeto.pk}/novo/")
 
         self.orcamento.refresh_from_db()
         self.assertEqual(self.orcamento.status, "revisado")
@@ -74,6 +74,13 @@ class OrcamentoTests(TestCase):
         self.assertEqual(nova.itens.first().fornecedor, fornecedor)
         # O BDI acompanha a versão anterior — reorçar não é redefinir a política.
         self.assertEqual(nova.bdi_percent, Decimal("20"))
+
+    def test_nova_versao_recusa_get(self):
+        # A view cria orçamento; como link ela era disparada por prefetch do
+        # navegador e por robô, gerando versão fantasma.
+        resposta = self.client.get(f"/orcamentos/projeto/{self.projeto.pk}/novo/")
+        self.assertEqual(resposta.status_code, 405)
+        self.assertEqual(self.projeto.orcamentos.count(), 1)
 
     def test_lancar_item_pela_tela(self):
         resposta = self.client.post(

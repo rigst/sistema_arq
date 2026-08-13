@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_safe
 
 from core.tenancy import queryset_da_empresa
 from precificacao.models import FatorPrecificacao
@@ -294,6 +294,7 @@ def editar_item(request, pk):
     )
 
 
+@require_safe
 @login_required
 def linha_item(request, pk):
     """A mesma linha em leitura — é o que o Cancelar da edição traz de volta."""
@@ -419,6 +420,7 @@ def reabrir_proposta(request, pk):
     return redirect("proposta_detalhe", pk=proposta.pk)
 
 
+@require_safe
 @login_required
 def proposta_pdf(request, pk):
     from django.utils import timezone
