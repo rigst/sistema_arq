@@ -14,7 +14,7 @@
                 <a href="{% url 'briefing_pdf' projeto.pk %}" target="_blank" rel="noopener">Briefing</a>
                 <span class="arquivo-meta">Documento gerado · atualizado em {{ briefing_principal.atualizado_em|date:"d/m/y H:i" }}</span>
             </div>
-            <a class="linha-ico" href="{% url 'briefing_pdf' projeto.pk %}" target="_blank" rel="noopener" title="Abrir PDF" aria-label="Abrir briefing em PDF">
+            <a class="linha-ico" href="{% url 'briefing_pdf' projeto.pk %}" target="_blank" rel="noopener" title="Abrir PDF" aria-label="Abrir PDF do briefing">
                 {% include "core/_ico.html" with ico="pdf" %}
             </a>
         </li>
@@ -27,7 +27,7 @@
                 <a href="{% url 'proposta_pdf' proposta_principal.pk %}" target="_blank" rel="noopener">{{ proposta_principal.titulo }}</a>
                 <span class="arquivo-meta">Proposta · {{ proposta_principal.get_status_display }}</span>
             </div>
-            <a class="linha-ico" href="{% url 'proposta_pdf' proposta_principal.pk %}" target="_blank" rel="noopener" title="Abrir PDF" aria-label="Abrir proposta em PDF">
+            <a class="linha-ico" href="{% url 'proposta_pdf' proposta_principal.pk %}" target="_blank" rel="noopener" title="Abrir PDF" aria-label="Abrir PDF da proposta">
                 {% include "core/_ico.html" with ico="pdf" %}
             </a>
         </li>
@@ -40,7 +40,7 @@
                 <a href="{% url 'contrato_pdf' contrato_principal.pk %}" target="_blank" rel="noopener">{{ contrato_principal.titulo }}</a>
                 <span class="arquivo-meta">Contrato · {{ contrato_principal.get_status_display }}</span>
             </div>
-            <a class="linha-ico" href="{% url 'contrato_pdf' contrato_principal.pk %}" target="_blank" rel="noopener" title="Abrir PDF" aria-label="Abrir contrato em PDF">
+            <a class="linha-ico" href="{% url 'contrato_pdf' contrato_principal.pk %}" target="_blank" rel="noopener" title="Abrir PDF" aria-label="Abrir PDF do contrato">
                 {% include "core/_ico.html" with ico="pdf" %}
             </a>
         </li>
@@ -53,7 +53,7 @@
                 <a href="{% url 'contrato_documento_baixar' documento.pk %}">{{ documento.titulo }}</a>
                 <span class="arquivo-meta">Documento do contrato · {{ documento.criado_em|date:"d/m/y H:i" }}</span>
             </div>
-            <a class="linha-ico" href="{% url 'contrato_documento_baixar' documento.pk %}" title="Baixar arquivo" aria-label="Baixar {{ documento.titulo }}">
+            <a class="linha-ico" href="{% url 'contrato_documento_baixar' documento.pk %}" title="Baixar arquivo" aria-label="Baixar arquivo {{ documento.titulo }}">
                 {% include "core/_ico.html" with ico="baixar" %}
             </a>
         </li>
