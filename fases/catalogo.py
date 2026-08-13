@@ -12,6 +12,9 @@ confirmada é o retrabalho mais caro do escritório.
 
 from dataclasses import dataclass
 
+# Entrada comum a todas as fases complementares: elas partem do executivo.
+CONSOME_EXECUTIVO_APROVADO = "O projeto executivo aprovado."
+
 
 @dataclass(frozen=True)
 class Passo:
@@ -101,7 +104,7 @@ COMPLEMENTARES = (
         nome="Projeto estrutural",
         resumo="Cálculo e detalhamento da estrutura.",
         entrega=("Lançamento estrutural", "Dimensionamento", "Detalhamento e ferragem"),
-        consome="O projeto executivo aprovado.",
+        consome=CONSOME_EXECUTIVO_APROVADO,
         opcional=True,
         grupo="complementar",
     ),
@@ -110,7 +113,7 @@ COMPLEMENTARES = (
         nome="Projeto elétrico",
         resumo="Pontos, circuitos, quadros e luminotécnico.",
         entrega=("Pontos e circuitos", "Quadro de cargas", "Luminotécnico"),
-        consome="O projeto executivo aprovado.",
+        consome=CONSOME_EXECUTIVO_APROVADO,
         opcional=True,
         grupo="complementar",
     ),
@@ -119,7 +122,7 @@ COMPLEMENTARES = (
         nome="Projeto hidrossanitário",
         resumo="Água fria e quente, esgoto e pluvial.",
         entrega=("Água fria e quente", "Esgoto e pluvial", "Reservação e detalhes"),
-        consome="O projeto executivo aprovado.",
+        consome=CONSOME_EXECUTIVO_APROVADO,
         opcional=True,
         grupo="complementar",
     ),
@@ -131,7 +134,7 @@ COMPLEMENTARES = (
         nome="Complementar",
         resumo="Um complementar específico deste projeto.",
         entrega=("Projeto e detalhamento", "Compatibilização com o arquitetônico"),
-        consome="O projeto executivo aprovado.",
+        consome=CONSOME_EXECUTIVO_APROVADO,
         opcional=True,
         grupo="complementar",
     ),
@@ -140,7 +143,7 @@ COMPLEMENTARES = (
         nome="Paisagismo",
         resumo="Massas vegetais, espécies e irrigação.",
         entrega=("Planta de paisagismo", "Lista de espécies", "Irrigação e drenagem"),
-        consome="O projeto executivo aprovado.",
+        consome=CONSOME_EXECUTIVO_APROVADO,
         opcional=True,
         grupo="complementar",
     ),

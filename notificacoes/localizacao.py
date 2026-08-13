@@ -10,6 +10,10 @@ junto — é a diferença entre "em Fases" e "em Estudo preliminar · Casa Ipê"
 
 import logging
 
+# Rótulos de área repetidos por várias rotas do mesmo módulo.
+AREA_ARQUIVOS_FASE = "Arquivos da fase"
+AREA_EXECUCAO = "Execução"
+
 logger = logging.getLogger(__name__)
 
 # Nome da rota → como a pessoa chama aquela tela.
@@ -25,14 +29,14 @@ POR_ROTA = {
     "fase_responder": "Fase",
     "fase_concluir": "Fase",
     "fase_ajustar": "Fase",
-    "fase_anexar": "Arquivos da fase",
+    "fase_anexar": AREA_ARQUIVOS_FASE,
     "fase_comentar": "Lembretes",
     "fase_nova_tarefa": "Tarefas da fase",
     "fase_editar_complementares": "Fases do projeto",
     "fase_ativar_complementar": "Fases do projeto",
-    "fase_arquivo_editar": "Arquivos da fase",
-    "fase_arquivo_remover": "Arquivos da fase",
-    "fase_arquivo_favorito": "Arquivos da fase",
+    "fase_arquivo_editar": AREA_ARQUIVOS_FASE,
+    "fase_arquivo_remover": AREA_ARQUIVOS_FASE,
+    "fase_arquivo_favorito": AREA_ARQUIVOS_FASE,
     "lembrete_editar": "Lembretes",
     "lembrete_remover": "Lembretes",
     "projeto_lembrete": "Lembretes do projeto",
@@ -50,9 +54,9 @@ POR_ROTA = {
     "crm_detalhe": "Cliente",
     "crm_novo": "Clientes",
     "crm_editar": "Cliente",
-    "obras_lista": "Execução",
-    "obra_detalhe": "Execução",
-    "obra_nova": "Execução",
+    "obras_lista": AREA_EXECUCAO,
+    "obra_detalhe": AREA_EXECUCAO,
+    "obra_nova": AREA_EXECUCAO,
     "orcamentos_lista": "Orçamentos",
     "orcamento_detalhe": "Orçamento",
     "proposta_detalhe": "Proposta",

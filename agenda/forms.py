@@ -9,6 +9,10 @@ from projetos.models import Projeto
 
 from .models import Compromisso
 
+# O widget datetime-local do HTML só aceita este formato; usado na saída
+# (format) e na entrada (input_formats), que precisam casar.
+FORMATO_DATETIME_LOCAL = "%Y-%m-%dT%H:%M"
+
 
 class CompromissoForm(ArqModelForm):
     class Meta:
@@ -16,9 +20,11 @@ class CompromissoForm(ArqModelForm):
         fields = ["titulo", "tipo", "inicio", "fim", "local", "cliente", "projeto", "observacoes"]
         widgets = {
             "inicio": forms.DateTimeInput(
-                attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"
+                attrs={"type": "datetime-local"}, format=FORMATO_DATETIME_LOCAL
             ),
-            "fim": forms.DateTimeInput(attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
+            "fim": forms.DateTimeInput(
+                attrs={"type": "datetime-local"}, format=FORMATO_DATETIME_LOCAL
+            ),
             "observacoes": forms.Textarea(attrs={"rows": 2}),
         }
 
@@ -27,7 +33,7 @@ class CompromissoForm(ArqModelForm):
         # input_formats existe em DateTimeField, não no Field genérico que a
         # dict `fields` declara.
         for nome in ("inicio", "fim"):
-            cast(forms.DateTimeField, self.fields[nome]).input_formats = ["%Y-%m-%dT%H:%M"]
+            cast(forms.DateTimeField, self.fields[nome]).input_formats = [FORMATO_DATETIME_LOCAL]
         if user is not None:
             campo_relacionado(self, "cliente").queryset = queryset_da_empresa(
                 Cliente.objects.all(), user

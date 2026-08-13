@@ -9,8 +9,6 @@ As horas são deliberadamente redondas. Precisão falsa num padrão é pior do q
 número redondo: convence a pessoa a não conferir.
 """
 
-from fases import catalogo
-
 # (etapa, horas sugeridas, o que inclui). A ordem é a do fluxo contratado.
 FASES_DE_PROJETO = [
     (
@@ -99,25 +97,4 @@ def por_grupo():
     return [
         ("Fases do projeto", FASES_DE_PROJETO),
         ("Serviços à parte", SERVICOS_AVULSOS),
-    ]
-
-
-def para_o_tipo(tipo_projeto):
-    """Todas as fases do catálogo viram itens sugeridos.
-
-    O catálogo de fases já é a espinha do sistema; oferecer as mesmas etapas na
-    proposta mantém a promessa alinhada com o que vai ser entregue.
-    """
-    horas = {
-        "briefing": 8,
-        "proposta": 4,
-        "estudo_preliminar": 40,
-        "anteprojeto": 60,
-        "executivo": 80,
-    }
-    inclusoes = {nome: detalhe for nome, _, detalhe in FASES_DE_PROJETO}
-    return [
-        (p.nome, horas.get(p.chave, 20), inclusoes.get(p.nome, p.resumo))
-        for p in catalogo.PRINCIPAIS
-        if p.chave not in {"proposta", "contrato"}
     ]

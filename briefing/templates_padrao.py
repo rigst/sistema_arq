@@ -7,6 +7,12 @@ começar de uma folha em branco: as opções cobrem as respostas que aparecem em
 
 from typing import NotRequired, TypedDict
 
+# Nomes dos blocos do briefing. Constantes porque cada um se repete em vários
+# templates: com literal solto, corrigir um rótulo exigia achar todas as cópias.
+BLOCO_ORCAMENTO_PRAZO = "Orçamento e prazo"
+BLOCO_RESTRICOES = "Restrições"
+BLOCO_OPERACAO = "Operação"
+
 
 class PerguntaPadrao(TypedDict):
     bloco: str
@@ -103,7 +109,7 @@ RESIDENCIAL: TemplatePadrao = {
             ],
         },
         {
-            "bloco": "Orçamento e prazo",
+            "bloco": BLOCO_ORCAMENTO_PRAZO,
             "texto": "Como está definido o orçamento de execução?",
             "tipo": "opcao",
             "opcoes": [
@@ -114,7 +120,7 @@ RESIDENCIAL: TemplatePadrao = {
             ],
         },
         {
-            "bloco": "Orçamento e prazo",
+            "bloco": BLOCO_ORCAMENTO_PRAZO,
             "texto": "Existe uma data que não pode passar?",
             "tipo": "opcao",
             "opcoes": [
@@ -144,7 +150,7 @@ RESIDENCIAL: TemplatePadrao = {
             "ajuda": "Cores, materiais, soluções vetadas — anote nas palavras dele.",
         },
         {
-            "bloco": "Restrições",
+            "bloco": BLOCO_RESTRICOES,
             "texto": "Restrições do imóvel ou do condomínio",
             "tipo": "multipla",
             "opcoes": [
@@ -156,7 +162,7 @@ RESIDENCIAL: TemplatePadrao = {
             ],
         },
         {
-            "bloco": "Restrições",
+            "bloco": BLOCO_RESTRICOES,
             "texto": "O que mais precisa ficar registrado?",
             "tipo": "texto",
             "ajuda": "Qualquer coisa dita na reunião que não coube nas perguntas acima.",
@@ -170,7 +176,7 @@ COMERCIAL: TemplatePadrao = {
     "descricao": "Roteiro para ponto comercial, com operação, público e identidade.",
     "perguntas": [
         {
-            "bloco": "Operação",
+            "bloco": BLOCO_OPERACAO,
             "texto": "Qual é a operação do espaço?",
             "tipo": "opcao",
             "opcoes": [
@@ -182,13 +188,13 @@ COMERCIAL: TemplatePadrao = {
             ],
         },
         {
-            "bloco": "Operação",
+            "bloco": BLOCO_OPERACAO,
             "texto": "Quantas pessoas ocupam o espaço ao mesmo tempo?",
             "tipo": "opcao",
             "opcoes": ["Até 5", "De 6 a 15", "De 16 a 40", "Mais de 40"],
         },
         {
-            "bloco": "Operação",
+            "bloco": BLOCO_OPERACAO,
             "texto": "Qual é o horário de funcionamento?",
             "tipo": "opcao",
             "opcoes": ["Comercial", "Estendido, inclui noite", "Fim de semana também", "24 horas"],
@@ -214,7 +220,7 @@ COMERCIAL: TemplatePadrao = {
             ],
         },
         {
-            "bloco": "Restrições",
+            "bloco": BLOCO_RESTRICOES,
             "texto": "Que aprovações o ponto exige?",
             "tipo": "multipla",
             "opcoes": [
@@ -226,13 +232,13 @@ COMERCIAL: TemplatePadrao = {
             ],
         },
         {
-            "bloco": "Orçamento e prazo",
+            "bloco": BLOCO_ORCAMENTO_PRAZO,
             "texto": "Existe data de inauguração?",
             "tipo": "opcao",
             "opcoes": ["Não", "Sim, data firme", "Sim, mas negociável"],
         },
         {
-            "bloco": "Orçamento e prazo",
+            "bloco": BLOCO_ORCAMENTO_PRAZO,
             "texto": "O que mais precisa ficar registrado?",
             "tipo": "texto",
         },
@@ -318,13 +324,13 @@ ARQUITETURA_RESIDENCIAL: TemplatePadrao = {
             ],
         },
         {
-            "bloco": "Orçamento e prazo",
+            "bloco": BLOCO_ORCAMENTO_PRAZO,
             "texto": "Qual é a faixa de investimento disponível para a execução?",
             "tipo": "texto",
             "ajuda": "Diferencie orçamento da obra, honorários e itens adquiridos diretamente.",
         },
         {
-            "bloco": "Orçamento e prazo",
+            "bloco": BLOCO_ORCAMENTO_PRAZO,
             "texto": "Existe uma data externa que condiciona o cronograma?",
             "tipo": "multipla",
             "opcoes": [
@@ -399,7 +405,7 @@ EMPRESARIAL: TemplatePadrao = {
             "tipo": "texto",
         },
         {
-            "bloco": "Operação",
+            "bloco": BLOCO_OPERACAO,
             "texto": "A implantação ocorrerá com o espaço em funcionamento?",
             "tipo": "opcao",
             "opcoes": ["Não", "Sim, por etapas", "Sim, fora do horário comercial"],
@@ -454,7 +460,7 @@ INSTITUCIONAL: TemplatePadrao = {
             ],
         },
         {
-            "bloco": "Operação",
+            "bloco": BLOCO_OPERACAO,
             "texto": "Como funcionam os fluxos de público, equipe, carga e emergência?",
             "tipo": "texto",
         },

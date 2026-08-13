@@ -5,6 +5,12 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
 
+# Os três clientes da demonstração, referenciados em cadastro, projetos e
+# lançamentos — o nome precisa bater exatamente entre eles.
+CLIENTE_RESIDENCIAL = "Marina e Lucas Almeida"
+CLIENTE_COMERCIAL = "Café Horizonte Ltda."
+CLIENTE_INSTITUCIONAL = "Instituto Caminhos"
+
 
 class Command(BaseCommand):
     help = "Cria dados de demonstração idempotentes na empresa de um usuário."
@@ -75,9 +81,9 @@ class Command(BaseCommand):
 
         clientes = {}
         dados_clientes = (
-            ("Marina e Lucas Almeida", "marina.almeida@example.com", "ganho", "indicacao"),
-            ("Café Horizonte Ltda.", "contato@cafehorizonte.example", "ganho", "instagram"),
-            ("Instituto Caminhos", "projetos@caminhos.example", "proposta", "site"),
+            (CLIENTE_RESIDENCIAL, "marina.almeida@example.com", "ganho", "indicacao"),
+            (CLIENTE_COMERCIAL, "contato@cafehorizonte.example", "ganho", "instagram"),
+            (CLIENTE_INSTITUCIONAL, "projetos@caminhos.example", "proposta", "site"),
             ("Incorporadora Parque Sul", "urbanismo@parquesul.example", "negociacao", "evento"),
         )
         for nome, email, fase, origem in dados_clientes:
@@ -96,7 +102,7 @@ class Command(BaseCommand):
             )
         Interacao.objects.update_or_create(
             empresa=grupo,
-            cliente=clientes["Instituto Caminhos"],
+            cliente=clientes[CLIENTE_INSTITUCIONAL],
             descricao="Apresentação inicial realizada; cliente solicitou proposta por etapas.",
             defaults={"tipo": "reuniao", "autor": usuario},
         )
@@ -115,7 +121,7 @@ class Command(BaseCommand):
         dados_projetos = (
             (
                 "Residência Alameda",
-                "Marina e Lucas Almeida",
+                CLIENTE_RESIDENCIAL,
                 "residencial",
                 "ativo",
                 "42000.00",
@@ -124,7 +130,7 @@ class Command(BaseCommand):
             ),
             (
                 "Café Horizonte — Loja Centro",
-                "Café Horizonte Ltda.",
+                CLIENTE_COMERCIAL,
                 "comercial",
                 "ativo",
                 "28500.00",
@@ -133,7 +139,7 @@ class Command(BaseCommand):
             ),
             (
                 "Centro Educacional Caminhos",
-                "Instituto Caminhos",
+                CLIENTE_INSTITUCIONAL,
                 "institucional",
                 "ativo",
                 "68000.00",
@@ -193,11 +199,12 @@ class Command(BaseCommand):
             )
         fase_ativa = residencia.fases.order_by("ordem")[4]
         garantir_tarefas_da_fase(fase_ativa, usuario)
+        # A primeira tarefa entra concluída e a segunda em andamento, para a
+        # demo abrir com a fase em movimento em vez de tudo por fazer.
+        status_por_indice = {0: "concluida", 1: "andamento"}
         for indice, tarefa in enumerate(fase_ativa.tarefas.order_by("ordem")):
             tarefa.responsavel = usuario
-            tarefa.status = (
-                "concluida" if indice == 0 else ("andamento" if indice == 1 else "aberta")
-            )
+            tarefa.status = status_por_indice.get(indice, "aberta")
             tarefa.prazo = hoje + timedelta(days=indice + 2)
             tarefa.save(update_fields=["responsavel", "status", "prazo"])
         Tarefa.objects.update_or_create(
@@ -219,7 +226,7 @@ class Command(BaseCommand):
             empresa=grupo,
             titulo="Proposta — Centro Educacional Caminhos",
             defaults={
-                "cliente": clientes["Instituto Caminhos"],
+                "cliente": clientes[CLIENTE_INSTITUCIONAL],
                 "tipo_projeto": "institucional",
                 "hora_tecnica_aplicada": Decimal("185.00"),
                 "status": "enviada",
@@ -460,7 +467,7 @@ class Command(BaseCommand):
                 "apresentacao",
                 2,
                 14,
-                clientes["Instituto Caminhos"],
+                clientes[CLIENTE_INSTITUCIONAL],
                 projetos["Centro Educacional Caminhos"],
             ),
             (
@@ -468,7 +475,7 @@ class Command(BaseCommand):
                 "visita",
                 4,
                 9,
-                clientes["Marina e Lucas Almeida"],
+                clientes[CLIENTE_RESIDENCIAL],
                 residencia,
             ),
             (
@@ -476,7 +483,7 @@ class Command(BaseCommand):
                 "reuniao",
                 7,
                 16,
-                clientes["Café Horizonte Ltda."],
+                clientes[CLIENTE_COMERCIAL],
                 cafe,
             ),
         )
