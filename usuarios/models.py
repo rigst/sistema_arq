@@ -45,7 +45,9 @@ class Usuario(AbstractUser):
         grupo = empresa.grupo if empresa else self.groups.order_by("name", "id").first()
         if self.eh_visitante and grupo and grupo.name.startswith(VISITOR_GROUP_PREFIX):
             return "Escritório Visitante"
-        return empresa.nome if empresa else (grupo.name if grupo else "Sem empresa")
+        if empresa:
+            return empresa.nome
+        return grupo.name if grupo else "Sem empresa"
 
     def __str__(self):
         if self.eh_visitante:

@@ -6,6 +6,8 @@ from decimal import Decimal
 
 from django.db import transaction
 
+FORMATO_DATA_BR = "%d/%m/%Y"
+
 
 def _numero(valor):
     return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
@@ -81,9 +83,9 @@ def contexto_do_contrato(contrato):
         "escritorio": contrato.empresa.name,
         "valor": _moeda(contrato.valor_total),
         "horas": _horas(proposta.horas_totais if proposta is not None else projeto.horas_estimadas),
-        "data": timezone.localdate().strftime("%d/%m/%Y"),
-        "data_inicio": projeto.data_inicio.strftime("%d/%m/%Y") if projeto.data_inicio else "",
-        "prazo": projeto.data_prevista.strftime("%d/%m/%Y") if projeto.data_prevista else "",
+        "data": timezone.localdate().strftime(FORMATO_DATA_BR),
+        "data_inicio": projeto.data_inicio.strftime(FORMATO_DATA_BR) if projeto.data_inicio else "",
+        "prazo": projeto.data_prevista.strftime(FORMATO_DATA_BR) if projeto.data_prevista else "",
         "cronograma": cronograma,
         "escopo": escopo,
         "endereco": endereco,
@@ -149,7 +151,7 @@ def _vencimento_mensal(primeira_data, meses):
     return date(ano, mes, min(primeira_data.day, ultimo_dia))
 
 
-def gerar_parcelas(contrato, quantidade, primeira_data, intervalo_dias=None):
+def gerar_parcelas(contrato, quantidade, primeira_data):
     """Cria parcelas mensais, preservando o dia do primeiro vencimento."""
     from .models import Parcela
 

@@ -39,7 +39,9 @@ def limpar_dados_negocio(grupo):
     """Executa todos os limpadores registrados para o grupo/empresa dado."""
     if grupo is None:
         return
-    for func in list(_LIMPADORES):
+    # Sem cópia defensiva: o registro é preenchido nos `ready()` dos AppConfig,
+    # antes de qualquer requisição, então não muda durante a iteração.
+    for func in _LIMPADORES:
         try:
             func(grupo)
         except Exception:
