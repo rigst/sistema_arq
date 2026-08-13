@@ -37,6 +37,29 @@ def _ordenar_itens(proposta):
 
 
 @login_required
+def _salvar_termos_e_prazos(request, form_termos, prazos, proposta):
+    """Grava termos e prazos de uma vez só: prazo salvo sem os termos deixaria
+    a proposta prometendo data que o texto não sustenta."""
+    with transaction.atomic():
+        form_termos.save()
+        for fase, prazo in prazos:
+            fase.dias_uteis_proposta = prazo
+            fase.save(update_fields=["dias_uteis_proposta"])
+        if request.POST.get("acao") == "enviar":
+            _enviar_ao_cliente(request, proposta)
+        else:
+            messages.success(request, "Proposta salva.")
+
+
+def _resumo_dos_erros(form):
+    """Junta os erros do form numa frase só, para o aviso no topo da tela."""
+    return "; ".join(
+        f"{form.fields[campo].label}: {' '.join(str(m) for m in mensagens)}"
+        for campo, mensagens in form.errors.items()
+        if campo in form.fields
+    )
+
+
 def detalhe_proposta(request, pk):
     proposta = get_object_or_404(
         queryset_da_empresa(
@@ -53,22 +76,10 @@ def detalhe_proposta(request, pk):
             form_termos = PropostaForm(request.POST, instance=proposta, user=request.user)
             prazos_validos, prazos = _prazos_do_post(request, fases_entrega)
             if form_termos.is_valid() and prazos_validos:
-                with transaction.atomic():
-                    form_termos.save()
-                    for fase, prazo in prazos:
-                        fase.dias_uteis_proposta = prazo
-                        fase.save(update_fields=["dias_uteis_proposta"])
-                    if request.POST.get("acao") == "enviar":
-                        _enviar_ao_cliente(request, proposta)
-                    else:
-                        messages.success(request, "Proposta salva.")
+                _salvar_termos_e_prazos(request, form_termos, prazos, proposta)
                 return redirect("proposta_detalhe", pk=proposta.pk)
             if not form_termos.is_valid():
-                erros = "; ".join(
-                    f"{form_termos.fields[campo].label}: {' '.join(str(m) for m in mensagens)}"
-                    for campo, mensagens in form_termos.errors.items()
-                    if campo in form_termos.fields
-                )
+                erros = _resumo_dos_erros(form_termos)
                 messages.error(
                     request,
                     f"A proposta não foi salva. {erros or 'Confira os campos obrigatórios.'}",

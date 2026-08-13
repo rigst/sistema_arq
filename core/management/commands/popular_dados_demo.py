@@ -12,6 +12,92 @@ CLIENTE_COMERCIAL = "Café Horizonte Ltda."
 CLIENTE_INSTITUCIONAL = "Instituto Caminhos"
 
 
+def _semear_precificacao(grupo, usuario):
+    """Configuração, custos fixos e fatores — a base do cálculo da hora."""
+    from precificacao.models import ConfiguracaoPrecificacao, CustoFixo, FatorPrecificacao
+
+    ConfiguracaoPrecificacao.objects.update_or_create(
+        empresa=grupo,
+        defaults={
+            "horas_uteis_mes": 160,
+            "hora_tecnica_manual": Decimal("185.00"),
+            "margem_seguranca_percent": Decimal("10.00"),
+            "imposto_percent": Decimal("6.00"),
+        },
+    )
+    for descricao, valor in (
+        ("Pró-labore", "6500.00"),
+        ("Aluguel e condomínio", "2400.00"),
+        ("Softwares e licenças", "890.00"),
+        ("Internet, energia e telefone", "620.00"),
+    ):
+        CustoFixo.objects.update_or_create(
+            empresa=grupo,
+            descricao=descricao,
+            defaults={"valor_mensal": Decimal(valor), "ativo": True, "criado_por": usuario},
+        )
+    for nome, percentual in (
+        ("Urgência", "20.00"),
+        ("Alta complexidade", "15.00"),
+        ("Cliente recorrente", "-8.00"),
+    ):
+        FatorPrecificacao.objects.update_or_create(
+            empresa=grupo,
+            nome=nome,
+            defaults={"percentual": Decimal(percentual), "ativo": True},
+        )
+
+
+def _semear_clientes(grupo, usuario):
+    """Os clientes da demonstração. Devolve {nome: Cliente}."""
+    from crm.models import Cliente, Interacao
+
+    clientes = {}
+    dados_clientes = (
+        (CLIENTE_RESIDENCIAL, "marina.almeida@example.com", "ganho", "indicacao"),
+        (CLIENTE_COMERCIAL, "contato@cafehorizonte.example", "ganho", "instagram"),
+        (CLIENTE_INSTITUCIONAL, "projetos@caminhos.example", "proposta", "site"),
+        ("Incorporadora Parque Sul", "urbanismo@parquesul.example", "negociacao", "evento"),
+    )
+    for nome, email, fase, origem in dados_clientes:
+        clientes[nome], _ = Cliente.objects.update_or_create(
+            empresa=grupo,
+            nome=nome,
+            defaults={
+                "email": email,
+                "telefone": "(51) 99999-0000",
+                "fase": fase,
+                "origem": origem,
+                "ativo": True,
+                "criado_por": usuario,
+                "observacoes": "Cadastro demonstrativo para validação do fluxo comercial.",
+            },
+        )
+    Interacao.objects.update_or_create(
+        empresa=grupo,
+        cliente=clientes[CLIENTE_INSTITUCIONAL],
+        descricao="Apresentação inicial realizada; cliente solicitou proposta por etapas.",
+        defaults={"tipo": "reuniao", "autor": usuario},
+    )
+    return clientes
+
+
+def _semear_tags(grupo):
+    """As etiquetas usadas nos projetos. Devolve {nome: Tag}."""
+    from projetos.models import Tag
+
+    tags = {}
+    for nome, cor in (
+        ("Prioridade", "#111827"),
+        ("Em aprovação", "#6b7280"),
+        ("Obra", "#374151"),
+    ):
+        tags[nome], _ = Tag.objects.update_or_create(
+            empresa=grupo, nome=nome, defaults={"cor": cor}
+        )
+    return tags
+
+
 class Command(BaseCommand):
     help = "Cria dados de demonstração idempotentes na empresa de um usuário."
 
@@ -23,15 +109,14 @@ class Command(BaseCommand):
         from agenda.models import Compromisso
         from contratos.models import Contrato, Parcela
         from core.tenancy import obter_grupo_empresa_usuario
-        from crm.models import Cliente, Interacao
+        from crm.models import Cliente
         from fases.models import Fase, montar_fases
         from fases.services import garantir_tarefas_da_fase
         from financeiro.models import ContaBancaria, Lancamento
         from fornecedores.models import Fornecedor
         from obras.models import Obra, criar_etapas_obra_padrao
         from orcamentos.models import ItemOrcamento, Orcamento
-        from precificacao.models import ConfiguracaoPrecificacao, CustoFixo, FatorPrecificacao
-        from projetos.models import Projeto, Tag
+        from projetos.models import Projeto
         from propostas.models import ItemProposta, Proposta
         from tarefas.models import Tarefa
         from usuarios.models import Usuario
@@ -48,74 +133,9 @@ class Command(BaseCommand):
         hoje = timezone.localdate()
         timezone.localtime()
 
-        ConfiguracaoPrecificacao.objects.update_or_create(
-            empresa=grupo,
-            defaults={
-                "horas_uteis_mes": 160,
-                "hora_tecnica_manual": Decimal("185.00"),
-                "margem_seguranca_percent": Decimal("10.00"),
-                "imposto_percent": Decimal("6.00"),
-            },
-        )
-        for descricao, valor in (
-            ("Pró-labore", "6500.00"),
-            ("Aluguel e condomínio", "2400.00"),
-            ("Softwares e licenças", "890.00"),
-            ("Internet, energia e telefone", "620.00"),
-        ):
-            CustoFixo.objects.update_or_create(
-                empresa=grupo,
-                descricao=descricao,
-                defaults={"valor_mensal": Decimal(valor), "ativo": True, "criado_por": usuario},
-            )
-        for nome, percentual in (
-            ("Urgência", "20.00"),
-            ("Alta complexidade", "15.00"),
-            ("Cliente recorrente", "-8.00"),
-        ):
-            FatorPrecificacao.objects.update_or_create(
-                empresa=grupo,
-                nome=nome,
-                defaults={"percentual": Decimal(percentual), "ativo": True},
-            )
-
-        clientes = {}
-        dados_clientes = (
-            (CLIENTE_RESIDENCIAL, "marina.almeida@example.com", "ganho", "indicacao"),
-            (CLIENTE_COMERCIAL, "contato@cafehorizonte.example", "ganho", "instagram"),
-            (CLIENTE_INSTITUCIONAL, "projetos@caminhos.example", "proposta", "site"),
-            ("Incorporadora Parque Sul", "urbanismo@parquesul.example", "negociacao", "evento"),
-        )
-        for nome, email, fase, origem in dados_clientes:
-            clientes[nome], _ = Cliente.objects.update_or_create(
-                empresa=grupo,
-                nome=nome,
-                defaults={
-                    "email": email,
-                    "telefone": "(51) 99999-0000",
-                    "fase": fase,
-                    "origem": origem,
-                    "ativo": True,
-                    "criado_por": usuario,
-                    "observacoes": "Cadastro demonstrativo para validação do fluxo comercial.",
-                },
-            )
-        Interacao.objects.update_or_create(
-            empresa=grupo,
-            cliente=clientes[CLIENTE_INSTITUCIONAL],
-            descricao="Apresentação inicial realizada; cliente solicitou proposta por etapas.",
-            defaults={"tipo": "reuniao", "autor": usuario},
-        )
-
-        tags = {}
-        for nome, cor in (
-            ("Prioridade", "#111827"),
-            ("Em aprovação", "#6b7280"),
-            ("Obra", "#374151"),
-        ):
-            tags[nome], _ = Tag.objects.update_or_create(
-                empresa=grupo, nome=nome, defaults={"cor": cor}
-            )
+        _semear_precificacao(grupo, usuario)
+        clientes = _semear_clientes(grupo, usuario)
+        tags = _semear_tags(grupo)
 
         projetos = {}
         dados_projetos = (
