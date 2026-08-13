@@ -143,7 +143,7 @@ a { color: var(--ds-blue-dark); }
 }
 
 /* SHELL — barra lateral + folha com uma única régua vertical */
-.app-shell { display: block; }
+.app-shell { display: block; background: transparent; }
 
 .nav-toggle { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 
@@ -175,7 +175,7 @@ a { color: var(--ds-blue-dark); }
 .nav-badge {
     margin-left: auto; min-width: 1.2rem; height: 1.2rem; padding: 0 0.32rem; box-sizing: border-box;
     display: inline-flex; align-items: center; justify-content: center;
-    font-size: 0.66rem; font-weight: 600; color: #fff; border-radius: 999px;
+    font-size: 0.66rem; font-weight: 600; color: #fff; border-radius: 999px; background: #c9503c;
 }
 
 /* Pé da lateral: monograma sem caixa */
@@ -183,10 +183,11 @@ a { color: var(--ds-blue-dark); }
 .app-empresa { display: flex; align-items: baseline; gap: 0.55rem; }
 .app-empresa-ico {
     flex-shrink: 0; font-family: var(--ds-font-display);
-    font-variation-settings: "wdth" 115, "wght" 700; font-size: 1.05rem; text-transform: uppercase; line-height: 1;
+    font-variation-settings: "wdth" 115, "wght" 700; font-size: 1.05rem; text-transform: uppercase; line-height: 1; color: #7fe0bd;
 }
 .app-empresa-info { display: flex; flex-direction: column; line-height: 1.3; overflow: hidden; }
-.app-empresa-info strong { font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.app-empresa-info strong { font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; text-shadow: none;
+}
 .app-empresa-info span { color: var(--ds-text-500); font-family: var(--arq-font-mono); font-size: 0.7rem; }
 .app-sair {
     display: flex; align-items: center; gap: 0.4rem; background: none; border: 0;
@@ -214,7 +215,8 @@ a { color: var(--ds-blue-dark); }
 
 /* ---- Mensagens ---- */
 .app-messages { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
-.app-message { padding: 0.7rem 1rem; border-radius: 0.6rem; font-size: 0.9rem; border: 1px solid transparent; }
+.app-message { padding: 0.7rem 1rem; border-radius: 0.6rem; font-size: 0.9rem; border: 1px solid transparent; animation: arq-rise 340ms var(--arq-ease-out) both;
+}
 .app-message--success { color: var(--ds-blue-dark); background: var(--ds-blue-50); border-color: var(--ds-blue-100); }
 .app-message--error { color: var(--ds-danger); background: color-mix(in srgb, var(--ds-danger) 7%, #fff); border-color: color-mix(in srgb, var(--ds-danger) 24%, var(--ds-line)); }
 .app-message--info, .app-message--warning { color: var(--arq-amber); background: color-mix(in srgb, var(--arq-amber) 7%, #fff); border-color: color-mix(in srgb, var(--arq-amber) 26%, var(--ds-line)); }
@@ -222,8 +224,8 @@ a { color: var(--ds-blue-dark); }
 /* RITMO — a página e suas seções */
 .page { display: flex; flex-direction: column; gap: var(--arq-gap); }
 /* telas de conteúdo curto ficam centradas na folha, não coladas à esquerda */
-.page--narrow { margin: 0 auto; width: 100%; }
-.page--leitura { margin: 0 auto; width: 100%; }
+.page--narrow { margin: 0 auto; width: 100%; max-width: 38rem; }
+.page--leitura { margin: 0 auto; width: 100%; max-width: 58rem; }
 .doc-voltar { align-self: flex-start; }
 
 .page-head { margin-bottom: 0; }
@@ -541,7 +543,8 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
     letter-spacing: 0.08em; padding: 0.2rem 0.55rem; border-radius: 999px;
 }
 .ds-badge .ds-dot { width: 0.35rem; height: 0.35rem; border-radius: 50%; }
-.ds-badge--info { border: 1px solid var(--ds-blue-100); }
+.ds-badge--info { border: 1px solid var(--ds-blue-100); background: var(--ds-blue-50); border-color: var(--ds-blue-100); color: var(--ds-blue-dark);
+}
 .ds-badge--info .ds-dot { background: var(--ds-blue); }
 .tag-alerta {
     font-family: var(--arq-font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.06em;
@@ -977,7 +980,7 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 /* Rodapé público com os links legais */
 .pe-legal { margin-top: 3rem; padding-top: 1.15rem; border-top: 1px solid var(--ds-line); display: flex; flex-wrap: wrap; gap: 1.25rem; font-size: 0.82rem; }
 .pe-legal a { color: var(--ds-text-500); text-decoration: none; }
-.pe-legal a:hover { text-decoration: underline; }
+.pe-legal a:hover { text-decoration: underline; color: #fff; }
 .pe-legal--lateral { margin: 0; padding: 0.55rem 0 0; border-top: 0; gap: 0.9rem; font-size: 0.76rem; }
 
 /* LOGIN — foto ocupando a tela, texto solto sobre ela */
@@ -1015,9 +1018,10 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .auth-brand .mk-plate { fill: rgba(255, 255, 255, 0.12); }
 .auth-brand .mk-a { stroke: #fff; }
 .auth-brand .mk-cota { stroke: #3fa98a; }
-.auth-brand-word { font-family: var(--ds-font-display); font-variation-settings: "wdth" 115, "wght" 700; font-size: 1.3rem; color: #fff; }
-.auth-hero .ds-kicker { display: block; }
-.auth-hero h1 { margin: 0; color: #fff; }
+.auth-brand-word { font-family: var(--ds-font-display); font-variation-settings: "wdth" 115, "wght" 700; font-size: 1.3rem; color: #fff; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7);
+}
+.auth-hero .ds-kicker { display: block; color: #7fe0bd; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.75); }
+.auth-hero h1 { margin: 0; color: #fff; text-shadow: none; }
 
 /* Formulário: vidro sobre a foto. O véu de branco a 78% deixa o concreto */
 .auth-card {
@@ -1025,16 +1029,14 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
     padding: 1.75rem; border-radius: 0.9rem;
 }
 .auth-card .auth-disclaimer { font-size: 0.76rem; }
-.auth-visitor { border-top-color: rgba(20, 24, 26, 0.1); }
+.auth-visitor { border-top-color: rgba(20, 24, 26, 0.1); border-top: 1px solid var(--ds-line); padding-top: 1.15rem; }
 .auth-header h2 { margin: 0 0 0.2rem; font-size: 1.35rem; }
 .auth-header p { margin: 0; color: var(--ds-text-500); font-size: 0.9rem; }
 .auth-error { color: var(--ds-danger); font-size: 0.9rem; margin: 0; }
 .auth-form { display: flex; flex-direction: column; gap: 1rem; }
 .auth-field { display: block; }
 .auth-field > span { display: block; margin-bottom: 0.4rem; }
-.auth-submit { width: 100%; padding: 0.72rem 1rem; }
-.auth-visitor { border-top: 1px solid var(--ds-line); padding-top: 1.15rem; }
-.auth-visitor p { font-size: 0.85rem; color: var(--ds-text-500); margin: 0 0 0.85rem; }
+.auth-submit { width: 100%; padding: 0.72rem 1rem; }.auth-visitor p { font-size: 0.85rem; color: var(--ds-text-500); margin: 0 0 0.85rem; }
 .auth-visitor-btn { width: 100%; }
 .auth-disclaimer { font-size: 0.75rem; color: var(--ds-text-400); margin: 0; }
 .auth-legal { font-size: 0.78rem; color: var(--ds-text-500); margin: 0; line-height: 1.5; }
@@ -1048,8 +1050,6 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 .page > *:nth-child(3) { animation-delay: 110ms; }
 .page > *:nth-child(4) { animation-delay: 165ms; }
 .page > *:nth-child(n + 5) { animation-delay: 210ms; }
-.app-message { animation: arq-rise 340ms var(--arq-ease-out) both; }
-
 /* RESPONSIVO */
 @media (max-width: 62rem) {
     .app-side {
@@ -1168,11 +1168,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .contrato-corpo:focus {
     outline: none; background: var(--ds-surface);
     border-color: var(--ds-blue-light); box-shadow: var(--ds-focus-ring);
-}
-
-/* FUNDO E SUPERFÍCIES */
-.app-shell { background: transparent; }
-.app-shell::before {
+}.app-shell::before {
     content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none;
     background:
         linear-gradient(90deg,
@@ -1223,8 +1219,6 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 }
 .chip:hover { background: var(--ds-panel); border-color: var(--ds-blue-light); }
 .chip.is-active { background: var(--ds-ink); border-color: var(--ds-ink); color: #fff; }
-.ds-badge--info { background: var(--ds-blue-50); border-color: var(--ds-blue-100); color: var(--ds-blue-dark); }
-
 .form-card input, .form-card select, .form-card textarea,
 .form-block input, .form-block select, .form-block textarea,
 .inline-add, .inline-add input, .inline-add select,
@@ -1241,7 +1235,10 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .auth-card .auth-legal a { color: #7fe0bd; }
 .auth-card .auth-error { color: #ffb4a8; }
 .auth-card .auth-visitor { border-top-color: rgba(255, 255, 255, 0.28); }
-.auth-card .auth-field input { color: #fff; }
+.auth-card .auth-field input { color: #fff; background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.32);
+    box-shadow: none;
+}
 .auth-card .auth-field input::placeholder { color: rgba(255, 255, 255, 0.6); }
 .auth-card .ds-btn:not(.ds-btn--solid),
 .auth-card .ds-btn:not(.ds-btn--solid):hover { color: #fff; }
@@ -1305,7 +1302,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 }
 .frente-avanco { display: flex; flex-direction: column; gap: 0.35rem; }
 .frente-conta { font-family: var(--arq-font-mono); font-size: 0.72rem; color: var(--ds-text-500); }
-.frente-cta { white-space: nowrap; }
+.frente-cta { white-space: nowrap; min-width: 0; padding: 0.5rem 0.95rem; font-size: 0.86rem; }
 .frente-pronto {
     font-family: var(--arq-font-mono); font-size: 0.75rem;
     color: var(--ds-blue-dark); white-space: nowrap;
@@ -1321,10 +1318,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 /* AJUSTE DE LEITURA, VOLTA DO VIDRO NA LATERAL E LOGIN MAIS CALMO */
 
 /* --- Largura de leitura ------------------------------------------ */
-.app-main { max-width: 74rem; padding: 2.4rem 3rem 5rem; }
-.page--leitura { max-width: 58rem; }
-.page--narrow { max-width: 38rem; }
-.page-sub, .secao-sub { max-width: 46rem; }
+.app-main { max-width: 74rem; padding: 2.4rem 3rem 5rem; }.page-sub, .secao-sub { max-width: 46rem; }
 
 /* --- O caminho de volta, sempre no mesmo canto -------------------- */
 .voltar {
@@ -1371,34 +1365,20 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 .ds-btn:focus-visible {
     outline: 2px solid var(--ds-blue-dark); outline-offset: 1px;
 }
-.ds-btn--solid:focus-visible { outline-offset: 2px;
-}
-.auth-card .ds-btn--solid:focus-visible { outline-offset: 2px;
-}
+.ds-btn--solid:focus-visible { outline-offset: 2px; }
+.auth-card .ds-btn--solid:focus-visible { outline-offset: 2px; }
 .form-card input:focus, .form-card select:focus, .form-card textarea:focus,
 .form-block input:focus, .form-block select:focus, .form-block textarea:focus {
     box-shadow: none; border-color: var(--ds-blue-light);
     outline: 2px solid var(--ds-blue-light); outline-offset: -2px;
-}
-.auth-hero .ds-kicker {
-    color: #7fe0bd; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.75);
-}
-.auth-brand-word { text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7); }
-
-/* O cartão: mais vidro, menos leite. Desfoque curto para a foto ainda */
+}/* O cartão: mais vidro, menos leite. Desfoque curto para a foto ainda */
 /* O véu é ESCURO, não branco. Vidro branco sobre concreto claro dá cinza */
 .auth-card {
     -webkit-backdrop-filter: blur(12px) saturate(160%);
     backdrop-filter: blur(12px) saturate(160%);
 }
 /* Sem faixa e sem brilho de canto: o cartão reflete o que está atrás, */
-.auth-card::after { display: none; }
-.auth-card .auth-field input {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.32);
-    box-shadow: none;
-}
-.auth-card .auth-field input:focus {
+.auth-card::after { display: none; }.auth-card .auth-field input:focus {
     background: rgba(255, 255, 255, 0.2); border-color: #7fe0bd;
     outline: 2px solid #7fe0bd; outline-offset: -2px; box-shadow: none;
 }
@@ -1576,8 +1556,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
     border-color: transparent;
 }
 .app-side .nav-link:hover { border-color: transparent; }
-.app-side .nav-link.is-active { border-color: var(--ds-blue-light);
-}
+.app-side .nav-link.is-active { border-color: var(--ds-blue-light); }
 .app-side { border-right-color: rgba(255, 255, 255, 0.4); }
 /* A caixa de escolha é um bloco de leitura, não um rótulo de campo: precisa */
 .form-card label.form-marcar, label.form-marcar {
@@ -1928,9 +1907,7 @@ a.fase-complementar-link:hover { background: var(--ds-panel); }
         linear-gradient(100deg, rgba(4, 8, 7, 0.94) 0%, rgba(4, 8, 7, 0.86) 26%,
             rgba(4, 8, 7, 0.46) 52%, rgba(4, 8, 7, 0.42) 100%),
         linear-gradient(to top, rgba(4, 8, 7, 0.6), transparent 44%);
-}
-.auth-hero h1 { text-shadow: none; }
-.auth-hero .ds-muted { color: rgba(255, 255, 255, 0.82); }
+}.auth-hero .ds-muted { color: rgba(255, 255, 255, 0.82); }
 
 /* --- Barra lateral: mesmo princípio ------------------------------- */
 .app-side {
@@ -1968,14 +1945,8 @@ a.fase-complementar-link:hover { background: var(--ds-panel); }
 .app-brand-mark .mk-cota { stroke: #7fe0bd; }
 .app-side-foot {
     background: none; border-top: 1px solid rgba(255, 255, 255, 0.16);
-}
-.app-empresa-info strong { color: #fff; text-shadow: none; }
-.app-empresa-info span, .app-sair, .pe-legal a { color: rgba(255, 255, 255, 0.72); }
-.app-sair:hover { color: #ff9d8e; }
-.pe-legal a:hover { color: #fff; }
-.app-empresa-ico { color: #7fe0bd; }
-.nav-badge { background: #c9503c; }
-.app-side .ds-btn:not(.ds-btn--solid) {
+}.app-empresa-info span, .app-sair, .pe-legal a { color: rgba(255, 255, 255, 0.72); }
+.app-sair:hover { color: #ff9d8e; }.app-side .ds-btn:not(.ds-btn--solid) {
     background: rgba(255, 255, 255, 0.14); border: 0; color: #fff;
 }
 .app-nav { scrollbar-color: rgba(255, 255, 255, 0.28) transparent; }
@@ -2049,7 +2020,7 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
     border-radius: 0.65rem; overflow: hidden;
     animation: aviso-entra 320ms var(--arq-ease-out) both;
 }
-.ds-aviso p { margin: 0; padding: 0.05rem 0; font-size: 0.9rem; }
+.ds-aviso p { margin: 0; padding: 0.05rem 0; font-size: 0.9rem; color: rgba(255, 255, 255, 0.94); }
 .ds-aviso--success .ds-aviso-marca { background: var(--ds-blue); }
 .ds-aviso.is-saindo { animation: aviso-sai 260ms var(--arq-ease) both; }
 
@@ -2078,9 +2049,7 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
     backdrop-filter: blur(20px) saturate(150%);
     border: 0;
     box-shadow: 0 18px 44px rgba(6, 12, 10, 0.42);
-}
-.ds-aviso p { color: rgba(255, 255, 255, 0.94); }
-.ds-aviso-marca {
+}.ds-aviso-marca {
     align-self: center;
     display: inline-flex; align-items: center; justify-content: center;
     width: 1.7rem; height: 1.7rem; flex-shrink: 0;
@@ -2341,8 +2310,6 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
 }
 .auth-card .ds-btn--acao svg, .app-side .ds-btn--acao svg { color: var(--ds-blue); }
 .auth-card .ds-btn--acao:focus-visible svg, .app-side .ds-btn--acao:focus-visible svg { color: #fff; }
-.frente-cta { min-width: 0; padding: 0.5rem 0.95rem; font-size: 0.86rem; }
-
 .auth-card .auth-submit,
 .auth-card .auth-submit:hover,
 .auth-card .auth-submit:active,
@@ -2566,11 +2533,13 @@ a.projeto-card:focus-visible {
 
 /* Troca de roteiro sem caixa dentro de caixa. */
 .troca-roteiro {
-    margin-bottom: 2rem;
+    margin-bottom: 2rem; display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap;
+    margin: 0 0 2.5rem; padding: 0 0 0.9rem;
+    border-bottom: 1px solid var(--ds-line);
 }
 .troca-roteiro label {
     font-family: var(--arq-font-mono); font-size: 0.68rem; font-weight: 500;
-    text-transform: uppercase; letter-spacing: 0.12em; color: var(--ds-text-500);
+    text-transform: uppercase; letter-spacing: 0.12em; color: var(--ds-text-500); flex-shrink: 0;
 }
 
 /* "Outro / complementar" repete abaixo de cada pergunta. Como caixa, virava */
@@ -2616,15 +2585,7 @@ a.projeto-card:focus-visible {
     background: none;
 }
 .linha-add input::placeholder { color: var(--ds-text-400); }
-.linha-add td.num input { text-align: right; }
-/* SELETOR DE ROTEIRO */
-.troca-roteiro {
-    display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap;
-    margin: 0 0 2.5rem; padding: 0 0 0.9rem;
-    border-bottom: 1px solid var(--ds-line);
-}
-.troca-roteiro label { flex-shrink: 0; }
-.troca-roteiro select {
+.linha-add td.num input { text-align: right; }.troca-roteiro select {
     flex: 1; min-width: 12rem;
     background: none; border: 0; border-radius: 0;
     padding: 0.2rem 0; box-shadow: none;
