@@ -110,3 +110,137 @@ class ObraViewTests(TestCase):
         Obra.objects.create(empresa=self.grupo, projeto=self.projeto)
         resp = self.client.get("/obras/")
         self.assertEqual(resp.status_code, 200)
+
+    def test_formulario_de_abertura_abre_em_get(self):
+        resp = self.client.get("/obras/nova/")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_editar_obra_altera_e_redireciona(self):
+        obra = Obra.objects.create(empresa=self.grupo, projeto=self.projeto)
+        resp = self.client.get(f"/obras/{obra.pk}/editar/")
+        self.assertEqual(resp.status_code, 200)
+        resp = self.client.post(
+            f"/obras/{obra.pk}/editar/",
+            {"projeto": self.projeto.pk, "status": "andamento", "endereco": "Rua A, 100"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        obra.refresh_from_db()
+        self.assertEqual(obra.status, "andamento")
+        self.assertEqual(obra.endereco, "Rua A, 100")
+
+
+class ObraOperacaoViewTests(TestCase):
+    """Exercita os endpoints de POST do dia a dia da obra: etapa, avanço,
+    visita e medição."""
+
+    def setUp(self):
+        self.user, self.grupo = criar_empresa_e_usuario()
+        self.client = Client(SERVER_NAME="localhost")
+        self.client.force_login(self.user)
+        aceitar_documentos(self.user)
+        self.cliente = Cliente.objects.create(empresa=self.grupo, nome="Cliente W")
+        self.projeto = Projeto.objects.create(
+            empresa=self.grupo, nome="Ateliê", cliente=self.cliente
+        )
+        self.obra = Obra.objects.create(empresa=self.grupo, projeto=self.projeto)
+        self.etapa = EtapaObra.objects.create(
+            empresa=self.grupo, obra=self.obra, nome="Fundação", valor=Decimal("10000")
+        )
+
+    def test_detalhe_obra_200(self):
+        resp = self.client.get(f"/obras/{self.obra.pk}/")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_adicionar_etapa_valida(self):
+        resp = self.client.post(
+            f"/obras/{self.obra.pk}/etapa/",
+            {
+                "nome": "Cobertura",
+                "ordem": 7,
+                "percentual_previsto": "0",
+                "percentual_real": "0",
+                "valor": "0",
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.assertTrue(self.obra.etapas.filter(nome="Cobertura").exists())
+
+    def test_adicionar_etapa_sem_nome_nao_cria(self):
+        resp = self.client.post(f"/obras/{self.obra.pk}/etapa/", {"ordem": 1})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(self.obra.etapas.count(), 1)
+
+    def test_atualizar_avanco_limita_entre_0_e_100(self):
+        resp = self.client.post(
+            f"/obras/etapa/{self.etapa.pk}/avanco/",
+            {"percentual_previsto": "150", "percentual_real": "-20"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.etapa.refresh_from_db()
+        self.assertEqual(self.etapa.percentual_previsto, Decimal("100"))
+        self.assertEqual(self.etapa.percentual_real, Decimal("0"))
+
+    def test_atualizar_avanco_com_texto_avisa_em_vez_de_quebrar(self):
+        # Decimal("abc") levanta InvalidOperation, que não é ValueError: antes
+        # do tratamento correto isto era 500.
+        resp = self.client.post(
+            f"/obras/etapa/{self.etapa.pk}/avanco/",
+            {"percentual_previsto": "abc", "percentual_real": "10"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.etapa.refresh_from_db()
+        self.assertEqual(self.etapa.percentual_previsto, Decimal("0"))
+
+    def test_registrar_visita_valida(self):
+        resp = self.client.post(
+            f"/obras/{self.obra.pk}/visita/",
+            {"data": "2026-01-15", "verificado": "Conferida a ferragem da sapata."},
+        )
+        self.assertEqual(resp.status_code, 302)
+        visita = self.obra.visitas.get()
+        self.assertEqual(visita.responsavel, self.user)
+
+    def test_registrar_visita_sem_verificado_nao_cria(self):
+        resp = self.client.post(f"/obras/{self.obra.pk}/visita/", {"data": "2026-01-15"})
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(self.obra.visitas.count(), 0)
+
+    def test_registrar_medicao_valida(self):
+        resp = self.client.post(
+            f"/obras/{self.obra.pk}/medicao/",
+            {
+                "etapa": self.etapa.pk,
+                "data": "2026-01-20",
+                "percentual_medido": "30",
+                "valor_liberado": "3000",
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(Medicao.objects.filter(etapa=self.etapa).count(), 1)
+
+    def test_registrar_medicao_sem_etapa_nao_cria(self):
+        resp = self.client.post(
+            f"/obras/{self.obra.pk}/medicao/", {"data": "2026-01-20", "percentual_medido": "30"}
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(Medicao.objects.count(), 0)
+
+    def test_aprovar_medicao_sem_conta_bancaria_avisa(self):
+        medicao = Medicao.objects.create(
+            empresa=self.grupo, etapa=self.etapa, valor_liberado=Decimal("1000")
+        )
+        resp = self.client.post(f"/obras/medicao/{medicao.pk}/aprovar/")
+        self.assertEqual(resp.status_code, 302)
+        medicao.refresh_from_db()
+        self.assertFalse(medicao.aprovada)
+
+    def test_aprovar_medicao_com_conta_lanca_no_financeiro(self):
+        ContaBancaria.objects.create(empresa=self.grupo, nome="Caixa")
+        medicao = Medicao.objects.create(
+            empresa=self.grupo, etapa=self.etapa, valor_liberado=Decimal("1000")
+        )
+        resp = self.client.post(f"/obras/medicao/{medicao.pk}/aprovar/")
+        self.assertEqual(resp.status_code, 302)
+        medicao.refresh_from_db()
+        self.assertTrue(medicao.aprovada)
+        self.assertEqual(Lancamento.objects.filter(empresa=self.grupo).count(), 1)
