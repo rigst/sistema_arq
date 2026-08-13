@@ -9,7 +9,7 @@
             <a class="secao-add" href="{% url 'agenda' %}?projeto={{ projeto.pk }}" title="Ver tarefas no calendário" aria-label="Ver tarefas no calendário">
                 {% include "core/_ico.html" with ico="calendario" %}
             </a>
-            <button class="secao-add" type="button" data-abre="modal-planejamento" hidden title="Editar horas e entregas" aria-label="Editar horas previstas e datas de entrega">
+            <button class="secao-add" type="button" data-abre="modal-planejamento" hidden title="Editar horas e entregas" aria-label="Editar horas e entregas previstas">
                 {% include "core/_ico.html" with ico="editar" %}
             </button>
         </div>
@@ -46,7 +46,7 @@
             </div>
             <span class="projeto-tarefa-prazo{% if tarefa.atrasada %} is-atrasada{% endif %}">{% if tarefa.prazo %}{{ tarefa.prazo|date:"d/m/Y" }}{% else %}sem data{% endif %}</span>
             <span class="projeto-tarefa-horas num">{{ tarefa.horas_previstas|floatformat:"0" }} h</span>
-            <a class="linha-ico" href="{% url 'fase_detalhe' tarefa.fase_id %}#tarefas-fase" title="Abrir fase" aria-label="Abrir {{ tarefa.fase.nome }}">
+            <a class="linha-ico" href="{% url 'fase_detalhe' tarefa.fase_id %}#tarefas-fase" title="Abrir fase" aria-label="Abrir fase {{ tarefa.fase.nome }}">
                 {% include "core/_ico.html" with ico="seta" %}
             </a>
         </li>

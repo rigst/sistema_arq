@@ -49,7 +49,7 @@ lugar na troca.
         {% if proposta.editavel %}
         <div class="agenda-acoes">
             <button class="linha-ico" type="button" title="Mover para cima"
-                    aria-label="Mover “{{ item.descricao }}” para cima"
+                    aria-label="Mover para cima: {{ item.descricao }}"
                     {% if forloop.first or pode_subir is False %}disabled{% endif %}
                     hx-post="{% url 'proposta_mover_item' item.pk %}"
                     hx-vals='{"direcao": "cima"}'
@@ -58,7 +58,7 @@ lugar na troca.
                 {% include "core/_ico.html" with ico="cima" %}
             </button>
             <button class="linha-ico" type="button" title="Mover para baixo"
-                    aria-label="Mover “{{ item.descricao }}” para baixo"
+                    aria-label="Mover para baixo: {{ item.descricao }}"
                     {% if forloop.last or pode_descer is False %}disabled{% endif %}
                     hx-post="{% url 'proposta_mover_item' item.pk %}"
                     hx-vals='{"direcao": "baixo"}'

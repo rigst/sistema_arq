@@ -79,7 +79,7 @@
                     <span class="ds-badge ds-badge--info"><span class="ds-dot"></span>{{ tarefa.fase.nome }}</span>
                     <p>{{ tarefa.projeto.nome }} · {{ tarefa.horas_previstas|floatformat:"0" }} h previstas{% if tarefa.status == "concluida" %} · feita{% endif %}</p>
                 </div>
-                <a class="linha-ico" href="{% url 'fase_detalhe' tarefa.fase_id %}#tarefas-fase" title="Abrir fase" aria-label="Abrir {{ tarefa.fase.nome }} de {{ tarefa.projeto.nome }}">
+                <a class="linha-ico" href="{% url 'fase_detalhe' tarefa.fase_id %}#tarefas-fase" title="Abrir fase" aria-label="Abrir fase {{ tarefa.fase.nome }} de {{ tarefa.projeto.nome }}">
                     {% include "core/_ico.html" with ico="seta" %}
                 </a>
             </li>
