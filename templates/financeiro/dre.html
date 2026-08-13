@@ -23,7 +23,7 @@
                 <tbody>
                 {% for l in dre.entradas %}<tr><td>{{ l.descricao }}</td><td class="valor valor--entrada">R$ {{ l.total }}</td></tr>{% empty %}<tr><td class="data-empty" colspan="2">Sem entradas.</td></tr>{% endfor %}
                 </tbody>
-                <tfoot><tr><th>Total</th><th class="valor--entrada">R$ {{ dre.total_entradas }}</th></tr></tfoot>
+                <tfoot><tr><th scope="row">Total</th><td class="valor valor--entrada">R$ {{ dre.total_entradas }}</td></tr></tfoot>
             </table>
         </div>
         <div class="ds-card">
@@ -32,7 +32,7 @@
                 <tbody>
                 {% for l in dre.saidas %}<tr><td>{{ l.descricao }}</td><td class="valor valor--saida">R$ {{ l.total }}</td></tr>{% empty %}<tr><td class="data-empty" colspan="2">Sem saídas.</td></tr>{% endfor %}
                 </tbody>
-                <tfoot><tr><th>Total</th><th class="valor--saida">R$ {{ dre.total_saidas }}</th></tr></tfoot>
+                <tfoot><tr><th scope="row">Total</th><td class="valor valor--saida">R$ {{ dre.total_saidas }}</td></tr></tfoot>
             </table>
         </div>
     </div>

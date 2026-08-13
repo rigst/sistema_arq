@@ -16,10 +16,10 @@
     </header>
 
     {% if tarefa_feedback %}
-    <div class="projeto-tarefas-feedback{% if not tarefa_foi_concluida %} is-reaberta{% endif %}" role="status" aria-live="polite">
+    <output class="projeto-tarefas-feedback{% if not tarefa_foi_concluida %} is-reaberta{% endif %}" aria-live="polite">
         {% include "core/_ico.html" with ico="ok" %}
         <span><strong>{% if tarefa_foi_concluida %}Tarefa concluída{% else %}Tarefa reaberta{% endif %}</strong>{{ tarefa_feedback }}</span>
-    </div>
+    </output>
     {% endif %}
 
     <dl class="projeto-tarefas-resumo">

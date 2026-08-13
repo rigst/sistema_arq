@@ -2,6 +2,10 @@
 <html lang="pt-br">
 <head>
 <meta charset="utf-8">
+{# Vira o título do PDF nas propriedades do arquivo (o WeasyPrint lê daqui) —
+   é o que o leitor de PDF mostra na aba e o que o buscador do sistema
+   operacional indexa. #}
+<title>A.R.Q. — {% block titulo_pdf %}documento{% endblock %}</title>
 <style>
     @page {
         size: A4; margin: 3cm 1.75cm 2.1cm;
@@ -31,7 +35,7 @@
     th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #dee3e0; vertical-align: top; }
     thead th { background: #e9edeb; color: #39423f; border-top: 1px solid #c4ccc8; border-bottom: 1px solid #c4ccc8; font-size: 7.5px; text-transform: uppercase; letter-spacing: .105em; font-weight: 700; }
     tbody tr:nth-child(even) td { background: rgba(233, 237, 235, .48); }
-    tfoot th { border-top: 2px solid #1c6a53; border-bottom: 0; padding-top: 12px; font-size: 10.5px; color: #14181a; }
+    tfoot th, tfoot td { border-top: 2px solid #1c6a53; border-bottom: 0; padding-top: 12px; font-size: 10.5px; color: #14181a; font-weight: 700; }
     .total { text-align: right; }
     .bloco { margin: 24px 0 9px; page-break-inside: avoid; }
     .bloco h3 { display: flex; align-items: center; font-size: 9px; margin: 0 0 8px; padding-bottom: 7px; color: #1c6a53; border-bottom: 1px solid #c4ccc8; text-transform: uppercase; letter-spacing: .12em; }

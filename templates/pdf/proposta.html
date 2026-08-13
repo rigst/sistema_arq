@@ -1,5 +1,6 @@
 {% extends "pdf/base_pdf.html" %}
 {% block tipo %}Proposta comercial{% endblock %}
+{% block titulo_pdf %}proposta comercial{% endblock %}
 
 {% block conteudo %}
 <h1>{{ proposta.titulo }}</h1>
@@ -16,7 +17,7 @@
         <tr><td><strong>{{ item.descricao }}</strong><br><span class="muted">{{ item.inclusoes }}</span></td><td>{{ item.horas_estimadas|floatformat:"0" }} h</td><td class="total">R$ {{ item.valor }}</td></tr>
     {% endfor %}
     </tbody>
-    <tfoot><tr><th>Total</th><th>{{ proposta.horas_totais|floatformat:"0" }} h</th><th class="total">R$ {{ proposta.valor_total }}<br><span class="muted">R$ {{ proposta.hora_tecnica_aplicada }}/h</span></th></tr></tfoot>
+    <tfoot><tr><th scope="row">Total</th><td>{{ proposta.horas_totais|floatformat:"0" }} h</td><td class="total">R$ {{ proposta.valor_total }}<br><span class="muted">R$ {{ proposta.hora_tecnica_aplicada }}/h</span></td></tr></tfoot>
 </table>
 
 {% if fases_entrega %}

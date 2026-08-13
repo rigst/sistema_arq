@@ -52,12 +52,12 @@ uma <tr>, "Descrição" e "Horas" caem exatamente sob as colunas que os nomeiam.
         <tfoot>
             <tr class="proposta-somatorio">
                 <th scope="row">Total</th>
-                <th class="num">{{ proposta.horas_totais|floatformat:"0" }} h</th>
-                <th class="num">
+                <td class="num">{{ proposta.horas_totais|floatformat:"0" }} h</td>
+                <td class="num">
                     <strong>R$ {{ proposta.valor_total }}</strong>
                     <small>hora técnica: R$ {{ proposta.hora_tecnica_aplicada }}/h</small>
-                </th>
-                <th></th>
+                </td>
+                <td></td>
             </tr>
         </tfoot>
     </table>
