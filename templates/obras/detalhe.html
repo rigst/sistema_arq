@@ -32,7 +32,10 @@
         </p>
         <p class="fase-atalhos">
             <a class="ds-btn" href="{% url 'orcamentos_lista' %}?projeto={{ obra.projeto.pk }}">Ver orçamentos</a>
-            <a class="ds-btn" href="{% url 'orcamento_novo' obra.projeto.pk %}">Novo orçamento</a>
+            <form method="post" action="{% url 'orcamento_novo' obra.projeto.pk %}" class="app-inline-form">
+                {% csrf_token %}
+                <button class="ds-btn" type="submit">Novo orçamento</button>
+            </form>
         </p>
     </section>
 

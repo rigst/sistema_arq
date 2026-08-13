@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_safe
 
 from core.contexto import projeto_do_pedido
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
@@ -10,6 +10,7 @@ from .forms import ObrigacaoTecnicaForm
 from .models import ObrigacaoTecnica
 
 
+@require_safe
 @login_required
 def lista_obrigacoes(request):
     obrigacoes = queryset_da_empresa(

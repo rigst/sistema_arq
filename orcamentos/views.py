@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_safe
 
 from core.contexto import projeto_do_pedido
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
@@ -15,6 +15,7 @@ def _meus(user):
     return queryset_da_empresa(Orcamento.objects.select_related("projeto"), user)
 
 
+@require_safe
 @login_required
 def lista(request):
     orcamentos = _meus(request.user).prefetch_related("itens")
@@ -24,6 +25,10 @@ def lista(request):
     return render(request, "orcamentos/lista.html", {"orcamentos": orcamentos, "projeto": projeto})
 
 
+# POST, e não GET: a view cria um orçamento (e revisa o anterior) a cada
+# chamada. Como link, qualquer prefetch do navegador ou varredura de robô
+# criava versão fantasma, e o botão não tinha proteção de CSRF.
+@require_POST
 @login_required
 def novo(request, projeto_pk):
     projeto = get_object_or_404(

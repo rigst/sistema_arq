@@ -11,6 +11,7 @@ onde a edição continua acontecendo.
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
+from django.views.decorators.http import require_safe
 
 from briefing.forms import TemplateBriefingForm
 from briefing.models import TemplateBriefing
@@ -20,6 +21,7 @@ from contratos.services import garantir_modelos_padrao
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 
 
+@require_safe
 @login_required
 def indice(request):
     grupo = obter_grupo_empresa_ou_erro(request.user)

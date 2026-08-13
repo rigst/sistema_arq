@@ -15,7 +15,10 @@
         </div>
         <div class="page-head-actions">
             <a class="ds-btn" href="{% url 'projeto_detalhe' orcamento.projeto.pk %}">Projeto</a>
-            <a class="ds-btn" href="{% url 'orcamento_novo' orcamento.projeto.pk %}">Nova versão</a>
+            <form method="post" action="{% url 'orcamento_novo' orcamento.projeto.pk %}" class="app-inline-form">
+                {% csrf_token %}
+                <button class="ds-btn" type="submit">Nova versão</button>
+            </form>
         </div>
     </header>
 
@@ -80,6 +83,9 @@
         <div class="ds-card">
             <h2 class="ds-display">Resumo por categoria</h2>
             <table class="data-table">
+                <thead>
+                    <tr><th scope="col">Categoria</th><th scope="col" class="num">Itens</th><th scope="col" class="num">Total</th></tr>
+                </thead>
                 <tbody>
                 {% for linha in resumo %}
                 <tr><td>{{ linha.rotulo }}</td><td class="num">{{ linha.itens }} item(ns)</td><td class="num">R$ {{ linha.total }}</td></tr>

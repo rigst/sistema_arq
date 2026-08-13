@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count, F, Q, Sum
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_safe
 
 from core.tenancy import queryset_da_empresa
 from fases.catalogo import COMPLEMENTARES_NOMEADOS
@@ -16,6 +16,7 @@ from .forms import PlanejamentoProjetoForm, ProjetoForm
 from .models import Projeto
 
 
+@require_safe
 @login_required
 def painel_projetos(request):
     projetos = queryset_da_empresa(
@@ -120,6 +121,7 @@ def contexto_arquivos_principais(projeto, contrato=None):
     }
 
 
+@require_safe
 @login_required
 def detalhe_projeto(request, pk):
     from jornada.roteiro import montar_roteiro, percentual, proxima_etapa

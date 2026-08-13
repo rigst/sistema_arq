@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import ProtectedError
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_safe
 
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
 
@@ -10,6 +10,7 @@ from .forms import ClienteForm, InteracaoForm
 from .models import Cliente
 
 
+@require_safe
 @login_required
 def lista_clientes(request):
     todos = queryset_da_empresa(Cliente.objects.all(), request.user)
@@ -63,6 +64,7 @@ def editar_cliente(request, pk):
     return redirect("crm_lista")
 
 
+@require_safe
 @login_required
 def detalhe_cliente(request, pk):
     cliente = get_object_or_404(queryset_da_empresa(Cliente.objects.all(), request.user), pk=pk)
