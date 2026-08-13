@@ -517,7 +517,10 @@ a { color: var(--ds-blue-dark); }
 .data-table a { color: var(--ds-blue-dark); text-decoration: none; font-weight: 500; }
 .data-table a:hover { text-decoration: underline; }
 .data-table tbody tr { transition: background var(--arq-fast) ease; }
-.data-table tfoot th { border-top: 1px solid var(--ds-line-dash); border-bottom: 0; padding-top: 0.7rem; }
+/* th e td juntos: na linha de total só o rótulo é cabeçalho (th scope="row");
+   os valores são dados, e como td precisam herdar a mesma régua superior. */
+.data-table tfoot th,
+.data-table tfoot td { border-top: 1px solid var(--ds-line-dash); border-bottom: 0; padding-top: 0.7rem; font-weight: 700; }
 .data-table .app-inline-form { display: inline; }
 .data-table td .app-link-btn { white-space: nowrap; }
 .data-empty { color: var(--ds-text-500); padding: 1.5rem 0 !important; }
@@ -1976,9 +1979,6 @@ a.fase-complementar-link:hover { background: var(--ds-panel); }
     background: rgba(255, 255, 255, 0.14); border: 0; color: #fff;
 }
 .app-nav { scrollbar-color: rgba(255, 255, 255, 0.28) transparent; }
-
-@media (max-width: 62rem) {
-}
 
 /* FOCO SEM QUADRADO PRETO */
 .ds-btn--solid:focus-visible {

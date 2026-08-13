@@ -164,6 +164,10 @@
     Avisos no canto inferior direito: perto de onde a mão está e longe do
     conteúdo, que não precisa se mexer para dar espaço a eles.
     role="status" e aria-live fazem o leitor de tela anunciar sem roubar o foco.
+    Continua div, e não <output>: o linter sugere a troca, mas <output> só
+    aceita conteúdo de frase — aqui dentro há <div> e <form>, o que tornaria o
+    HTML inválido. Onde o conteúdo é de frase (projetos/_proximas_tarefas.html)
+    a troca foi feita.
     {% endcomment %}
     {% if messages %}
     <div class="ds-avisos" role="status" aria-live="polite" data-avisos>

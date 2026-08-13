@@ -50,7 +50,7 @@
                     <p class="secao-sub">Uma obra do escritório cria reconhecimento imediato ao entrar no sistema.</p>
                 </header>
                 <div class="identidade-previa identidade-previa--fundo">
-                    {% if empresa.imagem_fundo %}<img src="{% url 'identidade_imagem' 'fundo' %}" alt="Imagem atual do painel">{% else %}<span class="identidade-vazio">Imagem padrão do sistema</span>{% endif %}
+                    {% if empresa.imagem_fundo %}<img src="{% url 'identidade_imagem' 'fundo' %}" alt="Painel atual do escritório">{% else %}<span class="identidade-vazio">Imagem padrão do sistema</span>{% endif %}
                 </div>
                 <div class="identidade-controle">
                     <p>{{ form.imagem_fundo.label_tag }}{{ form.imagem_fundo }}{{ form.imagem_fundo.errors }}</p>
