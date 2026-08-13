@@ -24,18 +24,28 @@ def _emitir(grupo, chave, titulo, mensagem, nivel="alerta", url=""):
 
 
 def varrer_empresa(grupo):
-    """Varre uma empresa (Group) e emite notificações. Retorna quantas criou."""
+    """Varre uma empresa (Group) e emite notificações. Retorna quantas criou.
+
+    Cada fonte de alerta vive numa função própria: são quatro varreduras
+    independentes, e juntas numa só o corpo passava de qualquer limite de
+    complexidade que se queira usar.
+    """
+    return (
+        _alertar_tarefas(grupo)
+        + _alertar_projetos_parados(grupo)
+        + _alertar_obras_em_desvio(grupo)
+        + _alertar_obrigacoes(grupo)
+    )
+
+
+def _alertar_tarefas(grupo):
+    """Tarefas com prazo vencido ou próximo."""
     from django.urls import reverse
 
-    from obras.models import Obra
-    from projetos.models import Projeto
-    from regulatorio.models import ObrigacaoTecnica
     from tarefas.models import Tarefa
 
     hoje = timezone.localdate()
     criadas = 0
-
-    # 1) Tarefas com prazo vencido ou próximo.
     limite = hoje + timedelta(days=DIAS_TAREFA_PROXIMA)
     tarefas = Tarefa.objects.filter(empresa=grupo, prazo__isnull=False, prazo__lte=limite).exclude(
         status="concluida"
@@ -52,8 +62,16 @@ def varrer_empresa(grupo):
             nivel="critico" if atrasada else "alerta",
             url=reverse("projetos_painel"),
         )
+    return criadas
 
-    # 2) Projetos ativos parados há muito tempo.
+
+def _alertar_projetos_parados(grupo):
+    """Projetos ativos sem atualização há muito tempo."""
+    from django.urls import reverse
+
+    from projetos.models import Projeto
+
+    criadas = 0
     corte = timezone.now() - timedelta(days=DIAS_PROJETO_PARADO)
     projetos = Projeto.objects.filter(empresa=grupo, status="ativo", ultima_atualizacao__lt=corte)
     for p in projetos:
@@ -65,8 +83,16 @@ def varrer_empresa(grupo):
             nivel="alerta",
             url=reverse("projeto_detalhe", args=[p.pk]),
         )
+    return criadas
 
-    # 3) Obras em desvio de cronograma.
+
+def _alertar_obras_em_desvio(grupo):
+    """Obras cujo avanço real ficou para trás do previsto."""
+    from django.urls import reverse
+
+    from obras.models import Obra
+
+    criadas = 0
     for obra in Obra.objects.filter(empresa=grupo).prefetch_related("etapas"):
         if obra.em_desvio:
             criadas += _emitir(
@@ -77,8 +103,16 @@ def varrer_empresa(grupo):
                 nivel="alerta",
                 url=reverse("obra_detalhe", args=[obra.pk]),
             )
+    return criadas
 
-    # 4) Obrigações regulatórias vencidas, vencendo ou pendentes.
+
+def _alertar_obrigacoes(grupo):
+    """Obrigações regulatórias vencidas, vencendo ou pendentes de registro."""
+    from django.urls import reverse
+
+    from regulatorio.models import ObrigacaoTecnica
+
+    criadas = 0
     for o in ObrigacaoTecnica.objects.filter(empresa=grupo).exclude(status="baixada"):
         if o.vencida:
             estado, nivel, msg = "vencida", "critico", f"Venceu em {o.vencimento:%d/%m/%Y}."

@@ -30,40 +30,62 @@ from .services import (
     lancar_parcelas_no_financeiro,
 )
 
+MSG_PROPOSTA_PENDENTE = "A aprovação da proposta é necessária antes de criar o contrato."
+
+
+def _fase_contrato_impeditiva(projeto):
+    """A fase de contrato do projeto quando ela impede seguir; None se libera.
+
+    Conferida duas vezes em novo_contrato — no pedido e de novo depois do form
+    —, porque o projeto escolhido no formulário pode não ser o da query string.
+    """
+    if projeto is None:
+        return None
+    fase = projeto.fases.filter(chave="contrato").first()
+    return fase if fase is not None and fase.bloqueada else None
+
+
+def _modelo_mais_especifico(modelos, tipo_projeto):
+    """O do tipo do projeto; na falta, o marcado como padrão; na falta, qualquer um."""
+    return (
+        modelos.filter(tipo_projeto=tipo_projeto).first()
+        or modelos.filter(tipo_projeto="", padrao=True).first()
+        or modelos.first()
+    )
+
+
+def _preencher_corpo_padrao(contrato, usuario):
+    """Escreve o corpo do contrato a partir do modelo mais específico que
+    existir. Contrato que já veio com texto é deixado como está."""
+    if contrato.corpo.strip():
+        return
+    modelos = garantir_modelos_padrao(contrato.empresa, usuario)
+    modelo = _modelo_mais_especifico(modelos, contrato.projeto.tipo)
+    if modelo is not None:
+        contrato.corpo = modelo.gerar(contexto_do_contrato(contrato))
+        contrato.save(update_fields=["corpo"])
+
 
 @login_required
 def novo_contrato(request):
     projeto = projeto_do_pedido(request)
-    if projeto is not None:
-        fase = projeto.fases.filter(chave="contrato").first()
-        if fase is not None and fase.bloqueada:
-            messages.error(
-                request, "A aprovação da proposta é necessária antes de criar o contrato."
-            )
-            return redirect("fase_detalhe", pk=fase.pk)
+    impeditiva = _fase_contrato_impeditiva(projeto)
+    if impeditiva is not None:
+        messages.error(request, MSG_PROPOSTA_PENDENTE)
+        return redirect("fase_detalhe", pk=impeditiva.pk)
+
     if request.method == "POST":
         form = ContratoForm(request.POST, user=request.user, projeto=projeto)
         if form.is_valid():
             contrato = form.save(commit=False)
-            fase = contrato.projeto.fases.filter(chave="contrato").first()
-            if fase is not None and fase.bloqueada:
-                messages.error(
-                    request, "A aprovação da proposta é necessária antes de criar o contrato."
-                )
-                return redirect("fase_detalhe", pk=fase.pk)
+            impeditiva = _fase_contrato_impeditiva(contrato.projeto)
+            if impeditiva is not None:
+                messages.error(request, MSG_PROPOSTA_PENDENTE)
+                return redirect("fase_detalhe", pk=impeditiva.pk)
             contrato.empresa = obter_grupo_empresa_ou_erro(request.user)
             contrato.criado_por = request.user
             contrato.save()
-            if not contrato.corpo.strip():
-                modelos = garantir_modelos_padrao(contrato.empresa, request.user)
-                modelo = (
-                    modelos.filter(tipo_projeto=contrato.projeto.tipo).first()
-                    or modelos.filter(tipo_projeto="", padrao=True).first()
-                    or modelos.first()
-                )
-                if modelo is not None:
-                    contrato.corpo = modelo.gerar(contexto_do_contrato(contrato))
-                    contrato.save(update_fields=["corpo"])
+            _preencher_corpo_padrao(contrato, request.user)
             messages.success(request, "Contrato criado.")
             return redirect("contrato_detalhe", pk=contrato.pk)
     else:
@@ -75,6 +97,24 @@ def novo_contrato(request):
     )
 
 
+def _proposta_de_origem(contrato):
+    """A proposta que originou o contrato, quando veio de uma."""
+    if contrato.origem_tipo != "proposta" or not contrato.origem_id:
+        return None
+    from propostas.models import Proposta
+
+    return Proposta.objects.filter(pk=contrato.origem_id, empresa=contrato.empresa).first()
+
+
+def _aplicar_modelo(request, contrato, modelos):
+    """Regrava a minuta a partir do modelo escolhido e volta para a âncora."""
+    modelo = get_object_or_404(modelos, pk=request.POST.get("modelo"))
+    contrato.corpo = modelo.gerar(contexto_do_contrato(contrato))
+    contrato.save(update_fields=["corpo"])
+    messages.success(request, f"Modelo “{modelo.nome}” aplicado à minuta.")
+    return redirect(f"/contratos/{contrato.pk}/#minuta")
+
+
 @login_required
 def detalhe_contrato(request, pk):
     contrato = get_object_or_404(
@@ -84,11 +124,7 @@ def detalhe_contrato(request, pk):
         pk=pk,
     )
     modelos = garantir_modelos_padrao(contrato.empresa, request.user)
-    modelo_padrao = (
-        modelos.filter(tipo_projeto=contrato.projeto.tipo).first()
-        or modelos.filter(tipo_projeto="", padrao=True).first()
-        or modelos.first()
-    )
+    modelo_padrao = _modelo_mais_especifico(modelos, contrato.projeto.tipo)
     modelos = modelos.order_by(
         Case(
             When(tipo_projeto=contrato.projeto.tipo, then=0),
@@ -98,13 +134,7 @@ def detalhe_contrato(request, pk):
         ),
         "nome",
     )
-    proposta_origem = None
-    if contrato.origem_tipo == "proposta" and contrato.origem_id:
-        from propostas.models import Proposta
-
-        proposta_origem = Proposta.objects.filter(
-            pk=contrato.origem_id, empresa=contrato.empresa
-        ).first()
+    proposta_origem = _proposta_de_origem(contrato)
     fases_entrega = list(
         contrato.projeto.fases.exclude(chave__in=("briefing", "proposta", "contrato")).order_by(
             "ordem", "id"
@@ -117,11 +147,7 @@ def detalhe_contrato(request, pk):
             if form.is_valid():
                 form.save()
                 if request.POST.get("acao") == "aplicar_modelo":
-                    modelo = get_object_or_404(modelos, pk=request.POST.get("modelo"))
-                    contrato.corpo = modelo.gerar(contexto_do_contrato(contrato))
-                    contrato.save(update_fields=["corpo"])
-                    messages.success(request, f"Modelo “{modelo.nome}” aplicado à minuta.")
-                    return redirect(f"/contratos/{contrato.pk}/#minuta")
+                    return _aplicar_modelo(request, contrato, modelos)
                 messages.success(request, "Contrato salvo.")
                 return redirect("contrato_detalhe", pk=contrato.pk)
         else:

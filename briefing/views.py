@@ -252,44 +252,50 @@ def aplicar_template(request, projeto_pk):
     return redirect("briefing_responder", projeto_pk=projeto.pk)
 
 
-@login_required
-def responder(request, projeto_pk):
-    projeto, briefing = _get_briefing(request, projeto_pk)
-    semear_templates_padrao(projeto.empresa, request.user)
+def _roteiro_para(request, projeto, briefing):
+    """O roteiro escolhido na sessão; na falta, o do tipo do projeto.
+
+    Sem escolha explícita, abrir o roteiro de loja num projeto residencial faz
+    a pessoa achar que errou de tela.
+    """
     template_pk = request.session.get(f"briefing_template_{briefing.pk}")
-    template = _meus_templates(request.user).filter(pk=template_pk).first()
-    if template is None:
-        # Sem escolha explícita, abre o roteiro do tipo do projeto — abrir o de
-        # loja num projeto residencial faz a pessoa achar que errou de tela.
-        ativos = _meus_templates(request.user).filter(ativo=True)
-        template = (
-            ativos.filter(tipo_projeto=projeto.tipo).first()
-            or ativos.filter(tipo_projeto="").first()
-            or ativos.first()
-        )
-    if template is None:
-        messages.info(request, "Nenhum roteiro cadastrado ainda. Comece pelos prontos.")
-        return redirect("briefing_templates")
+    escolhido = _meus_templates(request.user).filter(pk=template_pk).first()
+    if escolhido is not None:
+        return escolhido
+    ativos = _meus_templates(request.user).filter(ativo=True)
+    return (
+        ativos.filter(tipo_projeto=projeto.tipo).first()
+        or ativos.filter(tipo_projeto="").first()
+        or ativos.first()
+    )
 
-    if request.method == "POST":
-        _salvar_respostas(request, briefing, template)
-        form_blocos = BriefingForm(request.POST, instance=briefing)
-        if form_blocos.is_valid():
-            form_blocos.save()
-        messages.success(request, f"Briefing de {projeto.nome} salvo.")
-        # Briefing salvo é briefing pronto: o passo seguinte é a proposta, e
-        # devolver para a mesma tela faria a pessoa procurar onde continuar.
-        fase = projeto.fases.filter(chave="briefing").first()
-        if fase is not None:
-            fase.concluir_sem_aprovacao(request.user)
-        proposta = projeto.fases.filter(chave="proposta").first()
-        if proposta is not None:
-            from propostas.views import criar_proposta_do_projeto
 
-            rascunho = criar_proposta_do_projeto(projeto, request.user)
-            return redirect("proposta_detalhe", pk=rascunho.pk)
-        return redirect("projeto_detalhe", pk=projeto.pk)
+def _salvar_e_seguir(request, projeto, briefing, template):
+    """Grava o briefing e manda para o passo seguinte.
 
+    Briefing salvo é briefing pronto: devolver para a mesma tela faria a
+    pessoa procurar onde continuar.
+    """
+    _salvar_respostas(request, briefing, template)
+    form_blocos = BriefingForm(request.POST, instance=briefing)
+    if form_blocos.is_valid():
+        form_blocos.save()
+    messages.success(request, f"Briefing de {projeto.nome} salvo.")
+
+    fase = projeto.fases.filter(chave="briefing").first()
+    if fase is not None:
+        fase.concluir_sem_aprovacao(request.user)
+    if projeto.fases.filter(chave="proposta").exists():
+        from propostas.views import criar_proposta_do_projeto
+
+        rascunho = criar_proposta_do_projeto(projeto, request.user)
+        return redirect("proposta_detalhe", pk=rascunho.pk)
+    return redirect("projeto_detalhe", pk=projeto.pk)
+
+
+def _blocos_com_respostas(briefing, template):
+    """Os blocos do roteiro com a resposta de cada pergunta anexada, e a
+    contagem de respondidas — em leitura, bloco vazio vira título solto."""
     respostas = {r.pergunta_id: r for r in briefing.respostas.prefetch_related("opcoes")}
     blocos = perguntas_por_bloco(template)
     for bloco in blocos:
@@ -300,8 +306,23 @@ def responder(request, projeto_pk):
             pergunta.marcadas = {o.pk for o in resposta.opcoes.all()} if resposta else set()
             if pergunta.resposta_texto or pergunta.marcadas:
                 respondidas += 1
-        # Em leitura, bloco sem nenhuma resposta vira título solto no vazio.
         bloco["respondidas"] = respondidas
+    return blocos
+
+
+@login_required
+def responder(request, projeto_pk):
+    projeto, briefing = _get_briefing(request, projeto_pk)
+    semear_templates_padrao(projeto.empresa, request.user)
+    template = _roteiro_para(request, projeto, briefing)
+    if template is None:
+        messages.info(request, "Nenhum roteiro cadastrado ainda. Comece pelos prontos.")
+        return redirect("briefing_templates")
+
+    if request.method == "POST":
+        return _salvar_e_seguir(request, projeto, briefing, template)
+
+    blocos = _blocos_com_respostas(briefing, template)
 
     ambientes = list(briefing.ambientes.all())
     area_programa = sum(a.area_aprox or 0 for a in ambientes) or None
