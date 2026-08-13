@@ -1,7 +1,9 @@
+from decimal import Decimal, InvalidOperation
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_safe
 
 from core.contexto import projeto_do_pedido
 from core.tenancy import obter_grupo_empresa_ou_erro, queryset_da_empresa
@@ -12,6 +14,7 @@ from .models import EtapaObra, Medicao, Obra, criar_etapas_obra_padrao
 from .services import aprovar_medicao
 
 
+@require_safe
 @login_required
 def lista_obras(request):
     obras = queryset_da_empresa(
@@ -55,6 +58,7 @@ def editar_obra(request, pk):
     return render(request, "obras/form.html", {"form": form, "titulo": "Editar execução"})
 
 
+@require_safe
 @login_required
 def detalhe_obra(request, pk):
     obra = get_object_or_404(
@@ -112,14 +116,15 @@ def atualizar_avanco(request, pk):
         etapa.percentual_real = _clamp(request.POST.get("percentual_real", etapa.percentual_real))
         etapa.save(update_fields=["percentual_previsto", "percentual_real"])
         messages.success(request, f"Avanço de “{etapa.nome}” atualizado.")
-    except (TypeError, ValueError):
+    # InvalidOperation é o que Decimal("abc") levanta, e ela não é ValueError —
+    # herda de ArithmeticError. Sem ela na lista, campo preenchido com texto
+    # devolvia 500 em vez da mensagem de erro.
+    except (TypeError, ValueError, InvalidOperation):
         messages.error(request, "Percentuais inválidos.")
     return redirect("obra_detalhe", pk=etapa.obra_id)
 
 
 def _clamp(valor):
-    from decimal import Decimal
-
     v = Decimal(str(valor))
     return max(Decimal("0"), min(Decimal("100"), v))
 
