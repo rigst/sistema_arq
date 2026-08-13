@@ -12,8 +12,17 @@ permissions:
 
 jobs:
   ci:
-    uses: rigst/ci/.github/workflows/python-django.yml@v1
-    secrets: inherit
+    # Fixado no SHA, e não na tag v1: tag é ponteiro móvel, e quem puder
+    # reescrevê-la passa a rodar código arbitrário com os secrets deste repo.
+    # O comentário ao lado é o que o Dependabot lê para propor a subida — as
+    # melhorias do pipeline compartilhado continuam chegando, só que como PR
+    # revisável em vez de silenciosamente. Ver .github/dependabot.yml.
+    uses: rigst/ci/.github/workflows/python-django.yml@95d07687022dc719e0dd4391f04fbdbebf0100e1 # v1
+    # Explícito em vez de `secrets: inherit`: o workflow chamado recebe só
+    # estes dois, e não tudo que o repositório tiver hoje ou vier a ter.
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     with:
       python-version: "3.12"
       django-settings-module: config.settings
@@ -45,18 +54,6 @@ jobs:
         DJANGO_STATIC_ROOT=/tmp/static
         DJANGO_MEDIA_ROOT=/tmp/media
 
-      # Estado de adoção. O que bloqueia hoje é o que já está limpo: gitleaks
-      # (nenhum segredo no histórico) e as checagens do Django. O resto roda e
-      # reporta enquanto o passivo é zerado — tire da lista conforme resolver.
-      #
-      #   bandit      3 achados
-      #   pytest      8 falhas, todas em contratos/tests.py::FluxoContratoTests.
-      #              A suíte passa 232/232 em SQLite e falha só no PostgreSQL,
-      #              com "the connection is closed" já no setUp: algum teste
-      #              anterior deixa a transação abortada, o que o SQLite tolera
-      #              e o Postgres não. O CI fica no Postgres de propósito, que é
-      #              o banco de produção — a falha é sinal, não ruído.
-      #   mypy      código ainda não tipado
       # Só no job de testes: em production os settings exigem TLS no banco
       # (DJANGO_DB_SSL_REQUIRE herda IS_PRODUCTION) e o Postgres do runner não
       # tem TLS. Os testes seguem no Postgres, igual à produção, só sem SSL.
@@ -76,6 +73,11 @@ jobs:
         CELERY_BROKER_URL=
         CELERY_RESULT_BACKEND=
 
+      # Piso de cobertura. Fica um pouco abaixo do valor medido de propósito:
+      # o objetivo é impedir queda, não travar o build em variação de arredonda-
+      # mento. Suba junto com a cobertura real.
+      coverage-fail-under: 80
+
       # Nada em soft-fail: toda etapa bloqueia. O mypy foi o último a sair,
       # depois que o plugin do django-stubs entrou no pipeline compartilhado e
       # os 64 erros restantes foram resolvidos um a um.
@@ -84,3 +86,8 @@ jobs:
       run-sonar: true
       sonar-project-key: rigst_sistema_arq
       sonar-organization: rigst
+      # Sem isto o job do Sonar termina verde assim que envia a análise, e o
+      # Quality Gate reprovando não aparece no CI — que era o caso aqui: build
+      # verde com o gate vermelho por cobertura e nota de segurança. Com `wait`,
+      # o scanner aguarda o veredito e falha junto.
+      sonar-args: -Dsonar.qualitygate.wait=true
