@@ -54,7 +54,7 @@ global enxerga todos os escritórios.
 ## Verificação
 
     python manage.py check
-    pytest                              # 232 testes
+    pytest                              # 269 testes
     python manage.py makemigrations --check
     pip-audit
 
@@ -89,8 +89,8 @@ precisa passar antes do merge. Todo push roda, em paralelo:
 | Dependências | `pip-audit` | bloqueia |
 | Segredos | `gitleaks` (histórico completo) | bloqueia |
 | Django | `check --deploy` + `makemigrations --check` | bloqueia |
-| Agregação | SonarQube Cloud | bloqueia |
-| Tipos | `mypy` | reporta, ainda não bloqueia |
+| Tipos | `mypy` | bloqueia |
+| Agregação | SonarQube Cloud (Quality Gate) | bloqueia |
 
 Cobertura no [Codecov](https://codecov.io/gh/rigst/sistema_arq); bugs, code
 smells e duplicação no

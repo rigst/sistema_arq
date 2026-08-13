@@ -35,17 +35,22 @@ APPS="agenda arquivos briefing config contratos core crm fases financeiro"
 
 ruff check .                              # bloqueia
 ruff format --check .                     # bloqueia
-pytest --cov --cov-report=term-missing    # bloqueia
+pytest --cov --cov-fail-under=80          # bloqueia
 bandit -r $APPS --severity-level high     # bloqueia a partir de "high"
 pip-audit                                 # bloqueia
 python manage.py makemigrations --check --dry-run   # bloqueia
 python manage.py check --deploy --fail-level ERROR
-
-mypy $APPS                                # ainda não bloqueia
+mypy $APPS                                # bloqueia
 ```
 
-**Só o `mypy` está em `soft-fail`** — roda e reporta sem derrubar o build. Todo
-o resto bloqueia.
+**Nada está em `soft-fail`: toda etapa bloqueia.** O `mypy` foi o último a sair
+da lista, depois que os 64 erros restantes foram zerados.
+
+O Quality Gate do SonarQube Cloud também bloqueia: o CI passa
+`-Dsonar.qualitygate.wait=true`, então o job espera o veredito em vez de
+terminar verde só por ter enviado a análise. Sem isso o build ficava verde com
+o gate vermelho — que foi exatamente o que aconteceu enquanto a cobertura de
+código novo e a nota de segurança estavam abaixo do exigido.
 
 O `check --deploy` roda com `--fail-level ERROR`, e não `WARNING`, porque os
 avisos de HSTS (`security.W005` e `security.W021`) são escolha deliberada
@@ -60,13 +65,16 @@ CI**, igual à produção. A convenção de nomes aqui é `tests.py` e `tests_*.
 não `test_*.py`.
 
 ```bash
-pytest                    # suíte completa (232 testes)
+pytest                    # suíte completa (269 testes)
 pytest contratos          # só um app
 pytest --cov              # com cobertura
 ```
 
 Cobertura acompanhada no [Codecov](https://codecov.io/gh/rigst/sistema_arq) e no
 [SonarQube Cloud](https://sonarcloud.io/summary/new_code?id=rigst_sistema_arq).
+O CI reprova abaixo de **80%** (`coverage-fail-under`); hoje a suíte fica em
+~83%. O piso existe para impedir queda — suba-o junto com a cobertura real, não
+o contrário.
 
 ### Uma armadilha ao escrever testes
 
