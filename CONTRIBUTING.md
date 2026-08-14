@@ -65,10 +65,13 @@ Ao mexer em `requirements.txt`, regenere:
 python scripts/gerar_lock.py
 ```
 
-O CI tem um job `lock em dia` que reprova se os dois divergirem. Ele existe
-porque o Dependabot atualiza o `requirements.txt` e **não** reconhece o
-`requirements.lock` — sem a checagem, o CI testaria uma versão e a imagem
-instalaria outra.
+O CI tem dois jobs para isso. O `lock em dia` reprova se os dois arquivos
+divergirem — existe porque o Dependabot atualiza o `requirements.txt` e **não**
+reconhece o `requirements.lock`, então sem a checagem o CI testaria uma versão
+e a imagem instalaria outra. O `imagem docker` constrói a imagem de fato: com
+`--require-hashes`, uma transitiva faltando ou um hash errado só aparece no
+build, e as outras etapas rodam sobre o `requirements.txt`, no Python do
+runner, não no 3.14 da imagem.
 
 O `check --deploy` roda com `--fail-level ERROR`, e não `WARNING`, porque os
 avisos de HSTS (`security.W005` e `security.W021`) são escolha deliberada

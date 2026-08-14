@@ -120,3 +120,17 @@ jobs:
           python-version: "3.12"
       - name: requirements.lock confere com requirements.txt
         run: python scripts/conferir_lock.py
+
+  # Constrói a imagem de verdade. Existe porque o requirements.lock instala com
+  # --require-hashes: qualquer transitiva faltando ou hash errado derruba o
+  # build, e isso não aparece em nenhuma outra etapa — as demais rodam sobre o
+  # requirements.txt, no Python do runner, não no 3.14 da imagem.
+  imagem:
+    name: imagem docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # docker build direto, sem action de terceiro: o runner já traz o Docker,
+      # e cada action a mais é uma dependência a fixar e auditar.
+      - name: docker build
+        run: docker build --progress=plain -t sistema-arq:ci .
