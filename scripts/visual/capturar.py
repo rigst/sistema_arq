@@ -26,10 +26,9 @@ Configuração por ambiente:
 """
 
 import os
-import pathlib
 import sys
-import tempfile
 
+from comum import destino_seguro
 from playwright.sync_api import sync_playwright
 
 BASE = os.environ.get("ARQ_BASE_URL", "http://127.0.0.1:8971").rstrip("/")
@@ -78,24 +77,6 @@ CSS_ESTATICO = (
     "*,*::before,*::after{animation:none!important;"
     "transition:none!important;caret-color:transparent!important}"
 )
-
-
-def destino_seguro(bruto):
-    """Resolve o caminho de saída e recusa o que estiver fora de lugar.
-
-    O caminho vem da linha de comando e vira gravação de dezenas de arquivos.
-    Um valor errado — caminho relativo com "..", variável não expandida — grava
-    fora do previsto. Aqui só o diretório de trabalho e o temporário do sistema
-    são aceitos, que é onde as capturas fazem sentido.
-    """
-    alvo = pathlib.Path(bruto).expanduser().resolve()
-    permitidos = [pathlib.Path.cwd().resolve(), pathlib.Path(tempfile.gettempdir()).resolve()]
-    if not any(alvo == raiz or raiz in alvo.parents for raiz in permitidos):
-        raise SystemExit(
-            f"recusando gravar em {alvo}: use um caminho dentro de "
-            f"{permitidos[0]} ou {permitidos[1]}"
-        )
-    return alvo
 
 
 def _entrar(pagina):
