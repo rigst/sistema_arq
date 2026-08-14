@@ -97,7 +97,15 @@ jobs:
       # Quality Gate reprovando não aparece no CI — que era o caso aqui: build
       # verde com o gate vermelho por cobertura e nota de segurança. Com `wait`,
       # o scanner aguarda o veredito e falha junto.
-      sonar-args: -Dsonar.qualitygate.wait=true
+      # A lista de coverage.exclusions repete a do pipeline compartilhado
+      # porque propriedade repetida no scanner é substituída, não somada: sem
+      # copiar o resto, migrações e testes voltariam a contar. O que muda é o
+      # acréscimo de scripts/**, ferramenta de desenvolvimento que o
+      # .coveragerc já omite — sem isso o gerador do lock derrubava a cobertura
+      # de código novo para 6,8%.
+      sonar-args: >-
+        -Dsonar.qualitygate.wait=true
+        -Dsonar.coverage.exclusions=**/migrations/**,**/tests.py,**/tests_*.py,**/test_*.py,**/tests/**,**/conftest.py,**/settings/**,**/manage.py,**/wsgi.py,**/asgi.py,scripts/**
 
   # Job próprio, e não etapa do pipeline compartilhado: o lock é uma escolha
   # deste repositório, não dos sete. Roda em segundos e sem rede.
