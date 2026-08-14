@@ -183,9 +183,7 @@ a { color: var(--ds-blue-dark); }
 }
 
 /* Pé da lateral: monograma sem caixa */
-.app-side-foot {
-    padding: 0.9rem 1.05rem 1rem; display: flex; flex-direction: column; gap: 0.7rem;
-    background: none; border-top: 1px solid rgba(255, 255, 255, 0.16);
+.app-side-foot { padding: 0.9rem 1.05rem 1rem; display: flex; flex-direction: column; gap: 0.7rem; background: none; border-top: 1px solid rgba(255, 255, 255, 0.16);
 }
 .app-empresa { display: flex; align-items: baseline; gap: 0.55rem; }
 .app-empresa-ico {
@@ -305,8 +303,7 @@ a { color: var(--ds-blue-dark); }
 .chip {
     font-size: 0.85rem; text-decoration: none;
     padding: 0.32rem 0.85rem; border-radius: 999px;
-    transition: background var(--arq-fast) ease, color var(--arq-fast) ease, border-color var(--arq-fast) ease; background: var(--ds-surface); border-color: var(--ds-line-dash);
-    color: var(--ds-text-700); box-shadow: none; border: 1px solid var(--ds-line-dash); box-shadow: none;
+    transition: background var(--arq-fast) ease, color var(--arq-fast) ease, border-color var(--arq-fast) ease;
 }
 .chip:hover { color: var(--ds-blue-dark); background: var(--ds-panel); border-color: var(--ds-blue-light); }
 
@@ -616,8 +613,7 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 /* --- Indicadores: uma faixa dividida por filetes, não quatro caixas --- */
 /* Faixa única: o gap de 1px deixa a cor do fundo aparecer como filete, */
 .kpi-row {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); border-radius: 0.9rem; overflow: hidden; position: relative; gap: 0; background: var(--ds-surface);
-    border-color: var(--ds-line); box-shadow: var(--ds-shadow-soft); border: 1px solid var(--ds-line);
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); border-radius: 0.9rem; overflow: hidden;
 }
 .kpi {
     position: relative; display: flex; flex-direction: column; gap: 0.3rem;
@@ -644,14 +640,8 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 /* align-items: start impede que um card alto estique os vizinhos da linha */
 .projeto-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr)); align-items: start; }
 .obra-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr)); align-items: start; }
-.projeto-card, .obra-card { padding: 1.25rem 1.35rem 1.35rem; transition: border-color var(--arq-fast) ease, box-shadow var(--arq-mid) var(--arq-ease); position: relative; overflow: hidden; background: var(--ds-surface);
-    border-color: var(--ds-line); border: 1px solid var(--ds-line);
-    box-shadow: none;
-}
-.projeto-card:hover, .obra-card:hover { border-color: var(--ds-blue-100); box-shadow: var(--ds-shadow-soft); border-color: var(--ds-line-dash);
-    box-shadow: 0 2px 10px rgba(20, 24, 26, 0.07);
-    transform: none;
-}
+.projeto-card, .obra-card { padding: 1.25rem 1.35rem 1.35rem; transition: border-color var(--arq-fast) ease, box-shadow var(--arq-mid) var(--arq-ease); }
+.projeto-card:hover, .obra-card:hover { border-color: var(--ds-blue-100); box-shadow: var(--ds-shadow-soft); }
 .projeto-card-top, .obra-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; }
 /* o título ocupa sempre duas linhas: nome curto e nome longo alinham igual */
 .projeto-nome {
@@ -1211,13 +1201,26 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 }.app-side {
     -webkit-backdrop-filter: blur(40px) saturate(200%);
     backdrop-filter: blur(40px) saturate(200%);
-}.ds-btn > * { position: relative; z-index: 1; }.kpi:first-child { border-left: 0; }
-.kpi:hover { background: var(--ds-panel); }.chip.is-active { background: var(--ds-ink); border-color: var(--ds-ink); color: #fff; }
+}.ds-btn > * { position: relative; z-index: 1; }
+
+.kpi-row {
+    position: relative; gap: 0; background: var(--ds-surface);
+    border-color: var(--ds-line); box-shadow: var(--ds-shadow-soft);
+}.kpi:first-child { border-left: 0; }
+.kpi:hover { background: var(--ds-panel); }
+.projeto-card, .obra-card {
+    position: relative; overflow: hidden; background: var(--ds-surface);
+    border-color: var(--ds-line);
+}
+.chip {
+    background: var(--ds-surface); border-color: var(--ds-line-dash);
+    color: var(--ds-text-700); box-shadow: none;
+}.chip.is-active { background: var(--ds-ink); border-color: var(--ds-ink); color: #fff; }
 .form-card input, .form-card select, .form-card textarea,
 .form-block input, .form-block select, .form-block textarea,
 .inline-add, .inline-add input, .inline-add select,
 .briefing-complemento textarea, .contrato-corpo, .diag-opcao, .briefing-opcao {
-    background: var(--ds-surface); border-color: var(--ds-line-dash); box-shadow: none; box-shadow: none; border: 1px solid var(--ds-line-dash);
+    background: var(--ds-surface); border-color: var(--ds-line-dash); box-shadow: none;
 }.auth-card .auth-header h2, .auth-card .aceite-doc-nome { color: #fff; }
 .auth-card .auth-header p, .auth-card .auth-visitor p,
 .auth-card .auth-legal, .auth-card .auth-disclaimer,
@@ -1329,8 +1332,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 
 /* --- A lateral é vidro de novo ----------------------------------- */
 .app-side .nav-link {
-    margin-bottom: 0.14rem; border-color: transparent; background: transparent; border: 0; box-shadow: none;
-    color: rgba(255, 255, 255, 0.88); font-weight: 450;
+    margin-bottom: 0.14rem;
 }.app-side-head, .app-side-foot { position: relative; }.app-brand-word, .app-empresa-info strong {
     text-shadow: 0 1px 2px rgba(255, 255, 255, 0.85);
 }
@@ -1524,10 +1526,14 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
     pointer-events: none;
     /* Escurece o suficiente para a folha branca virar figura, e de leve */
     background: linear-gradient(165deg, rgba(16, 26, 23, 0.3), rgba(16, 26, 23, 0.46));
-}.app-side .nav-link:hover { border-color: transparent; }
-.app-side .nav-link.is-active { border-color: var(--ds-blue-light); background: rgba(255, 255, 255, 0.2); border: 0; box-shadow: none;
-    color: #fff; font-weight: 600;
 }
+
+/* --- Lateral: placa sem contorno --------------------------------- */
+.app-side .nav-link {
+    border-color: transparent;
+}
+.app-side .nav-link:hover { border-color: transparent; }
+.app-side .nav-link.is-active { border-color: var(--ds-blue-light); }
 .app-side { border-right-color: rgba(255, 255, 255, 0.4); }
 /* A caixa de escolha é um bloco de leitura, não um rótulo de campo: precisa */
 .form-card label.form-marcar, label.form-marcar {
@@ -1561,13 +1567,39 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 .ds-card{
     box-shadow: none;
     border-color: var(--ds-line);
-}.ds-btn:not(.ds-btn--solid) {
+}
+.kpi-row { border: 1px solid var(--ds-line); }
+.projeto-card, .obra-card {
+    border: 1px solid var(--ds-line);
+    box-shadow: none;
+}
+.projeto-card:hover, .obra-card:hover {
+    border-color: var(--ds-line-dash);
+    box-shadow: 0 2px 10px rgba(20, 24, 26, 0.07);
+    transform: none;
+}
+.ds-btn:not(.ds-btn--solid) {
     border: 1px solid var(--ds-line-dash);
     box-shadow: none;
 }
 .ds-btn:not(.ds-btn--solid):hover {
     background: var(--ds-panel); border-color: var(--ds-text-400);
     box-shadow: none; color: var(--ds-text-900);
+}.chip { border: 1px solid var(--ds-line-dash); box-shadow: none; }
+.form-card input,
+.form-card select,
+.form-card textarea,
+.form-block input,
+.form-block select,
+.form-block textarea,
+.inline-add,
+.inline-add input,
+.inline-add select,
+.briefing-complemento textarea,
+.contrato-corpo,
+.diag-opcao,
+.briefing-opcao{
+    box-shadow: none; border: 1px solid var(--ds-line-dash);
 }.app-main { box-shadow: 0 0 0 1px rgba(18, 32, 28, 0.07); }
 
 /* FASES */
@@ -1838,11 +1870,21 @@ a.fase-complementar-link:hover { background: var(--ds-panel); }
 /* --- Barra lateral: mesmo princípio ------------------------------- */
 .app-side {
     border-right: 0;
-}.app-side .nav-link svg { color: rgba(255, 255, 255, 0.62); }
+}
+.app-side .nav-link {
+    background: transparent; border: 0; box-shadow: none;
+    color: rgba(255, 255, 255, 0.88); font-weight: 450;
+}
+.app-side .nav-link svg { color: rgba(255, 255, 255, 0.62); }
 .app-side .nav-link:hover {
     background: rgba(255, 255, 255, 0.14); border: 0; color: #fff;
 }
-.app-side .nav-link:hover svg { color: rgba(255, 255, 255, 0.9); }.app-side .nav-link.is-active svg { color: #7fe0bd; }
+.app-side .nav-link:hover svg { color: rgba(255, 255, 255, 0.9); }
+.app-side .nav-link.is-active {
+    background: rgba(255, 255, 255, 0.2); border: 0; box-shadow: none;
+    color: #fff; font-weight: 600;
+}
+.app-side .nav-link.is-active svg { color: #7fe0bd; }
 .app-side .nav-link.is-active::before { background: #7fe0bd; }.nav-group--hoje .nav-label,
 .nav-group--comercial .nav-label,
 .nav-group--producao .nav-label,
