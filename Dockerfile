@@ -10,13 +10,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY requirements.txt ./
-# --only-binary recusa sdist, cujo setup.py roda código arbitrário do pacote
-# durante o build. ofxparse é a única exceção: a 0.21 é publicada só como
-# sdist. O pip da imagem base fica como veio — `pip install --upgrade pip`
-# instala uma versão não fixada, que é justamente o que o resto desta linha
-# evita.
-RUN pip install --only-binary :all: --no-binary ofxparse -r requirements.txt
+# O lock, e não o requirements.txt: ele fixa também as transitivas e traz o
+# sha256 de cada artefato. Sem isso, dois builds do mesmo commit podiam
+# instalar conteúdos diferentes. Regenerar com scripts/gerar_lock.py.
+COPY requirements.lock ./
+# --require-hashes recusa qualquer pacote fora da lista. --only-binary recusa
+# sdist, cujo setup.py roda código arbitrário durante o build; ofxparse é a
+# única exceção, porque a 0.21 só é publicada como sdist. O pip da imagem base
+# fica como veio — `pip install --upgrade pip` instalaria versão não fixada,
+# que é justamente o que o resto desta linha evita.
+RUN pip install --require-hashes --only-binary :all: --no-binary ofxparse \
+    -r requirements.lock
 
 # Cópia explícita em vez de `COPY . .`: o conteúdo da imagem vira uma lista
 # revisável. Na cópia recursiva, qualquer arquivo novo na raiz do repositório
