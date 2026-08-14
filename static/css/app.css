@@ -154,9 +154,13 @@ a { color: var(--ds-blue-dark); }
 .app-side-head { display: flex; align-items: center; justify-content: space-between; padding: 1.15rem 1.15rem 0.9rem; }
 .nav-burger { display: none; }
 
-.app-nav { flex: 1; overflow-y: auto; padding: 0.25rem 0.75rem 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+.app-nav { flex: 1; overflow-y: auto; padding: 0.25rem 0.75rem 1.25rem; display: flex; flex-direction: column; gap: 1rem; scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+}
 .nav-group { display: flex; flex-direction: column; gap: 0.1rem; }
-.nav-label { display: flex; align-items: center; gap: 0.45rem; }
+.nav-label { display: flex; align-items: center; gap: 0.45rem; border-radius: 0.4rem;
+    font-weight: 700; background: none; padding: 0.35rem 0.6rem 0.25rem; width: auto;
+    color: rgba(255, 255, 255, 0.68); text-shadow: none;
+}
 .nav-label::before { content: ""; width: 0.45rem; height: 0.45rem; border-radius: 1px; background: currentColor; }
 
 .nav-link {
@@ -179,7 +183,10 @@ a { color: var(--ds-blue-dark); }
 }
 
 /* Pé da lateral: monograma sem caixa */
-.app-side-foot { padding: 0.9rem 1.05rem 1rem; display: flex; flex-direction: column; gap: 0.7rem; }
+.app-side-foot {
+    padding: 0.9rem 1.05rem 1rem; display: flex; flex-direction: column; gap: 0.7rem;
+    background: none; border-top: 1px solid rgba(255, 255, 255, 0.16);
+}
 .app-empresa { display: flex; align-items: baseline; gap: 0.55rem; }
 .app-empresa-ico {
     flex-shrink: 0; font-family: var(--ds-font-display);
@@ -202,7 +209,7 @@ a { color: var(--ds-blue-dark); }
 .app-link-btn:hover { text-decoration: underline; }
 
 /* --- A folha: uma régua só, na margem esquerda (margem de encadernação) --- */
-.app-frame { position: relative; margin-left: var(--arq-lateral); min-height: 100vh; }
+.app-frame { position: relative; margin-left: var(--arq-lateral); min-height: 100vh; background: transparent; }
 .app-main {
     position: relative;
     width: 100%; margin: 0 auto; box-sizing: border-box;
@@ -210,7 +217,8 @@ a { color: var(--ds-blue-dark); }
     /* Tabela larga rola dentro do .table-scroll, mas a página ainda ganhava */
     overflow-x: clip;
 }
-.app-main--public { max-width: 64rem; border-left: 0; min-height: auto; padding: 3rem 1.5rem 4rem; }
+.app-main--public { max-width: 64rem; border-left: 0; min-height: auto; padding: 3rem 1.5rem 4rem; background: none; box-shadow: none;
+}
 
 /* ---- Mensagens ---- */
 .app-messages { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
@@ -260,13 +268,19 @@ a { color: var(--ds-blue-dark); }
     font-family: var(--ds-font-sans); font-weight: 500; font-size: 0.9rem; line-height: 1.2;
     border-radius: var(--arq-control-radius);
     padding: var(--arq-control-y) var(--arq-control-x);
-    background: var(--ds-surface); color: var(--ds-text-900); border: 1px solid var(--ds-line);
+    background: var(--ds-surface); color: var(--ds-text-900); border: 1px solid var(--ds-line); position: relative; overflow: hidden;
+    transition: background var(--arq-fast) ease, color var(--arq-fast) ease,
+        border-color var(--arq-fast) ease, box-shadow var(--arq-mid) var(--arq-ease),
+        transform var(--arq-fast) var(--arq-ease-out);
 }
 .ds-btn svg { width: 1rem; height: 1rem; }
-.ds-btn:hover { border-color: var(--ds-blue-100); color: var(--ds-blue-dark); box-shadow: var(--ds-shadow-soft); }
-.ds-btn--solid { color: #fff; }
-.ds-btn--solid:hover { color: #fff; }
-.ds-btn:active { box-shadow: none; }
+.ds-btn:hover { border-color: var(--ds-blue-100); color: var(--ds-blue-dark); box-shadow: var(--ds-shadow-soft); transform: translateY(-1px);
+}
+.ds-btn--solid { color: #fff; background: var(--ds-blue); border-color: var(--ds-blue);
+    box-shadow: none;
+}
+.ds-btn--solid:hover { color: #fff; background: var(--ds-blue-dark); border-color: var(--ds-blue-dark); }
+.ds-btn:active { box-shadow: none; transform: translateY(1px); transition-duration: 60ms; }
 .ds-btn:focus-visible { outline: 2px solid var(--ds-blue-light); outline-offset: 2px; }
 .ds-btn[disabled] { opacity: 0.5; pointer-events: none; }
 
@@ -291,9 +305,10 @@ a { color: var(--ds-blue-dark); }
 .chip {
     font-size: 0.85rem; text-decoration: none;
     padding: 0.32rem 0.85rem; border-radius: 999px;
-    transition: background var(--arq-fast) ease, color var(--arq-fast) ease, border-color var(--arq-fast) ease;
+    transition: background var(--arq-fast) ease, color var(--arq-fast) ease, border-color var(--arq-fast) ease; background: var(--ds-surface); border-color: var(--ds-line-dash);
+    color: var(--ds-text-700); box-shadow: none; border: 1px solid var(--ds-line-dash); box-shadow: none;
 }
-.chip:hover { color: var(--ds-blue-dark); }
+.chip:hover { color: var(--ds-blue-dark); background: var(--ds-panel); border-color: var(--ds-blue-light); }
 
 /* FORMULÁRIOS — campos preenchidos, sem contorno de caixa */
 .form-card { display: flex; flex-direction: column; }
@@ -571,7 +586,7 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
             transparent 74%),
         var(--hero, none) center bottom / cover no-repeat,
         var(--ds-panel);
-    animation: none;
+    animation: none; box-shadow: none;
 }
 /* O hero do painel usa a foto do escritório quando existe. */
 .dash-hero { --hero: var(--fundo-escritorio, url("../img/hero-painel.jpg")); }
@@ -601,12 +616,13 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 /* --- Indicadores: uma faixa dividida por filetes, não quatro caixas --- */
 /* Faixa única: o gap de 1px deixa a cor do fundo aparecer como filete, */
 .kpi-row {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); border-radius: 0.9rem; overflow: hidden;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); border-radius: 0.9rem; overflow: hidden; position: relative; gap: 0; background: var(--ds-surface);
+    border-color: var(--ds-line); box-shadow: var(--ds-shadow-soft); border: 1px solid var(--ds-line);
 }
 .kpi {
     position: relative; display: flex; flex-direction: column; gap: 0.3rem;
     padding: 1.15rem 1.3rem 1.2rem; text-decoration: none;
-    transition: background var(--arq-fast) ease;
+    transition: background var(--arq-fast) ease; background: none; border-left: 0; padding-left: 1.3rem; padding-top: 1.35rem;
 }
 .kpi::after {
     content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
@@ -614,7 +630,7 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
     transition: transform var(--arq-mid) var(--arq-ease);
 }
 .kpi:hover::after { transform: scaleX(1); }
-.kpi-value { font-size: 1.95rem; line-height: 1.05; color: var(--ds-text-900); }
+.kpi-value { font-size: 1.95rem; line-height: 1.05; color: var(--ds-text-900); white-space: nowrap; }
 .kpi-foot { font-size: 0.78rem; color: var(--ds-text-500); }
 .kpi--alert .kpi-value { color: var(--ds-danger); }
 
@@ -628,8 +644,14 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 /* align-items: start impede que um card alto estique os vizinhos da linha */
 .projeto-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr)); align-items: start; }
 .obra-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr)); align-items: start; }
-.projeto-card, .obra-card { padding: 1.25rem 1.35rem 1.35rem; transition: border-color var(--arq-fast) ease, box-shadow var(--arq-mid) var(--arq-ease); }
-.projeto-card:hover, .obra-card:hover { border-color: var(--ds-blue-100); box-shadow: var(--ds-shadow-soft); }
+.projeto-card, .obra-card { padding: 1.25rem 1.35rem 1.35rem; transition: border-color var(--arq-fast) ease, box-shadow var(--arq-mid) var(--arq-ease); position: relative; overflow: hidden; background: var(--ds-surface);
+    border-color: var(--ds-line); border: 1px solid var(--ds-line);
+    box-shadow: none;
+}
+.projeto-card:hover, .obra-card:hover { border-color: var(--ds-blue-100); box-shadow: var(--ds-shadow-soft); border-color: var(--ds-line-dash);
+    box-shadow: 0 2px 10px rgba(20, 24, 26, 0.07);
+    transform: none;
+}
 .projeto-card-top, .obra-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; }
 /* o título ocupa sempre duas linhas: nome curto e nome longo alinham igual */
 .projeto-nome {
@@ -1025,7 +1047,11 @@ tr.is-done td { color: var(--ds-text-400); text-decoration: line-through; }
 /* Formulário: vidro sobre a foto. O véu de branco a 78% deixa o concreto */
 .auth-card {
     position: relative; z-index: 2; display: flex; flex-direction: column; gap: 1.15rem;
-    padding: 1.75rem; border-radius: 0.9rem;
+    padding: 1.75rem; border-radius: 0.9rem; overflow: hidden; color: #fff; -webkit-backdrop-filter: blur(12px) saturate(160%);
+    backdrop-filter: blur(12px) saturate(160%); border: 0;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.34);
+    background: linear-gradient(150deg,
+        rgba(10, 17, 16, 0.44), rgba(10, 17, 16, 0.56) 52%, rgba(10, 17, 16, 0.48));
 }
 .auth-card .auth-disclaimer { font-size: 0.76rem; }
 .auth-visitor { border-top: 1px solid var(--ds-line); padding-top: 1.15rem; }
@@ -1177,64 +1203,32 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
         radial-gradient(44rem 40rem at 82% 98%, rgba(24, 92, 74, 0.16), transparent 62%),
         radial-gradient(34rem 30rem at 26% 96%, rgba(196, 132, 84, 0.14), transparent 62%),
         var(--fundo-escritorio, url("../img/fundo-vidro.jpg")) center / cover no-repeat,
-        var(--ds-ink);
+        var(--ds-ink); filter: blur(2px) saturate(0.92); transform: scale(1.03);
 }
 .app-main {
     --ds-text-500: #5b6a65; --ds-text-400: #78857f;
     background: var(--ds-bg); border-left: 1px solid var(--ds-line);
-}
-.app-main--public { background: none; box-shadow: none; }
-.app-frame { background: transparent; }
-.app-side {
+}.app-side {
     -webkit-backdrop-filter: blur(40px) saturate(200%);
     backdrop-filter: blur(40px) saturate(200%);
-}
-
-/* Elementos compartilhados usam os mesmos estados de movimento. */
-.ds-btn {
-    position: relative; overflow: hidden;
-    transition: background var(--arq-fast) ease, color var(--arq-fast) ease,
-        border-color var(--arq-fast) ease, box-shadow var(--arq-mid) var(--arq-ease),
-        transform var(--arq-fast) var(--arq-ease-out);
-}
-.ds-btn:hover { transform: translateY(-1px); }
-.ds-btn:active { transform: translateY(1px); transition-duration: 60ms; }
-.ds-btn > * { position: relative; z-index: 1; }
-
-.kpi-row {
-    position: relative; gap: 0; background: var(--ds-surface);
-    border-color: var(--ds-line); box-shadow: var(--ds-shadow-soft);
-}
-.kpi { background: none; }
-.kpi:first-child { border-left: 0; }
-.kpi:hover { background: var(--ds-panel); }
-.projeto-card, .obra-card {
-    position: relative; overflow: hidden; background: var(--ds-surface);
-    border-color: var(--ds-line);
-}
-.chip {
-    background: var(--ds-surface); border-color: var(--ds-line-dash);
-    color: var(--ds-text-700); box-shadow: none;
-}
-.chip:hover { background: var(--ds-panel); border-color: var(--ds-blue-light); }
-.chip.is-active { background: var(--ds-ink); border-color: var(--ds-ink); color: #fff; }
+}.ds-btn > * { position: relative; z-index: 1; }.kpi:first-child { border-left: 0; }
+.kpi:hover { background: var(--ds-panel); }.chip.is-active { background: var(--ds-ink); border-color: var(--ds-ink); color: #fff; }
 .form-card input, .form-card select, .form-card textarea,
 .form-block input, .form-block select, .form-block textarea,
 .inline-add, .inline-add input, .inline-add select,
 .briefing-complemento textarea, .contrato-corpo, .diag-opcao, .briefing-opcao {
-    background: var(--ds-surface); border-color: var(--ds-line-dash); box-shadow: none;
-}
-
-/* Texto e controles sobre o vidro escuro do acesso público. */
-.auth-card { overflow: hidden; color: #fff; }
-.auth-card .auth-header h2, .auth-card .aceite-doc-nome { color: #fff; }
+    background: var(--ds-surface); border-color: var(--ds-line-dash); box-shadow: none; box-shadow: none; border: 1px solid var(--ds-line-dash);
+}.auth-card .auth-header h2, .auth-card .aceite-doc-nome { color: #fff; }
 .auth-card .auth-header p, .auth-card .auth-visitor p,
 .auth-card .auth-legal, .auth-card .auth-disclaimer,
 .auth-card .auth-field > span { color: rgba(255, 255, 255, 0.88); }
 .auth-card .auth-legal a { color: #7fe0bd; }
 .auth-card .auth-error { color: #ffb4a8; }
 .auth-card .auth-visitor { border-top-color: rgba(255, 255, 255, 0.28); }
-.auth-card .auth-field input { color: #fff; }
+.auth-card .auth-field input { color: #fff; background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.32);
+    box-shadow: none;
+}
 .auth-card .auth-field input::placeholder { color: rgba(255, 255, 255, 0.6); }
 .auth-card .ds-btn:not(.ds-btn--solid),
 .auth-card .ds-btn:not(.ds-btn--solid):hover { color: #fff; }
@@ -1283,7 +1277,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .frente {
     display: grid;
     align-items: center; gap: 1.5rem;
-    padding: 0.95rem 0; border-top: 1px solid var(--ds-line);
+    padding: 0.95rem 0; border-top: 1px solid var(--ds-line); grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto auto;
 }
 .frente:last-child { border-bottom: 1px solid var(--ds-line); }
 .frente-id { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
@@ -1335,19 +1329,9 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 
 /* --- A lateral é vidro de novo ----------------------------------- */
 .app-side .nav-link {
-    margin-bottom: 0.14rem;
-}
-
-/* Os rótulos de grupo também precisam de chão: medidos sobre o vidro puro */
-.nav-label {
-    border-radius: 0.4rem;
-    font-weight: 700;
-}
-.app-side-head, .app-side-foot { position: relative; }
-.app-side-foot {
-    border-top-color: rgba(255, 255, 255, 0.7);
-}
-.app-brand-word, .app-empresa-info strong {
+    margin-bottom: 0.14rem; border-color: transparent; background: transparent; border: 0; box-shadow: none;
+    color: rgba(255, 255, 255, 0.88); font-weight: 450;
+}.app-side-head, .app-side-foot { position: relative; }.app-brand-word, .app-empresa-info strong {
     text-shadow: 0 1px 2px rgba(255, 255, 255, 0.85);
 }
 .app-brand-logo {
@@ -1361,26 +1345,19 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 .ds-btn:focus-visible {
     outline: 2px solid var(--ds-blue-dark); outline-offset: 1px;
 }
-.ds-btn--solid:focus-visible { outline-offset: 2px; }
-.auth-card .ds-btn--solid:focus-visible { outline-offset: 2px; }
+.ds-btn--solid:focus-visible { outline-offset: 2px; outline: none;
+    background: var(--ds-blue-dark);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.75);
+}
+.auth-card .ds-btn--solid:focus-visible { outline-offset: 2px; outline: none; background: #14513f;
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.85);
+}
 .form-card input:focus, .form-card select:focus, .form-card textarea:focus,
 .form-block input:focus, .form-block select:focus, .form-block textarea:focus {
     box-shadow: none; border-color: var(--ds-blue-light);
     outline: 2px solid var(--ds-blue-light); outline-offset: -2px;
-}/* O cartão: mais vidro, menos leite. Desfoque curto para a foto ainda */
-/* O véu é ESCURO, não branco. Vidro branco sobre concreto claro dá cinza */
-.auth-card {
-    -webkit-backdrop-filter: blur(12px) saturate(160%);
-    backdrop-filter: blur(12px) saturate(160%);
-}
-/* Sem faixa e sem brilho de canto: o cartão reflete o que está atrás, */
-.auth-card::after { display: none; }
-.auth-card .auth-field input {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.32);
-    box-shadow: none;
-}
-.auth-card .auth-field input:focus {
+}/* Sem faixa e sem brilho de canto: o cartão reflete o que está atrás, */
+.auth-card::after { display: none; }.auth-card .auth-field input:focus {
     background: rgba(255, 255, 255, 0.2); border-color: #7fe0bd;
     outline: 2px solid #7fe0bd; outline-offset: -2px; box-shadow: none;
 }
@@ -1542,23 +1519,15 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
     .identidade-asset header { min-height: 0; }
     .identidade-previa--logo, .identidade-previa--fundo { aspect-ratio: 16 / 7; }
     .identidade-actions .ds-btn { width: 100%; }
-}
-
-/* O PÁTIO ATRÁS DA FOLHA */
-.app-shell::before { filter: blur(2px) saturate(0.92); transform: scale(1.03); }
-.app-shell::after {
+}.app-shell::after {
     content: ""; display: block; position: fixed; inset: 0; z-index: -1;
     pointer-events: none;
     /* Escurece o suficiente para a folha branca virar figura, e de leve */
     background: linear-gradient(165deg, rgba(16, 26, 23, 0.3), rgba(16, 26, 23, 0.46));
+}.app-side .nav-link:hover { border-color: transparent; }
+.app-side .nav-link.is-active { border-color: var(--ds-blue-light); background: rgba(255, 255, 255, 0.2); border: 0; box-shadow: none;
+    color: #fff; font-weight: 600;
 }
-
-/* --- Lateral: placa sem contorno --------------------------------- */
-.app-side .nav-link {
-    border-color: transparent;
-}
-.app-side .nav-link:hover { border-color: transparent; }
-.app-side .nav-link.is-active { border-color: var(--ds-blue-light); }
 .app-side { border-right-color: rgba(255, 255, 255, 0.4); }
 /* A caixa de escolha é um bloco de leitura, não um rótulo de campo: precisa */
 .form-card label.form-marcar, label.form-marcar {
@@ -1592,48 +1561,14 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
 .ds-card{
     box-shadow: none;
     border-color: var(--ds-line);
-}
-.kpi-row { border: 1px solid var(--ds-line); }
-.projeto-card, .obra-card {
-    border: 1px solid var(--ds-line);
-    box-shadow: none;
-}
-.projeto-card:hover, .obra-card:hover {
-    border-color: var(--ds-line-dash);
-    box-shadow: 0 2px 10px rgba(20, 24, 26, 0.07);
-    transform: none;
-}
-.ds-btn:not(.ds-btn--solid) {
+}.ds-btn:not(.ds-btn--solid) {
     border: 1px solid var(--ds-line-dash);
     box-shadow: none;
 }
 .ds-btn:not(.ds-btn--solid):hover {
     background: var(--ds-panel); border-color: var(--ds-text-400);
     box-shadow: none; color: var(--ds-text-900);
-}
-.ds-btn--solid {
-    background: var(--ds-blue); border-color: var(--ds-blue);
-    box-shadow: none;
-}
-.ds-btn--solid:hover { background: var(--ds-blue-dark); border-color: var(--ds-blue-dark); }
-.chip { border: 1px solid var(--ds-line-dash); box-shadow: none; }
-.form-card input,
-.form-card select,
-.form-card textarea,
-.form-block input,
-.form-block select,
-.form-block textarea,
-.inline-add,
-.inline-add input,
-.inline-add select,
-.briefing-complemento textarea,
-.contrato-corpo,
-.diag-opcao,
-.briefing-opcao{
-    box-shadow: none; border: 1px solid var(--ds-line-dash);
-}
-.dash-hero, .page-head--foto { box-shadow: none; }
-.app-main { box-shadow: 0 0 0 1px rgba(18, 32, 28, 0.07); }
+}.app-main { box-shadow: 0 0 0 1px rgba(18, 32, 28, 0.07); }
 
 /* FASES */
 .fase-lista { list-style: none; margin: 0 0 1.25rem; padding: 0; }
@@ -1666,7 +1601,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible,
     font-family: var(--arq-font-mono); font-size: 0.68rem;
     text-transform: uppercase; letter-spacing: 0.07em;
     background: var(--ds-panel); color: var(--ds-text-500);
-    border: 1px solid var(--ds-line);
+    border: 1px solid var(--ds-line); display: inline-flex; align-items: center; gap: 0.35rem;
 }
 .fase-selo--em_elaboracao { background: var(--ds-blue-50); color: var(--ds-blue-dark); border-color: var(--ds-blue-100); }
 .fase-selo--aguardando_cliente { background: #f6efe0; color: #6d460a; border-color: #e6d3ab; }
@@ -1892,18 +1827,7 @@ a.fase-complementar-link:hover { background: var(--ds-panel); }
     .modelo-dados-form .ds-btn { width: 100%; }
     .modelo-marcadores { position: static; }
     .modelo-corpo textarea { min-height: 32rem; }
-}
-
-/* VIDRO SEM MOLDURA */
-
-/* --- Login ------------------------------------------------------- */
-.auth-card {
-    border: 0;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.34);
-    background: linear-gradient(150deg,
-        rgba(10, 17, 16, 0.44), rgba(10, 17, 16, 0.56) 52%, rgba(10, 17, 16, 0.48));
-}
-/* A foto fecha bem mais do lado do texto: era ali que a leitura */
+}/* A foto fecha bem mais do lado do texto: era ali que a leitura */
 .tela-login .auth-shell::before {
     background:
         linear-gradient(100deg, rgba(4, 8, 7, 0.94) 0%, rgba(4, 8, 7, 0.86) 26%,
@@ -1914,28 +1838,12 @@ a.fase-complementar-link:hover { background: var(--ds-panel); }
 /* --- Barra lateral: mesmo princípio ------------------------------- */
 .app-side {
     border-right: 0;
-}
-.app-side .nav-link {
-    background: transparent; border: 0; box-shadow: none;
-    color: rgba(255, 255, 255, 0.88); font-weight: 450;
-}
-.app-side .nav-link svg { color: rgba(255, 255, 255, 0.62); }
+}.app-side .nav-link svg { color: rgba(255, 255, 255, 0.62); }
 .app-side .nav-link:hover {
     background: rgba(255, 255, 255, 0.14); border: 0; color: #fff;
 }
-.app-side .nav-link:hover svg { color: rgba(255, 255, 255, 0.9); }
-.app-side .nav-link.is-active {
-    background: rgba(255, 255, 255, 0.2); border: 0; box-shadow: none;
-    color: #fff; font-weight: 600;
-}
-.app-side .nav-link.is-active svg { color: #7fe0bd; }
-.app-side .nav-link.is-active::before { background: #7fe0bd; }
-
-.nav-label {
-    background: none; padding: 0.35rem 0.6rem 0.25rem; width: auto;
-    color: rgba(255, 255, 255, 0.68); text-shadow: none;
-}
-.nav-group--hoje .nav-label,
+.app-side .nav-link:hover svg { color: rgba(255, 255, 255, 0.9); }.app-side .nav-link.is-active svg { color: #7fe0bd; }
+.app-side .nav-link.is-active::before { background: #7fe0bd; }.nav-group--hoje .nav-label,
 .nav-group--comercial .nav-label,
 .nav-group--producao .nav-label,
 .nav-group--gestao .nav-label,
@@ -1944,25 +1852,12 @@ a.fase-complementar-link:hover { background: var(--ds-panel); }
 .app-brand-word { color: #fff; text-shadow: none; }
 .app-brand-mark .mk-plate { fill: rgba(255, 255, 255, 0.14); }
 .app-brand-mark .mk-a { stroke: #fff; }
-.app-brand-mark .mk-cota { stroke: #7fe0bd; }
-.app-side-foot {
-    background: none; border-top: 1px solid rgba(255, 255, 255, 0.16);
-}
-.app-empresa-info strong { color: #fff; text-shadow: none; }
+.app-brand-mark .mk-cota { stroke: #7fe0bd; }.app-empresa-info strong { color: #fff; text-shadow: none; }
 .app-empresa-info span, .app-sair, .pe-legal a { color: rgba(255, 255, 255, 0.72); }
 .app-sair:hover { color: #ff9d8e; }
 .pe-legal a:hover { color: #fff; }.app-side .ds-btn:not(.ds-btn--solid) {
     background: rgba(255, 255, 255, 0.14); border: 0; color: #fff;
-}
-.app-nav { scrollbar-color: rgba(255, 255, 255, 0.28) transparent; }
-
-/* FOCO SEM QUADRADO PRETO */
-.ds-btn--solid:focus-visible {
-    outline: none;
-    background: var(--ds-blue-dark);
-    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.75);
-}
-.ds-btn:not(.ds-btn--solid):focus-visible {
+}.ds-btn:not(.ds-btn--solid):focus-visible {
     outline: none;
     background: var(--ds-panel);
     border-color: var(--ds-blue-dark);
@@ -1972,12 +1867,7 @@ a.fase-complementar-link:hover { background: var(--ds-panel); }
 .app-side .ds-btn:focus-visible, .app-sair:focus-visible, .pe-legal a:focus-visible {
     outline: none; background: rgba(255, 255, 255, 0.26);
     box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7);
-}
-.auth-card .ds-btn--solid:focus-visible {
-    outline: none; background: #14513f;
-    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.85);
-}
-.auth-card .ds-btn:not(.ds-btn--solid):focus-visible {
+}.auth-card .ds-btn:not(.ds-btn--solid):focus-visible {
     outline: none; background: rgba(255, 255, 255, 0.28);
     box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.85);
 }
@@ -2023,7 +1913,14 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
     pointer-events: auto;
     display: grid; gap: 0.85rem;
     border-radius: 0.65rem; overflow: hidden;
-    animation: aviso-entra 320ms var(--arq-ease-out) both;
+    animation: aviso-entra 320ms var(--arq-ease-out) both; grid-template-columns: auto minmax(0, 1fr) auto;
+    padding: 0.9rem 0.9rem 0.9rem 0.95rem;
+    align-items: center;
+    background: rgba(22, 32, 29, 0.72);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    backdrop-filter: blur(20px) saturate(150%);
+    border: 0;
+    box-shadow: 0 18px 44px rgba(6, 12, 10, 0.42);
 }
 .ds-aviso p { margin: 0; padding: 0.05rem 0; font-size: 0.9rem; color: rgba(255, 255, 255, 0.94); }
 .ds-aviso--success .ds-aviso-marca { background: var(--ds-blue); }
@@ -2042,18 +1939,6 @@ a:focus-visible { outline: 2px solid var(--ds-blue-dark); outline-offset: 2px; }
 }
 @media (max-width: 40rem) {
     .ds-avisos { right: 0.75rem; left: 0.75rem; bottom: 0.75rem; width: auto; }
-}
-
-/* AVISO EM VIDRO, COM ÍCONE */
-.ds-aviso {
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    padding: 0.9rem 0.9rem 0.9rem 0.95rem;
-    align-items: center;
-    background: rgba(22, 32, 29, 0.72);
-    -webkit-backdrop-filter: blur(20px) saturate(150%);
-    backdrop-filter: blur(20px) saturate(150%);
-    border: 0;
-    box-shadow: 0 18px 44px rgba(6, 12, 10, 0.42);
 }.ds-aviso-marca {
     align-self: center;
     display: inline-flex; align-items: center; justify-content: center;
@@ -2420,11 +2305,7 @@ a.projeto-card:focus-visible {
 .cal-marca--briefing, .cal-marca--apresentacao { background: var(--ds-blue-50); color: var(--ds-blue-dark); border-left-color: var(--ds-blue); }
 .cal-marca--levantamento, .cal-marca--medicao { background: #f6efe0; color: #6d460a; border-left-color: var(--arq-amber); }
 .cal-marca--assinatura { background: #efecf6; color: #4f3878; border-left-color: var(--arq-violet); }
-.cal-marca--entrega, .cal-marca--orgao { background: #f7e6e2; color: #8e2a1c; border-left-color: var(--ds-danger); }
-
-/* O painel ganhou o estado da fase entre o avanço e a ação. */
-.frente { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto auto; }
-.frente-selo { justify-self: end; white-space: nowrap; }
+.cal-marca--entrega, .cal-marca--orgao { background: #f7e6e2; color: #8e2a1c; border-left-color: var(--ds-danger); }.frente-selo { justify-self: end; white-space: nowrap; }
 @media (max-width: 62rem) {
     .frente { grid-template-columns: 1fr; }
     .frente-selo { justify-self: start; }
@@ -2501,12 +2382,7 @@ a.projeto-card:focus-visible {
 @media (prefers-reduced-motion: reduce) {
     .ds-btn--novo, .ds-btn--novo:hover, .ds-btn--novo:active { transform: none; }
     .ds-btn--novo:hover svg { transform: none; }
-}
-
-/* MAIS COR NOS INDICADORES */
-/* A barra de 3px na lateral lia como divisória entre os indicadores, e uma */
-.kpi { border-left: 0; padding-left: 1.3rem; padding-top: 1.35rem; }
-.kpi::before {
+}.kpi::before {
     content: ""; position: absolute; top: 0; left: 1.3rem;
     width: 1.75rem; height: 2px; border-radius: 0 0 2px 2px;
     background: var(--sec);
@@ -2565,8 +2441,6 @@ a.projeto-card:focus-visible {
 }
 .abrir-campo--fino[open] > summary { margin-bottom: 0.55rem; }
 .briefing-salvar { position: sticky; bottom: 1rem; justify-content: flex-end; }
-.fase-selo { display: inline-flex; align-items: center; gap: 0.35rem; }
-
 /* Ícone de ação numa linha de lista: aparece de leve, acende no hover. */
 .linha-ico { color: var(--ds-text-400); }
 .agenda-acoes { display: flex; align-items: center; gap: 0.2rem; }
@@ -2907,11 +2781,7 @@ a.projeto-card:focus-visible {
 .fase-tarefas-tabela tr.is-editando input:focus {
     outline: none; border-bottom-color: var(--ds-blue); box-shadow: none;
 }
-.fase-tarefas-tabela tr.is-editando td.num input { text-align: right; }
-
-/* Valores monetários do painel permanecem inteiros na mesma linha. */
-.kpi-value { white-space: nowrap; }
-.kpi:last-child .kpi-value { font-size: 1.5rem; }
+.fase-tarefas-tabela tr.is-editando td.num input { text-align: right; }.kpi:last-child .kpi-value { font-size: 1.5rem; }
 @media (min-width: 75rem) {
     .kpi-row { grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(14rem, 1.35fr); }
 }
