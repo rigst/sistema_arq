@@ -14,8 +14,27 @@ conclusão sobre a mudança é ruído. Fonte carregando tarde já causou isso aq
 
 import pathlib
 import sys
+import tempfile
 
 from PIL import Image, ImageChops
+
+
+def destino_seguro(bruto):
+    """Resolve o caminho de saída e recusa o que estiver fora de lugar.
+
+    O caminho vem da linha de comando e vira gravação de dezenas de arquivos.
+    Um valor errado — caminho relativo com "..", variável não expandida — grava
+    fora do previsto. Aqui só o diretório de trabalho e o temporário do sistema
+    são aceitos, que é onde as capturas fazem sentido.
+    """
+    alvo = pathlib.Path(bruto).expanduser().resolve()
+    permitidos = [pathlib.Path.cwd().resolve(), pathlib.Path(tempfile.gettempdir()).resolve()]
+    if not any(alvo == raiz or raiz in alvo.parents for raiz in permitidos):
+        raise SystemExit(
+            f"recusando gravar em {alvo}: use um caminho dentro de "
+            f"{permitidos[0]} ou {permitidos[1]}"
+        )
+    return alvo
 
 
 def comparar(dir_a, dir_b, dir_diff):
@@ -34,7 +53,9 @@ def comparar(dir_a, dir_b, dir_diff):
         if dif.getbbox() is None:
             iguais.append(fa.name)
             continue
-        n = sum(1 for p in dif.getdata() if p != (0, 0, 0))
+        # get_flattened_data é a API nova; getdata sai no Pillow 14.
+        dados = dif.get_flattened_data() if hasattr(dif, "get_flattened_data") else dif.getdata()
+        n = sum(1 for p in dados if p != (0, 0, 0))
         pct = 100.0 * n / (ia.size[0] * ia.size[1])
         diferentes.append((fa.name, f"{n} px ({pct:.3f}%) região={dif.getbbox()}"))
         if dir_diff is not None:
@@ -47,9 +68,9 @@ def main():
     if len(sys.argv) < 3:
         print(__doc__)
         return 2
-    dir_a = pathlib.Path(sys.argv[1])
-    dir_b = pathlib.Path(sys.argv[2])
-    dir_diff = pathlib.Path(sys.argv[3]) if len(sys.argv) > 3 else None
+    dir_a = destino_seguro(sys.argv[1])
+    dir_b = destino_seguro(sys.argv[2])
+    dir_diff = destino_seguro(sys.argv[3]) if len(sys.argv) > 3 else None
 
     iguais, diferentes, ausentes = comparar(dir_a, dir_b, dir_diff)
     print(f"idênticas : {len(iguais)}")

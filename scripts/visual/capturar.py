@@ -28,6 +28,7 @@ Configuração por ambiente:
 import os
 import pathlib
 import sys
+import tempfile
 
 from playwright.sync_api import sync_playwright
 
@@ -79,6 +80,65 @@ CSS_ESTATICO = (
 )
 
 
+def destino_seguro(bruto):
+    """Resolve o caminho de saída e recusa o que estiver fora de lugar.
+
+    O caminho vem da linha de comando e vira gravação de dezenas de arquivos.
+    Um valor errado — caminho relativo com "..", variável não expandida — grava
+    fora do previsto. Aqui só o diretório de trabalho e o temporário do sistema
+    são aceitos, que é onde as capturas fazem sentido.
+    """
+    alvo = pathlib.Path(bruto).expanduser().resolve()
+    permitidos = [pathlib.Path.cwd().resolve(), pathlib.Path(tempfile.gettempdir()).resolve()]
+    if not any(alvo == raiz or raiz in alvo.parents for raiz in permitidos):
+        raise SystemExit(
+            f"recusando gravar em {alvo}: use um caminho dentro de "
+            f"{permitidos[0]} ou {permitidos[1]}"
+        )
+    return alvo
+
+
+def _entrar(pagina):
+    """Autentica e deixa a sessão pronta para navegar."""
+    pagina.goto(f"{BASE}/login/", wait_until="domcontentloaded")
+    pagina.fill("#id_username", USUARIO)
+    pagina.fill("#id_password", SENHA)
+    pagina.click("button[type=submit]")
+    pagina.wait_for_load_state("load")
+
+
+def _fotografar(pagina, alvo, destino):
+    """Abre a página e grava a captura. Devolve o erro, ou None se deu certo."""
+    resp = pagina.goto(alvo, wait_until="domcontentloaded", timeout=25000)
+    if resp and resp.status >= 400:
+        return f"HTTP {resp.status}"
+    pagina.wait_for_load_state("load", timeout=15000)
+    pagina.add_style_tag(content=CSS_ESTATICO)
+    # Sem esperar a fonte, o screenshot sai com o fallback ainda no lugar: o
+    # texto reflui e o diff acusa mudança que não existe. Foi o que tornava as
+    # capturas mobile instáveis entre execuções idênticas.
+    pagina.wait_for_function("() => document.fonts.status === 'loaded'", timeout=10000)
+    pagina.wait_for_timeout(600)
+    pagina.screenshot(path=str(destino), full_page=True, animations="disabled")
+    return None
+
+
+def _capturar_pagina(pagina, nome, caminho, rotulo, saida):
+    """Tenta duas vezes: com htmx na página, uma navegação concorrente às
+    vezes interrompe o goto."""
+    for tentativa in (1, 2):
+        try:
+            erro = _fotografar(pagina, f"{BASE}{caminho}", saida / f"{rotulo}--{nome}.png")
+            if erro:
+                return f"{nome} ({rotulo}): {erro}"
+            return None
+        except Exception as e:
+            if tentativa == 2:
+                return f"{nome} ({rotulo}): {type(e).__name__} {e}"[:130]
+            pagina.wait_for_timeout(800)
+    return None
+
+
 def capturar(saida):
     falhas = []
     with sync_playwright() as p:
@@ -91,42 +151,11 @@ def capturar(saida):
                 reduced_motion="reduce",
             )
             pagina = ctx.new_page()
-            pagina.goto(f"{BASE}/login/", wait_until="domcontentloaded")
-            pagina.fill("#id_username", USUARIO)
-            pagina.fill("#id_password", SENHA)
-            pagina.click("button[type=submit]")
-            pagina.wait_for_load_state("load")
-
+            _entrar(pagina)
             for nome, caminho, _exige_login in PAGINAS:
-                alvo = f"{BASE}{caminho}"
-                # Duas tentativas: com htmx na página, uma navegação
-                # concorrente às vezes interrompe o goto.
-                for tentativa in (1, 2):
-                    try:
-                        resp = pagina.goto(alvo, wait_until="domcontentloaded", timeout=25000)
-                        if resp and resp.status >= 400:
-                            falhas.append(f"{nome} ({rotulo}): HTTP {resp.status}")
-                            break
-                        pagina.wait_for_load_state("load", timeout=15000)
-                        pagina.add_style_tag(content=CSS_ESTATICO)
-                        # Sem esperar a fonte, o screenshot sai com o fallback
-                        # ainda no lugar: o texto reflui e o diff acusa mudança
-                        # que não existe. Foi o que tornava o mobile instável.
-                        pagina.wait_for_function(
-                            "() => document.fonts.status === 'loaded'", timeout=10000
-                        )
-                        pagina.wait_for_timeout(600)
-                        pagina.screenshot(
-                            path=str(saida / f"{rotulo}--{nome}.png"),
-                            full_page=True,
-                            animations="disabled",
-                        )
-                        break
-                    except Exception as e:
-                        if tentativa == 2:
-                            falhas.append(f"{nome} ({rotulo}): {type(e).__name__} {e}"[:130])
-                        else:
-                            pagina.wait_for_timeout(800)
+                falha = _capturar_pagina(pagina, nome, caminho, rotulo, saida)
+                if falha:
+                    falhas.append(falha)
             ctx.close()
         navegador.close()
     return falhas
@@ -140,7 +169,7 @@ def main():
         print("Defina ARQ_SENHA com a senha do usuário de captura.", file=sys.stderr)
         return 2
 
-    saida = pathlib.Path(sys.argv[1])
+    saida = destino_seguro(sys.argv[1])
     saida.mkdir(parents=True, exist_ok=True)
     falhas = capturar(saida)
 
