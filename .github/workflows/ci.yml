@@ -83,7 +83,14 @@ jobs:
       # os 64 erros restantes foram resolvidos um a um.
       soft-fail: ""
 
-      run-sonar: true
+      # Desligado nas PRs do Dependabot. O GitHub não entrega os secrets do
+      # Actions a esse ator — usa um cofre separado, justamente para que uma
+      # dependência comprometida não alcance credencial de projeto. Sem o
+      # SONAR_TOKEN o scanner falha com "Not authorized", e como o job `CI` é
+      # obrigatório no branch protection, nenhuma atualização de dependência
+      # conseguia entrar. As outras etapas continuam rodando: são elas que
+      # dizem se a nova versão quebra o projeto.
+      run-sonar: ${{ github.actor != 'dependabot[bot]' }}
       sonar-project-key: rigst_sistema_arq
       sonar-organization: rigst
       # Sem isto o job do Sonar termina verde assim que envia a análise, e o
@@ -91,3 +98,17 @@ jobs:
       # verde com o gate vermelho por cobertura e nota de segurança. Com `wait`,
       # o scanner aguarda o veredito e falha junto.
       sonar-args: -Dsonar.qualitygate.wait=true
+
+  # Job próprio, e não etapa do pipeline compartilhado: o lock é uma escolha
+  # deste repositório, não dos sete. Roda em segundos e sem rede.
+  lock:
+    name: lock em dia
+    runs-on: ubuntu-latest
+    steps:
+      # Fixadas em SHA pelo mesmo motivo do pipeline acima.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: requirements.lock confere com requirements.txt
+        run: python scripts/conferir_lock.py

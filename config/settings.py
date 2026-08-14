@@ -259,18 +259,33 @@ X_FRAME_OPTIONS = "DENY"
 SECURE_REFERRER_POLICY = os.getenv("DJANGO_SECURE_REFERRER_POLICY", "same-origin")
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
 
-EMAIL_BACKEND = os.getenv("DJANGO_EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
-EMAIL_HOST = os.getenv("DJANGO_EMAIL_HOST", "localhost")
-EMAIL_PORT = int(os.getenv("DJANGO_EMAIL_PORT", "587"))
-EMAIL_HOST_USER = os.getenv("DJANGO_EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.getenv("DJANGO_EMAIL_HOST_PASSWORD", "")
-EMAIL_USE_TLS = env_bool("DJANGO_EMAIL_USE_TLS", True)
-EMAIL_USE_SSL = env_bool("DJANGO_EMAIL_USE_SSL", False)
-EMAIL_TIMEOUT = int(os.getenv("DJANGO_EMAIL_TIMEOUT", "10"))
-DEFAULT_FROM_EMAIL = os.getenv("DJANGO_DEFAULT_FROM_EMAIL", "Sistema Arq <noreply@localhost>")
+# MAILERS, e não os EMAIL_* soltos: o Django 6.1 depreciou aqueles oito
+# settings e os remove na 7.0. As variáveis de ambiente continuam as mesmas,
+# então nada muda para quem já tem um .env preenchido.
+# Em minúscula de propósito: o Django só exporta como setting o nome em
+# maiúsculas, e ter EMAIL_USE_TLS junto de MAILERS é recusado com
+# ImproperlyConfigured. Aqui são só variáveis locais do módulo.
+email_use_tls = env_bool("DJANGO_EMAIL_USE_TLS", True)
+email_use_ssl = env_bool("DJANGO_EMAIL_USE_SSL", False)
 
-if EMAIL_USE_TLS and EMAIL_USE_SSL:
+if email_use_tls and email_use_ssl:
     raise RuntimeError("DJANGO_EMAIL_USE_TLS e DJANGO_EMAIL_USE_SSL não podem estar ativos juntos.")
+
+MAILERS = {
+    "default": {
+        "BACKEND": os.getenv("DJANGO_EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"),
+        "OPTIONS": {
+            "host": os.getenv("DJANGO_EMAIL_HOST", "localhost"),
+            "port": int(os.getenv("DJANGO_EMAIL_PORT", "587")),
+            "username": os.getenv("DJANGO_EMAIL_HOST_USER", ""),
+            "password": os.getenv("DJANGO_EMAIL_HOST_PASSWORD", ""),
+            "use_tls": email_use_tls,
+            "use_ssl": email_use_ssl,
+            "timeout": int(os.getenv("DJANGO_EMAIL_TIMEOUT", "10")),
+        },
+    }
+}
+DEFAULT_FROM_EMAIL = os.getenv("DJANGO_DEFAULT_FROM_EMAIL", "Sistema Arq <noreply@localhost>")
 
 if env_bool("DJANGO_USE_X_FORWARDED_PROTO", default=False):
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -294,7 +309,10 @@ if IS_PRODUCTION:
 
 if IS_TEST:
     PASSWORD_HASHERS = ["core.hashers.PBKDF2RapidoParaTestes"]
-    EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+    # Substitui o mailer inteiro, e não só o BACKEND: as OPTIONS de SMTP
+    # (host, porta, TLS) não são aceitas pelo backend de memória, e o Django
+    # recusa opção desconhecida.
+    MAILERS = {"default": {"BACKEND": "django.core.mail.backends.locmem.EmailBackend"}}
 
 LOGGING = {
     "version": 1,

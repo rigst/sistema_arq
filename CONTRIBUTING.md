@@ -52,6 +52,24 @@ terminar verde só por ter enviado a análise. Sem isso o build ficava verde com
 o gate vermelho — que foi exatamente o que aconteceu enquanto a cobertura de
 código novo e a nota de segurança estavam abaixo do exigido.
 
+### Dependências e o lock
+
+`requirements.txt` é a lista que se edita à mão, com as diretas fixadas em
+`==`. `requirements.lock` é gerado a partir dela e fixa também as transitivas,
+com o sha256 de cada artefato — é dele que o Dockerfile instala, com
+`--require-hashes`, para dois builds do mesmo commit produzirem a mesma imagem.
+
+Ao mexer em `requirements.txt`, regenere:
+
+```bash
+python scripts/gerar_lock.py
+```
+
+O CI tem um job `lock em dia` que reprova se os dois divergirem. Ele existe
+porque o Dependabot atualiza o `requirements.txt` e **não** reconhece o
+`requirements.lock` — sem a checagem, o CI testaria uma versão e a imagem
+instalaria outra.
+
 O `check --deploy` roda com `--fail-level ERROR`, e não `WARNING`, porque os
 avisos de HSTS (`security.W005` e `security.W021`) são escolha deliberada
 documentada em `.env.production.example`. Forjar variáveis só para calar o aviso
