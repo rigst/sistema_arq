@@ -12,29 +12,10 @@ nada e compare. Se der diferença, o instrumento não está estável e qualquer
 conclusão sobre a mudança é ruído. Fonte carregando tarde já causou isso aqui.
 """
 
-import pathlib
 import sys
-import tempfile
 
+from comum import destino_seguro
 from PIL import Image, ImageChops
-
-
-def destino_seguro(bruto):
-    """Resolve o caminho de saída e recusa o que estiver fora de lugar.
-
-    O caminho vem da linha de comando e vira gravação de dezenas de arquivos.
-    Um valor errado — caminho relativo com "..", variável não expandida — grava
-    fora do previsto. Aqui só o diretório de trabalho e o temporário do sistema
-    são aceitos, que é onde as capturas fazem sentido.
-    """
-    alvo = pathlib.Path(bruto).expanduser().resolve()
-    permitidos = [pathlib.Path.cwd().resolve(), pathlib.Path(tempfile.gettempdir()).resolve()]
-    if not any(alvo == raiz or raiz in alvo.parents for raiz in permitidos):
-        raise SystemExit(
-            f"recusando gravar em {alvo}: use um caminho dentro de "
-            f"{permitidos[0]} ou {permitidos[1]}"
-        )
-    return alvo
 
 
 def comparar(dir_a, dir_b, dir_diff):
