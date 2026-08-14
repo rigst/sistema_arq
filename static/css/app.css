@@ -1,5 +1,34 @@
 /* A.R.Q. — sistema visual da aplicação. */
 
+/* SOBRE OS SELETORES QUE APARECEM MAIS DE UMA VEZ
+ *
+ * Sobram 17, e o linter os aponta como duplicação. Não são: a posição deles
+ * na cascata é carregada. Entre duas ocorrências existe uma terceira regra,
+ * quase sempre agrupada com outros seletores, feita para vencer a primeira.
+ * Juntar as duas — em qualquer direção — muda quem ganha.
+ *
+ * Exemplo: .kpi-row está nas linhas 615, 1206 e 1571, e a regra agrupada da
+ * 1563 sobrepõe as anteriores. Fundir tudo na 1571 leva as declarações de 615
+ * e 1206 para depois da 1563, e elas passam a vencer: no painel, 2,4% dos
+ * pixels mudam.
+ *
+ * Isso foi medido, não deduzido, com scripts/visual/ (58 capturas, desktop e
+ * mobile, comparadas pixel a pixel):
+ *
+ *   fundir para a primeira ocorrência   quebra a lateral, a marca e o mobile
+ *   fundir para a última                quebra 47 das 58 telas
+ *
+ * Outros 22 seletores duplicados já foram fundidos, esses sim sem efeito
+ * visual. Os que ficaram exigem reorganizar a folha em camadas explícitas
+ * (@layer), para a ordem deixar de depender da posição no arquivo — mudança
+ * de arquitetura, não de arrumação.
+ *
+ * Antes de tentar de novo: rode o controle descrito em
+ * scripts/visual/README.md. E lembre que o diff visual não pega tudo — fusão
+ * pode criar propriedade declarada duas vezes na mesma regra, que não muda
+ * pixel nenhum e mesmo assim é defeito.
+ */
+
 :root {
     /* ---- Papel e tinta ---- */
     --ds-bg: #e9edeb;
