@@ -17,7 +17,7 @@ jobs:
     # O comentário ao lado é o que o Dependabot lê para propor a subida — as
     # melhorias do pipeline compartilhado continuam chegando, só que como PR
     # revisável em vez de silenciosamente. Ver .github/dependabot.yml.
-    uses: rigst/ci/.github/workflows/python-django.yml@763d6e02f79f26831d35b3333ba00f44d606277b # v1
+    uses: rigst/ci/.github/workflows/python-django.yml@b30e56ef32f9af362c6cf0e3807eb0edf561748d # v1
     # Explícito em vez de `secrets: inherit`: o workflow chamado recebe só
     # estes dois, e não tudo que o repositório tiver hoje ou vier a ter.
     secrets:
