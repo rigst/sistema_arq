@@ -82,18 +82,12 @@ jobs:
       # que o plugin do django-stubs entrou no pipeline compartilhado e os 64
       # erros restantes foram resolvidos um a um.
       #
-      # As quatro novas entram reportando, para a primeira execução medir o
-      # passivo em vez de travar o merge. Atenção: com `soft-fail: ""` elas
-      # entrariam bloqueando, porque lista vazia significa "nada tolerado".
-      # Tirar da lista conforme cada uma zerar:
-      #   - licencas e sbom já passam localmente contra as 42 dependências
-      #     resolvidas; ficam aqui só até a primeira execução confirmar no CI;
-      #   - e2e passa com os três testes de core/tests_e2e.py;
-      #   - a11y nunca rodou sobre estas páginas — é a única com passivo
-      #     realmente desconhecido.
-      # O `lock` não está na lista de propósito: já bloqueava como job próprio
-      # deste repositório, e afrouxá-lo agora seria regressão.
-      soft-fail: "licencas,sbom,e2e,a11y"
+      # Nada em soft-fail: toda etapa bloqueia, inclusive as cinco novas.
+      # Elas entraram reportando e a primeira execução mediu o passivo — as
+      # cinco passaram (o a11y com zero violações em WCAG 2.1 AA nas duas
+      # páginas), então não há o que tolerar. Lista vazia significa "nada
+      # tolerado"; ao acrescentar uma etapa nova, declare-a aqui primeiro.
+      soft-fail: ""
 
       # --- conformidade ---
       run-licencas: true
@@ -116,9 +110,11 @@ jobs:
       a11y-paths: |
         /login/
         /admin/login/
-      # `none` mede sem reprovar. Depois de olhar o artefato a11y.json e
-      # corrigir os critical e serious, subir para `serious`.
-      a11y-fail-on: none
+      # Medido com `none` na primeira execução: zero violações nas duas
+      # páginas. Sem passivo a proteger, o limite sobe para `serious` — que
+      # trava conteúdo inalcançável por leitor de tela sem transformar aviso
+      # de contraste em bloqueio de merge.
+      a11y-fail-on: serious
 
       # Desligado nas PRs do Dependabot. O GitHub não entrega os secrets do
       # Actions a esse ator — usa um cofre separado, justamente para que uma
