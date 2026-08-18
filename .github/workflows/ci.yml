@@ -17,7 +17,7 @@ jobs:
     # O comentário ao lado é o que o Dependabot lê para propor a subida — as
     # melhorias do pipeline compartilhado continuam chegando, só que como PR
     # revisável em vez de silenciosamente. Ver .github/dependabot.yml.
-    uses: rigst/ci/.github/workflows/python-django.yml@95d07687022dc719e0dd4391f04fbdbebf0100e1 # v1
+    uses: rigst/ci/.github/workflows/python-django.yml@b30e56ef32f9af362c6cf0e3807eb0edf561748d # v1
     # Explícito em vez de `secrets: inherit`: o workflow chamado recebe só
     # estes dois, e não tudo que o repositório tiver hoje ou vier a ter.
     secrets:
@@ -78,10 +78,43 @@ jobs:
       # mento. Suba junto com a cobertura real.
       coverage-fail-under: 80
 
-      # Nada em soft-fail: toda etapa bloqueia. O mypy foi o último a sair,
-      # depois que o plugin do django-stubs entrou no pipeline compartilhado e
-      # os 64 erros restantes foram resolvidos um a um.
+      # As sete etapas originais bloqueiam. O mypy foi o último a sair, depois
+      # que o plugin do django-stubs entrou no pipeline compartilhado e os 64
+      # erros restantes foram resolvidos um a um.
+      #
+      # Nada em soft-fail: toda etapa bloqueia, inclusive as cinco novas.
+      # Elas entraram reportando e a primeira execução mediu o passivo — as
+      # cinco passaram (o a11y com zero violações em WCAG 2.1 AA nas duas
+      # páginas), então não há o que tolerar. Lista vazia significa "nada
+      # tolerado"; ao acrescentar uma etapa nova, declare-a aqui primeiro.
       soft-fail: ""
+
+      # --- conformidade ---
+      run-licencas: true
+      run-sbom: true
+
+      # O lock é resolvido para o Python da imagem, não para o do pipeline.
+      # Conferir a instalação no 3.12 acusaria divergência que não existe.
+      run-lock: true
+      lock-python-version: "3.14"
+
+      # --- ponta a ponta ---
+      run-e2e: true
+
+      # --- acessibilidade ---
+      # Só páginas públicas nesta primeira rodada. /termos/ e /privacidade/
+      # ficam de fora porque a view levanta Http404 enquanto não houver
+      # DocumentoLegal vigente, e semear isso pede um a11y-setup-command que
+      # ainda não existe — auditar uma página de erro não diz nada.
+      run-a11y: true
+      a11y-paths: |
+        /login/
+        /admin/login/
+      # Medido com `none` na primeira execução: zero violações nas duas
+      # páginas. Sem passivo a proteger, o limite sobe para `serious` — que
+      # trava conteúdo inalcançável por leitor de tela sem transformar aviso
+      # de contraste em bloqueio de merge.
+      a11y-fail-on: serious
 
       # Desligado nas PRs do Dependabot. O GitHub não entrega os secrets do
       # Actions a esse ator — usa um cofre separado, justamente para que uma
@@ -107,19 +140,15 @@ jobs:
         -Dsonar.qualitygate.wait=true
         -Dsonar.coverage.exclusions=**/migrations/**,**/tests.py,**/tests_*.py,**/test_*.py,**/tests/**,**/conftest.py,**/settings/**,**/manage.py,**/wsgi.py,**/asgi.py,scripts/**
 
-  # Job próprio, e não etapa do pipeline compartilhado: o lock é uma escolha
-  # deste repositório, não dos sete. Roda em segundos e sem rede.
-  lock:
-    name: lock em dia
-    runs-on: ubuntu-latest
-    steps:
-      # Fixadas em SHA pelo mesmo motivo do pipeline acima.
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        with:
-          python-version: "3.12"
-      - name: requirements.lock confere com requirements.txt
-        run: python scripts/conferir_lock.py
+  # O job `lock em dia` que ficava aqui foi para o pipeline compartilhado
+  # (`run-lock`), junto com os scripts, agora generalizados por argumento.
+  # A versão compartilhada faz mais que a local fazia: além de conferir o lock
+  # contra o requirements.txt, instala de verdade com --require-hashes, que é
+  # o que pega transitiva faltando ou hash errado.
+  #
+  # Os scripts em scripts/ continuam aqui e continuam sendo o caminho para
+  # **gerar** o lock nesta máquina — eles carregam os parâmetros de resolução
+  # deste projeto (Python 3.14 e o ofxparse, que só publica sdist).
 
   # Constrói a imagem de verdade. Existe porque o requirements.lock instala com
   # --require-hashes: qualquer transitiva faltando ou hash errado derruba o
