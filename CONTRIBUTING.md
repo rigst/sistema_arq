@@ -65,13 +65,24 @@ Ao mexer em `requirements.txt`, regenere:
 python scripts/gerar_lock.py
 ```
 
-O CI tem dois jobs para isso. O `lock em dia` reprova se os dois arquivos
-divergirem — existe porque o Dependabot atualiza o `requirements.txt` e **não**
-reconhece o `requirements.lock`, então sem a checagem o CI testaria uma versão
-e a imagem instalaria outra. O `imagem docker` constrói a imagem de fato: com
-`--require-hashes`, uma transitiva faltando ou um hash errado só aparece no
-build, e as outras etapas rodam sobre o `requirements.txt`, no Python do
-runner, não no 3.14 da imagem.
+O CI tem dois jobs para isso. O `lock com hashes` vem do pipeline
+compartilhado (`run-lock`) e faz duas checagens: que os dois arquivos não
+divergiram — existe porque o Dependabot atualiza o `requirements.txt` e **não**
+reconhece o `requirements.lock`, então sem ela o CI testaria uma versão e a
+imagem instalaria outra — e que o lock instala de verdade sob
+`--require-hashes`, o que pega transitiva faltando e hash errado. Ele roda no
+Python informado em `lock-python-version` (3.14, o da imagem), e não no do
+resto do pipeline: conferir na versão errada acusaria divergência inexistente.
+
+O `imagem docker` constrói a imagem de fato, que é a prova final.
+
+O verificador em si vive em
+[`rigst/ci`](https://github.com/rigst/ci/blob/v1/scripts/conferir_lock.py), com
+testes próprios. A cópia que existia aqui em `scripts/conferir_lock.py` foi
+removida: duas implementações da mesma regra divergem, e a divergência
+apareceria como build verde com lock errado. O `scripts/gerar_lock.py`
+continua sendo local, porque carrega os parâmetros de resolução deste projeto
+(Python 3.14 e o `ofxparse`, que só publica sdist).
 
 O `check --deploy` roda com `--fail-level ERROR`, e não `WARNING`, porque os
 avisos de HSTS (`security.W005` e `security.W021`) são escolha deliberada

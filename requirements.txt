@@ -6,6 +6,6 @@ pillow==12.3.0
 celery==5.6.3
 redis==5.2.1
 gunicorn==26.0.0
-sqlparse==0.5.5
+sqlparse==0.6.0
 weasyprint==69.0
 ofxparse==0.21
