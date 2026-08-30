@@ -59,8 +59,15 @@ main() {
   done
 
   if [[ -n "$HEALTH_URL" ]]; then
+    # Retry: logo após o restart o gunicorn ainda está subindo os workers —
+    # sem isso, um deploy perfeitamente bom é reportado como falho por pura
+    # corrida (visto no piloto: 502 na hora, 200 dois segundos depois).
     local codigo
-    codigo="$(curl -s -o /dev/null -w '%{http_code}' ${HEALTH_HEADER:+-H "$HEALTH_HEADER"} "$HEALTH_URL")"
+    for _ in 1 2 3 4 5; do
+      codigo="$(curl -s -o /dev/null -w '%{http_code}' ${HEALTH_HEADER:+-H "$HEALTH_HEADER"} "$HEALTH_URL")"
+      [[ "$codigo" == "200" ]] && break
+      sleep 2
+    done
     if [[ "$codigo" != "200" ]]; then
       echo "Smoke-test falhou ($codigo). Rollback manual: git -C $APP_DIR reset --hard $antes"
       exit 1
