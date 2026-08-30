@@ -11,7 +11,7 @@ jobs:
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.head_branch == 'main' &&
       github.event.workflow_run.event == 'push'
-    uses: rigst/ci/.github/workflows/deploy-django.yml@d70ba0a3bdd38a3a2ea52f839d2d71a6579c6504  # v1
+    uses: rigst/ci/.github/workflows/deploy-django.yml@26c32b5e77661715f25db958b20174b8f172f017  # v1
     secrets:
       CD_SSH_KEY: ${{ secrets.CD_SSH_KEY }}
     with:
