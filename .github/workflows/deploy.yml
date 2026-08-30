@@ -22,7 +22,7 @@ on:
 
 jobs:
   deploy:
-    uses: rigst/ci/.github/workflows/deploy-django.yml@d24609810484fea38e390da3e59ac04101d65f40  # v1
+    uses: rigst/ci/.github/workflows/deploy-django.yml@d70ba0a3bdd38a3a2ea52f839d2d71a6579c6504  # v1
     secrets:
       CD_SSH_KEY: ${{ secrets.CD_SSH_KEY }}
     with:
