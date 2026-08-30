@@ -10,7 +10,8 @@ APP_DIR=/var/www/sistema_arq/current
 FETCH_URL=https://github.com/rigst/sistema_arq.git   # HTTPS anônimo — repo público, sem credencial
 VENV=/var/www/sistema_arq/venv
 ENV_FILE=/var/www/sistema_arq/shared/.env
-SERVICES=(sistema_arq.service sistema_arq_celery.service sistema_arq_celerybeat.service)
+WEB_SERVICE=sistema_arq.service                      # reload (SIGHUP): zero downtime, socket nunca cai
+OTHER_SERVICES=(sistema_arq_celery.service sistema_arq_celerybeat.service)   # restart: não servem HTTP ao vivo
 HEALTH_URL="https://arq.stolben.com/healthz/"
 HEALTH_HEADER=""
 BACKUP_SCRIPT=/var/www/sistema_arq/shared/scripts/backup_postgres.sh
@@ -54,7 +55,8 @@ main() {
   "$VENV/bin/python" manage.py migrate --check || "$VENV/bin/python" manage.py migrate
   "$VENV/bin/python" manage.py collectstatic --noinput
 
-  for unidade in "${SERVICES[@]}"; do
+  sudo systemctl reload "$WEB_SERVICE"
+  for unidade in "${OTHER_SERVICES[@]}"; do
     sudo systemctl restart "$unidade"
   done
 
