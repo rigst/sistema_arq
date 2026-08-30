@@ -85,6 +85,12 @@ Caminho usado pela instância do autor. Layout: código em
 `/var/www/sistema_arq/current`, virtualenv em `/var/www/sistema_arq/venv`,
 ambiente em `/var/www/sistema_arq/shared/.env`.
 
+**Desde que o CD (`.github/workflows/deploy.yml`) foi ligado, os passos
+abaixo acontecem sozinhos a cada push em `main` que passar no CI** — via
+`deploy/cd-deploy.sh`, disparado por SSH pelo workflow reutilizável
+`deploy-django.yml` do `rigst/ci` (RUNBOOK.md seção 7). O procedimento manual
+continua valendo para rollback e para depurar um deploy que falhou.
+
 Antes de puxar, verifique o que vem no lote e anote o ponto de rollback:
 
     D=/var/www/sistema_arq/current
