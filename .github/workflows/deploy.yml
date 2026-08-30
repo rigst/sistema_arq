@@ -1,0 +1,29 @@
+name: CD
+
+# TEMPORÁRIO: workflow_dispatch em vez de workflow_run, para testar de ponta
+# a ponta antes de confiar no gatilho automático (ver RUNBOOK.md do rigst/ci,
+# seção 7.5). Depois de um dry-run bem-sucedido, troca para:
+#
+# on:
+#   workflow_run:
+#     workflows: ["CI"]
+#     types: [completed]
+#
+# jobs:
+#   deploy:
+#     if: >
+#       github.event.workflow_run.conclusion == 'success' &&
+#       github.event.workflow_run.head_branch == 'main' &&
+#       github.event.workflow_run.event == 'push'
+#     ...
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    uses: rigst/ci/.github/workflows/deploy-django.yml@2d330a599742bdd9c5082c51c4cc464195bf8e71  # v1
+    secrets:
+      CD_SSH_KEY: ${{ secrets.CD_SSH_KEY }}
+    with:
+      ssh-host: "arq.stolben.com"
