@@ -138,7 +138,7 @@ jobs:
       # de código novo para 6,8%.
       sonar-args: >-
         -Dsonar.qualitygate.wait=true
-        -Dsonar.coverage.exclusions=**/migrations/**,**/tests.py,**/tests_*.py,**/test_*.py,**/tests/**,**/conftest.py,**/settings/**,**/manage.py,**/wsgi.py,**/asgi.py,scripts/**
+        -Dsonar.coverage.exclusions=**/migrations/**,**/tests.py,**/tests_*.py,**/test_*.py,**/tests/**,**/conftest.py,**/settings/**,**/settings.py,**/manage.py,**/wsgi.py,**/asgi.py,scripts/**
 
   # O job `lock em dia` que ficava aqui foi para o pipeline compartilhado
   # (`run-lock`), junto com os scripts, agora generalizados por argumento.
