@@ -9,3 +9,6 @@ gunicorn==26.1.0
 sqlparse==0.6.0
 weasyprint==69.0
 ofxparse==0.21
+
+# Monitoramento de erros (ativo só com SENTRY_DSN definido)
+sentry-sdk==2.67.1
