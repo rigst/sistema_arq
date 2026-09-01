@@ -2,9 +2,11 @@
 <html lang="pt-br">
 <head>
 <meta charset="utf-8">
-{# Vira o título do PDF nas propriedades do arquivo (o WeasyPrint lê daqui) —
-   é o que o leitor de PDF mostra na aba e o que o buscador do sistema
-   operacional indexa. #}
+{% comment %}
+    Vira o título do PDF nas propriedades do arquivo (o WeasyPrint lê daqui) —
+    é o que o leitor de PDF mostra na aba e o que o buscador do sistema
+    operacional indexa.
+{% endcomment %}
 <title>A.R.Q. — {% block titulo_pdf %}documento{% endblock %}</title>
 <style>
     @page {
