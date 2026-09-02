@@ -300,3 +300,50 @@ PRIVACIDADE_V12 = PRIVACIDADE_V12.replace(
     "Fora isso, não compartilhamos.",
     _COMPARTILHAMENTO_V12.strip(),
 )
+
+# ---------------------------------------------------------------------------
+# v1.3 — nomeia os operadores de monitoramento (Sentry e Grafana Cloud)
+#
+# A v1.2 dizia que a lista de prestadores "deve ser mantida na documentação
+# operacional da instalação". Agora ela é concreta, então fica aqui: quem lê a
+# política não deveria precisar procurar em outro lugar para saber quem recebe
+# o quê.
+#
+# Os itens são de uma linha só de propósito. `DocumentoLegal.paragrafos` monta
+# a lista percorrendo as linhas de um bloco e ignorando as que não começam com
+# "- ", então uma continuação indentada sumiria da tela sem erro nenhum.
+# ---------------------------------------------------------------------------
+
+_MONITORAMENTO_V13 = """
+## Monitoramento da operação
+
+Para manter o sistema no ar e perceber uma falha antes que ela vire prejuízo, esta \
+instalação envia sinais técnicos a dois operadores. Nenhum dos dois recebe o conteúdo \
+dos seus projetos, propostas, contratos ou arquivos, e nenhum deles usa o que recebe \
+para publicidade, perfilamento ou treinamento de modelos.
+
+- **Sentry** (Functional Software, Inc.): recebe o relatório técnico de um erro quando \
+ele acontece — mensagem, arquivo, linha e contexto da falha. Está configurado para não \
+enviar dados pessoais junto ao evento: sem identificação de usuário, sem cookies e sem \
+endereço IP. A conta fica na região europeia do serviço, com armazenamento na Alemanha, \
+o que configura transferência internacional nos termos dos arts. 33 a 36 da LGPD, com \
+base no legítimo interesse em manter o serviço seguro e disponível (art. 7º, IX).
+- **Grafana Cloud** (Grafana Labs, Inc.): recebe os indicadores de saúde do servidor — \
+processador, memória, disco, banco de dados e cache — e uma cópia dos registros técnicos \
+de execução, incluindo o log de acesso do servidor web. O endereço IP é mascarado antes \
+do envio: o último octeto é zerado no próprio servidor, de modo que o endereço completo \
+não sai daqui. A instância fica em território brasileiro, na região de São Paulo, sem \
+transferência internacional.
+"""
+
+TERMOS_V13 = TERMOS_V12
+
+PRIVACIDADE_V13 = PRIVACIDADE_V12.replace(
+    "A lista e a localização desses prestadores devem ser mantidas na documentação "
+    "operacional da instalação.",
+    "Os operadores de monitoramento em uso nesta instalação, e o que cada um recebe, "
+    "estão nomeados na seção seguinte.",
+).replace(
+    "\n## Por quanto tempo guardamos",
+    "\n" + _MONITORAMENTO_V13.strip() + "\n\n## Por quanto tempo guardamos",
+)
