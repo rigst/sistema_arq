@@ -16,9 +16,13 @@ WORKDIR /app
 COPY requirements.lock ./
 # --require-hashes recusa qualquer pacote fora da lista. --only-binary recusa
 # sdist, cujo setup.py roda código arbitrário durante o build; ofxparse é a
-# única exceção, porque a 0.21 só é publicada como sdist. O pip da imagem base
-# fica como veio — `pip install --upgrade pip` instalaria versão não fixada,
-# que é justamente o que o resto desta linha evita.
+# única exceção, porque a 0.21 só é publicada como sdist.
+#
+# O próprio pip agora está no lock, com pin e hash, então esta linha o atualiza
+# junto com o resto. Isso NÃO é o mesmo que `pip install --upgrade pip`, que a
+# versão anterior deste comentário evitava com razão: aquilo instalaria versão
+# não fixada. Aqui a versão é fixa e o hash é conferido, igual a todo o resto —
+# é a mesma preocupação, atendida em vez de contornada.
 RUN pip install --require-hashes --only-binary :all: --no-binary ofxparse \
     -r requirements.lock
 
