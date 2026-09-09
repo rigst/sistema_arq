@@ -31,7 +31,15 @@ IS_PRODUCTION = ENV == "production"
 # `manage.py test` põe "test" no argv; o pytest não põe nada parecido. Sem a
 # segunda condição o bloco `if IS_TEST` mais abaixo nunca valia para a suíte
 # que o CI roda de verdade, que é a do pytest.
-IS_TEST = "test" in sys.argv or Path(sys.argv[0]).name.startswith(("pytest", "py.test"))
+# A terceira condição cobre `python -m pytest`: nessa invocação o argv[0] é o
+# `__main__.py` do pacote, o prefixo não bate e IS_TEST ficava False — a suíte
+# rodava com o hasher de produção, o mailer de SMTP real e o Sentry ativo.
+# O pytest se denuncia pelo módulo importado, como já se faz no dojo.
+IS_TEST = (
+    "test" in sys.argv
+    or Path(sys.argv[0]).name.startswith(("pytest", "py.test"))
+    or "pytest" in sys.modules
+)
 
 
 def env_bool(nome, default=False):
