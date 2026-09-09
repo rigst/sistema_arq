@@ -2,7 +2,8 @@ from datetime import date, datetime
 from decimal import Decimal
 from unittest.mock import patch
 
-from django.test import Client, TestCase
+from django.conf import settings
+from django.test import Client, SimpleTestCase, TestCase
 from django.utils import timezone
 
 from briefing.models import TemplateBriefing
@@ -243,3 +244,12 @@ class DadosDemoTests(TestCase):
             ConfiguracaoPrecificacao.objects.get(empresa=grupo).imposto_percent,
             Decimal("6.00"),
         )
+
+
+class GuardaDeTesteTests(SimpleTestCase):
+    def test_is_test_fecha_tambem_com_python_m_pytest(self):
+        # `Path(sys.argv[0]).name` vira `__main__.py` quando a suíte roda como
+        # `python -m pytest`, e o prefixo não bate: IS_TEST ficava False e a
+        # suíte rodava com o hasher de produção, com o mailer apontado para o
+        # SMTP de verdade em vez do locmem, e com o Sentry ligado.
+        self.assertTrue(settings.IS_TEST)
