@@ -8,13 +8,25 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 
 
-def _bloquear_recurso_externo(url, timeout=10, ssl_context=None):
-    """PDFs do A.R.Q. não precisam buscar URLs; bloquear evita SSRF/leitura local."""
-    if url.startswith("data:image/"):
-        from weasyprint import default_url_fetcher
+def _buscador_bloqueado():
+    """PDFs do A.R.Q. não precisam buscar URLs; bloquear evita SSRF/leitura local.
 
-        return default_url_fetcher(url, timeout=timeout, ssl_context=ssl_context)
-    raise ValueError(f"Recurso externo bloqueado na geração de PDF: {url!r}")
+    Era uma função `url_fetcher` até o WeasyPrint 70, que trocou o contrato: o
+    fetcher passou a ser um objeto com método `fetch(url, headers=None)`, o
+    `default_url_fetcher` deixou de existir, e o motor lê um atributo
+    `_fail_on_errors` de quem lhe for passado. Herdar de `URLFetcher` mantém o
+    comportamento — só as `data:` de imagem passam — e ainda entrega de graça o
+    timeout e o contexto SSL que a função replicava à mão.
+    """
+    from weasyprint.urls import URLFetcher
+
+    class SomenteDataUriDeImagem(URLFetcher):
+        def fetch(self, url, headers=None):
+            if url.startswith("data:image/"):
+                return super().fetch(url, headers)
+            raise ValueError(f"Recurso externo bloqueado na geração de PDF: {url!r}")
+
+    return SomenteDataUriDeImagem()
 
 
 def _identidade_pdf(user):
@@ -53,7 +65,7 @@ def render_pdf(template_name, context, filename="documento.pdf", user=None):
     if user is not None:
         contexto.update(_identidade_pdf(user))
     html = render_to_string(template_name, contexto)
-    pdf_bytes = HTML(string=html, url_fetcher=_bloquear_recurso_externo).write_pdf()
+    pdf_bytes = HTML(string=html, url_fetcher=_buscador_bloqueado()).write_pdf()
     response = HttpResponse(pdf_bytes, content_type="application/pdf")
     response["Content-Disposition"] = f'inline; filename="{filename}"'
     return response

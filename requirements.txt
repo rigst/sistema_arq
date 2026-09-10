@@ -7,7 +7,7 @@ celery==5.6.3
 redis==8.1.0
 gunicorn==26.2.0
 sqlparse==0.6.0
-weasyprint==69.0
+weasyprint==70.0
 ofxparse==0.21
 
 # Monitoramento de erros (ativo só com SENTRY_DSN definido)
