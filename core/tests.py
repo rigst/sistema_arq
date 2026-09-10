@@ -10,7 +10,7 @@ from briefing.models import TemplateBriefing
 from contratos.models import ModeloContrato
 from core.factories import criar_empresa_e_usuario
 from core.models import Empresa
-from core.pdf import _identidade_pdf, render_pdf
+from core.pdf import _buscador_bloqueado, _identidade_pdf, render_pdf
 from core.views import FRASES_MOTIVACIONAIS, _primeiro_nome_usuario, _saudacao_do_dia
 from core.visitante_cleanup import limpar_dados_negocio
 from crm.models import Cliente
@@ -190,6 +190,29 @@ class IdentidadeTests(TestCase):
         self.assertTrue(identidade["usando_logo_app"])
         pdf = render_pdf("pdf/base_pdf.html", {}, user=self.user)
         self.assertTrue(pdf.content.startswith(b"%PDF"))
+
+    def test_pdf_bloqueia_recurso_externo(self):
+        """A guarda contra SSRF depende de um contrato do WeasyPrint que já
+        mudou uma vez: até a versão 70 o fetcher era uma função, depois virou
+        objeto com `fetch(url, headers=None)`. A troca não quebrou nada de
+        forma visível — o `default_url_fetcher` sumiu e o import estourou —,
+        mas a próxima pode passar despercebida e deixar o PDF buscar URL de
+        novo. Este teste é o que percebe."""
+        buscador = _buscador_bloqueado()
+        for url in (
+            "https://exemplo.invalido/logo.png",
+            "file:///etc/passwd",
+            "http://169.254.169.254/latest/meta-data/",
+        ):
+            with self.subTest(url=url), self.assertRaises(ValueError):
+                buscador.fetch(url)
+
+    def test_pdf_aceita_data_uri_de_imagem(self):
+        buscador = _buscador_bloqueado()
+        resposta = buscador.fetch(
+            "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+        )
+        self.assertIsNotNone(resposta)
 
     def test_remover_imagem_volta_para_o_padrao(self):
         self.client.post(
