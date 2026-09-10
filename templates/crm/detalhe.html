@@ -52,7 +52,7 @@
     </div>
 
     <dialog class="ds-modal" id="modal-cliente-editar" aria-labelledby="modal-cliente-editar-titulo">
-        <form method="dialog" class="ds-modal-fechar-form"><button class="ds-modal-fechar" aria-label="Fechar">{% include "core/_ico.html" with ico="fechar" %}</button></form>
+        <form method="dialog" class="ds-modal-fechar-form"><button type="submit" class="ds-modal-fechar" aria-label="Fechar">{% include "core/_ico.html" with ico="fechar" %}</button></form>
         <h2 class="ds-modal-titulo ds-display" id="modal-cliente-editar-titulo">Editar cliente</h2>
         <p class="ds-modal-sub">{{ cliente.nome }}</p>
         <div class="ds-modal-corpo"><form method="post" action="{% url 'crm_editar' cliente.pk %}" class="form-card">{% csrf_token %}{{ form_cliente.as_p }}<div class="form-actions"><button class="ds-btn" type="submit" formmethod="dialog" formnovalidate>Cancelar</button><button class="ds-btn ds-btn--solid" type="submit">Salvar</button></div></form></div>
