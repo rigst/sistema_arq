@@ -1,5 +1,6 @@
 import os
 import sys
+import tempfile
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -250,6 +251,14 @@ if USE_MANIFEST_STATICFILES:
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.getenv("DJANGO_MEDIA_ROOT", str(BASE_DIR / "media"))
+
+# IS_TEST já troca hasher, mailer e afins, mas não trocava o MEDIA_ROOT: a
+# suíte gravava uploads de verdade: em disco, ou na mídia compartilhada (com
+# DJANGO_MEDIA_ROOT setado) ou em BASE_DIR/media, que é a árvore de produção.
+# Em 2026-09-10 havia 114 cópias do mesmo logo de 227 bytes em
+# sistema_orcamentos/shared/media, e nenhuma referenciada no banco.
+if IS_TEST:
+    MEDIA_ROOT = tempfile.mkdtemp(prefix="sistema-arq-test-media-")
 DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv("DJANGO_DATA_UPLOAD_MAX_MEMORY_SIZE", 30 * 1024 * 1024))
 FILE_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv("DJANGO_FILE_UPLOAD_MAX_MEMORY_SIZE", 5 * 1024 * 1024))
 DATA_UPLOAD_MAX_NUMBER_FIELDS = int(os.getenv("DJANGO_DATA_UPLOAD_MAX_NUMBER_FIELDS", "2000"))

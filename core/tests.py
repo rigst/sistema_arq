@@ -276,3 +276,8 @@ class GuardaDeTesteTests(SimpleTestCase):
         # suíte rodava com o hasher de produção, com o mailer apontado para o
         # SMTP de verdade em vez do locmem, e com o Sentry ligado.
         self.assertTrue(settings.IS_TEST)
+
+    def test_a_suite_nao_grava_na_midia_de_producao(self):
+        # IS_TEST trocava hasher e mailer, mas não o MEDIA_ROOT: a suíte
+        # gravava uploads de verdade na mídia compartilhada do servidor.
+        self.assertIn("sistema-arq-test-media-", str(settings.MEDIA_ROOT))
