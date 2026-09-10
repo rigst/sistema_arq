@@ -130,7 +130,7 @@
 
                 <dialog class="ds-modal" id="modal-compromisso-{{ c.pk }}" aria-labelledby="modal-compromisso-{{ c.pk }}-titulo">
                     <form method="dialog" class="ds-modal-fechar-form">
-                        <button class="ds-modal-fechar" aria-label="Fechar">
+                        <button type="submit" class="ds-modal-fechar" aria-label="Fechar">
                             {% include "core/_ico.html" with ico="fechar" %}
                         </button>
                     </form>
@@ -159,7 +159,7 @@
 
     <dialog class="ds-modal" id="modal-compromisso" aria-labelledby="modal-compromisso-titulo">
         <form method="dialog" class="ds-modal-fechar-form">
-            <button class="ds-modal-fechar" aria-label="Fechar">
+            <button type="submit" class="ds-modal-fechar" aria-label="Fechar">
                 {% include "core/_ico.html" with ico="fechar" %}
             </button>
         </form>

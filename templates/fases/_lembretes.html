@@ -43,7 +43,7 @@ está, e não numa tela de gerenciamento à parte.
             {% endcomment %}
             <dialog class="ds-modal" id="modal-lembrete-{{ r.pk }}" aria-labelledby="modal-lembrete-{{ r.pk }}-titulo">
                 <form method="dialog" class="ds-modal-fechar-form">
-                    <button class="ds-modal-fechar" aria-label="Fechar">
+                    <button type="submit" class="ds-modal-fechar" aria-label="Fechar">
                         {% include "core/_ico.html" with ico="fechar" %}
                     </button>
                 </form>
@@ -78,7 +78,7 @@ está, e não numa tela de gerenciamento à parte.
 
     <dialog class="ds-modal" id="modal-lembrete" aria-labelledby="modal-lembrete-titulo">
         <form method="dialog" class="ds-modal-fechar-form">
-            <button class="ds-modal-fechar" aria-label="Fechar">
+            <button type="submit" class="ds-modal-fechar" aria-label="Fechar">
                 {% include "core/_ico.html" with ico="fechar" %}
             </button>
         </form>

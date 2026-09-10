@@ -94,29 +94,30 @@ jobs:
       # cinco passaram (o a11y com zero violações em WCAG 2.1 AA nas duas
       # páginas), então não há o que tolerar. Lista vazia significa "nada
       # tolerado"; ao acrescentar uma etapa nova, declare-a aqui primeiro.
-      # As etapas de qualidade entram toleradas enquanto o passivo é medido.
-      # Lista vazia significa "nada tolerado": ligá-las sem declarar aqui
-      # reprovaria no primeiro dia.
-      soft-fail: "diff,frontend,layout"
+      # As três etapas de qualidade entraram aqui em 10/09/2026 e saíram no
+      # mesmo dia. Os 15 bloqueantes eram todos o mesmo botão de fechar
+      # modal sem `type`, corrigido no mesmo PR.
+      soft-fail: ""
 
-      # --- qualidade (primeira rodada: medir, não bloquear) ---
+      # --- qualidade ---
       #
-      # Procedimento da seção 8 do RUNBOOK: rodar, ler o resumo no painel do
-      # job, conferir se algum achado é falso positivo neste projeto, e só
-      # então trocar os `nenhum` por `erro` e tirar do soft-fail.
+      # Apertado em 10/09/2026. Este projeto tinha a maior concentração de
+      # `H043` da frota — 15 botões de fechar modal sem `type` —, todos do
+      # mesmo componente `ds-modal-fechar`. O resto do passivo é aviso: 25
+      # seletores duplicados e 3 trechos de conteúdo cortado no layout.
       run-diff-quality: true
-      diff-quality-fail-on: nenhum
+      diff-quality-fail-on: erro
 
       # frontend-paths precisa ser explícito: o glob de CSS a partir da raiz
       # varre o venv/ inteiro e o job trava sem mensagem de erro.
       run-frontend: true
       frontend-paths: "static"
       template-paths: "templates"
-      frontend-fail-on: nenhum
+      frontend-fail-on: erro
 
       # As mesmas rotas públicas que o a11y já audita.
       run-layout: true
-      layout-fail-on: nenhum
+      layout-fail-on: erro
       layout-paths: |
         /login/
         /admin/login/
