@@ -11,7 +11,7 @@ weasyprint==70.0
 ofxparse==0.21
 
 # Monitoramento de erros (ativo só com SENTRY_DSN definido)
-sentry-sdk==2.68.1
+sentry-sdk==2.71.0
 
 # O pip entra aqui como qualquer outra dependência, e não como ferramenta à
 # parte. Ele é o que o CD executa a cada deploy, e enquanto não estava
