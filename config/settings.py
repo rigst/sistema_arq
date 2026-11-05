@@ -236,6 +236,9 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "dashboard"
 LOGOUT_REDIRECT_URL = "login"
 HEALTHZ_TOKEN = os.getenv("DJANGO_HEALTHZ_TOKEN", "").strip()
+# O smoke-test do CD só aceita 200 no /healthz/: um 302 para a tela de aceite
+# (navegador com sessão e termo novo publicado) seria lido como deploy quebrado.
+LEGAL_ALLOWLIST_EXTRA = ("/healthz/",)
 TRUST_X_FORWARDED_FOR = env_bool("DJANGO_TRUST_X_FORWARDED_FOR", default=False)
 
 STATIC_URL = "/static/"

@@ -1,6 +1,7 @@
 from django.urls import path
 
-from .views import alternar_empresa, dashboard, healthz, identidade, imagem_identidade
+from .healthz import healthz
+from .views import alternar_empresa, dashboard, identidade, imagem_identidade
 
 urlpatterns = [
     path("healthz/", healthz, name="healthz"),
