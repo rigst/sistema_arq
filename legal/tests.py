@@ -141,10 +141,15 @@ class AllowlistExtraTests(TestCase):
     def test_prefixo_extra_nao_libera_o_resto(self):
         self.assertEqual(self.pedir(self.montar(), "/contratos/").status_code, 302)
 
-    def test_sem_a_setting_o_comportamento_nao_muda(self):
+    @override_settings(LEGAL_ALLOWLIST_EXTRA=())
+    def test_sem_extra_o_comportamento_nao_muda(self):
         middleware = self.montar()
         self.assertEqual(middleware.prefixos, PREFIXOS_LIVRES)
         self.assertEqual(self.pedir(middleware, "/contratos/").status_code, 302)
+
+    def test_healthz_liberado_nos_settings_do_projeto(self):
+        # O smoke-test do CD só aceita 200; 302 para o aceite derrubaria o deploy.
+        self.assertEqual(self.pedir(self.montar(), "/healthz/").content, b"segue")
 
 
 class VisitanteAceiteTests(TestCase):

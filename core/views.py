@@ -1,12 +1,9 @@
 import mimetypes
-import secrets
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.db import connection
-from django.http import FileResponse, Http404, HttpResponseNotFound, JsonResponse
+from django.http import FileResponse, Http404
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -42,22 +39,6 @@ def _primeiro_nome_usuario(usuario):
     """Usa o primeiro nome informado, com fallback seguro para o login."""
     nome = (usuario.nome_exibicao or usuario.get_full_name() or usuario.username).strip()
     return nome.split()[0] if nome else ""
-
-
-@require_safe
-def healthz(request):
-    healthz_token = getattr(settings, "HEALTHZ_TOKEN", "")
-    if healthz_token:
-        token_recebido = request.headers.get("X-Healthz-Token", "").strip()
-        if not token_recebido or not secrets.compare_digest(token_recebido, healthz_token):
-            return HttpResponseNotFound()
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT 1")
-            cursor.fetchone()
-    except Exception:
-        return JsonResponse({"status": "indisponivel"}, status=503)
-    return JsonResponse({"status": "ok"})
 
 
 @require_safe

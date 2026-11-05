@@ -8,6 +8,10 @@ redis==8.1.0
 gunicorn==26.2.0
 sqlparse==0.6.0
 weasyprint==70.0
+# transitiva de weasyprint (fonttools[woff]): CVE crítica GHSA-9v8h-qqgm-4m35
+# (PYSEC-2026-4322) na 1.2.0, corrigida na 1.2.1. Sai quando o fonttools
+# do lock já exigir brotli>=1.2.1.
+brotli==1.2.1
 ofxparse==0.21
 
 # Monitoramento de erros (ativo só com SENTRY_DSN definido)
