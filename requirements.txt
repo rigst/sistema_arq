@@ -1,12 +1,12 @@
-asgiref==3.12.1
-Django==6.1.1
+asgiref==3.13.0
+Django==6.1.2
 dj-database-url==3.1.2
-psycopg[binary]==3.3.4
+psycopg[binary]==3.3.6
 pillow==13.0.0
 celery==5.6.3
 redis==8.1.0
 gunicorn==26.2.0
-sqlparse==0.6.0
+sqlparse==0.6.1
 weasyprint==70.0
 # transitiva de weasyprint (fonttools[woff]): CVE crítica GHSA-9v8h-qqgm-4m35
 # (PYSEC-2026-4322) na 1.2.0, corrigida na 1.2.1. Sai quando o fonttools
@@ -15,7 +15,7 @@ brotli==1.2.1
 ofxparse==0.21
 
 # Monitoramento de erros (ativo só com SENTRY_DSN definido)
-sentry-sdk==2.68.1
+sentry-sdk==2.73.0
 
 # O pip entra aqui como qualquer outra dependência, e não como ferramenta à
 # parte. Ele é o que o CD executa a cada deploy, e enquanto não estava
@@ -27,4 +27,4 @@ sentry-sdk==2.68.1
 #
 # Não use `pip install --upgrade pip` no deploy: isso instalaria versão não
 # fixada, que é o que o pin e o `--require-hashes` existem para evitar.
-pip==26.2.1
+pip==26.3
