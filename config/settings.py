@@ -110,6 +110,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "core.security_headers.PermissionsPolicyMiddleware",
     "core.security_headers.ContentSecurityPolicyMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -317,6 +318,14 @@ CONTENT_SECURITY_POLICY = os.getenv(
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
     "font-src 'self' data: https://fonts.gstatic.com; object-src 'none'; "
     "frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+)
+
+# Mesmo valor padrão da frota (o dracma manda o mesmo via nginx). O app não
+# usa câmera, microfone, localização, pagamento nem USB no navegador; procure
+# getUserMedia/MediaRecorder antes de abrir alguma delas com `(self)`.
+PERMISSIONS_POLICY = os.getenv(
+    "DJANGO_PERMISSIONS_POLICY",
+    "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
 )
 
 if IS_PRODUCTION:
