@@ -1,14 +1,14 @@
 # Gerado por gerar_lock.py, do repo rigst/ci, a partir de requirements.txt
 # — não edite à mão.
 #
-# Resolvido para Python 3.14, incluindo as transitivas.
+# Resolvido para Python 3.12, incluindo as transitivas.
 # Os hashes cobrem todos os artefatos de cada versão, então o arquivo
 # vale em qualquer arquitetura.
 #
 # Depois de mexer em requirements.txt, na raiz deste projeto, com um
 # clone do rigst/ci à mão:
 #
-#   python CLONE_DO_CI/scripts/gerar_lock.py --python-version 3.14 --sdist-only ofxparse=beautifulsoup4,lxml,six
+#   python CLONE_DO_CI/scripts/gerar_lock.py --python-version 3.12 --sdist-only ofxparse=beautifulsoup4,lxml,six
 
 amqp==5.4.2 \
     --hash=sha256:9362660c4a31150cf18e78cae2ce8aa1e929fc6c6739e69f6dd5dbea9c3edc82 \

@@ -18,5 +18,5 @@ jobs:
     secrets:
       LOCK_DEPLOY_KEY: ${{ secrets.LOCK_DEPLOY_KEY }}
     with:
-      python-version: "3.14"     # a de PRODUÇÃO (a do cabeçalho do requirements.lock)
+      python-version: "3.12"     # a de PRODUÇÃO (a do cabeçalho do requirements.lock)
       gerar-lock-args: "--sdist-only ofxparse=beautifulsoup4,lxml,six"        # ex.: --sdist-only ofxparse=beautifulsoup4,lxml,six

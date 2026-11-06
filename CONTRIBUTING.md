@@ -71,8 +71,8 @@ divergiram — existe porque o Dependabot atualiza o `requirements.txt` e **não
 reconhece o `requirements.lock`, então sem ela o CI testaria uma versão e a
 imagem instalaria outra — e que o lock instala de verdade sob
 `--require-hashes`, o que pega transitiva faltando e hash errado. Ele roda no
-Python informado em `lock-python-version` (3.14, o da imagem), e não no do
-resto do pipeline: conferir na versão errada acusaria divergência inexistente.
+Python informado em `lock-python-version` (3.12, o do venv de produção, que é
+onde o deploy instala o lock).
 
 O `imagem docker` constrói a imagem de fato, que é a prova final.
 
@@ -82,7 +82,7 @@ testes próprios. A cópia que existia aqui em `scripts/conferir_lock.py` foi
 removida: duas implementações da mesma regra divergem, e a divergência
 apareceria como build verde com lock errado. O `scripts/gerar_lock.py`
 continua sendo local, porque carrega os parâmetros de resolução deste projeto
-(Python 3.14 e o `ofxparse`, que só publica sdist).
+(Python 3.12, o de produção, e o `ofxparse`, que só publica sdist).
 
 O `check --deploy` roda com `--fail-level WARNING`: qualquer aviso reprova. O
 HSTS sai com `includeSubDomains` por padrão em produção (`security.W005`), e o
