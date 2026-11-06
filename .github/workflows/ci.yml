@@ -132,10 +132,12 @@ jobs:
       run-licencas: true
       run-sbom: true
 
-      # O lock é resolvido para o Python da imagem, não para o do pipeline.
-      # Conferir a instalação no 3.12 acusaria divergência que não existe.
+      # O lock é resolvido para o Python de PRODUÇÃO: o deploy instala
+      # requirements.lock no venv do servidor, que é 3.12. A imagem docker
+      # (3.14) instala o mesmo lock; o job `imagem docker` abaixo prova que ele
+      # também serve lá (os hashes cobrem todos os artefatos de cada versão).
       run-lock: true
-      lock-python-version: "3.14"
+      lock-python-version: "3.12"
 
       # --- ponta a ponta ---
       run-e2e: true
@@ -187,7 +189,7 @@ jobs:
   #
   # Os scripts em scripts/ continuam aqui e continuam sendo o caminho para
   # **gerar** o lock nesta máquina — eles carregam os parâmetros de resolução
-  # deste projeto (Python 3.14 e o ofxparse, que só publica sdist).
+  # deste projeto (Python 3.12, o de produção, e o ofxparse, que só publica sdist).
 
   # Constrói a imagem de verdade. Existe porque o requirements.lock instala com
   # --require-hashes: qualquer transitiva faltando ou hash errado derruba o

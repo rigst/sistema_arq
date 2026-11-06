@@ -3,16 +3,17 @@
 
     python scripts/gerar_lock.py
 
-O lock existe para o Dockerfile instalar com --require-hashes: sem ele, as
-dependências transitivas ficam soltas e o conteúdo da imagem muda sozinho
-entre dois builds do mesmo commit.
+O lock existe para o deploy (venv do servidor) e o Dockerfile instalarem com
+--require-hashes: sem ele, as dependências transitivas ficam soltas e o que
+vai para produção muda sozinho entre dois deploys do mesmo commit.
 
 Duas decisões que não são óbvias:
 
-1. A resolução é feita para o Python da imagem (PYTHON_ALVO), não para o
-   interpretador que roda este script. Resolver no 3.12 e instalar no 3.14
-   pode dar conjuntos diferentes, e com --require-hashes a diferença vira
-   falha de build.
+1. A resolução é feita para o Python de produção (PYTHON_ALVO, o venv 3.12
+   do servidor), não para o interpretador que roda este script. Resolver numa
+   versão e instalar noutra pode dar conjuntos diferentes, e com
+   --require-hashes a diferença vira falha de deploy. A imagem docker (3.14)
+   instala o mesmo lock; o job `imagem docker` do CI confere.
 
 2. Os hashes cobrem todos os artefatos publicados de cada versão, não só o
    escolhido aqui. É o que mantém o lock válido em outra arquitetura.
@@ -33,7 +34,7 @@ RAIZ = pathlib.Path(__file__).resolve().parent.parent
 ENTRADA = RAIZ / "requirements.txt"
 SAIDA = RAIZ / "requirements.lock"
 
-PYTHON_ALVO = "3.14"
+PYTHON_ALVO = "3.12"
 # Só-sdist: fica fora da resolução e entra fixado à mão, com as dependências
 # dele declaradas para o resolvedor.
 SDIST_ONLY = {"ofxparse": ["beautifulsoup4", "lxml", "six"]}
