@@ -134,7 +134,7 @@ main() {
 
   carregar_env
 
-  "$VENV/bin/python" manage.py check --deploy --fail-level ERROR
+  "$VENV/bin/python" manage.py check --deploy --fail-level WARNING
   "$VENV/bin/python" manage.py migrate --check || "$VENV/bin/python" manage.py migrate
   "$VENV/bin/python" manage.py collectstatic --noinput
 
