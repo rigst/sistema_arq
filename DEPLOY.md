@@ -106,14 +106,14 @@ Havendo migração, gere backup do banco antes (seção anterior). Depois:
     git -C $D pull --ff-only origin main
     cd $D
     set -a && . /var/www/sistema_arq/shared/.env && set +a
-    /var/www/sistema_arq/venv/bin/python manage.py check --deploy --fail-level ERROR
+    /var/www/sistema_arq/venv/bin/python manage.py check --deploy --fail-level WARNING
     /var/www/sistema_arq/venv/bin/python manage.py migrate --check
 
-O `--fail-level ERROR` aqui (e no `deploy/cd-deploy.sh`) continua enquanto o
-`shared/.env` do servidor tiver `DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS=false`:
-com essa linha o `security.W005` aparece e o WARNING barraria o deploy. O CI já
-roda em WARNING; depois de trocar a linha para `true` (ou removê-la, o padrão
-agora é `true`) o deploy pode subir para WARNING também. O `migrate --check` sai diferente de
+O `--fail-level WARNING` é o mesmo do CI e do `deploy/cd-deploy.sh`: qualquer
+aviso barra o deploy. O `security.W021` (preload) está silenciado no settings; o
+`security.W005` não aparece porque o `shared/.env` não define mais
+`DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS` (o padrão é `true`). Se alguém voltar a
+pôr `=false` ali, o deploy para no check, e é esse o objetivo. O `migrate --check` sai diferente de
 zero se houver migração não aplicada.
 
 Se `static/` mudou, rode `collectstatic --noinput`. Por fim:
