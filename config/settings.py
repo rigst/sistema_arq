@@ -328,9 +328,17 @@ PERMISSIONS_POLICY = os.getenv(
     "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
 )
 
+# security.W021 (HSTS sem preload): entrar na lista de preload dos navegadores
+# é decisão do domínio stolben.com inteiro, e difícil de desfazer, não deste
+# app. O header continua sem `preload` até essa decisão; o aviso não diz nada
+# que não se saiba, e calá-lo permite ao CI reprovar em qualquer outro WARNING.
+SILENCED_SYSTEM_CHECKS = ["security.W021"]
+
 if IS_PRODUCTION:
     SECURE_HSTS_SECONDS = int(os.getenv("DJANGO_SECURE_HSTS_SECONDS", "31536000"))
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool("DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", False)
+    # Ligado por padrão: todos os subdomínios de stolben.com já são HTTPS, e o
+    # includeSubDomains daqui só alcança *.arq.stolben.com.
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool("DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", True)
     SECURE_HSTS_PRELOAD = env_bool("DJANGO_SECURE_HSTS_PRELOAD", False)
     SECURE_SSL_REDIRECT = env_bool("DJANGO_SECURE_SSL_REDIRECT", True)
     SESSION_COOKIE_SAMESITE = "Lax"

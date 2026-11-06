@@ -34,13 +34,11 @@ jobs:
       python-version: "3.12"
       django-settings-module: config.settings
 
-      # WARNING (o padrão) reprovaria em security.W005 e security.W021, que aqui
-      # são escolha deliberada: o .env.production.example define
-      # DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS e DJANGO_SECURE_HSTS_PRELOAD como
-      # false. Preencher essas variáveis com `true` só no CI daria um verde
-      # falso, então o que muda é o nível de falha. Revertendo para WARNING no
-      # dia em que o HSTS for endurecido em produção.
-      django-check-fail-level: ERROR
+      # WARNING: qualquer aviso do check --deploy reprova. O HSTS foi
+      # endurecido (includeSubDomains ligado por padrão em produção, W005) e o
+      # security.W021 (preload) está em SILENCED_SYSTEM_CHECKS, com o motivo
+      # no settings. Nenhuma variável é forjada aqui para calar aviso.
+      django-check-fail-level: WARNING
       source-paths: >-
         agenda arquivos briefing config contratos core crm diagnostico fases
         financeiro fornecedores jornada legal modelos notificacoes obras

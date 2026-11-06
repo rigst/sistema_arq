@@ -39,7 +39,7 @@ pytest --cov --cov-fail-under=80          # bloqueia
 bandit -r $APPS --severity-level high     # bloqueia a partir de "high"
 pip-audit                                 # bloqueia
 python manage.py makemigrations --check --dry-run   # bloqueia
-python manage.py check --deploy --fail-level ERROR
+python manage.py check --deploy --fail-level WARNING   # bloqueia
 mypy $APPS                                # bloqueia
 ```
 
@@ -84,10 +84,10 @@ apareceria como build verde com lock errado. O `scripts/gerar_lock.py`
 continua sendo local, porque carrega os parâmetros de resolução deste projeto
 (Python 3.14 e o `ofxparse`, que só publica sdist).
 
-O `check --deploy` roda com `--fail-level ERROR`, e não `WARNING`, porque os
-avisos de HSTS (`security.W005` e `security.W021`) são escolha deliberada
-documentada em `.env.production.example`. Forjar variáveis só para calar o aviso
-produziria um verde falso.
+O `check --deploy` roda com `--fail-level WARNING`: qualquer aviso reprova. O
+HSTS sai com `includeSubDomains` por padrão em produção (`security.W005`), e o
+`security.W021` (preload) está em `SILENCED_SYSTEM_CHECKS`, porque entrar na
+lista de preload é decisão do domínio stolben.com, não do app.
 
 O `bandit` imprime o relatório inteiro, mas só reprova a partir de severidade
 **alta**.
